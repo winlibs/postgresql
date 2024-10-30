@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: MOVE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "MOVE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "MOVE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,9 +32,9 @@ MOVE \- position a cursor
 .SH "SYNOPSIS"
 .sp
 .nf
-MOVE [ \fIdirection\fR [ FROM | IN ] ] \fIcursor_name\fR
+MOVE [ \fIdirection\fR ] [ FROM | IN ] \fIcursor_name\fR
 
-where \fIdirection\fR can be empty or one of:
+where \fIdirection\fR can be one of:
 
     NEXT
     PRIOR

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_dumpall
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "PG_DUMPALL" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "PG_DUMPALL" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -45,14 +45,16 @@ to restore the databases\&. It does this by calling
 \fBpg_dump\fR(1)
 for each database in the cluster\&.
 pg_dumpall
-also dumps global objects that are common to all databases, that is, database roles and tablespaces\&. (pg_dump
+also dumps global objects that are common to all databases, namely database roles, tablespaces, and privilege grants for configuration parameters\&. (pg_dump
 does not save these objects\&.)
 .PP
 Since
 pg_dumpall
 reads tables from all databases you will most likely have to connect as a database superuser in order to produce a complete dump\&. Also you will need superuser privileges to execute the saved script in order to be allowed to add roles and create databases\&.
 .PP
-The SQL script will be written to the standard output\&. Use the [\-f|file] option or shell operators to redirect it into a file\&.
+The SQL script will be written to the standard output\&. Use the
+\fB\-f\fR/\fB\-\-file\fR
+option or shell operators to redirect it into a file\&.
 .PP
 pg_dumpall
 needs to connect several times to the
@@ -60,7 +62,7 @@ PostgreSQL
 server (once per database)\&. If you use password authentication it will ask for a password each time\&. It is convenient to have a
 ~/\&.pgpass
 file in such cases\&. See
-Section\ \&34.15
+Section\ \&34.16
 for more information\&.
 .SH "OPTIONS"
 .PP
@@ -77,9 +79,11 @@ Dump only the data, not the schema (data definitions)\&.
 .br
 \fB\-\-clean\fR
 .RS 4
-Include SQL commands to clean (drop) databases before recreating them\&.
+Emit SQL commands to
 \fBDROP\fR
-commands for roles and tablespaces are added as well\&.
+all the dumped databases, roles, and tablespaces before recreating them\&. This option is useful when the restore is to overwrite an existing cluster\&. If any of the objects do not exist in the destination cluster, ignorable error messages will be reported during restore, unless
+\fB\-\-if\-exists\fR
+is also specified\&.
 .RE
 .PP
 \fB\-E \fR\fB\fIencoding\fR\fR
@@ -103,15 +107,6 @@ Send output to the specified file\&. If this is omitted, the standard output is 
 \fB\-\-globals\-only\fR
 .RS 4
 Dump only global objects (roles and tablespaces), no databases\&.
-.RE
-.PP
-\fB\-o\fR
-.br
-\fB\-\-oids\fR
-.RS 4
-Dump object identifiers (OIDs) as part of the data for every table\&. Use this option if your application references the
-OID
-columns in some way (e\&.g\&., in a foreign key constraint)\&. Otherwise, this option should not be used\&.
 .RE
 .PP
 \fB\-O\fR
@@ -164,7 +159,7 @@ Dump only tablespaces, no databases or roles\&.
 .RS 4
 Specifies verbose mode\&. This will cause
 pg_dumpall
-to output start/stop times to the dump file, and progress messages to standard error\&. It will also enable verbose output in
+to output start/stop times to the dump file, and progress messages to standard error\&. Repeating the option causes additional debug\-level messages to appear on standard error\&. The option is also passed down to
 pg_dump\&.
 .RE
 .PP
@@ -210,7 +205,7 @@ This option disables the use of dollar quoting for function bodies, and forces t
 .RS 4
 This option is relevant only when creating a data\-only dump\&. It instructs
 pg_dumpall
-to include commands to temporarily disable triggers on the target tables while the data is reloaded\&. Use this if you have referential integrity checks or other triggers on the tables that you do not want to invoke during data reload\&.
+to include commands to temporarily disable triggers on the target tables while the data is restored\&. Use this if you have referential integrity checks or other triggers on the tables that you do not want to invoke during data restore\&.
 .sp
 Presently, the commands emitted for
 \fB\-\-disable\-triggers\fR
@@ -218,11 +213,34 @@ must be done as superuser\&. So, you should also specify a superuser name with
 \fB\-S\fR, or preferably be careful to start the resulting script as a superuser\&.
 .RE
 .PP
+\fB\-\-exclude\-database=\fR\fB\fIpattern\fR\fR
+.RS 4
+Do not dump databases whose name matches
+\fIpattern\fR\&. Multiple patterns can be excluded by writing multiple
+\fB\-\-exclude\-database\fR
+switches\&. The
+\fIpattern\fR
+parameter is interpreted as a pattern according to the same rules used by
+psql\*(Aqs
+\ed
+commands (see
+Patterns), so multiple databases can also be excluded by writing wildcard characters in the pattern\&. When using wildcards, be careful to quote the pattern if needed to prevent shell wildcard expansion\&.
+.RE
+.PP
+\fB\-\-extra\-float\-digits=\fR\fB\fIndigits\fR\fR
+.RS 4
+Use the specified value of extra_float_digits when dumping floating\-point data, instead of the maximum available precision\&. Routine dumps made for backup purposes should not use this option\&.
+.RE
+.PP
 \fB\-\-if\-exists\fR
 .RS 4
-Use conditional commands (i\&.e\&. add an
-IF EXISTS
-clause) to drop databases and other objects\&. This option is not valid unless
+Use
+DROP \&.\&.\&. IF EXISTS
+commands to drop objects in
+\fB\-\-clean\fR
+mode\&. This suppresses
+\(lqdoes not exist\(rq
+errors that might otherwise be reported\&. This option is not valid unless
 \fB\-\-clean\fR
 is also specified\&.
 .RE
@@ -244,14 +262,14 @@ When dumping data for a table partition, make the
 \fBCOPY\fR
 or
 \fBINSERT\fR
-statements target the root of the partitioning hierarchy that contains it, rather than the partition itself\&. This causes the appropriate partition to be re\-determined for each row when the data is loaded\&. This may be useful when reloading data on a server where rows do not always fall into the same partitions as they did on the original server\&. That could happen, for example, if the partitioning column is of type text and the two systems have different definitions of the collation used to sort the partitioning column\&.
+statements target the root of the partitioning hierarchy that contains it, rather than the partition itself\&. This causes the appropriate partition to be re\-determined for each row when the data is loaded\&. This may be useful when restoring data on a server where rows do not always fall into the same partitions as they did on the original server\&. That could happen, for example, if the partitioning column is of type text and the two systems have different definitions of the collation used to sort the partitioning column\&.
 .RE
 .PP
 \fB\-\-lock\-wait\-timeout=\fR\fB\fItimeout\fR\fR
 .RS 4
 Do not wait forever to acquire shared table locks at the beginning of the dump\&. Instead, fail if unable to lock a table within the specified
 \fItimeout\fR\&. The timeout may be specified in any of the formats accepted by
-\fBSET statement_timeout\fR\&. Allowed values vary depending on the server version you are dumping from, but an integer number of milliseconds is accepted by all versions since 7\&.3\&. This option is ignored when dumping from a pre\-7\&.3 server\&.
+\fBSET statement_timeout\fR\&.
 .RE
 .PP
 \fB\-\-no\-comments\fR
@@ -293,14 +311,39 @@ will wait for all files to be written safely to disk\&. This option causes
 to return without waiting, which is faster, but means that a subsequent operating system crash can leave the dump corrupt\&. Generally, this option is useful for testing but should not be used when dumping data from production installation\&.
 .RE
 .PP
+\fB\-\-no\-table\-access\-method\fR
+.RS 4
+Do not output commands to select table access methods\&. With this option, all objects will be created with whichever table access method is the default during restore\&.
+.RE
+.PP
 \fB\-\-no\-tablespaces\fR
 .RS 4
 Do not output commands to create tablespaces nor select tablespaces for objects\&. With this option, all objects will be created in whichever tablespace is the default during restore\&.
 .RE
 .PP
+\fB\-\-no\-toast\-compression\fR
+.RS 4
+Do not output commands to set
+TOAST
+compression methods\&. With this option, all columns will be restored with the default compression setting\&.
+.RE
+.PP
 \fB\-\-no\-unlogged\-table\-data\fR
 .RS 4
 Do not dump the contents of unlogged tables\&. This option has no effect on whether or not the table definitions (schema) are dumped; it only suppresses dumping the table data\&.
+.RE
+.PP
+\fB\-\-on\-conflict\-do\-nothing\fR
+.RS 4
+Add
+ON CONFLICT DO NOTHING
+to
+\fBINSERT\fR
+commands\&. This option is not valid unless
+\fB\-\-inserts\fR
+or
+\fB\-\-column\-inserts\fR
+is also specified\&.
 .RE
 .PP
 \fB\-\-quote\-all\-identifiers\fR
@@ -313,6 +356,18 @@ pg_dumpall
 quotes only identifiers that are reserved words in its own major version\&. This sometimes results in compatibility issues when dealing with servers of other versions that may have slightly different sets of reserved words\&. Using
 \fB\-\-quote\-all\-identifiers\fR
 prevents such issues, at the price of a harder\-to\-read dump script\&.
+.RE
+.PP
+\fB\-\-rows\-per\-insert=\fR\fB\fInrows\fR\fR
+.RS 4
+Dump data as
+\fBINSERT\fR
+commands (rather than
+\fBCOPY\fR)\&. Controls the maximum number of rows per
+\fBINSERT\fR
+command\&. The value specified must be a number greater than zero\&. Any error during restoring will cause only rows that are part of the problematic
+\fBINSERT\fR
+to be lost, rather than the entire table contents\&.
 .RE
 .PP
 \fB\-\-use\-set\-session\-authorization\fR
@@ -339,9 +394,8 @@ The following command\-line options control the database connection parameters\&
 .br
 \fB\-\-dbname=\fR\fB\fIconnstr\fR\fR
 .RS 4
-Specifies parameters used to connect to the server, as a connection string\&. See
-Section\ \&34.1.1
-for more information\&.
+Specifies parameters used to connect to the server, as a
+connection string; these will override any conflicting command line options\&.
 .sp
 The option is called
 \-\-dbname
@@ -442,12 +496,21 @@ pg_dumpall, but can switch to a role with the required rights\&. Some installati
 Default connection parameters
 .RE
 .PP
+\fBPG_COLOR\fR
+.RS 4
+Specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.RE
+.PP
 This utility, like most other
 PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section\ \&34.14)\&.
+Section\ \&34.15)\&.
 .SH "NOTES"
 .PP
 Since
@@ -498,7 +561,7 @@ $ \fBpg_dumpall > db\&.out\fR
 .RE
 .\}
 .PP
-To reload database(s) from this file, you can use:
+To restore database(s) from this file, you can use:
 .sp
 .if n \{\
 .RS 4

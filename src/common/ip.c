@@ -3,7 +3,7 @@
  * ip.c
  *	  IPv6-aware network access.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -28,9 +28,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#ifdef HAVE_NETINET_TCP_H
 #include <netinet/tcp.h>
-#endif
 #include <arpa/inet.h>
 #include <sys/file.h>
 
@@ -38,16 +36,14 @@
 
 
 
-#ifdef	HAVE_UNIX_SOCKETS
-static int getaddrinfo_unix(const char *path,
-				 const struct addrinfo *hintsp,
-				 struct addrinfo **result);
+static int	getaddrinfo_unix(const char *path,
+							 const struct addrinfo *hintsp,
+							 struct addrinfo **result);
 
-static int getnameinfo_unix(const struct sockaddr_un *sa, int salen,
-				 char *node, int nodelen,
-				 char *service, int servicelen,
-				 int flags);
-#endif
+static int	getnameinfo_unix(const struct sockaddr_un *sa, int salen,
+							 char *node, int nodelen,
+							 char *service, int servicelen,
+							 int flags);
 
 
 /*
@@ -62,10 +58,8 @@ pg_getaddrinfo_all(const char *hostname, const char *servname,
 	/* not all versions of getaddrinfo() zero *result on failure */
 	*result = NULL;
 
-#ifdef HAVE_UNIX_SOCKETS
 	if (hintp->ai_family == AF_UNIX)
 		return getaddrinfo_unix(servname, hintp, result);
-#endif
 
 	/* NULL has special meaning to getaddrinfo(). */
 	rc = getaddrinfo((!hostname || hostname[0] == '\0') ? NULL : hostname,
@@ -87,7 +81,6 @@ pg_getaddrinfo_all(const char *hostname, const char *servname,
 void
 pg_freeaddrinfo_all(int hint_ai_family, struct addrinfo *ai)
 {
-#ifdef HAVE_UNIX_SOCKETS
 	if (hint_ai_family == AF_UNIX)
 	{
 		/* struct was built by getaddrinfo_unix (see pg_getaddrinfo_all) */
@@ -101,7 +94,6 @@ pg_freeaddrinfo_all(int hint_ai_family, struct addrinfo *ai)
 		}
 	}
 	else
-#endif							/* HAVE_UNIX_SOCKETS */
 	{
 		/* struct was built by getaddrinfo() */
 		if (ai != NULL)
@@ -126,14 +118,12 @@ pg_getnameinfo_all(const struct sockaddr_storage *addr, int salen,
 {
 	int			rc;
 
-#ifdef HAVE_UNIX_SOCKETS
 	if (addr && addr->ss_family == AF_UNIX)
 		rc = getnameinfo_unix((const struct sockaddr_un *) addr, salen,
 							  node, nodelen,
 							  service, servicelen,
 							  flags);
 	else
-#endif
 		rc = getnameinfo((const struct sockaddr *) addr, salen,
 						 node, nodelen,
 						 service, servicelen,
@@ -151,8 +141,6 @@ pg_getnameinfo_all(const struct sockaddr_storage *addr, int salen,
 }
 
 
-#if defined(HAVE_UNIX_SOCKETS)
-
 /* -------
  *	getaddrinfo_unix - get unix socket info using IPv6-compatible API
  *
@@ -165,13 +153,11 @@ static int
 getaddrinfo_unix(const char *path, const struct addrinfo *hintsp,
 				 struct addrinfo **result)
 {
-	struct addrinfo hints;
+	struct addrinfo hints = {0};
 	struct addrinfo *aip;
 	struct sockaddr_un *unp;
 
 	*result = NULL;
-
-	MemSet(&hints, 0, sizeof(hints));
 
 	if (strlen(path) >= sizeof(unp->sun_path))
 		return EAI_FAIL;
@@ -217,9 +203,20 @@ getaddrinfo_unix(const char *path, const struct addrinfo *hintsp,
 
 	strcpy(unp->sun_path, path);
 
-#ifdef HAVE_STRUCT_SOCKADDR_STORAGE_SS_LEN
-	unp->sun_len = sizeof(struct sockaddr_un);
-#endif
+	/*
+	 * If the supplied path starts with @, replace that with a zero byte for
+	 * the internal representation.  In that mode, the entire sun_path is the
+	 * address, including trailing zero bytes.  But we set the address length
+	 * to only include the length of the original string.  That way the
+	 * trailing zero bytes won't show up in any network or socket lists of the
+	 * operating system.  This is just a convention, also followed by other
+	 * packages.
+	 */
+	if (path[0] == '@')
+	{
+		unp->sun_path[0] = '\0';
+		aip->ai_addrlen = offsetof(struct sockaddr_un, sun_path) + strlen(path);
+	}
 
 	return 0;
 }
@@ -249,11 +246,17 @@ getnameinfo_unix(const struct sockaddr_un *sa, int salen,
 
 	if (service)
 	{
-		ret = snprintf(service, servicelen, "%s", sa->sun_path);
+		/*
+		 * Check whether it looks like an abstract socket, but it could also
+		 * just be an empty string.
+		 */
+		if (sa->sun_path[0] == '\0' && sa->sun_path[1] != '\0')
+			ret = snprintf(service, servicelen, "@%s", sa->sun_path + 1);
+		else
+			ret = snprintf(service, servicelen, "%s", sa->sun_path);
 		if (ret < 0 || ret >= servicelen)
 			return EAI_MEMORY;
 	}
 
 	return 0;
 }
-#endif							/* HAVE_UNIX_SOCKETS */

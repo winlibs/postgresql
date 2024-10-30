@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER AGGREGATE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER AGGREGATE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER AGGREGATE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,7 @@ ALTER_AGGREGATE \- change the definition of an aggregate function
 .nf
 ALTER AGGREGATE \fIname\fR ( \fIaggregate_signature\fR ) RENAME TO \fInew_name\fR
 ALTER AGGREGATE \fIname\fR ( \fIaggregate_signature\fR )
-                OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+                OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 ALTER AGGREGATE \fIname\fR ( \fIaggregate_signature\fR ) SET SCHEMA \fInew_schema\fR
 
 where \fIaggregate_signature\fR is:
@@ -51,7 +51,9 @@ changes the definition of an aggregate function\&.
 You must own the aggregate function to use
 \fBALTER AGGREGATE\fR\&. To change the schema of an aggregate function, you must also have
 CREATE
-privilege on the new schema\&. To alter the owner, you must also be a direct or indirect member of the new owning role, and that role must have
+privilege on the new schema\&. To alter the owner, you must be able to
+SET ROLE
+to the new owning role, and that role must have
 CREATE
 privilege on the aggregate function\*(Aqs schema\&. (These restrictions enforce that altering the owner doesn\*(Aqt do anything you couldn\*(Aqt do by dropping and recreating the aggregate function\&. However, a superuser can alter ownership of any aggregate function anyway\&.)
 .SH "PARAMETERS"
@@ -105,7 +107,7 @@ The new schema for the aggregate function\&.
 The recommended syntax for referencing an ordered\-set aggregate is to write
 ORDER BY
 between the direct and aggregated argument specifications, in the same style as in
-CREATE AGGREGATE (\fBCREATE_AGGREGATE\fR(7))\&. However, it will also work to omit
+\fBCREATE AGGREGATE\fR\&. However, it will also work to omit
 ORDER BY
 and just run the direct and aggregated argument specifications into a single list\&. In this abbreviated form, if
 VARIADIC "any"

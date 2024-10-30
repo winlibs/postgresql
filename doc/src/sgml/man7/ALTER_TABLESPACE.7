@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER TABLESPACE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER TABLESPACE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER TABLESPACE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,7 +33,7 @@ ALTER_TABLESPACE \- change the definition of a tablespace
 .sp
 .nf
 ALTER TABLESPACE \fIname\fR RENAME TO \fInew_name\fR
-ALTER TABLESPACE \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+ALTER TABLESPACE \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 ALTER TABLESPACE \fIname\fR SET ( \fItablespace_option\fR = \fIvalue\fR [, \&.\&.\&. ] )
 ALTER TABLESPACE \fIname\fR RESET ( \fItablespace_option\fR [, \&.\&.\&. ] )
 .fi
@@ -42,7 +42,9 @@ ALTER TABLESPACE \fIname\fR RESET ( \fItablespace_option\fR [, \&.\&.\&. ] )
 \fBALTER TABLESPACE\fR
 can be used to change the definition of a tablespace\&.
 .PP
-You must own the tablespace to change the definition of a tablespace\&. To alter the owner, you must also be a direct or indirect member of the new owning role\&. (Note that superusers have these privileges automatically\&.)
+You must own the tablespace to change the definition of a tablespace\&. To alter the owner, you must also be able to
+SET ROLE
+to the new owning role\&. (Note that superusers have these privileges automatically\&.)
 .SH "PARAMETERS"
 .PP
 \fIname\fR
@@ -65,12 +67,14 @@ The new owner of the tablespace\&.
 .RS 4
 A tablespace parameter to be set or reset\&. Currently, the only available parameters are
 \fIseq_page_cost\fR,
-\fIrandom_page_cost\fR
+\fIrandom_page_cost\fR,
+\fIeffective_io_concurrency\fR
 and
-\fIeffective_io_concurrency\fR\&. Setting either value for a particular tablespace will override the planner\*(Aqs usual estimate of the cost of reading pages from tables in that tablespace, as established by the configuration parameters of the same name (see
+\fImaintenance_io_concurrency\fR\&. Setting these values for a particular tablespace will override the planner\*(Aqs usual estimate of the cost of reading pages from tables in that tablespace, and the executor\*(Aqs prefetching behavior, as established by the configuration parameters of the same name (see
 seq_page_cost,
 random_page_cost,
-effective_io_concurrency)\&. This may be useful if one tablespace is located on a disk which is faster or slower than the remainder of the I/O subsystem\&.
+effective_io_concurrency,
+maintenance_io_concurrency)\&. This may be useful if one tablespace is located on a disk which is faster or slower than the remainder of the I/O subsystem\&.
 .RE
 .SH "EXAMPLES"
 .PP

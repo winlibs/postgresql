@@ -48,35 +48,35 @@
 /*
  * main interface
  */
-char	   *px_crypt(const char *psw, const char *salt, char *buf, unsigned buflen);
-int			px_gen_salt(const char *salt_type, char *dst, int rounds);
+char	   *px_crypt(const char *psw, const char *salt, char *buf, unsigned len);
+int			px_gen_salt(const char *salt_type, char *buf, int rounds);
 
 /*
  * internal functions
  */
 
 /* crypt-gensalt.c */
-char *_crypt_gensalt_traditional_rn(unsigned long count,
-							  const char *input, int size, char *output, int output_size);
-char *_crypt_gensalt_extended_rn(unsigned long count,
-						   const char *input, int size, char *output, int output_size);
-char *_crypt_gensalt_md5_rn(unsigned long count,
-					  const char *input, int size, char *output, int output_size);
-char *_crypt_gensalt_blowfish_rn(unsigned long count,
-						   const char *input, int size, char *output, int output_size);
+char	   *_crypt_gensalt_traditional_rn(unsigned long count,
+										  const char *input, int size, char *output, int output_size);
+char	   *_crypt_gensalt_extended_rn(unsigned long count,
+									   const char *input, int size, char *output, int output_size);
+char	   *_crypt_gensalt_md5_rn(unsigned long count,
+								  const char *input, int size, char *output, int output_size);
+char	   *_crypt_gensalt_blowfish_rn(unsigned long count,
+									   const char *input, int size, char *output, int output_size);
 
 /* disable 'extended DES crypt' */
 /* #define DISABLE_XDES */
 
 /* crypt-blowfish.c */
-char *_crypt_blowfish_rn(const char *key, const char *setting,
-				   char *output, int size);
+char	   *_crypt_blowfish_rn(const char *key, const char *setting,
+							   char *output, int size);
 
 /* crypt-des.c */
 char	   *px_crypt_des(const char *key, const char *setting);
 
 /* crypt-md5.c */
-char *px_crypt_md5(const char *pw, const char *salt,
-			 char *dst, unsigned dstlen);
+char	   *px_crypt_md5(const char *pw, const char *salt,
+						 char *passwd, unsigned dstlen);
 
 #endif							/* _PX_CRYPT_H */

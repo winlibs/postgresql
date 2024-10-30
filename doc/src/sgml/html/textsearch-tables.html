@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>12.2. Tables and Indexes</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="textsearch-intro.html" title="12.1. Introduction" /><link rel="next" href="textsearch-controls.html" title="12.3. Controlling Text Search" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">12.2. Tables and Indexes</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="textsearch-intro.html" title="12.1. Introduction">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><th width="60%" align="center">Chapter 12. Full Text Search</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="textsearch-controls.html" title="12.3. Controlling Text Search">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TEXTSEARCH-TABLES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">12.2. Tables and Indexes</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="textsearch-tables.html#TEXTSEARCH-TABLES-SEARCH">12.2.1. Searching a Table</a></span></dt><dt><span class="sect2"><a href="textsearch-tables.html#TEXTSEARCH-TABLES-INDEX">12.2.2. Creating Indexes</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>12.2. Tables and Indexes</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="textsearch-intro.html" title="12.1. Introduction" /><link rel="next" href="textsearch-controls.html" title="12.3. Controlling Text Search" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">12.2. Tables and Indexes</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="textsearch-intro.html" title="12.1. Introduction">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><th width="60%" align="center">Chapter 12. Full Text Search</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="textsearch-controls.html" title="12.3. Controlling Text Search">Next</a></td></tr></table><hr /></div><div class="sect1" id="TEXTSEARCH-TABLES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">12.2. Tables and Indexes <a href="#TEXTSEARCH-TABLES" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="textsearch-tables.html#TEXTSEARCH-TABLES-SEARCH">12.2.1. Searching a Table</a></span></dt><dt><span class="sect2"><a href="textsearch-tables.html#TEXTSEARCH-TABLES-INDEX">12.2.2. Creating Indexes</a></span></dt></dl></div><p>
    The examples in the previous section illustrated full text matching using
    simple constant strings.  This section shows how to search table data,
    optionally using indexes.
-  </p><div class="sect2" id="TEXTSEARCH-TABLES-SEARCH"><div class="titlepage"><div><div><h3 class="title">12.2.1. Searching a Table</h3></div></div></div><p>
+  </p><div class="sect2" id="TEXTSEARCH-TABLES-SEARCH"><div class="titlepage"><div><div><h3 class="title">12.2.1. Searching a Table <a href="#TEXTSEARCH-TABLES-SEARCH" class="id_link">#</a></h3></div></div></div><p>
     It is possible to do a full text search without an index.  A simple query
     to print the <code class="structname">title</code> of each row that contains the word
     <code class="literal">friend</code> in its <code class="structfield">body</code> field is:
@@ -50,8 +50,8 @@ LIMIT 10;
     will find this approach too slow, except perhaps for occasional ad-hoc
     searches.  Practical use of text searching usually requires creating
     an index.
-   </p></div><div class="sect2" id="TEXTSEARCH-TABLES-INDEX"><div class="titlepage"><div><div><h3 class="title">12.2.2. Creating Indexes</h3></div></div></div><p>
-    We can create a <acronym class="acronym">GIN</acronym> index (<a class="xref" href="textsearch-indexes.html" title="12.9. GIN and GiST Index Types">Section 12.9</a>) to speed up text searches:
+   </p></div><div class="sect2" id="TEXTSEARCH-TABLES-INDEX"><div class="titlepage"><div><div><h3 class="title">12.2.2. Creating Indexes <a href="#TEXTSEARCH-TABLES-INDEX" class="id_link">#</a></h3></div></div></div><p>
+    We can create a <acronym class="acronym">GIN</acronym> index (<a class="xref" href="textsearch-indexes.html" title="12.9. Preferred Index Types for Text Search">Section 12.9</a>) to speed up text searches:
 
 </p><pre class="programlisting">
 CREATE INDEX pgweb_idx ON pgweb USING GIN (to_tsvector('english', body));
@@ -97,15 +97,17 @@ CREATE INDEX pgweb_idx ON pgweb USING GIN (to_tsvector('english', title || ' ' |
 </pre><p>
    </p><p>
     Another approach is to create a separate <code class="type">tsvector</code> column
-    to hold the output of <code class="function">to_tsvector</code>.  This example is a
+    to hold the output of <code class="function">to_tsvector</code>.  To keep this
+    column automatically up to date with its source data, use a stored
+    generated column.  This example is a
     concatenation of <code class="literal">title</code> and <code class="literal">body</code>,
     using <code class="function">coalesce</code> to ensure that one field will still be
     indexed when the other is <code class="literal">NULL</code>:
 
 </p><pre class="programlisting">
-ALTER TABLE pgweb ADD COLUMN textsearchable_index_col tsvector;
-UPDATE pgweb SET textsearchable_index_col =
-     to_tsvector('english', coalesce(title,'') || ' ' || coalesce(body,''));
+ALTER TABLE pgweb
+    ADD COLUMN textsearchable_index_col tsvector
+               GENERATED ALWAYS AS (to_tsvector('english', coalesce(title, '') || ' ' || coalesce(body, ''))) STORED;
 </pre><p>
 
     Then we create a <acronym class="acronym">GIN</acronym> index to speed up the search:
@@ -124,12 +126,6 @@ ORDER BY last_mod_date DESC
 LIMIT 10;
 </pre><p>
    </p><p>
-    When using a separate column to store the <code class="type">tsvector</code>
-    representation,
-    it is necessary to create a trigger to keep the <code class="type">tsvector</code>
-    column current anytime <code class="literal">title</code> or <code class="literal">body</code> changes.
-    <a class="xref" href="textsearch-features.html#TEXTSEARCH-UPDATE-TRIGGERS" title="12.4.3. Triggers for Automatic Updates">Section 12.4.3</a> explains how to do that.
-   </p><p>
     One advantage of the separate-column approach over an expression index
     is that it is not necessary to explicitly specify the text search
     configuration in queries in order to make use of the index.  As shown
@@ -137,7 +133,7 @@ LIMIT 10;
     <code class="varname">default_text_search_config</code>.  Another advantage is that
     searches will be faster, since it will not be necessary to redo the
     <code class="function">to_tsvector</code> calls to verify index matches.  (This is more
-    important when using a GiST index than a GIN index; see <a class="xref" href="textsearch-indexes.html" title="12.9. GIN and GiST Index Types">Section 12.9</a>.)  The expression-index approach is
+    important when using a GiST index than a GIN index; see <a class="xref" href="textsearch-indexes.html" title="12.9. Preferred Index Types for Text Search">Section 12.9</a>.)  The expression-index approach is
     simpler to set up, however, and it requires less disk space since the
     <code class="type">tsvector</code> representation is not stored explicitly.
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="textsearch-intro.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="textsearch.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="textsearch-controls.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">12.1. Introduction </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 12.3. Controlling Text Search</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="textsearch-intro.html" title="12.1. Introduction">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="textsearch-controls.html" title="12.3. Controlling Text Search">Next</a></td></tr><tr><td width="40%" align="left" valign="top">12.1. Introduction </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 12.3. Controlling Text Search</td></tr></table></div></body></html>

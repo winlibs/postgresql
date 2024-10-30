@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dblink_exec
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DBLINK_EXEC" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DBLINK_EXEC" "3" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -61,7 +61,7 @@ A connection info string, as previously described for
 \fIsql\fR
 .RS 4
 The SQL command that you wish to execute in the remote database, for example
-insert into foo values(0,\*(Aqa\*(Aq,\*(Aq{"a0","b0","c0"}\*(Aq)\&.
+insert into foo values(0, \*(Aqa\*(Aq, \*(Aq{"a0","b0","c0"}\*(Aq)\&.
 .RE
 .PP
 \fIfail_on_error\fR
@@ -85,7 +85,7 @@ SELECT dblink_connect(\*(Aqdbname=dblink_test_standby\*(Aq);
  OK
 (1 row)
 
-SELECT dblink_exec(\*(Aqinsert into foo values(21,\*(Aq\*(Aqz\*(Aq\*(Aq,\*(Aq\*(Aq{"a0","b0","c0"}\*(Aq\*(Aq);\*(Aq);
+SELECT dblink_exec(\*(Aqinsert into foo values(21, \*(Aq\*(Aqz\*(Aq\*(Aq, \*(Aq\*(Aq{"a0","b0","c0"}\*(Aq\*(Aq);\*(Aq);
    dblink_exec
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
  INSERT 943366 1
@@ -97,7 +97,7 @@ SELECT dblink_connect(\*(Aqmyconn\*(Aq, \*(Aqdbname=regression\*(Aq);
  OK
 (1 row)
 
-SELECT dblink_exec(\*(Aqmyconn\*(Aq, \*(Aqinsert into foo values(21,\*(Aq\*(Aqz\*(Aq\*(Aq,\*(Aq\*(Aq{"a0","b0","c0"}\*(Aq\*(Aq);\*(Aq);
+SELECT dblink_exec(\*(Aqmyconn\*(Aq, \*(Aqinsert into foo values(21, \*(Aq\*(Aqz\*(Aq\*(Aq, \*(Aq\*(Aq{"a0","b0","c0"}\*(Aq\*(Aq);\*(Aq);
    dblink_exec
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
  INSERT 6432584 1

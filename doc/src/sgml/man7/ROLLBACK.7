@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ROLLBACK
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ROLLBACK" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ROLLBACK" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ ROLLBACK \- abort the current transaction
 .SH "SYNOPSIS"
 .sp
 .nf
-ROLLBACK [ WORK | TRANSACTION ]
+ROLLBACK [ WORK | TRANSACTION ] [ AND [ NO ] CHAIN ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -46,15 +46,25 @@ TRANSACTION
 .RS 4
 Optional key words\&. They have no effect\&.
 .RE
+.PP
+AND CHAIN
+.RS 4
+If
+AND CHAIN
+is specified, a new (not aborted) transaction is immediately started with the same transaction characteristics (see
+SET TRANSACTION (\fBSET_TRANSACTION\fR(7))) as the just finished one\&. Otherwise, no new transaction is started\&.
+.RE
 .SH "NOTES"
 .PP
 Use
-\fBCOMMIT\fR(7)
+\fBCOMMIT\fR
 to successfully terminate a transaction\&.
 .PP
 Issuing
 \fBROLLBACK\fR
 outside of a transaction block emits a warning and otherwise has no effect\&.
+\fBROLLBACK AND CHAIN\fR
+outside of a transaction block is an error\&.
 .SH "EXAMPLES"
 .PP
 To abort all changes:
@@ -70,9 +80,10 @@ ROLLBACK;
 .\}
 .SH "COMPATIBILITY"
 .PP
-The SQL standard only specifies the two forms
-ROLLBACK
-and
-ROLLBACK WORK\&. Otherwise, this command is fully conforming\&.
+The command
+\fBROLLBACK\fR
+conforms to the SQL standard\&. The form
+ROLLBACK TRANSACTION
+is a PostgreSQL extension\&.
 .SH "SEE ALSO"
 \fBBEGIN\fR(7), \fBCOMMIT\fR(7), ROLLBACK TO SAVEPOINT (\fBROLLBACK_TO_SAVEPOINT\fR(7))

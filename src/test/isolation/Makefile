@@ -9,18 +9,27 @@ subdir = src/test/isolation
 top_builddir = ../../..
 include $(top_builddir)/src/Makefile.global
 
-override CPPFLAGS := -I$(srcdir) -I$(libpq_srcdir) -I$(srcdir)/../regress $(CPPFLAGS)
+override CPPFLAGS := -I. -I$(srcdir) -I$(libpq_srcdir) \
+	-I$(srcdir)/../regress $(CPPFLAGS)
 
-OBJS =  specparse.o isolationtester.o $(WIN32RES)
+OBJS = \
+	$(WIN32RES) \
+	isolationtester.o \
+	specparse.o \
+	specscanner.o
 
 all: isolationtester$(X) pg_isolation_regress$(X)
 
-# Though we don't install these binaries, build them during installation
-# (including temp-install).  Otherwise, "make -j check-world" and "make -j
-# installcheck-world" would spawn multiple, concurrent builds in this
-# directory.  Later builds would overwrite files while earlier builds are
-# reading them, causing occasional failures.
-install: | all
+install: all installdirs
+	$(INSTALL_PROGRAM) pg_isolation_regress$(X) '$(DESTDIR)$(pgxsdir)/$(subdir)/pg_isolation_regress$(X)'
+	$(INSTALL_PROGRAM) isolationtester$(X) '$(DESTDIR)$(pgxsdir)/$(subdir)/isolationtester$(X)'
+
+installdirs:
+	$(MKDIR_P) '$(DESTDIR)$(pgxsdir)/$(subdir)'
+
+uninstall:
+	rm -f '$(DESTDIR)$(pgxsdir)/$(subdir)/pg_isolation_regress$(X)'
+	rm -f '$(DESTDIR)$(pgxsdir)/$(subdir)/isolationtester$(X)'
 
 submake-regress:
 	$(MAKE) -C $(top_builddir)/src/test/regress pg_regress.o
@@ -36,8 +45,14 @@ isolationtester$(X): $(OBJS) | submake-libpq submake-libpgport
 
 distprep: specparse.c specscanner.c
 
-# specscanner is compiled as part of specparse
-specparse.o: specscanner.c
+# See notes in src/backend/parser/Makefile about the following two rules
+specparse.h: specparse.c
+	touch $@
+
+specparse.c: BISONFLAGS += -d
+
+# Force these dependencies to be known even without dependency info built:
+specparse.o specscanner.o: specparse.h
 
 # specparse.c and specscanner.c are in the distribution tarball,
 # so do not clean them here
@@ -47,7 +62,7 @@ clean distclean:
 	rm -rf $(pg_regress_clean_files)
 
 maintainer-clean: distclean
-	rm -f specparse.c specscanner.c
+	rm -f specparse.h specparse.c specscanner.c
 
 installcheck: all
 	$(pg_isolation_regress_installcheck) --schedule=$(srcdir)/isolation_schedule
@@ -55,12 +70,11 @@ installcheck: all
 check: all
 	$(pg_isolation_regress_check) --schedule=$(srcdir)/isolation_schedule
 
-# Versions of the check tests that include the prepared_transactions test
-# It only makes sense to run these if set up to use prepared transactions,
-# via TEMP_CONFIG for the check case, or via the postgresql.conf for the
-# installcheck case.
+# Non-default tests.  It only makes sense to run these if set up to use
+# prepared transactions, via TEMP_CONFIG for the check case, or via the
+# postgresql.conf for the installcheck case.
 installcheck-prepared-txns: all temp-install
-	$(pg_isolation_regress_installcheck) --schedule=$(srcdir)/isolation_schedule prepared-transactions
+	$(pg_isolation_regress_installcheck) --schedule=$(srcdir)/isolation_schedule prepared-transactions prepared-transactions-cic
 
 check-prepared-txns: all temp-install
-	$(pg_isolation_regress_check) --schedule=$(srcdir)/isolation_schedule prepared-transactions
+	$(pg_isolation_regress_check) --schedule=$(srcdir)/isolation_schedule prepared-transactions prepared-transactions-cic

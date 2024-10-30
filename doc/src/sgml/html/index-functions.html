@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>61.2. Index Access Method Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="index-api.html" title="61.1. Basic API Structure for Indexes" /><link rel="next" href="index-scanning.html" title="61.3. Index Scanning" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">61.2. Index Access Method Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="index-api.html" title="61.1. Basic API Structure for Indexes">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="indexam.html" title="Chapter 61. Index Access Method Interface Definition">Up</a></td><th width="60%" align="center">Chapter 61. Index Access Method Interface Definition</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="index-scanning.html" title="61.3. Index Scanning">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="INDEX-FUNCTIONS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">61.2. Index Access Method Functions</h2></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>64.2. Index Access Method Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="index-api.html" title="64.1. Basic API Structure for Indexes" /><link rel="next" href="index-scanning.html" title="64.3. Index Scanning" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">64.2. Index Access Method Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="index-api.html" title="64.1. Basic API Structure for Indexes">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="indexam.html" title="Chapter 64. Index Access Method Interface Definition">Up</a></td><th width="60%" align="center">Chapter 64. Index Access Method Interface Definition</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="index-scanning.html" title="64.3. Index Scanning">Next</a></td></tr></table><hr /></div><div class="sect1" id="INDEX-FUNCTIONS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">64.2. Index Access Method Functions <a href="#INDEX-FUNCTIONS" class="id_link">#</a></h2></div></div></div><p>
    The index construction and maintenance functions that an index access
    method must provide in <code class="structname">IndexAmRoutine</code> are:
   </p><p>
@@ -13,7 +13,7 @@ ambuild (Relation heapRelation,
    but is empty.  It must be filled in with whatever fixed data the
    access method requires, plus entries for all tuples already existing
    in the table.  Ordinarily the <code class="function">ambuild</code> function will call
-   <code class="function">IndexBuildHeapScan()</code> to scan the table for existing tuples
+   <code class="function">table_index_build_scan()</code> to scan the table for existing tuples
    and compute the keys that need to be inserted into the index.
    The function must return a palloc'd struct containing statistics about
    the new index.
@@ -35,6 +35,7 @@ aminsert (Relation indexRelation,
           ItemPointer heap_tid,
           Relation heapRelation,
           IndexUniqueCheck checkUnique,
+          bool indexUnchanged,
           IndexInfo *indexInfo);
 </pre><p>
    Insert a new tuple into an existing index.  The <code class="literal">values</code> and
@@ -44,10 +45,26 @@ aminsert (Relation indexRelation,
    <code class="structfield">amcanunique</code> flag is true) then
    <code class="literal">checkUnique</code> indicates the type of uniqueness check to
    perform.  This varies depending on whether the unique constraint is
-   deferrable; see <a class="xref" href="index-unique-checks.html" title="61.5. Index Uniqueness Checks">Section 61.5</a> for details.
+   deferrable; see <a class="xref" href="index-unique-checks.html" title="64.5. Index Uniqueness Checks">Section 64.5</a> for details.
    Normally the access method only needs the <code class="literal">heapRelation</code>
    parameter when performing uniqueness checking (since then it will have to
    look into the heap to verify tuple liveness).
+  </p><p>
+   The <code class="literal">indexUnchanged</code> Boolean value gives a hint
+   about the nature of the tuple to be indexed.  When it is true,
+   the tuple is a duplicate of some existing tuple in the index.  The
+   new tuple is a logically unchanged successor MVCC tuple version.  This
+   happens when an <code class="command">UPDATE</code> takes place that does not
+   modify any columns covered by the index, but nevertheless requires a
+   new version in the index.  The index AM may use this hint to decide
+   to apply bottom-up index deletion in parts of the index where many
+   versions of the same logical row accumulate.  Note that updating a non-key
+   column or a column that only appears in a partial index predicate does not
+   affect the value of <code class="literal">indexUnchanged</code>.  The core code
+   determines each tuple's <code class="literal">indexUnchanged</code> value using a low
+   overhead approach that allows both false positives and false negatives.
+   Index AMs must not treat <code class="literal">indexUnchanged</code> as an
+   authoritative source of information about tuple visibility or versioning.
   </p><p>
    The function's Boolean result value is significant only when
    <code class="literal">checkUnique</code> is <code class="literal">UNIQUE_CHECK_PARTIAL</code>.
@@ -59,7 +76,7 @@ aminsert (Relation indexRelation,
    indexed, <code class="function">aminsert</code> should just return without doing anything.
   </p><p>
    If the index AM wishes to cache data across successive index insertions
-   within a SQL statement, it can allocate space
+   within an SQL statement, it can allocate space
    in <code class="literal">indexInfo-&gt;ii_Context</code> and store a pointer to the
    data in <code class="literal">indexInfo-&gt;ii_AmCache</code> (which will be NULL
    initially).
@@ -109,7 +126,6 @@ amvacuumcleanup (IndexVacuumInfo *info,
    <code class="command">VACUUM</code> operation, but otherwise correct stats should
    be returned.
   </p><p>
-   As of <span class="productname">PostgreSQL</span> 8.4,
    <code class="function">amvacuumcleanup</code> will also be called at completion of an
    <code class="command">ANALYZE</code> operation.  In this case <code class="literal">stats</code> is always
    NULL and any return value will be ignored.  This case can be distinguished
@@ -122,10 +138,13 @@ bool
 amcanreturn (Relation indexRelation, int attno);
 </pre><p>
    Check whether the index can support <a class="link" href="indexes-index-only-scans.html" title="11.9. Index-Only Scans and Covering Indexes"><em class="firstterm">index-only scans</em></a> on
-   the given column, by returning the indexed column values for an index entry
-   in the form of an <code class="structname">IndexTuple</code>.  The attribute number
-   is 1-based, i.e. the first column's attno is 1. Returns true if supported,
-   else false.  If the access method does not support index-only scans at all,
+   the given column, by returning the column's original indexed value.
+   The attribute number is 1-based, i.e., the first column's attno is 1.
+   Returns true if supported, else false.
+   This function should always return true for included columns
+   (if those are supported), since there's little point in an included
+   column that can't be retrieved.
+   If the access method does not support index-only scans at all,
    the <code class="structfield">amcanreturn</code> field in its <code class="structname">IndexAmRoutine</code>
    struct can be set to NULL.
   </p><p>
@@ -141,7 +160,7 @@ amcostestimate (PlannerInfo *root,
                 double *indexPages);
 </pre><p>
    Estimate the costs of an index scan.  This function is described fully
-   in <a class="xref" href="index-cost-estimation.html" title="61.6. Index Cost Estimation Functions">Section 61.6</a>, below.
+   in <a class="xref" href="index-cost-estimation.html" title="64.6. Index Cost Estimation Functions">Section 64.6</a>, below.
   </p><p>
 </p><pre class="programlisting">
 bytea *
@@ -195,7 +214,7 @@ amproperty (Oid index_oid, int attno,
    code, it's better to inspect <em class="parameter"><code>prop</code></em>.
    If the <code class="structfield">amproperty</code> method returns <code class="literal">true</code> then
    it has determined the property test result: it must set <code class="literal">*res</code>
-   to the boolean value to return, or set <code class="literal">*isnull</code>
+   to the Boolean value to return, or set <code class="literal">*isnull</code>
    to <code class="literal">true</code> to return a NULL.  (Both of the referenced variables
    are initialized to <code class="literal">false</code> before the call.)
    If the <code class="structfield">amproperty</code> method returns <code class="literal">false</code> then
@@ -207,9 +226,19 @@ amproperty (Oid index_oid, int attno,
    core code does not know how to do that and will return NULL.  It may
    also be advantageous to implement <code class="literal">AMPROP_RETURNABLE</code> testing,
    if that can be done more cheaply than by opening the index and calling
-   <code class="structfield">amcanreturn</code>, which is the core code's default behavior.
+   <code class="function">amcanreturn</code>, which is the core code's default behavior.
    The default behavior should be satisfactory for all other standard
    properties.
+  </p><p>
+</p><pre class="programlisting">
+char *
+ambuildphasename (int64 phasenum);
+</pre><p>
+   Return the textual name of the given build phase number.
+   The phase numbers are those reported during an index build via the
+   <code class="function">pgstat_progress_update_param</code> interface.
+   The phase names are then exposed in the
+   <code class="structname">pg_stat_progress_create_index</code> view.
   </p><p>
 </p><pre class="programlisting">
 bool
@@ -219,12 +248,51 @@ amvalidate (Oid opclassoid);
    the access method can reasonably do that.  For example, this might include
    testing that all required support functions are provided.
    The <code class="function">amvalidate</code> function must return false if the opclass is
-   invalid.  Problems should be reported with <code class="function">ereport</code> messages.
+   invalid.  Problems should be reported with <code class="function">ereport</code>
+   messages, typically at <code class="literal">INFO</code> level.
+  </p><p>
+</p><pre class="programlisting">
+void
+amadjustmembers (Oid opfamilyoid,
+                 Oid opclassoid,
+                 List *operators,
+                 List *functions);
+</pre><p>
+   Validate proposed new operator and function members of an operator family,
+   so far as the access method can reasonably do that, and set their
+   dependency types if the default is not satisfactory.  This is called
+   during <code class="command">CREATE OPERATOR CLASS</code> and during
+   <code class="command">ALTER OPERATOR FAMILY ADD</code>; in the latter
+   case <em class="parameter"><code>opclassoid</code></em> is <code class="literal">InvalidOid</code>.
+   The <code class="type">List</code> arguments are lists
+   of <code class="structname">OpFamilyMember</code> structs, as defined
+   in <code class="filename">amapi.h</code>.
+
+   Tests done by this function will typically be a subset of those
+   performed by <code class="function">amvalidate</code>,
+   since <code class="function">amadjustmembers</code> cannot assume that it is
+   seeing a complete set of members.  For example, it would be reasonable
+   to check the signature of a support function, but not to check whether
+   all required support functions are provided.  Any problems can be
+   reported by throwing an error.
+
+   The dependency-related fields of
+   the <code class="structname">OpFamilyMember</code> structs are initialized by
+   the core code to create hard dependencies on the opclass if this
+   is <code class="command">CREATE OPERATOR CLASS</code>, or soft dependencies on the
+   opfamily if this is <code class="command">ALTER OPERATOR FAMILY ADD</code>.
+   <code class="function">amadjustmembers</code> can adjust these fields if some other
+   behavior is more appropriate.  For example, GIN, GiST, and SP-GiST
+   always set operator members to have soft dependencies on the opfamily,
+   since the connection between an operator and an opclass is relatively
+   weak in these index types; so it is reasonable to allow operator members
+   to be added and removed freely.  Optional support functions are typically
+   also given soft dependencies, so that they can be removed if necessary.
   </p><p>
    The purpose of an index, of course, is to support scans for tuples matching
    an indexable <code class="literal">WHERE</code> condition, often called a
    <em class="firstterm">qualifier</em> or <em class="firstterm">scan key</em>.  The semantics of
-   index scanning are described more fully in <a class="xref" href="index-scanning.html" title="61.3. Index Scanning">Section 61.3</a>,
+   index scanning are described more fully in <a class="xref" href="index-scanning.html" title="64.3. Index Scanning">Section 64.3</a>,
    below.  An index access method can support <span class="quote">“<span class="quote">plain</span>”</span> index scans,
    <span class="quote">“<span class="quote">bitmap</span>”</span> index scans, or both.  The scan-related functions that an
    index access method must or may provide are:
@@ -265,7 +333,7 @@ amrescan (IndexScanDesc scan,
    remains the same.
   </p><p>
 </p><pre class="programlisting">
-boolean
+bool
 amgettuple (IndexScanDesc scan,
             ScanDirection direction);
 </pre><p>
@@ -278,7 +346,7 @@ amgettuple (IndexScanDesc scan,
    will pass the caller's snapshot test.  On success, <code class="function">amgettuple</code>
    must also set <code class="literal">scan-&gt;xs_recheck</code> to true or false.
    False means it is certain that the index entry matches the scan keys.
-   true means this is not certain, and the conditions represented by the
+   True means this is not certain, and the conditions represented by the
    scan keys must be rechecked against the heap tuple after fetching it.
    This provision supports <span class="quote">“<span class="quote">lossy</span>”</span> index operators.
    Note that rechecking will extend only to the scan conditions; a partial
@@ -286,10 +354,13 @@ amgettuple (IndexScanDesc scan,
    callers.
   </p><p>
    If the index supports <a class="link" href="indexes-index-only-scans.html" title="11.9. Index-Only Scans and Covering Indexes">index-only
-   scans</a> (i.e., <code class="function">amcanreturn</code> returns true for it),
+   scans</a> (i.e., <code class="function">amcanreturn</code> returns true for any
+   of its columns),
    then on success the AM must also check <code class="literal">scan-&gt;xs_want_itup</code>,
    and if that is true it must return the originally indexed data for the
-   index entry.  The data can be returned in the form of an
+   index entry.  Columns for which <code class="function">amcanreturn</code> returns
+   false can be returned as nulls.
+   The data can be returned in the form of an
    <code class="structname">IndexTuple</code> pointer stored at <code class="literal">scan-&gt;xs_itup</code>,
    with tuple descriptor <code class="literal">scan-&gt;xs_itupdesc</code>; or in the form of
    a <code class="structname">HeapTuple</code> pointer stored at <code class="literal">scan-&gt;xs_hitup</code>,
@@ -326,7 +397,7 @@ amgetbitmap (IndexScanDesc scan,
    <code class="function">amgetbitmap</code> and
    <code class="function">amgettuple</code> cannot be used in the same index scan; there
    are other restrictions too when using <code class="function">amgetbitmap</code>, as explained
-   in <a class="xref" href="index-scanning.html" title="61.3. Index Scanning">Section 61.3</a>.
+   in <a class="xref" href="index-scanning.html" title="64.3. Index Scanning">Section 64.3</a>.
   </p><p>
    The <code class="function">amgetbitmap</code> function need only be provided if the access
    method supports <span class="quote">“<span class="quote">bitmap</span>”</span> index scans.  If it doesn't, the
@@ -413,4 +484,4 @@ amparallelrescan (IndexScanDesc scan);
    must be restarted.  It should reset any shared state set up by
    <code class="function">aminitparallelscan</code> such that the scan will be restarted from
    the beginning.
-  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="index-api.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="indexam.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="index-scanning.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">61.1. Basic API Structure for Indexes </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 61.3. Index Scanning</td></tr></table></div></body></html>
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="index-api.html" title="64.1. Basic API Structure for Indexes">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="indexam.html" title="Chapter 64. Index Access Method Interface Definition">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="index-scanning.html" title="64.3. Index Scanning">Next</a></td></tr><tr><td width="40%" align="left" valign="top">64.1. Basic API Structure for Indexes </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 64.3. Index Scanning</td></tr></table></div></body></html>

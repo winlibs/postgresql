@@ -4,7 +4,7 @@
  *	  header file for Postgres hash AM implementation
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/hash_xlog.h
@@ -50,19 +50,6 @@
  */
 #define XLH_SPLIT_META_UPDATE_MASKS		(1<<0)
 #define XLH_SPLIT_META_UPDATE_SPLITPOINT		(1<<1)
-
-/*
- * This is what we need to know about a HASH index create.
- *
- * Backup block 0: metapage
- */
-typedef struct xl_hash_createidx
-{
-	double		num_tuples;
-	RegProcedure procid;
-	uint16		ffactor;
-}			xl_hash_createidx;
-#define SizeOfHashCreateIdx (offsetof(xl_hash_createidx, ffactor) + sizeof(uint16))
 
 /*
  * This is what we need to know about simple (without split) insert.
@@ -263,14 +250,16 @@ typedef struct xl_hash_init_bitmap_page
  */
 typedef struct xl_hash_vacuum_one_page
 {
-	RelFileNode hnode;
-	int			ntuples;
+	TransactionId snapshotConflictHorizon;
+	uint16		ntuples;
+	bool		isCatalogRel;	/* to handle recovery conflict during logical
+								 * decoding on standby */
 
-	/* TARGET OFFSET NUMBERS FOLLOW AT THE END */
+	/* TARGET OFFSET NUMBERS */
+	OffsetNumber offsets[FLEXIBLE_ARRAY_MEMBER];
 } xl_hash_vacuum_one_page;
 
-#define SizeOfHashVacuumOnePage \
-	(offsetof(xl_hash_vacuum_one_page, ntuples) + sizeof(int))
+#define SizeOfHashVacuumOnePage offsetof(xl_hash_vacuum_one_page, offsets)
 
 extern void hash_redo(XLogReaderState *record);
 extern void hash_desc(StringInfo buf, XLogReaderState *record);

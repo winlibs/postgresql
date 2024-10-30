@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>18.8. Encryption Options</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="preventing-server-spoofing.html" title="18.7. Preventing Server Spoofing" /><link rel="next" href="ssl-tcp.html" title="18.9. Secure TCP/IP Connections with SSL" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">18.8. Encryption Options</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="preventing-server-spoofing.html" title="18.7. Preventing Server Spoofing">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="runtime.html" title="Chapter 18. Server Setup and Operation">Up</a></td><th width="60%" align="center">Chapter 18. Server Setup and Operation</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="ssl-tcp.html" title="18.9. Secure TCP/IP Connections with SSL">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="ENCRYPTION-OPTIONS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">18.8. Encryption Options</h2></div></div></div><a id="id-1.6.5.10.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>19.8. Encryption Options</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="preventing-server-spoofing.html" title="19.7. Preventing Server Spoofing" /><link rel="next" href="ssl-tcp.html" title="19.9. Secure TCP/IP Connections with SSL" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">19.8. Encryption Options</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="preventing-server-spoofing.html" title="19.7. Preventing Server Spoofing">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="runtime.html" title="Chapter 19. Server Setup and Operation">Up</a></td><th width="60%" align="center">Chapter 19. Server Setup and Operation</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="ssl-tcp.html" title="19.9. Secure TCP/IP Connections with SSL">Next</a></td></tr></table><hr /></div><div class="sect1" id="ENCRYPTION-OPTIONS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">19.8. Encryption Options <a href="#ENCRYPTION-OPTIONS" class="id_link">#</a></h2></div></div></div><a id="id-1.6.6.11.2" class="indexterm"></a><p>
    <span class="productname">PostgreSQL</span> offers encryption at several
    levels, and provides flexibility in protecting data from disclosure
    due to database server theft, unscrupulous administrators, and
@@ -15,7 +15,7 @@
      is an Internet standard and is more secure than the PostgreSQL-specific
      MD5 authentication protocol.
     </p></dd><dt><span class="term">Encryption For Specific Columns</span></dt><dd><p>
-     The <a class="xref" href="pgcrypto.html" title="F.25. pgcrypto">pgcrypto</a> module allows certain fields to be
+     The <a class="xref" href="pgcrypto.html" title="F.28. pgcrypto — cryptographic functions">pgcrypto</a> module allows certain fields to be
      stored encrypted.
      This is useful if only some of the data is sensitive.
      The client supplies the decryption key and the data is decrypted
@@ -50,8 +50,20 @@
       which hosts can use non-encrypted connections (<code class="literal">host</code>)
       and which require SSL-encrypted connections
       (<code class="literal">hostssl</code>). Also, clients can specify that they
-      connect to servers only via SSL. <span class="application">Stunnel</span> or
-      <span class="application">SSH</span> can also be used to encrypt transmissions.
+      connect to servers only via SSL.
+     </p><p>
+      GSSAPI-encrypted connections encrypt all data sent across the network,
+      including queries and data returned.  (No password is sent across the
+      network.)  The <code class="filename">pg_hba.conf</code> file allows
+      administrators to specify which hosts can use non-encrypted connections
+      (<code class="literal">host</code>) and which require GSSAPI-encrypted connections
+      (<code class="literal">hostgssenc</code>).  Also, clients can specify that they
+      connect to servers only on GSSAPI-encrypted connections
+      (<code class="literal">gssencmode=require</code>).
+     </p><p>
+      <span class="application">Stunnel</span> or
+      <span class="application">SSH</span> can also be used to encrypt
+      transmissions.
      </p></dd><dt><span class="term">SSL Host Authentication</span></dt><dd><p>
      It is possible for both the client and server to provide SSL
      certificates to each other. It takes some extra configuration
@@ -69,4 +81,4 @@
      never appears on the database server. Data is encrypted on the
      client before being sent to the server, and database results have
      to be decrypted on the client before being used.
-    </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="preventing-server-spoofing.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="runtime.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ssl-tcp.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">18.7. Preventing Server Spoofing </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 18.9. Secure TCP/IP Connections with SSL</td></tr></table></div></body></html>
+    </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="preventing-server-spoofing.html" title="19.7. Preventing Server Spoofing">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="runtime.html" title="Chapter 19. Server Setup and Operation">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ssl-tcp.html" title="19.9. Secure TCP/IP Connections with SSL">Next</a></td></tr><tr><td width="40%" align="left" valign="top">19.7. Preventing Server Spoofing </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 19.9. Secure TCP/IP Connections with SSL</td></tr></table></div></body></html>

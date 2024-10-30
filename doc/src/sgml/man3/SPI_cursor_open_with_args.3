@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SPI_cursor_open_with_args
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "SPI_CURSOR_OPEN_WITH_ARGS" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "SPI_CURSOR_OPEN_WITH_ARGS" "3" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -52,6 +52,9 @@ followed by
 \fBSPI_cursor_open\fR\&. If the same command is to be executed with many different parameters, either method might be faster, depending on the cost of re\-planning versus the benefit of custom plans\&.
 .PP
 The passed\-in parameter data will be copied into the cursor\*(Aqs portal, so it can be freed while the cursor still exists\&.
+.PP
+This function is now deprecated in favor of
+\fBSPI_cursor_parse_open\fR, which provides equivalent functionality using a more modern API for handling query parameters\&.
 .SH "ARGUMENTS"
 .PP
 const char * \fIname\fR

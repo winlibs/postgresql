@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DROP FUNCTION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DROP FUNCTION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DROP FUNCTION" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -84,7 +84,7 @@ The data type(s) of the function\*(Aqs arguments (optionally schema\-qualified),
 CASCADE
 .RS 4
 Automatically drop objects that depend on the function (such as operators or triggers), and in turn all objects that depend on those objects (see
-Section\ \&5.13)\&.
+Section\ \&5.14)\&.
 .RE
 .PP
 RESTRICT
@@ -182,6 +182,5 @@ option
 .\}
 The ability to specify argument modes and names
 .RE
-.sp
 .SH "SEE ALSO"
 CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7)), ALTER FUNCTION (\fBALTER_FUNCTION\fR(7)), DROP PROCEDURE (\fBDROP_PROCEDURE\fR(7)), DROP ROUTINE (\fBDROP_ROUTINE\fR(7))

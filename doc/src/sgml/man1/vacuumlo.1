@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: vacuumlo
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "VACUUMLO" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "VACUUMLO" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -59,7 +59,9 @@ All databases named on the command line are processed\&.
 vacuumlo
 accepts the following command\-line arguments:
 .PP
-\fB\-l\fR \fIlimit\fR
+\fB\-l \fR\fB\fIlimit\fR\fR
+.br
+\fB\-\-limit=\fR\fB\fIlimit\fR\fR
 .RS 4
 Remove no more than
 \fIlimit\fR
@@ -68,11 +70,15 @@ max_locks_per_transaction\&. Set the limit to zero if you want all removals done
 .RE
 .PP
 \fB\-n\fR
+.br
+\fB\-\-dry\-run\fR
 .RS 4
 Don\*(Aqt remove anything, just show what would be done\&.
 .RE
 .PP
 \fB\-v\fR
+.br
+\fB\-\-verbose\fR
 .RS 4
 Write a lot of progress messages\&.
 .RE
@@ -98,17 +104,23 @@ command line arguments, and exit\&.
 vacuumlo
 also accepts the following command\-line arguments for connection parameters:
 .PP
-\fB\-h\fR \fIhostname\fR
+\fB\-h \fR\fB\fIhost\fR\fR
+.br
+\fB\-\-host=\fR\fB\fIhost\fR\fR
 .RS 4
 Database server\*(Aqs host\&.
 .RE
 .PP
-\fB\-p\fR \fIport\fR
+\fB\-p \fR\fB\fIport\fR\fR
+.br
+\fB\-\-port=\fR\fB\fIport\fR\fR
 .RS 4
 Database server\*(Aqs port\&.
 .RE
 .PP
-\fB\-U\fR \fIusername\fR
+\fB\-U \fR\fB\fIusername\fR\fR
+.br
+\fB\-\-username=\fR\fB\fIusername\fR\fR
 .RS 4
 User name to connect as\&.
 .RE
@@ -123,6 +135,8 @@ file, the connection attempt will fail\&. This option can be useful in batch job
 .RE
 .PP
 \fB\-W\fR
+.br
+\fB\-\-password\fR
 .RS 4
 Force
 vacuumlo
@@ -136,6 +150,31 @@ will waste a connection attempt finding out that the server wants a password\&. 
 \fB\-W\fR
 to avoid the extra connection attempt\&.
 .RE
+.SH "ENVIRONMENT"
+.PP
+\fBPGHOST\fR
+.br
+\fBPGPORT\fR
+.br
+\fBPGUSER\fR
+.RS 4
+Default connection parameters\&.
+.RE
+.PP
+This utility, like most other
+PostgreSQL
+utilities, also uses the environment variables supported by
+libpq
+(see
+Section\ \&34.15)\&.
+.PP
+The environment variable
+\fBPG_COLOR\fR
+specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
 .SH "NOTES"
 .PP
 vacuumlo

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dblink_connect
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DBLINK_CONNECT" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DBLINK_CONNECT" "3" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -80,7 +80,7 @@ dblink; it applies to every interface for executing arbitrary SQL commands\&.
 .PP
 Only superusers may use
 \fBdblink_connect\fR
-to create non\-password\-authenticated connections\&. If non\-superusers need this capability, use
+to create non\-password\-authenticated and non\-GSSAPI\-authenticated connections\&. If non\-superusers need this capability, use
 \fBdblink_connect_u\fR
 instead\&.
 .PP
@@ -108,7 +108,6 @@ SELECT dblink_connect(\*(Aqmyconn\*(Aq, \*(Aqdbname=postgres options=\-csearch_p
 \-\- FOREIGN DATA WRAPPER functionality
 \-\- Note: local connection must require password authentication for this to work properly
 \-\-       Otherwise, you will receive the following error from dblink_connect():
-\-\-       \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
 \-\-       ERROR:  password is required
 \-\-       DETAIL:  Non\-superuser cannot connect if the server does not request a password\&.
 \-\-       HINT:  Target server\*(Aqs authentication method must be changed\&.
@@ -123,13 +122,13 @@ GRANT SELECT ON TABLE foo TO regress_dblink_user;
 \eset ORIGINAL_USER :USER
 \ec \- regress_dblink_user
 SELECT dblink_connect(\*(Aqmyconn\*(Aq, \*(Aqfdtest\*(Aq);
- dblink_connect 
+ dblink_connect
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
  OK
 (1 row)
 
-SELECT * FROM dblink(\*(Aqmyconn\*(Aq,\*(AqSELECT * FROM foo\*(Aq) AS t(a int, b text, c text[]);
- a  | b |       c       
+SELECT * FROM dblink(\*(Aqmyconn\*(Aq, \*(AqSELECT * FROM foo\*(Aq) AS t(a int, b text, c text[]);
+ a  | b |       c
 \-\-\-\-+\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
   0 | a | {a0,b0,c0}
   1 | b | {a1,b1,c1}

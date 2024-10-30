@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE VIEW</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-createusermapping.html" title="CREATE USER MAPPING" /><link rel="next" href="sql-deallocate.html" title="DEALLOCATE" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE VIEW</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createusermapping.html" title="CREATE USER MAPPING">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-deallocate.html" title="DEALLOCATE">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-CREATEVIEW"><div class="titlepage"></div><a id="id-1.9.3.97.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE VIEW</span></h2><p>CREATE VIEW — define a new view</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE VIEW</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-createusermapping.html" title="CREATE USER MAPPING" /><link rel="next" href="sql-deallocate.html" title="DEALLOCATE" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE VIEW</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createusermapping.html" title="CREATE USER MAPPING">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-deallocate.html" title="DEALLOCATE">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-CREATEVIEW"><div class="titlepage"></div><a id="id-1.9.3.97.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE VIEW</span></h2><p>CREATE VIEW — define a new view</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 CREATE [ OR REPLACE ] [ TEMP | TEMPORARY ] [ RECURSIVE ] VIEW <em class="replaceable"><code>name</code></em> [ ( <em class="replaceable"><code>column_name</code></em> [, ...] ) ]
     [ WITH ( <em class="replaceable"><code>view_option_name</code></em> [= <em class="replaceable"><code>view_option_value</code></em>] [, ... ] ) ]
     AS <em class="replaceable"><code>query</code></em>
@@ -21,8 +21,8 @@ CREATE [ OR REPLACE ] [ TEMP | TEMPORARY ] [ RECURSIVE ] VIEW <em class="replace
    schema.  Otherwise it is created in the current schema.  Temporary
    views exist in a special schema, so a schema name cannot be given
    when creating a temporary view. The name of the view must be
-   distinct from the name of any other view, table, sequence, index or foreign table
-   in the same schema.
+   distinct from the name of any other relation (table, sequence, index, view,
+   materialized view, or foreign table) in the same schema.
   </p></div><div class="refsect1" id="id-1.9.3.97.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">TEMPORARY</code> or <code class="literal">TEMP</code></span></dt><dd><p>
       If specified, the view is created as a temporary view.
       Temporary views are automatically dropped at the end of the
@@ -55,18 +55,23 @@ CREATE VIEW [ <em class="replaceable"><code>schema</code></em> . ] <em class="re
       This clause specifies optional parameters for a view; the following
       parameters are supported:
 
-      </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">check_option</code> (<code class="type">string</code>)</span></dt><dd><p>
+      </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">check_option</code> (<code class="type">enum</code>)</span></dt><dd><p>
           This parameter may be either <code class="literal">local</code> or
           <code class="literal">cascaded</code>, and is equivalent to specifying
           <code class="literal">WITH [ CASCADED | LOCAL ] CHECK OPTION</code> (see below).
-          This option can be changed on existing views using <a class="xref" href="sql-alterview.html" title="ALTER VIEW"><span class="refentrytitle">ALTER VIEW</span></a>.
          </p></dd><dt><span class="term"><code class="literal">security_barrier</code> (<code class="type">boolean</code>)</span></dt><dd><p>
           This should be used if the view is intended to provide row-level
           security.  See <a class="xref" href="rules-privileges.html" title="41.5. Rules and Privileges">Section 41.5</a> for full details.
+         </p></dd><dt><span class="term"><code class="literal">security_invoker</code> (<code class="type">boolean</code>)</span></dt><dd><p>
+          This option causes the underlying base relations to be checked
+          against the privileges of the user of the view rather than the view
+          owner.  See the notes below for full details.
          </p></dd></dl></div><p>
+
+      All of the above options can be changed on existing views using <a class="link" href="sql-alterview.html" title="ALTER VIEW"><code class="command">ALTER VIEW</code></a>.
      </p></dd><dt><span class="term"><em class="replaceable"><code>query</code></em></span></dt><dd><p>
-      A <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a> or
-      <a class="xref" href="sql-values.html" title="VALUES"><span class="refentrytitle">VALUES</span></a> command
+      A <a class="link" href="sql-select.html" title="SELECT"><code class="command">SELECT</code></a> or
+      <a class="link" href="sql-values.html" title="VALUES"><code class="command">VALUES</code></a> command
       which will provide the columns and rows of the view.
      </p></dd><dt><span class="term"><code class="literal">WITH [ CASCADED | LOCAL ] CHECK OPTION</code>
       <a id="id-1.9.3.97.6.2.7.1.2" class="indexterm"></a>
@@ -112,7 +117,7 @@ CREATE VIEW [ <em class="replaceable"><code>schema</code></em> . ] <em class="re
       checks from automatically updatable views defined on top of the relation
       with the <code class="literal">INSTEAD</code> rule.
      </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.97.7"><h2>Notes</h2><p>
-    Use the <a class="xref" href="sql-dropview.html" title="DROP VIEW"><span class="refentrytitle">DROP VIEW</span></a>
+    Use the <a class="link" href="sql-dropview.html" title="DROP VIEW"><code class="command">DROP VIEW</code></a>
     statement to drop views.
    </p><p>
     Be careful that the names and types of the view's columns will be
@@ -128,20 +133,65 @@ CREATE VIEW vista AS SELECT 'Hello World';
 CREATE VIEW vista AS SELECT text 'Hello World' AS hello;
 </pre><p>
    </p><p>
-    Access to tables referenced in the view is determined by permissions of
-    the view owner.  In some cases, this can be used to provide secure but
-    restricted access to the underlying tables.  However, not all views are
-    secure against tampering; see <a class="xref" href="rules-privileges.html" title="41.5. Rules and Privileges">Section 41.5</a> for
-    details.  Functions called in the view are treated the same as if they had
-    been called directly from the query using the view.  Therefore the user of
-    a view must have permissions to call all functions used by the view.
+    By default, access to the underlying base relations referenced in the view
+    is determined by the permissions of the view owner.  In some cases, this
+    can be used to provide secure but restricted access to the underlying
+    tables.  However, not all views are secure against tampering; see <a class="xref" href="rules-privileges.html" title="41.5. Rules and Privileges">Section 41.5</a> for details.
    </p><p>
-    When <code class="command">CREATE OR REPLACE VIEW</code> is used on an
-    existing view, only the view's defining SELECT rule is changed.
+    If the view has the <code class="literal">security_invoker</code> property set to
+    <code class="literal">true</code>, access to the underlying base relations is
+    determined by the permissions of the user executing the query, rather than
+    the view owner.  Thus, the user of a security invoker view must have the
+    relevant permissions on the view and its underlying base relations.
+   </p><p>
+    If any of the underlying base relations is a security invoker view, it
+    will be treated as if it had been accessed directly from the original
+    query.  Thus, a security invoker view will always check its underlying
+    base relations using the permissions of the current user, even if it is
+    accessed from a view without the <code class="literal">security_invoker</code>
+    property.
+   </p><p>
+    If any of the underlying base relations has
+    <a class="link" href="ddl-rowsecurity.html" title="5.8. Row Security Policies">row-level security</a> enabled, then
+    by default, the row-level security policies of the view owner are applied,
+    and access to any additional relations referred to by those policies is
+    determined by the permissions of the view owner.  However, if the view has
+    <code class="literal">security_invoker</code> set to <code class="literal">true</code>, then
+    the policies and permissions of the invoking user are used instead, as if
+    the base relations had been referenced directly from the query using the
+    view.
+   </p><p>
+    Functions called in the view are treated the same as if they had been
+    called directly from the query using the view.  Therefore, the user of
+    a view must have permissions to call all functions used by the view.
+    Functions in the view are executed with the privileges of the user
+    executing the query or the function owner, depending on whether the
+    functions are defined as <code class="literal">SECURITY INVOKER</code> or
+    <code class="literal">SECURITY DEFINER</code>.  Thus, for example, calling
+    <code class="literal">CURRENT_USER</code> directly in a view will always return the
+    invoking user, not the view owner.  This is not affected by the view's
+    <code class="literal">security_invoker</code> setting, and so a view with
+    <code class="literal">security_invoker</code> set to <code class="literal">false</code> is
+    <span class="emphasis"><em>not</em></span> equivalent to a
+    <code class="literal">SECURITY DEFINER</code> function and those concepts should not
+    be confused.
+   </p><p>
+    The user creating or replacing a view must have <code class="literal">USAGE</code>
+    privileges on any schemas referred to in the view query, in order to look
+    up the referenced objects in those schemas.  Note, however, that this
+    lookup only happens when the view is created or replaced.  Therefore, the
+    user of the view only requires the <code class="literal">USAGE</code> privilege on
+    the schema containing the view, not on the schemas referred to in the view
+    query, even for a security invoker view.
+   </p><p>
+    When <code class="command">CREATE OR REPLACE VIEW</code> is used on an existing
+    view, only the view's defining SELECT rule, plus any
+    <code class="literal">WITH ( ... )</code> parameters and its
+    <code class="literal">CHECK OPTION</code> are changed.
     Other view properties, including ownership, permissions, and non-SELECT
     rules, remain unchanged.  You must own the view
     to replace it (this includes being a member of the owning role).
-   </p><div class="refsect2" id="SQL-CREATEVIEW-UPDATABLE-VIEWS"><h3>Updatable Views</h3><a id="id-1.9.3.97.7.6.2" class="indexterm"></a><p>
+   </p><div class="refsect2" id="SQL-CREATEVIEW-UPDATABLE-VIEWS"><h3>Updatable Views</h3><a id="id-1.9.3.97.7.11.2" class="indexterm"></a><p>
     Simple views are automatically updatable: the system will allow
     <code class="command">INSERT</code>, <code class="command">UPDATE</code> and <code class="command">DELETE</code> statements
     to be used on the view in the same way as on a regular table.  A view is
@@ -210,10 +260,13 @@ CREATE VIEW vista AS SELECT text 'Hello World' AS hello;
    </p><p>
     Note that the user performing the insert, update or delete on the view
     must have the corresponding insert, update or delete privilege on the
-    view.  In addition the view's owner must have the relevant privileges on
-    the underlying base relations, but the user performing the update does
-    not need any permissions on the underlying base relations (see
-    <a class="xref" href="rules-privileges.html" title="41.5. Rules and Privileges">Section 41.5</a>).
+    view.  In addition, by default, the view's owner must have the relevant
+    privileges on the underlying base relations, whereas the user performing
+    the update does not need any permissions on the underlying base relations
+    (see <a class="xref" href="rules-privileges.html" title="41.5. Rules and Privileges">Section 41.5</a>).  However, if the view has
+    <code class="literal">security_invoker</code> set to <code class="literal">true</code>, the
+    user performing the update, rather than the view owner, must have the
+    relevant privileges on the underlying base relations.
    </p></div></div><div class="refsect1" id="id-1.9.3.97.8"><h2>Examples</h2><p>
    Create a view consisting of all comedy films:
 
@@ -288,5 +341,6 @@ UNION ALL
    <code class="command">CREATE OR REPLACE VIEW</code> is a
    <span class="productname">PostgreSQL</span> language extension.
    So is the concept of a temporary view.
-   The <code class="literal">WITH ( ... )</code> clause is an extension as well.
-  </p></div><div class="refsect1" id="id-1.9.3.97.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-alterview.html" title="ALTER VIEW"><span class="refentrytitle">ALTER VIEW</span></a>, <a class="xref" href="sql-dropview.html" title="DROP VIEW"><span class="refentrytitle">DROP VIEW</span></a>, <a class="xref" href="sql-creatematerializedview.html" title="CREATE MATERIALIZED VIEW"><span class="refentrytitle">CREATE MATERIALIZED VIEW</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createusermapping.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-deallocate.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE USER MAPPING </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> DEALLOCATE</td></tr></table></div></body></html>
+   The <code class="literal">WITH ( ... )</code> clause is an extension as well, as are
+   security barrier views and security invoker views.
+  </p></div><div class="refsect1" id="id-1.9.3.97.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-alterview.html" title="ALTER VIEW"><span class="refentrytitle">ALTER VIEW</span></a>, <a class="xref" href="sql-dropview.html" title="DROP VIEW"><span class="refentrytitle">DROP VIEW</span></a>, <a class="xref" href="sql-creatematerializedview.html" title="CREATE MATERIALIZED VIEW"><span class="refentrytitle">CREATE MATERIALIZED VIEW</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createusermapping.html" title="CREATE USER MAPPING">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-deallocate.html" title="DEALLOCATE">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE USER MAPPING </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> DEALLOCATE</td></tr></table></div></body></html>

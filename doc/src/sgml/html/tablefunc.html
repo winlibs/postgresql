@@ -1,43 +1,71 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.38. tablefunc</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sslinfo.html" title="F.37. sslinfo" /><link rel="next" href="tcn.html" title="F.39. tcn" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.38. tablefunc</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sslinfo.html" title="F.37. sslinfo">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="tcn.html" title="F.39. tcn">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TABLEFUNC"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.38. tablefunc</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="tablefunc.html#id-1.11.7.47.4">F.38.1. Functions Provided</a></span></dt><dt><span class="sect2"><a href="tablefunc.html#id-1.11.7.47.5">F.38.2. Author</a></span></dt></dl></div><a id="id-1.11.7.47.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.43. tablefunc — functions that return tables (crosstab and others)</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sslinfo.html" title="F.42. sslinfo — obtain client SSL information" /><link rel="next" href="tcn.html" title="F.44. tcn — a trigger function to notify listeners of changes to table content" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.43. tablefunc — functions that return tables (<code class="function">crosstab</code> and others)</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sslinfo.html" title="F.42. sslinfo — obtain client SSL information">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules and Extensions">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules and Extensions</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="tcn.html" title="F.44. tcn — a trigger function to notify listeners of changes to table content">Next</a></td></tr></table><hr /></div><div class="sect1" id="TABLEFUNC"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.43. tablefunc — functions that return tables (<code class="function">crosstab</code> and others) <a href="#TABLEFUNC" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="tablefunc.html#TABLEFUNC-FUNCTIONS-SECT">F.43.1. Functions Provided</a></span></dt><dt><span class="sect2"><a href="tablefunc.html#TABLEFUNC-AUTHOR">F.43.2. Author</a></span></dt></dl></div><a id="id-1.11.7.53.2" class="indexterm"></a><p>
   The <code class="filename">tablefunc</code> module includes various functions that return
   tables (that is, multiple rows).  These functions are useful both in their
   own right and as examples of how to write C functions that return
   multiple rows.
- </p><div class="sect2" id="id-1.11.7.47.4"><div class="titlepage"><div><div><h3 class="title">F.38.1. Functions Provided</h3></div></div></div><p>
-   <a class="xref" href="tablefunc.html#TABLEFUNC-FUNCTIONS" title="Table F.30. tablefunc Functions">Table F.30</a> shows the functions provided
+ </p><p>
+  This module is considered <span class="quote">“<span class="quote">trusted</span>”</span>, that is, it can be
+  installed by non-superusers who have <code class="literal">CREATE</code> privilege
+  on the current database.
+ </p><div class="sect2" id="TABLEFUNC-FUNCTIONS-SECT"><div class="titlepage"><div><div><h3 class="title">F.43.1. Functions Provided <a href="#TABLEFUNC-FUNCTIONS-SECT" class="id_link">#</a></h3></div></div></div><p>
+   <a class="xref" href="tablefunc.html#TABLEFUNC-FUNCTIONS" title="Table F.32. tablefunc Functions">Table F.32</a> summarizes the functions provided
    by the <code class="filename">tablefunc</code> module.
-  </p><div class="table" id="TABLEFUNC-FUNCTIONS"><p class="title"><strong>Table F.30. <code class="filename">tablefunc</code> Functions</strong></p><div class="table-contents"><table class="table" summary="tablefunc Functions" border="1"><colgroup><col /><col /><col /></colgroup><thead><tr><th>Function</th><th>Returns</th><th>Description</th></tr></thead><tbody><tr><td><code class="function">normal_rand(int numvals, float8 mean, float8 stddev)</code></td><td><code class="type">setof float8</code></td><td>
-       Produces a set of normally distributed random values
-      </td></tr><tr><td><code class="function">crosstab(text sql)</code></td><td><code class="type">setof record</code></td><td>
-       Produces a <span class="quote">“<span class="quote">pivot table</span>”</span> containing
-       row names plus <em class="replaceable"><code>N</code></em> value columns, where
-       <em class="replaceable"><code>N</code></em> is determined by the row type specified in the calling
-       query
-      </td></tr><tr><td><code class="function">crosstab<em class="replaceable"><code>N</code></em>(text sql)</code></td><td><code class="type">setof table_crosstab_<em class="replaceable"><code>N</code></em></code></td><td>
-       Produces a <span class="quote">“<span class="quote">pivot table</span>”</span> containing
-       row names plus <em class="replaceable"><code>N</code></em> value columns.
-       <code class="function">crosstab2</code>, <code class="function">crosstab3</code>, and
-       <code class="function">crosstab4</code> are predefined, but you can create additional
-       <code class="function">crosstab<em class="replaceable"><code>N</code></em></code> functions as described below
-      </td></tr><tr><td><code class="function">crosstab(text source_sql, text category_sql)</code></td><td><code class="type">setof record</code></td><td>
-       Produces a <span class="quote">“<span class="quote">pivot table</span>”</span>
-       with the value columns specified by a second query
-      </td></tr><tr><td><code class="function">crosstab(text sql, int N)</code></td><td><code class="type">setof record</code></td><td>
-       <p>Obsolete version of <code class="function">crosstab(text)</code>.
-        The parameter <em class="replaceable"><code>N</code></em> is now ignored, since the number of
-        value columns is always determined by the calling query
+  </p><div class="table" id="TABLEFUNC-FUNCTIONS"><p class="title"><strong>Table F.32. <code class="filename">tablefunc</code> Functions</strong></p><div class="table-contents"><table class="table" summary="tablefunc Functions" border="1"><colgroup><col /></colgroup><thead><tr><th class="func_table_entry"><p class="func_signature">
+        Function
        </p>
-      </td></tr><tr><td>
-       <code class="function">
-        connectby(text relname, text keyid_fld, text parent_keyid_fld
-        [, text orderby_fld ], text start_with, int max_depth
-        [, text branch_delim ])
-       </code>
-       <a id="id-1.11.7.47.4.3.2.2.6.1.2" class="indexterm"></a>
-      </td><td><code class="type">setof record</code></td><td>
-       Produces a representation of a hierarchical tree structure
-      </td></tr></tbody></table></div></div><br class="table-break" /><div class="sect3" id="id-1.11.7.47.4.4"><div class="titlepage"><div><div><h4 class="title">F.38.1.1. <code class="function">normal_rand</code></h4></div></div></div><a id="id-1.11.7.47.4.4.2" class="indexterm"></a><pre class="synopsis">
+       <p>
+        Description
+       </p></th></tr></thead><tbody><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">normal_rand</code> ( <em class="parameter"><code>numvals</code></em> <code class="type">integer</code>, <em class="parameter"><code>mean</code></em> <code class="type">float8</code>, <em class="parameter"><code>stddev</code></em> <code class="type">float8</code> )
+        → <code class="returnvalue">setof float8</code>
+       </p>
+       <p>
+        Produces a set of normally distributed random values.
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">crosstab</code> ( <em class="parameter"><code>sql</code></em> <code class="type">text</code> )
+        → <code class="returnvalue">setof record</code>
+       </p>
+       <p>
+        Produces a <span class="quote">“<span class="quote">pivot table</span>”</span> containing
+        row names plus <em class="replaceable"><code>N</code></em> value columns, where
+        <em class="replaceable"><code>N</code></em> is determined by the row type specified
+        in the calling query.
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">crosstab<em class="replaceable"><code>N</code></em></code> ( <em class="parameter"><code>sql</code></em> <code class="type">text</code> )
+        → <code class="returnvalue">setof table_crosstab_<em class="replaceable"><code>N</code></em></code>
+       </p>
+       <p>
+        Produces a <span class="quote">“<span class="quote">pivot table</span>”</span> containing
+        row names plus <em class="replaceable"><code>N</code></em> value columns.
+        <code class="function">crosstab2</code>, <code class="function">crosstab3</code>, and
+        <code class="function">crosstab4</code> are predefined, but you can create additional
+        <code class="function">crosstab<em class="replaceable"><code>N</code></em></code> functions as described below.
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">crosstab</code> ( <em class="parameter"><code>source_sql</code></em> <code class="type">text</code>, <em class="parameter"><code>category_sql</code></em> <code class="type">text</code> )
+        → <code class="returnvalue">setof record</code>
+       </p>
+       <p>
+        Produces a <span class="quote">“<span class="quote">pivot table</span>”</span>
+        with the value columns specified by a second query.
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">crosstab</code> ( <em class="parameter"><code>sql</code></em> <code class="type">text</code>, <em class="parameter"><code>N</code></em> <code class="type">integer</code> )
+        → <code class="returnvalue">setof record</code>
+       </p>
+       <p>
+        Obsolete version of <code class="function">crosstab(text)</code>.
+        The parameter <em class="parameter"><code>N</code></em> is now ignored, since the
+        number of value columns is always determined by the calling query.
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <a id="id-1.11.7.53.5.3.2.2.6.1.1.1" class="indexterm"></a>
+        <code class="function">connectby</code> ( <em class="parameter"><code>relname</code></em> <code class="type">text</code>, <em class="parameter"><code>keyid_fld</code></em> <code class="type">text</code>, <em class="parameter"><code>parent_keyid_fld</code></em> <code class="type">text</code>
+        [<span class="optional">, <em class="parameter"><code>orderby_fld</code></em> <code class="type">text</code> </span>], <em class="parameter"><code>start_with</code></em> <code class="type">text</code>, <em class="parameter"><code>max_depth</code></em> <code class="type">integer</code>
+        [<span class="optional">, <em class="parameter"><code>branch_delim</code></em> <code class="type">text</code> </span>] )
+        → <code class="returnvalue">setof record</code>
+       </p>
+       <p>
+        Produces a representation of a hierarchical tree structure.
+        </p></td></tr></tbody></table></div></div><br class="table-break" /><div class="sect3" id="TABLEFUNC-FUNCTIONS-NORMAL-RAND"><div class="titlepage"><div><div><h4 class="title">F.43.1.1. <code class="function">normal_rand</code> <a href="#TABLEFUNC-FUNCTIONS-NORMAL-RAND" class="id_link">#</a></h4></div></div></div><a id="id-1.11.7.53.5.4.2" class="indexterm"></a><pre class="synopsis">
 normal_rand(int numvals, float8 mean, float8 stddev) returns setof float8
 </pre><p>
      <code class="function">normal_rand</code> produces a set of normally distributed random
@@ -66,7 +94,7 @@ test=# SELECT * FROM normal_rand(1000, 5, 3);
      9.71308014517282
      2.49639286969028
 (1000 rows)
-</pre></div><div class="sect3" id="id-1.11.7.47.4.5"><div class="titlepage"><div><div><h4 class="title">F.38.1.2. <code class="function">crosstab(text)</code></h4></div></div></div><a id="id-1.11.7.47.4.5.2" class="indexterm"></a><pre class="synopsis">
+</pre></div><div class="sect3" id="TABLEFUNC-FUNCTIONS-CROSSTAB-TEXT"><div class="titlepage"><div><div><h4 class="title">F.43.1.2. <code class="function">crosstab(text)</code> <a href="#TABLEFUNC-FUNCTIONS-CROSSTAB-TEXT" class="id_link">#</a></h4></div></div></div><a id="id-1.11.7.53.5.5.2" class="indexterm"></a><pre class="synopsis">
 crosstab(text sql)
 crosstab(text sql, int N)
 </pre><p>
@@ -89,11 +117,11 @@ row1    val11   val12   val13   ...
 row2    val21   val22   val23   ...
 ...
 </pre><p>
-    The <code class="function">crosstab</code> function takes a text parameter that is a SQL
+    The <code class="function">crosstab</code> function takes a text parameter that is an SQL
     query producing raw data formatted in the first way, and produces a table
     formatted in the second way.
    </p><p>
-    The <em class="parameter"><code>sql</code></em> parameter is a SQL statement that produces
+    The <em class="parameter"><code>sql</code></em> parameter is an SQL statement that produces
     the source set of data. This statement must return one
     <code class="structfield">row_name</code> column, one
     <code class="structfield">category</code> column, and one
@@ -192,7 +220,7 @@ AS ct(row_name text, category_1 text, category_2 text, category_3 text);
      See also the <code class="command"><a class="link" href="app-psql.html#APP-PSQL-META-COMMANDS-CROSSTABVIEW">\crosstabview</a></code>
      command in <span class="application">psql</span>, which provides functionality similar
      to <code class="function">crosstab()</code>.
-    </p></div></div><div class="sect3" id="id-1.11.7.47.4.6"><div class="titlepage"><div><div><h4 class="title">F.38.1.3. <code class="function">crosstab<em class="replaceable"><code>N</code></em>(text)</code></h4></div></div></div><a id="id-1.11.7.47.4.6.2" class="indexterm"></a><pre class="synopsis">
+    </p></div></div><div class="sect3" id="TABLEFUNC-FUNCTIONS-CROSSTAB-N-TEXT"><div class="titlepage"><div><div><h4 class="title">F.43.1.3. <code class="function">crosstab<em class="replaceable"><code>N</code></em>(text)</code> <a href="#TABLEFUNC-FUNCTIONS-CROSSTAB-N-TEXT" class="id_link">#</a></h4></div></div></div><a id="id-1.11.7.53.5.6.2" class="indexterm"></a><pre class="synopsis">
 crosstab<em class="replaceable"><code>N</code></em>(text sql)
 </pre><p>
      The <code class="function">crosstab<em class="replaceable"><code>N</code></em></code> functions are examples of how
@@ -274,7 +302,7 @@ CREATE OR REPLACE FUNCTION crosstab_float8_5_cols(
   AS '$libdir/tablefunc','crosstab' LANGUAGE C STABLE STRICT;
 </pre><p>
       </p></li></ul></div><p>
-    </p></div><div class="sect3" id="id-1.11.7.47.4.7"><div class="titlepage"><div><div><h4 class="title">F.38.1.4. <code class="function">crosstab(text, text)</code></h4></div></div></div><a id="id-1.11.7.47.4.7.2" class="indexterm"></a><pre class="synopsis">
+    </p></div><div class="sect3" id="TABLEFUNC-FUNCTIONS-CROSSTAB-TEXT-2"><div class="titlepage"><div><div><h4 class="title">F.43.1.4. <code class="function">crosstab(text, text)</code> <a href="#TABLEFUNC-FUNCTIONS-CROSSTAB-TEXT-2" class="id_link">#</a></h4></div></div></div><a id="id-1.11.7.53.5.7.2" class="indexterm"></a><pre class="synopsis">
 crosstab(text source_sql, text category_sql)
 </pre><p>
     The main limitation of the single-parameter form of <code class="function">crosstab</code>
@@ -286,7 +314,7 @@ crosstab(text source_sql, text category_sql)
     providing an explicit list of the categories corresponding to the
     output columns.
    </p><p>
-    <em class="parameter"><code>source_sql</code></em> is a SQL statement that produces the
+    <em class="parameter"><code>source_sql</code></em> is an SQL statement that produces the
     source set of data.  This statement must return one
     <code class="structfield">row_name</code> column, one
     <code class="structfield">category</code> column, and one
@@ -316,7 +344,7 @@ SELECT row_name, extra_col, cat, value FROM foo ORDER BY 1;
   row2         extra2    cat4    val8
 </pre><p>
    </p><p>
-    <em class="parameter"><code>category_sql</code></em> is a SQL statement that produces
+    <em class="parameter"><code>category_sql</code></em> is an SQL statement that produces
     the set of categories. This statement must return only one column.
     It must produce at least one row, or an error will be generated.
     Also, it must not produce duplicate values, or an error will be
@@ -451,7 +479,7 @@ AS
     the result column names and types in each query.  See the examples
     in the previous section.  The underlying C function for this form
     of <code class="function">crosstab</code> is named <code class="literal">crosstab_hash</code>.
-   </p></div><div class="sect3" id="id-1.11.7.47.4.8"><div class="titlepage"><div><div><h4 class="title">F.38.1.5. <code class="function">connectby</code></h4></div></div></div><a id="id-1.11.7.47.4.8.2" class="indexterm"></a><pre class="synopsis">
+   </p></div><div class="sect3" id="TABLEFUNC-FUNCTIONS-CONNECTBY"><div class="titlepage"><div><div><h4 class="title">F.43.1.5. <code class="function">connectby</code> <a href="#TABLEFUNC-FUNCTIONS-CONNECTBY" class="id_link">#</a></h4></div></div></div><a id="id-1.11.7.53.5.8.2" class="indexterm"></a><pre class="synopsis">
 connectby(text relname, text keyid_fld, text parent_keyid_fld
           [, text orderby_fld ], text start_with, int max_depth
           [, text branch_delim ])
@@ -462,9 +490,9 @@ connectby(text relname, text keyid_fld, text parent_keyid_fld
     parent (if any) of each row.  <code class="function">connectby</code> can display the
     sub-tree descending from any row.
    </p><p>
-    <a class="xref" href="tablefunc.html#TABLEFUNC-CONNECTBY-PARAMETERS" title="Table F.31. connectby Parameters">Table F.31</a> explains the
+    <a class="xref" href="tablefunc.html#TABLEFUNC-CONNECTBY-PARAMETERS" title="Table F.33. connectby Parameters">Table F.33</a> explains the
     parameters.
-   </p><div class="table" id="TABLEFUNC-CONNECTBY-PARAMETERS"><p class="title"><strong>Table F.31. <code class="function">connectby</code> Parameters</strong></p><div class="table-contents"><table class="table" summary="connectby Parameters" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><em class="parameter"><code>relname</code></em></td><td>Name of the source relation</td></tr><tr><td><em class="parameter"><code>keyid_fld</code></em></td><td>Name of the key field</td></tr><tr><td><em class="parameter"><code>parent_keyid_fld</code></em></td><td>Name of the parent-key field</td></tr><tr><td><em class="parameter"><code>orderby_fld</code></em></td><td>Name of the field to order siblings by (optional)</td></tr><tr><td><em class="parameter"><code>start_with</code></em></td><td>Key value of the row to start at</td></tr><tr><td><em class="parameter"><code>max_depth</code></em></td><td>Maximum depth to descend to, or zero for unlimited depth</td></tr><tr><td><em class="parameter"><code>branch_delim</code></em></td><td>String to separate keys with in branch output (optional)</td></tr></tbody></table></div></div><br class="table-break" /><p>
+   </p><div class="table" id="TABLEFUNC-CONNECTBY-PARAMETERS"><p class="title"><strong>Table F.33. <code class="function">connectby</code> Parameters</strong></p><div class="table-contents"><table class="table" summary="connectby Parameters" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Parameter</th><th>Description</th></tr></thead><tbody><tr><td><em class="parameter"><code>relname</code></em></td><td>Name of the source relation</td></tr><tr><td><em class="parameter"><code>keyid_fld</code></em></td><td>Name of the key field</td></tr><tr><td><em class="parameter"><code>parent_keyid_fld</code></em></td><td>Name of the parent-key field</td></tr><tr><td><em class="parameter"><code>orderby_fld</code></em></td><td>Name of the field to order siblings by (optional)</td></tr><tr><td><em class="parameter"><code>start_with</code></em></td><td>Key value of the row to start at</td></tr><tr><td><em class="parameter"><code>max_depth</code></em></td><td>Maximum depth to descend to, or zero for unlimited depth</td></tr><tr><td><em class="parameter"><code>branch_delim</code></em></td><td>String to separate keys with in branch output (optional)</td></tr></tbody></table></div></div><br class="table-break" /><p>
      The key and parent-key fields can be any data type, but they must be
      the same type.  Note that the <em class="parameter"><code>start_with</code></em> value must be
      entered as a text string, regardless of the type of the key field.
@@ -580,6 +608,6 @@ SELECT * FROM connectby('connectby_tree', 'keyid', 'parent_keyid', 'pos', 'row2'
  row8  | row6         |     3 |   6
 (6 rows)
 </pre><p>
-    </p></div></div><div class="sect2" id="id-1.11.7.47.5"><div class="titlepage"><div><div><h3 class="title">F.38.2. Author</h3></div></div></div><p>
+    </p></div></div><div class="sect2" id="TABLEFUNC-AUTHOR"><div class="titlepage"><div><div><h3 class="title">F.43.2. Author <a href="#TABLEFUNC-AUTHOR" class="id_link">#</a></h3></div></div></div><p>
    Joe Conway
-  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sslinfo.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="tcn.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.37. sslinfo </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> F.39. tcn</td></tr></table></div></body></html>
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sslinfo.html" title="F.42. sslinfo — obtain client SSL information">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules and Extensions">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="tcn.html" title="F.44. tcn — a trigger function to notify listeners of changes to table content">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.42. sslinfo — obtain client SSL information </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> F.44. tcn — a trigger function to notify listeners of changes to table content</td></tr></table></div></body></html>

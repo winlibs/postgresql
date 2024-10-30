@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>39.1. Overview of Trigger Behavior</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="triggers.html" title="Chapter 39. Triggers" /><link rel="next" href="trigger-datachanges.html" title="39.2. Visibility of Data Changes" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">39.1. Overview of Trigger Behavior</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="triggers.html" title="Chapter 39. Triggers">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="triggers.html" title="Chapter 39. Triggers">Up</a></td><th width="60%" align="center">Chapter 39. Triggers</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="trigger-datachanges.html" title="39.2. Visibility of Data Changes">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TRIGGER-DEFINITION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">39.1. Overview of Trigger Behavior</h2></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>39.1. Overview of Trigger Behavior</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="triggers.html" title="Chapter 39. Triggers" /><link rel="next" href="trigger-datachanges.html" title="39.2. Visibility of Data Changes" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">39.1. Overview of Trigger Behavior</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="triggers.html" title="Chapter 39. Triggers">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="triggers.html" title="Chapter 39. Triggers">Up</a></td><th width="60%" align="center">Chapter 39. Triggers</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="trigger-datachanges.html" title="39.2. Visibility of Data Changes">Next</a></td></tr></table><hr /></div><div class="sect1" id="TRIGGER-DEFINITION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">39.1. Overview of Trigger Behavior <a href="#TRIGGER-DEFINITION" class="id_link">#</a></h2></div></div></div><p>
     A trigger is a specification that the database should automatically
     execute a particular function whenever a certain type of operation is
     performed.  Triggers can be attached to tables (partitioned or not),
@@ -72,10 +72,18 @@
     <code class="literal">BEFORE</code> triggers fire immediately before a particular row is
     operated on, while row-level <code class="literal">AFTER</code> triggers fire at the end of
     the statement (but before any statement-level <code class="literal">AFTER</code> triggers).
-    These types of triggers may only be defined on non-partitioned tables and
-    foreign tables, not views.  <code class="literal">INSTEAD OF</code> triggers may only be
+    These types of triggers may only be defined on tables and
+    foreign tables, not views.
+    <code class="literal">INSTEAD OF</code> triggers may only be
     defined on views, and only at row level; they fire immediately as each
     row in the view is identified as needing to be operated on.
+   </p><p>
+    The execution of an <code class="literal">AFTER</code> trigger can be deferred
+    to the end of the transaction, rather than the end of the statement,
+    if it was defined as a <em class="firstterm">constraint trigger</em>.
+    In all cases, a trigger is executed as part of the same transaction as
+    the statement that triggered it, so if either the statement or the
+    trigger causes an error, the effects of both will be rolled back.
    </p><p>
     A statement that targets a parent table in an inheritance or partitioning
     hierarchy does not cause the statement-level triggers of affected child
@@ -132,6 +140,24 @@
     defined on the target table used in the <code class="command">UPDATE</code> statement
     will be fired.
    </p><p>
+    No separate triggers are defined for <code class="command">MERGE</code>. Instead,
+    statement-level or row-level <code class="command">UPDATE</code>,
+    <code class="command">DELETE</code>, and <code class="command">INSERT</code> triggers are fired
+    depending on (for statement-level triggers) what actions are specified in
+    the <code class="command">MERGE</code> query and (for row-level triggers) what
+    actions are performed.
+   </p><p>
+    While running a <code class="command">MERGE</code> command, statement-level
+    <code class="literal">BEFORE</code> and <code class="literal">AFTER</code> triggers are
+    fired for events specified in the actions of the <code class="command">MERGE</code>
+    command, irrespective of whether or not the action is ultimately performed.
+    This is the same as an <code class="command">UPDATE</code> statement that updates
+    no rows, yet statement-level triggers are fired.
+    The row-level triggers are fired only when a row is actually updated,
+    inserted or deleted. So it's perfectly legal that while statement-level
+    triggers are fired for certain types of action, no row-level triggers
+    are fired for the same kind of action.
+   </p><p>
     Trigger functions invoked by per-statement triggers should always
     return <code class="symbol">NULL</code>. Trigger functions invoked by per-row
     triggers can return a table row (a value of
@@ -169,7 +195,7 @@
     used to signal that the trigger performed the necessary data
     modifications in the view.  This will cause the count of the number
     of rows affected by the command to be incremented. For
-    <code class="command">INSERT</code> and <code class="command">UPDATE</code> operations, the trigger
+    <code class="command">INSERT</code> and <code class="command">UPDATE</code> operations only, the trigger
     may modify the <code class="varname">NEW</code> row before returning it.  This will
     change the data returned by
     <code class="command">INSERT RETURNING</code> or <code class="command">UPDATE RETURNING</code>,
@@ -178,6 +204,21 @@
    </p><p>
     The return value is ignored for row-level triggers fired after an
     operation, and so they can return <code class="symbol">NULL</code>.
+   </p><p>
+    Some considerations apply for generated
+    columns.<a id="id-1.8.4.5.18.1" class="indexterm"></a>  Stored generated columns are computed after
+    <code class="literal">BEFORE</code> triggers and before <code class="literal">AFTER</code>
+    triggers.  Therefore, the generated value can be inspected in
+    <code class="literal">AFTER</code> triggers.  In <code class="literal">BEFORE</code> triggers,
+    the <code class="literal">OLD</code> row contains the old generated value, as one
+    would expect, but the <code class="literal">NEW</code> row does not yet contain the
+    new generated value and should not be accessed.  In the C language
+    interface, the content of the column is undefined at this point; a
+    higher-level programming language should prevent access to a stored
+    generated column in the <code class="literal">NEW</code> row in a
+    <code class="literal">BEFORE</code> trigger.  Changes to the value of a generated
+    column in a <code class="literal">BEFORE</code> trigger are ignored and will be
+    overwritten.
    </p><p>
     If more than one trigger is defined for the same event on the same
     relation, the triggers will be fired in alphabetical order by
@@ -234,7 +275,7 @@
     to be fired again.  It is the trigger programmer's responsibility
     to avoid infinite recursion in such scenarios.
    </p><p>
-    <a id="id-1.8.4.5.19.1" class="indexterm"></a>
+    <a id="id-1.8.4.5.23.1" class="indexterm"></a>
     When a trigger is being defined, arguments can be specified for
     it. The purpose of including arguments in the
     trigger definition is to allow different triggers with similar
@@ -271,4 +312,4 @@
     that is being used, but the typical approach is to make the transition
     tables act like read-only temporary tables that can be accessed by SQL
     commands issued within the trigger function.
-   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="triggers.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="triggers.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="trigger-datachanges.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 39. Triggers </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 39.2. Visibility of Data Changes</td></tr></table></div></body></html>
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="triggers.html" title="Chapter 39. Triggers">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="triggers.html" title="Chapter 39. Triggers">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="trigger-datachanges.html" title="39.2. Visibility of Data Changes">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 39. Triggers </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 39.2. Visibility of Data Changes</td></tr></table></div></body></html>

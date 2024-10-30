@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dropuser
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DROPUSER" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DROPUSER" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,17 +37,17 @@ dropuser \- remove a PostgreSQL user account
 dropuser
 removes an existing
 PostgreSQL
-user\&. Only superusers and users with the
+user\&. Superusers can use this command to remove any role; otherwise, only non\-superuser roles can be removed, and only by a user who possesses the
 CREATEROLE
-privilege can remove
-PostgreSQL
-users\&. (To remove a superuser, you must yourself be a superuser\&.)
+privilege and has been granted
+ADMIN OPTION
+on the target role\&.
 .PP
 dropuser
 is a wrapper around the
 SQL
 command
-DROP ROLE (\fBDROP_ROLE\fR(7))\&. There is no effective difference between dropping users via this utility and via other methods for accessing the server\&.
+\fBDROP ROLE\fR\&. There is no effective difference between dropping users via this utility and via other methods for accessing the server\&.
 .SH "OPTIONS"
 .PP
 dropuser
@@ -161,12 +161,21 @@ to avoid the extra connection attempt\&.
 Default connection parameters
 .RE
 .PP
+\fBPG_COLOR\fR
+.RS 4
+Specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.RE
+.PP
 This utility, like most other
 PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section\ \&34.14)\&.
+Section\ \&34.15)\&.
 .SH "DIAGNOSTICS"
 .PP
 In case of difficulty, see

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE AGGREGATE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATE AGGREGATE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE AGGREGATE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ CREATE_AGGREGATE \- define a new aggregate function
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE AGGREGATE \fIname\fR ( [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_type\fR [ , \&.\&.\&. ] ) (
+CREATE [ OR REPLACE ] AGGREGATE \fIname\fR ( [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_type\fR [ , \&.\&.\&. ] ) (
     SFUNC = \fIsfunc\fR,
     STYPE = \fIstate_data_type\fR
     [ , SSPACE = \fIstate_data_size\fR ]
@@ -55,7 +55,7 @@ CREATE AGGREGATE \fIname\fR ( [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_ty
     [ , PARALLEL = { SAFE | RESTRICTED | UNSAFE } ]
 )
 
-CREATE AGGREGATE \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_type\fR [ , \&.\&.\&. ] ]
+CREATE [ OR REPLACE ] AGGREGATE \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_type\fR [ , \&.\&.\&. ] ]
                         ORDER BY [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_type\fR [ , \&.\&.\&. ] ) (
     SFUNC = \fIsfunc\fR,
     STYPE = \fIstate_data_type\fR
@@ -70,7 +70,7 @@ CREATE AGGREGATE \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_
 
 or the old syntax
 
-CREATE AGGREGATE \fIname\fR (
+CREATE [ OR REPLACE ] AGGREGATE \fIname\fR (
     BASETYPE = \fIbase_type\fR,
     SFUNC = \fIsfunc\fR,
     STYPE = \fIstate_data_type\fR
@@ -96,10 +96,14 @@ CREATE AGGREGATE \fIname\fR (
 .SH "DESCRIPTION"
 .PP
 \fBCREATE AGGREGATE\fR
-defines a new aggregate function\&. Some basic and commonly\-used aggregate functions are included with the distribution; they are documented in
-Section\ \&9.20\&. If one defines new types or needs an aggregate function not already provided, then
+defines a new aggregate function\&.
+\fBCREATE OR REPLACE AGGREGATE\fR
+will either define a new aggregate function or replace an existing definition\&. Some basic and commonly\-used aggregate functions are included with the distribution; they are documented in
+Section\ \&9.21\&. If one defines new types or needs an aggregate function not already provided, then
 \fBCREATE AGGREGATE\fR
 can be used to provide the desired features\&.
+.PP
+When replacing an existing definition, the argument types, result type, and number of direct arguments may not be changed\&. Also, the new definition must be of the same kind (ordinary aggregate, ordered\-set aggregate, or hypothetical\-set aggregate) as the old one\&.
 .PP
 If a schema name is given (for example,
 CREATE AGGREGATE myschema\&.myagg \&.\&.\&.) then the aggregate function is created in the specified schema\&. Otherwise it is created in the current schema\&.
@@ -152,12 +156,12 @@ to identify the actual argument type in the current call\&.
 .PP
 An aggregate can optionally support
 moving\-aggregate mode, as described in
-Section\ \&38.11.1\&. This requires specifying the
+Section\ \&38.12.1\&. This requires specifying the
 MSFUNC,
 MINVFUNC, and
 MSTYPE
 parameters, and optionally the
-MSPACE,
+MSSPACE,
 MFINALFUNC,
 MFINALFUNC_EXTRA,
 MFINALFUNC_MODIFY, and
@@ -181,7 +185,7 @@ row\&.
 .PP
 An aggregate can optionally support
 partial aggregation, as described in
-Section\ \&38.11.4\&. This requires specifying the
+Section\ \&38.12.4\&. This requires specifying the
 COMBINEFUNC
 parameter\&. If the
 \fIstate_data_type\fR
@@ -307,8 +311,7 @@ The data type for the aggregate\*(Aqs state value\&.
 \fIstate_data_size\fR
 .RS 4
 The approximate average size (in bytes) of the aggregate\*(Aqs state value\&. If this parameter is omitted or is zero, a default estimate is used based on the
-\fIstate_data_type\fR\&. The planner uses this value to estimate the memory required for a grouped aggregate query\&. The planner will consider using hash aggregation for such a query only if the hash table is estimated to fit in
-work_mem; therefore, large values of this parameter discourage use of hash aggregation\&.
+\fIstate_data_type\fR\&. The planner uses this value to estimate the memory required for a grouped aggregate query\&.
 .RE
 .PP
 \fIffunc\fR
@@ -331,7 +334,7 @@ FINALFUNC_MODIFY = { READ_ONLY | SHAREABLE | READ_WRITE }
 This option specifies whether the final function is a pure function that does not modify its arguments\&.
 READ_ONLY
 indicates it does not; the other two values indicate that it may change the transition state value\&. See
-NOTES
+Notes
 below for more detail\&. The default is
 READ_ONLY, except for ordered\-set aggregates, for which the default is
 READ_WRITE\&.
@@ -467,7 +470,7 @@ PARALLEL SAFE,
 PARALLEL RESTRICTED, and
 PARALLEL UNSAFE
 are the same as in
-CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7))\&. An aggregate will not be considered for parallelization if it is marked
+\fBCREATE FUNCTION\fR\&. An aggregate will not be considered for parallelization if it is marked
 PARALLEL UNSAFE
 (which is the default!) or
 PARALLEL RESTRICTED\&. Note that the parallel\-safety markings of the aggregate\*(Aqs support functions are not consulted by the planner, only the marking of the aggregate itself\&.
@@ -538,7 +541,7 @@ clauses, since those semantics cannot be supported during partial aggregation\&.
 .SH "EXAMPLES"
 .PP
 See
-Section\ \&38.11\&.
+Section\ \&38.12\&.
 .SH "COMPATIBILITY"
 .PP
 \fBCREATE AGGREGATE\fR

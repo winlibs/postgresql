@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER LARGE OBJECT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER LARGE OBJECT" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER LARGE OBJECT" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ ALTER_LARGE_OBJECT \- change the definition of a large object
 .SH "SYNOPSIS"
 .sp
 .nf
-ALTER LARGE OBJECT \fIlarge_object_oid\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+ALTER LARGE OBJECT \fIlarge_object_oid\fR OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -40,7 +40,9 @@ ALTER LARGE OBJECT \fIlarge_object_oid\fR OWNER TO { \fInew_owner\fR | CURRENT_U
 changes the definition of a large object\&.
 .PP
 You must own the large object to use
-\fBALTER LARGE OBJECT\fR\&. To alter the owner, you must also be a direct or indirect member of the new owning role\&. (However, a superuser can alter any large object anyway\&.) Currently, the only functionality is to assign a new owner, so both restrictions always apply\&.
+\fBALTER LARGE OBJECT\fR\&. To alter the owner, you must also be able to
+SET ROLE
+to the new owning role\&. (However, a superuser can alter any large object anyway\&.) Currently, the only functionality is to assign a new owner, so both restrictions always apply\&.
 .SH "PARAMETERS"
 .PP
 \fIlarge_object_oid\fR

@@ -3,11 +3,12 @@
  */
 #include "postgres.h"
 
-#include "access/hash.h"
 #include "catalog/pg_collation.h"
+#include "common/hashfn.h"
 #include "utils/builtins.h"
 #include "utils/formatting.h"
 #include "utils/varlena.h"
+#include "varatt.h"
 
 PG_MODULE_MAGIC;
 
@@ -79,7 +80,7 @@ internal_citext_pattern_cmp(text *left, text *right, Oid collid)
 	llen = strlen(lcstr);
 	rlen = strlen(rcstr);
 
-	result = memcmp((void *) lcstr, (void *) rcstr, Min(llen, rlen));
+	result = memcmp(lcstr, rcstr, Min(llen, rlen));
 	if (result == 0)
 	{
 		if (llen < rlen)
@@ -145,6 +146,26 @@ citext_hash(PG_FUNCTION_ARGS)
 
 	str = str_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt), DEFAULT_COLLATION_OID);
 	result = hash_any((unsigned char *) str, strlen(str));
+	pfree(str);
+
+	/* Avoid leaking memory for toasted inputs */
+	PG_FREE_IF_COPY(txt, 0);
+
+	PG_RETURN_DATUM(result);
+}
+
+PG_FUNCTION_INFO_V1(citext_hash_extended);
+
+Datum
+citext_hash_extended(PG_FUNCTION_ARGS)
+{
+	text	   *txt = PG_GETARG_TEXT_PP(0);
+	uint64		seed = PG_GETARG_INT64(1);
+	char	   *str;
+	Datum		result;
+
+	str = str_tolower(VARDATA_ANY(txt), VARSIZE_ANY_EXHDR(txt), DEFAULT_COLLATION_OID);
+	result = hash_any_extended((unsigned char *) str, strlen(str), seed);
 	pfree(str);
 
 	/* Avoid leaking memory for toasted inputs */

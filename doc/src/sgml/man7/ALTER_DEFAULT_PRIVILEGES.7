@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER DEFAULT PRIVILEGES
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER DEFAULT PRIVILEGES" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER DEFAULT PRIVILEGES" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -57,7 +57,8 @@ GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON TYPES
     TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
-GRANT { USAGE | CREATE | ALL [ PRIVILEGES ] }
+GRANT { { USAGE | CREATE }
+    [, \&.\&.\&.] | ALL [ PRIVILEGES ] }
     ON SCHEMAS
     TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
@@ -88,7 +89,8 @@ REVOKE [ GRANT OPTION FOR ]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
-    { USAGE | CREATE | ALL [ PRIVILEGES ] }
+    { { USAGE | CREATE }
+    [, \&.\&.\&.] | ALL [ PRIVILEGES ] }
     ON SCHEMAS
     FROM { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.]
     [ CASCADE | RESTRICT ]
@@ -96,7 +98,17 @@ REVOKE [ GRANT OPTION FOR ]
 .SH "DESCRIPTION"
 .PP
 \fBALTER DEFAULT PRIVILEGES\fR
-allows you to set the privileges that will be applied to objects created in the future\&. (It does not affect privileges assigned to already\-existing objects\&.) Currently, only the privileges for schemas, tables (including views and foreign tables), sequences, functions, and types (including domains) can be altered\&. For this command, functions include aggregates and procedures\&. The words
+allows you to set the privileges that will be applied to objects created in the future\&. (It does not affect privileges assigned to already\-existing objects\&.) Privileges can be set globally (i\&.e\&., for all objects created in the current database), or just for objects created in specified schemas\&.
+.PP
+While you can change your own default privileges and the defaults of roles that you are a member of, at object creation time, new object permissions are only affected by the default privileges of the current role, and are not inherited from any roles in which the current role is a member\&.
+.PP
+As explained in
+Section\ \&5.7, the default privileges for any object type normally grant all grantable permissions to the object owner, and may grant some privileges to
+PUBLIC
+as well\&. However, this behavior can be changed by altering the global default privileges with
+\fBALTER DEFAULT PRIVILEGES\fR\&.
+.PP
+Currently, only the privileges for schemas, tables (including views and foreign tables), sequences, functions, and types (including domains) can be altered\&. For this command, functions include aggregates and procedures\&. The words
 FUNCTIONS
 and
 ROUTINES
@@ -105,20 +117,18 @@ is preferred going forward as the standard term for functions and procedures tak
 FUNCTIONS
 was allowed\&. It is not possible to set default privileges for functions and procedures separately\&.)
 .PP
-You can change default privileges only for objects that will be created by yourself or by roles that you are a member of\&. The privileges can be set globally (i\&.e\&., for all objects created in the current database), or just for objects created in specified schemas\&. Default privileges that are specified per\-schema are added to whatever the global default privileges are for the particular object type\&.
-.PP
-As explained under
-\fBGRANT\fR(7), the default privileges for any object type normally grant all grantable permissions to the object owner, and may grant some privileges to
-PUBLIC
-as well\&. However, this behavior can be changed by altering the global default privileges with
-\fBALTER DEFAULT PRIVILEGES\fR\&.
+Default privileges that are specified per\-schema are added to whatever the global default privileges are for the particular object type\&. This means you cannot revoke privileges per\-schema if they are granted globally (either by default, or according to a previous
+\fBALTER DEFAULT PRIVILEGES\fR
+command that did not specify a schema)\&. Per\-schema
+REVOKE
+is only useful to reverse the effects of a previous per\-schema
+GRANT\&.
 .SS "Parameters"
 .PP
 \fItarget_role\fR
 .RS 4
-The name of an existing role of which the current role is a member\&. If
-FOR ROLE
-is omitted, the current role is assumed\&.
+Change default privileges for objects created by the
+\fItarget_role\fR, or the current role if unspecified\&.
 .RE
 .PP
 \fIschema_name\fR
@@ -127,9 +137,7 @@ The name of an existing schema\&. If specified, the default privileges are alter
 IN SCHEMA
 is omitted, the global default privileges are altered\&.
 IN SCHEMA
-is not allowed when using
-ON SCHEMAS
-as schemas can\*(Aqt be nested\&.
+is not allowed when setting privileges for schemas, since schemas can\*(Aqt be nested\&.
 .RE
 .PP
 \fIrole_name\fR
@@ -145,10 +153,10 @@ or
 Use
 \fBpsql\fR(1)\*(Aqs
 \fB\eddp\fR
-command to obtain information about existing assignments of default privileges\&. The meaning of the privilege values is the same as explained for
+command to obtain information about existing assignments of default privileges\&. The meaning of the privilege display is the same as explained for
 \fB\edp\fR
-under
-\fBGRANT\fR(7)\&.
+in
+Section\ \&5.7\&.
 .PP
 If you wish to drop a role for which the default privileges have been altered, it is necessary to reverse the changes in its default privileges or use
 \fBDROP OWNED BY\fR
@@ -196,6 +204,23 @@ ALTER DEFAULT PRIVILEGES FOR ROLE admin REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
 .if n \{\
 .RE
 .\}
+.sp
+Note however that you
+\fIcannot\fR
+accomplish that effect with a command limited to a single schema\&. This command has no effect, unless it is undoing a matching
+GRANT:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+That\*(Aqs because per\-schema default privileges can only add privileges to the global setting, not remove privileges granted by it\&.
 .SH "COMPATIBILITY"
 .PP
 There is no

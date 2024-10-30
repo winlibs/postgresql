@@ -2,7 +2,7 @@
  *
  * dropdb
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/bin/scripts/dropdb.c
@@ -12,6 +12,8 @@
 
 #include "postgres_fe.h"
 #include "common.h"
+#include "common/logging.h"
+#include "fe_utils/option_utils.h"
 #include "fe_utils/string_utils.h"
 
 
@@ -33,6 +35,7 @@ main(int argc, char *argv[])
 		{"interactive", no_argument, NULL, 'i'},
 		{"if-exists", no_argument, &if_exists, 1},
 		{"maintenance-db", required_argument, NULL, 2},
+		{"force", no_argument, NULL, 'f'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -46,25 +49,37 @@ main(int argc, char *argv[])
 	char	   *port = NULL;
 	char	   *username = NULL;
 	enum trivalue prompt_password = TRI_DEFAULT;
+	ConnParams	cparams;
 	bool		echo = false;
 	bool		interactive = false;
+	bool		force = false;
 
 	PQExpBufferData sql;
 
 	PGconn	   *conn;
 	PGresult   *result;
 
+	pg_logging_init(argv[0]);
 	progname = get_progname(argv[0]);
 	set_pglocale_pgservice(argv[0], PG_TEXTDOMAIN("pgscripts"));
 
 	handle_help_version_opts(argc, argv, "dropdb", help);
 
-	while ((c = getopt_long(argc, argv, "h:p:U:wWei", long_options, &optindex)) != -1)
+	while ((c = getopt_long(argc, argv, "efh:ip:U:wW", long_options, &optindex)) != -1)
 	{
 		switch (c)
 		{
+			case 'e':
+				echo = true;
+				break;
+			case 'f':
+				force = true;
+				break;
 			case 'h':
 				host = pg_strdup(optarg);
+				break;
+			case 'i':
+				interactive = true;
 				break;
 			case 'p':
 				port = pg_strdup(optarg);
@@ -78,12 +93,6 @@ main(int argc, char *argv[])
 			case 'W':
 				prompt_password = TRI_YES;
 				break;
-			case 'e':
-				echo = true;
-				break;
-			case 'i':
-				interactive = true;
-				break;
 			case 0:
 				/* this covers the long options */
 				break;
@@ -91,7 +100,8 @@ main(int argc, char *argv[])
 				maintenance_db = pg_strdup(optarg);
 				break;
 			default:
-				fprintf(stderr, _("Try \"%s --help\" for more information.\n"), progname);
+				/* getopt_long already emitted a complaint */
+				pg_log_error_hint("Try \"%s --help\" for more information.", progname);
 				exit(1);
 		}
 	}
@@ -99,16 +109,16 @@ main(int argc, char *argv[])
 	switch (argc - optind)
 	{
 		case 0:
-			fprintf(stderr, _("%s: missing required argument database name\n"), progname);
-			fprintf(stderr, _("Try \"%s --help\" for more information.\n"), progname);
+			pg_log_error("missing required argument database name");
+			pg_log_error_hint("Try \"%s --help\" for more information.", progname);
 			exit(1);
 		case 1:
 			dbname = argv[optind];
 			break;
 		default:
-			fprintf(stderr, _("%s: too many command-line arguments (first is \"%s\")\n"),
-					progname, argv[optind + 1]);
-			fprintf(stderr, _("Try \"%s --help\" for more information.\n"), progname);
+			pg_log_error("too many command-line arguments (first is \"%s\")",
+						 argv[optind + 1]);
+			pg_log_error_hint("Try \"%s --help\" for more information.", progname);
 			exit(1);
 	}
 
@@ -121,24 +131,30 @@ main(int argc, char *argv[])
 
 	initPQExpBuffer(&sql);
 
-	appendPQExpBuffer(&sql, "DROP DATABASE %s%s;",
-					  (if_exists ? "IF EXISTS " : ""), fmtId(dbname));
+	appendPQExpBuffer(&sql, "DROP DATABASE %s%s%s;",
+					  (if_exists ? "IF EXISTS " : ""),
+					  fmtId(dbname),
+					  force ? " WITH (FORCE)" : "");
 
 	/* Avoid trying to drop postgres db while we are connected to it. */
 	if (maintenance_db == NULL && strcmp(dbname, "postgres") == 0)
 		maintenance_db = "template1";
 
-	conn = connectMaintenanceDatabase(maintenance_db,
-									  host, port, username, prompt_password,
-									  progname, echo);
+	cparams.dbname = maintenance_db;
+	cparams.pghost = host;
+	cparams.pgport = port;
+	cparams.pguser = username;
+	cparams.prompt_password = prompt_password;
+	cparams.override_dbname = NULL;
+
+	conn = connectMaintenanceDatabase(&cparams, progname, echo);
 
 	if (echo)
 		printf("%s\n", sql.data);
 	result = PQexec(conn, sql.data);
 	if (PQresultStatus(result) != PGRES_COMMAND_OK)
 	{
-		fprintf(stderr, _("%s: database removal failed: %s"),
-				progname, PQerrorMessage(conn));
+		pg_log_error("database removal failed: %s", PQerrorMessage(conn));
 		PQfinish(conn);
 		exit(1);
 	}
@@ -157,6 +173,7 @@ help(const char *progname)
 	printf(_("  %s [OPTION]... DBNAME\n"), progname);
 	printf(_("\nOptions:\n"));
 	printf(_("  -e, --echo                show the commands being sent to the server\n"));
+	printf(_("  -f, --force               try to terminate other connections before dropping\n"));
 	printf(_("  -i, --interactive         prompt before deleting anything\n"));
 	printf(_("  -V, --version             output version information, then exit\n"));
 	printf(_("  --if-exists               don't report error if database doesn't exist\n"));
@@ -168,5 +185,6 @@ help(const char *progname)
 	printf(_("  -w, --no-password         never prompt for password\n"));
 	printf(_("  -W, --password            force password prompt\n"));
 	printf(_("  --maintenance-db=DBNAME   alternate maintenance database\n"));
-	printf(_("\nReport bugs to <pgsql-bugs@postgresql.org>.\n"));
+	printf(_("\nReport bugs to <%s>.\n"), PACKAGE_BUGREPORT);
+	printf(_("%s home page: <%s>\n"), PACKAGE_NAME, PACKAGE_URL);
 }

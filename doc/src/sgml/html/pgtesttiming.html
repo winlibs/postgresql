@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>pg_test_timing</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="pgtestfsync.html" title="pg_test_fsync" /><link rel="next" href="pgupgrade.html" title="pg_upgrade" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center"><span xmlns="http://www.w3.org/1999/xhtml" class="application">pg_test_timing</span></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="pgtestfsync.html" title="pg_test_fsync">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="reference-server.html" title="PostgreSQL Server Applications">Up</a></td><th width="60%" align="center">PostgreSQL Server Applications</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="pgupgrade.html" title="pg_upgrade">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="PGTESTTIMING"><div class="titlepage"></div><a id="id-1.9.5.10.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle"><span class="application">pg_test_timing</span></span></h2><p>pg_test_timing — measure timing overhead</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p id="id-1.9.5.10.4.1"><code class="command">pg_test_timing</code> [<em class="replaceable"><code>option</code></em>...]</p></div></div><div class="refsect1" id="id-1.9.5.10.5"><h2>Description</h2><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>pg_test_timing</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="pgtestfsync.html" title="pg_test_fsync" /><link rel="next" href="pgupgrade.html" title="pg_upgrade" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center"><span class="application">pg_test_timing</span></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="pgtestfsync.html" title="pg_test_fsync">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="reference-server.html" title="PostgreSQL Server Applications">Up</a></td><th width="60%" align="center">PostgreSQL Server Applications</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="pgupgrade.html" title="pg_upgrade">Next</a></td></tr></table><hr /></div><div class="refentry" id="PGTESTTIMING"><div class="titlepage"></div><a id="id-1.9.5.11.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle"><span class="application">pg_test_timing</span></span></h2><p>pg_test_timing — measure timing overhead</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p id="id-1.9.5.11.4.1"><code class="command">pg_test_timing</code> [<em class="replaceable"><code>option</code></em>...]</p></div></div><div class="refsect1" id="id-1.9.5.11.5"><h2>Description</h2><p>
   <span class="application">pg_test_timing</span> is a tool to measure the timing overhead
   on your system and confirm that the system time never moves backwards.
   Systems that are slow to collect timing data can give less accurate
   <code class="command">EXPLAIN ANALYZE</code> results.
- </p></div><div class="refsect1" id="id-1.9.5.10.6"><h2>Options</h2><p>
+ </p></div><div class="refsect1" id="id-1.9.5.11.6"><h2>Options</h2><p>
     <span class="application">pg_test_timing</span> accepts the following
     command-line options:
 
@@ -19,7 +19,7 @@
         Show help about <span class="application">pg_test_timing</span> command line
         arguments, and exit.
        </p></dd></dl></div><p>
-   </p></div><div class="refsect1" id="id-1.9.5.10.7"><h2>Usage</h2><div class="refsect2" id="id-1.9.5.10.7.2"><h3>Interpreting results</h3><p>
+   </p></div><div class="refsect1" id="id-1.9.5.11.7"><h2>Usage</h2><div class="refsect2" id="id-1.9.5.11.7.2"><h3>Interpreting Results</h3><p>
    Good results will show most (&gt;90%) individual timing calls take less than
    one microsecond. Average per loop overhead will be even lower, below 100
    nanoseconds. This example from an Intel i7-860 system using a TSC clock
@@ -41,7 +41,7 @@ Histogram of timing durations:
    histogram. The loop can have resolution within a few nanoseconds (ns),
    while the individual timing calls can only resolve down to one microsecond
    (us).
-  </p></div><div class="refsect2" id="id-1.9.5.10.7.3"><h3>Measuring executor timing overhead</h3><p>
+  </p></div><div class="refsect2" id="id-1.9.5.11.7.3"><h3>Measuring Executor Timing Overhead</h3><p>
    When the query executor is running a statement using
    <code class="command">EXPLAIN ANALYZE</code>, individual operations are timed as well
    as showing a summary.  The overhead of your system can be checked by
@@ -61,7 +61,7 @@ EXPLAIN ANALYZE SELECT COUNT(*) FROM t;
    would be.  Even that relatively small amount of overhead is making the fully
    timed count statement take almost 70% longer.  On more substantial queries,
    the timing overhead would be less problematic.
-  </p></div><div class="refsect2" id="id-1.9.5.10.7.4"><h3>Changing time sources</h3><p>
+  </p></div><div class="refsect2" id="id-1.9.5.11.7.4"><h3>Changing Time Sources</h3><p>
    On some newer Linux systems, it's possible to change the clock source used
    to collect timing data at any time.  A second example shows the slowdown
    possible from switching to the slower acpi_pm time source, on the same
@@ -127,7 +127,7 @@ Histogram of timing durations:
      8      0.00007         22
     16      0.00000          1
     32      0.00000          1
-</pre></div><div class="refsect2" id="id-1.9.5.10.7.5"><h3>Clock hardware and timing accuracy</h3><p>
+</pre></div><div class="refsect2" id="id-1.9.5.11.7.5"><h3>Clock Hardware and Timing Accuracy</h3><p>
    Collecting accurate timing information is normally done on computers using
    hardware clocks with various levels of accuracy.  With some hardware the
    operating systems can pass the system clock time almost directly to
@@ -176,4 +176,4 @@ Histogram of timing durations:
    Timer (PIT), the real-time clock (RTC), the Advanced Programmable Interrupt
    Controller (APIC) timer, and the Cyclone timer.  These timers aim for
    millisecond resolution.
-  </p></div></div><div class="refsect1" id="id-1.9.5.10.8"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-explain.html" title="EXPLAIN"><span class="refentrytitle">EXPLAIN</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="pgtestfsync.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="reference-server.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="pgupgrade.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"><span class="application">pg_test_fsync</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> <span class="application">pg_upgrade</span></td></tr></table></div></body></html>
+  </p></div></div><div class="refsect1" id="id-1.9.5.11.8"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-explain.html" title="EXPLAIN"><span class="refentrytitle">EXPLAIN</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="pgtestfsync.html" title="pg_test_fsync">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="reference-server.html" title="PostgreSQL Server Applications">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="pgupgrade.html" title="pg_upgrade">Next</a></td></tr><tr><td width="40%" align="left" valign="top"><span class="application">pg_test_fsync</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> <span class="application">pg_upgrade</span></td></tr></table></div></body></html>

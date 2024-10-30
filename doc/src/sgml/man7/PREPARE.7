@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: PREPARE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "PREPARE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "PREPARE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -53,10 +53,10 @@ statement\&. Refer to
 for more information about that\&.
 .PP
 Prepared statements only last for the duration of the current database session\&. When the session ends, the prepared statement is forgotten, so it must be recreated before being used again\&. This also means that a single prepared statement cannot be used by multiple simultaneous database clients; however, each client can create their own prepared statement to use\&. Prepared statements can be manually cleaned up using the
-\fBDEALLOCATE\fR(7)
+\fBDEALLOCATE\fR
 command\&.
 .PP
-Prepared statements potentially have the largest performance advantage when a single session is being used to execute a large number of similar statements\&. The performance difference will be particularly significant if the statements are complex to plan or rewrite, e\&.g\&. if the query involves a join of many tables or requires the application of several rules\&. If the statement is relatively simple to plan and rewrite but relatively expensive to execute, the performance advantage of prepared statements will be less noticeable\&.
+Prepared statements potentially have the largest performance advantage when a single session is being used to execute a large number of similar statements\&. The performance difference will be particularly significant if the statements are complex to plan or rewrite, e\&.g\&., if the query involves a join of many tables or requires the application of several rules\&. If the statement is relatively simple to plan and rewrite but relatively expensive to execute, the performance advantage of prepared statements will be less noticeable\&.
 .SH "PARAMETERS"
 .PP
 \fIname\fR
@@ -78,28 +78,48 @@ Any
 \fBSELECT\fR,
 \fBINSERT\fR,
 \fBUPDATE\fR,
-\fBDELETE\fR, or
+\fBDELETE\fR,
+\fBMERGE\fR, or
 \fBVALUES\fR
 statement\&.
 .RE
 .SH "NOTES"
 .PP
-Prepared statements can use generic plans rather than re\-planning with each set of supplied
-\fBEXECUTE\fR
-values\&. This occurs immediately for prepared statements with no parameters; otherwise it occurs only after five or more executions produce plans whose estimated cost average (including planning overhead) is more expensive than the generic plan cost estimate\&. Once a generic plan is chosen, it is used for the remaining lifetime of the prepared statement\&. Using
-\fBEXECUTE\fR
-values which are rare in columns with many duplicates can generate custom plans that are so much cheaper than the generic plan, even after adding planning overhead, that the generic plan might never be used\&.
+A prepared statement can be executed with either a
+generic plan
+or a
+custom plan\&. A generic plan is the same across all executions, while a custom plan is generated for a specific execution using the parameter values given in that call\&. Use of a generic plan avoids planning overhead, but in some situations a custom plan will be much more efficient to execute because the planner can make use of knowledge of the parameter values\&. (Of course, if the prepared statement has no parameters, then this is moot and a generic plan is always used\&.)
 .PP
-A generic plan assumes that each value supplied to
-\fBEXECUTE\fR
-is one of the column\*(Aqs distinct values and that column values are uniformly distributed\&. For example, if statistics record three distinct column values, a generic plan assumes a column equality comparison will match 33% of processed rows\&. Column statistics also allow generic plans to accurately compute the selectivity of unique columns\&. Comparisons on non\-uniformly\-distributed columns and specification of non\-existent values affects the average plan cost, and hence if and when a generic plan is chosen\&.
+By default (that is, when
+plan_cache_mode
+is set to
+auto), the server will automatically choose whether to use a generic or custom plan for a prepared statement that has parameters\&. The current rule for this is that the first five executions are done with custom plans and the average estimated cost of those plans is calculated\&. Then a generic plan is created and its estimated cost is compared to the average custom\-plan cost\&. Subsequent executions use the generic plan if its cost is not so much higher than the average custom\-plan cost as to make repeated replanning seem preferable\&.
+.PP
+This heuristic can be overridden, forcing the server to use either generic or custom plans, by setting
+\fIplan_cache_mode\fR
+to
+force_generic_plan
+or
+force_custom_plan
+respectively\&. This setting is primarily useful if the generic plan\*(Aqs cost estimate is badly off for some reason, allowing it to be chosen even though its actual cost is much more than that of a custom plan\&.
 .PP
 To examine the query plan
 PostgreSQL
 is using for a prepared statement, use
-\fBEXPLAIN\fR(7), e\&.g\&.
-\fBEXPLAIN EXECUTE\fR\&. If a generic plan is in use, it will contain parameter symbols
-$\fIn\fR, while a custom plan will have the supplied parameter values substituted into it\&. The row estimates in the generic plan reflect the selectivity computed for the parameters\&.
+\fBEXPLAIN\fR, for example
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+EXPLAIN EXECUTE \fIname\fR(\fIparameter_values\fR);
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+If a generic plan is in use, it will contain parameter symbols
+$\fIn\fR, while a custom plan will have the supplied parameter values substituted into it\&.
 .PP
 For more information on query planning and the statistics collected by
 PostgreSQL
@@ -109,7 +129,7 @@ documentation\&.
 .PP
 Although the main point of a prepared statement is to avoid repeated parse analysis and planning of the statement,
 PostgreSQL
-will force re\-analysis and re\-planning of the statement before using it whenever database objects used in the statement have undergone definitional (DDL) changes since the previous use of the prepared statement\&. Also, if the value of
+will force re\-analysis and re\-planning of the statement before using it whenever database objects used in the statement have undergone definitional (DDL) changes or their planner statistics have been updated since the previous use of the prepared statement\&. Also, if the value of
 search_path
 changes from one use to the next, the statement will be re\-parsed using the new
 \fIsearch_path\fR\&. (This latter behavior is new as of
@@ -155,7 +175,7 @@ EXECUTE usrrptplan(1, current_date);
 .RE
 .\}
 .sp
-Note that the data type of the second parameter is not specified, so it is inferred from the context in which
+In this example, the data type of the second parameter is not specified, so it is inferred from the context in which
 $2
 is used\&.
 .SH "COMPATIBILITY"

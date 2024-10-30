@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER TRIGGER
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER TRIGGER" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER TRIGGER" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,14 +33,18 @@ ALTER_TRIGGER \- change the definition of a trigger
 .sp
 .nf
 ALTER TRIGGER \fIname\fR ON \fItable_name\fR RENAME TO \fInew_name\fR
-ALTER TRIGGER \fIname\fR ON \fItable_name\fR DEPENDS ON EXTENSION \fIextension_name\fR
+ALTER TRIGGER \fIname\fR ON \fItable_name\fR [ NO ] DEPENDS ON EXTENSION \fIextension_name\fR
 .fi
 .SH "DESCRIPTION"
 .PP
 \fBALTER TRIGGER\fR
-changes properties of an existing trigger\&. The
+changes properties of an existing trigger\&.
+.PP
+The
 RENAME
-clause changes the name of the given trigger without otherwise changing the trigger definition\&. The
+clause changes the name of the given trigger without otherwise changing the trigger definition\&. If the table that the trigger is on is a partitioned table, then corresponding clone triggers in the partitions are renamed too\&.
+.PP
+The
 DEPENDS ON EXTENSION
 clause marks the trigger as dependent on an extension, such that if the extension is dropped, the trigger will automatically be dropped as well\&.
 .PP
@@ -64,12 +68,14 @@ The new name for the trigger\&.
 .PP
 \fIextension_name\fR
 .RS 4
-The name of the extension that the trigger is to depend on\&.
+The name of the extension that the trigger is to depend on (or no longer dependent on, if
+NO
+is specified)\&. A trigger that\*(Aqs marked as dependent on an extension is automatically dropped when the extension is dropped\&.
 .RE
 .SH "NOTES"
 .PP
 The ability to temporarily enable or disable a trigger is provided by
-ALTER TABLE (\fBALTER_TABLE\fR(7)), not by
+\fBALTER TABLE\fR, not by
 \fBALTER TRIGGER\fR, because
 \fBALTER TRIGGER\fR
 has no convenient way to express the option of enabling or disabling all of a table\*(Aqs triggers at once\&.

@@ -1,27 +1,26 @@
+
+# Copyright (c) 2021-2023, PostgreSQL Global Development Group
+
 # Test password normalization in SCRAM.
 #
-# This test cannot run on Windows as Postgres cannot be set up with Unix
-# sockets and needs to go through SSPI.
+# This test can only run with Unix-domain sockets.
 
 use strict;
 use warnings;
-use PostgresNode;
-use TestLib;
+use PostgreSQL::Test::Cluster;
+use PostgreSQL::Test::Utils;
 use Test::More;
-if ($windows_os)
+if (!$use_unix_sockets)
 {
-	plan skip_all => "authentication tests cannot run on Windows";
-}
-else
-{
-	plan tests => 12;
+	plan skip_all =>
+	  "authentication tests cannot run without Unix-domain sockets";
 }
 
 # Delete pg_hba.conf from the given node, add a new entry to it
 # and then execute a reload to refresh it.
 sub reset_pg_hba
 {
-	my $node       = shift;
+	my $node = shift;
 	my $hba_method = shift;
 
 	unlink($node->data_dir . '/pg_hba.conf');
@@ -33,25 +32,35 @@ sub reset_pg_hba
 # Test access for a single role, useful to wrap all tests into one.
 sub test_login
 {
-	my $node          = shift;
-	my $role          = shift;
-	my $password      = shift;
-	my $expected_res  = shift;
+	local $Test::Builder::Level = $Test::Builder::Level + 1;
+
+	my $node = shift;
+	my $role = shift;
+	my $password = shift;
+	my $expected_res = shift;
 	my $status_string = 'failed';
 
 	$status_string = 'success' if ($expected_res eq 0);
 
+	my $connstr = "user=$role";
+	my $testname =
+	  "authentication $status_string for role $role with password $password";
+
 	$ENV{"PGPASSWORD"} = $password;
-	my $res = $node->psql('postgres', undef, extra_params => [ '-U', $role ]);
-	is($res, $expected_res,
-		"authentication $status_string for role $role with password $password"
-	);
-	return;
+	if ($expected_res eq 0)
+	{
+		$node->connect_ok($connstr, $testname);
+	}
+	else
+	{
+		# No checks of the error message, only the status code.
+		$node->connect_fails($connstr, $testname);
+	}
 }
 
-# Initialize master node. Force UTF-8 encoding, so that we can use non-ASCII
+# Initialize primary node. Force UTF-8 encoding, so that we can use non-ASCII
 # characters in the passwords below.
-my $node = get_new_node('master');
+my $node = PostgreSQL::Test::Cluster->new('primary');
 $node->init(extra => [ '--locale=C', '--encoding=UTF8' ]);
 $node->start;
 
@@ -84,23 +93,25 @@ CREATE ROLE saslpreptest7_role LOGIN PASSWORD E'foo\\u0627\\u0031bar';
 reset_pg_hba($node, 'scram-sha-256');
 
 # Check that #1 and #5 are treated the same as just 'IX'
-test_login($node, 'saslpreptest1_role', "I\xc2\xadX",   0);
+test_login($node, 'saslpreptest1_role', "I\xc2\xadX", 0);
 test_login($node, 'saslpreptest1_role', "\xe2\x85\xa8", 0);
 
 # but different from lower case 'ix'
 test_login($node, 'saslpreptest1_role', "ix", 2);
 
 # Check #4
-test_login($node, 'saslpreptest4a_role', "a",        0);
+test_login($node, 'saslpreptest4a_role', "a", 0);
 test_login($node, 'saslpreptest4a_role', "\xc2\xaa", 0);
-test_login($node, 'saslpreptest4b_role', "a",        0);
+test_login($node, 'saslpreptest4b_role', "a", 0);
 test_login($node, 'saslpreptest4b_role', "\xc2\xaa", 0);
 
 # Check #6 and #7 - In PostgreSQL, contrary to the spec, if the password
 # contains prohibited characters, we use it as is, without normalization.
 test_login($node, 'saslpreptest6_role', "foo\x07bar", 0);
-test_login($node, 'saslpreptest6_role', "foobar",     2);
+test_login($node, 'saslpreptest6_role', "foobar", 2);
 
 test_login($node, 'saslpreptest7_role', "foo\xd8\xa71bar", 0);
 test_login($node, 'saslpreptest7_role', "foo1\xd8\xa7bar", 2);
-test_login($node, 'saslpreptest7_role', "foobar",          2);
+test_login($node, 'saslpreptest7_role', "foobar", 2);
+
+done_testing();

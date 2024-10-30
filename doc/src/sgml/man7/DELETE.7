@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DELETE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DELETE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DELETE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,9 +34,9 @@ DELETE \- delete rows of a table
 .nf
 [ WITH [ RECURSIVE ] \fIwith_query\fR [, \&.\&.\&.] ]
 DELETE FROM [ ONLY ] \fItable_name\fR [ * ] [ [ AS ] \fIalias\fR ]
-    [ USING \fIusing_list\fR ]
+    [ USING \fIfrom_item\fR [, \&.\&.\&.] ]
     [ WHERE \fIcondition\fR | WHERE CURRENT OF \fIcursor_name\fR ]
-    [ RETURNING * | \fIoutput_expression\fR [ [ AS ] \fIoutput_name\fR ] [, \&.\&.\&.] ]
+    [ RETURNING { * | \fIoutput_expression\fR [ [ AS ] \fIoutput_name\fR ] } [, \&.\&.\&.] ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -59,7 +59,7 @@ clause is absent, the effect is to delete all rows in the table\&. The result is
 .ps -1
 .br
 .PP
-\fBTRUNCATE\fR(7)
+\fBTRUNCATE\fR
 provides a faster mechanism to remove all rows from a table\&.
 .sp .5v
 .RE
@@ -123,16 +123,18 @@ not
 foo\&.
 .RE
 .PP
-\fIusing_list\fR
+\fIfrom_item\fR
 .RS 4
-A list of table expressions, allowing columns from other tables to appear in the
+A table expression allowing columns from other tables to appear in the
 WHERE
-condition\&. This is similar to the list of tables that can be specified in the
-FROM Clause
-of a
+condition\&. This uses the same syntax as the
+FROM
+clause of a
 \fBSELECT\fR
-statement; for example, an alias for the table name can be specified\&. Do not repeat the target table in the
-\fIusing_list\fR, unless you wish to set up a self\-join\&.
+statement; for example, an alias for the table name can be specified\&. Do not repeat the target table as a
+\fIfrom_item\fR
+unless you wish to set up a self\-join (in which case it must appear with an alias in the
+\fIfrom_item\fR)\&.
 .RE
 .PP
 \fIcondition\fR

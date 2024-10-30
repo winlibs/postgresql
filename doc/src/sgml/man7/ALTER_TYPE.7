@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER TYPE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER TYPE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER TYPE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,13 +32,14 @@ ALTER_TYPE \- change the definition of a type
 .SH "SYNOPSIS"
 .sp
 .nf
-ALTER TYPE \fIname\fR \fIaction\fR [, \&.\&.\&. ]
-ALTER TYPE \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
-ALTER TYPE \fIname\fR RENAME ATTRIBUTE \fIattribute_name\fR TO \fInew_attribute_name\fR [ CASCADE | RESTRICT ]
+ALTER TYPE \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 ALTER TYPE \fIname\fR RENAME TO \fInew_name\fR
 ALTER TYPE \fIname\fR SET SCHEMA \fInew_schema\fR
+ALTER TYPE \fIname\fR RENAME ATTRIBUTE \fIattribute_name\fR TO \fInew_attribute_name\fR [ CASCADE | RESTRICT ]
+ALTER TYPE \fIname\fR \fIaction\fR [, \&.\&.\&. ]
 ALTER TYPE \fIname\fR ADD VALUE [ IF NOT EXISTS ] \fInew_enum_value\fR [ { BEFORE | AFTER } \fIneighbor_enum_value\fR ]
 ALTER TYPE \fIname\fR RENAME VALUE \fIexisting_enum_value\fR TO \fInew_enum_value\fR
+ALTER TYPE \fIname\fR SET ( \fIproperty\fR = \fIvalue\fR [, \&.\&.\&. ] )
 
 where \fIaction\fR is one of:
 
@@ -51,10 +52,30 @@ where \fIaction\fR is one of:
 \fBALTER TYPE\fR
 changes the definition of an existing type\&. There are several subforms:
 .PP
+OWNER
+.RS 4
+This form changes the owner of the type\&.
+.RE
+.PP
+RENAME
+.RS 4
+This form changes the name of the type\&.
+.RE
+.PP
+SET SCHEMA
+.RS 4
+This form moves the type into another schema\&.
+.RE
+.PP
+RENAME ATTRIBUTE
+.RS 4
+This form is only usable with composite types\&. It changes the name of an individual attribute of the type\&.
+.RE
+.PP
 ADD ATTRIBUTE
 .RS 4
 This form adds a new attribute to a composite type, using the same syntax as
-CREATE TYPE (\fBCREATE_TYPE\fR(7))\&.
+\fBCREATE TYPE\fR\&.
 .RE
 .PP
 DROP ATTRIBUTE [ IF EXISTS ]
@@ -64,24 +85,9 @@ IF EXISTS
 is specified and the attribute does not exist, no error is thrown\&. In this case a notice is issued instead\&.
 .RE
 .PP
-SET DATA TYPE
+ALTER ATTRIBUTE \&.\&.\&. SET DATA TYPE
 .RS 4
 This form changes the type of an attribute of a composite type\&.
-.RE
-.PP
-OWNER
-.RS 4
-This form changes the owner of the type\&.
-.RE
-.PP
-RENAME
-.RS 4
-This form changes the name of the type or the name of an individual attribute of a composite type\&.
-.RE
-.PP
-SET SCHEMA
-.RS 4
-This form moves the type into another schema\&.
 .RE
 .PP
 ADD VALUE [ IF NOT EXISTS ] [ BEFORE | AFTER ]
@@ -102,6 +108,125 @@ RENAME VALUE
 This form renames a value of an enum type\&. The value\*(Aqs place in the enum\*(Aqs ordering is not affected\&. An error will occur if the specified value is not present or the new name is already present\&.
 .RE
 .PP
+SET ( \fIproperty\fR = \fIvalue\fR [, \&.\&.\&. ] )
+.RS 4
+This form is only applicable to base types\&. It allows adjustment of a subset of the base\-type properties that can be set in
+\fBCREATE TYPE\fR\&. Specifically, these properties can be changed:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+RECEIVE
+can be set to the name of a binary input function, or
+NONE
+to remove the type\*(Aqs binary input function\&. Using this option requires superuser privilege\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+SEND
+can be set to the name of a binary output function, or
+NONE
+to remove the type\*(Aqs binary output function\&. Using this option requires superuser privilege\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+TYPMOD_IN
+can be set to the name of a type modifier input function, or
+NONE
+to remove the type\*(Aqs type modifier input function\&. Using this option requires superuser privilege\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+TYPMOD_OUT
+can be set to the name of a type modifier output function, or
+NONE
+to remove the type\*(Aqs type modifier output function\&. Using this option requires superuser privilege\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+ANALYZE
+can be set to the name of a type\-specific statistics collection function, or
+NONE
+to remove the type\*(Aqs statistics collection function\&. Using this option requires superuser privilege\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+SUBSCRIPT
+can be set to the name of a type\-specific subscripting handler function, or
+NONE
+to remove the type\*(Aqs subscripting handler function\&. Using this option requires superuser privilege\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+STORAGE
+can be set to
+plain,
+extended,
+external, or
+main
+(see
+Section\ \&73.2
+for more information about what these mean)\&. However, changing from
+plain
+to another setting requires superuser privilege (because it requires that the type\*(Aqs C functions all be TOAST\-ready), and changing to
+plain
+from another setting is not allowed at all (since the type may already have TOASTed values present in the database)\&. Note that changing this option doesn\*(Aqt by itself change any stored data, it just sets the default TOAST strategy to be used for table columns created in the future\&. See
+ALTER TABLE (\fBALTER_TABLE\fR(7))
+to change the TOAST strategy for existing table columns\&.
+.RE
+.sp
+See
+CREATE TYPE (\fBCREATE_TYPE\fR(7))
+for more details about these type properties\&. Note that where appropriate, a change in these properties for a base type will be propagated automatically to domains based on that type\&.
+.RE
+.PP
 The
 ADD ATTRIBUTE,
 DROP ATTRIBUTE, and
@@ -111,11 +236,13 @@ actions can be combined into a list of multiple alterations to apply in parallel
 You must own the type to use
 \fBALTER TYPE\fR\&. To change the schema of a type, you must also have
 CREATE
-privilege on the new schema\&. To alter the owner, you must also be a direct or indirect member of the new owning role, and that role must have
+privilege on the new schema\&. To alter the owner, you must be able to
+SET ROLE
+to the new owning role, and that role must have
 CREATE
 privilege on the type\*(Aqs schema\&. (These restrictions enforce that altering the owner doesn\*(Aqt do anything you couldn\*(Aqt do by dropping and recreating the type\&. However, a superuser can alter ownership of any type anyway\&.) To add an attribute or alter an attribute type, you must also have
 USAGE
-privilege on the data type\&.
+privilege on the attribute\*(Aqs data type\&.
 .SH "PARAMETERS"
 .PP
 .PP
@@ -169,6 +296,11 @@ The existing enum value that the new value should be added immediately before or
 The existing enum value that should be renamed\&. Like all enum literals, it needs to be quoted\&.
 .RE
 .PP
+\fIproperty\fR
+.RS 4
+The name of a base\-type property to be modified; see above for possible values\&.
+.RE
+.PP
 CASCADE
 .RS 4
 Automatically propagate the operation to typed tables of the type being altered, and their descendants\&.
@@ -180,8 +312,9 @@ Refuse the operation if the type being altered is the type of a typed table\&. T
 .RE
 .SH "NOTES"
 .PP
+If
 \fBALTER TYPE \&.\&.\&. ADD VALUE\fR
-(the form that adds a new value to an enum type) cannot be executed inside a transaction block\&.
+(the form that adds a new value to an enum type) is executed inside a transaction block, the new value cannot be used until after the transaction has been committed\&.
 .PP
 Comparisons involving an added enum value will sometimes be slower than comparisons involving only original members of the enum type\&. This will usually only occur if
 BEFORE
@@ -189,7 +322,7 @@ or
 AFTER
 is used to set the new value\*(Aqs sort position somewhere other than at the end of the list\&. However, sometimes it will happen even though the new value is added at the end (this occurs if the OID counter
 \(lqwrapped around\(rq
-since the original creation of the enum type)\&. The slowdown is usually insignificant; but if it matters, optimal performance can be regained by dropping and recreating the enum type, or by dumping and reloading the database\&.
+since the original creation of the enum type)\&. The slowdown is usually insignificant; but if it matters, optimal performance can be regained by dropping and recreating the enum type, or by dumping and restoring the database\&.
 .SH "EXAMPLES"
 .PP
 To rename a data type:
@@ -234,7 +367,7 @@ ALTER TYPE email SET SCHEMA customers;
 .RE
 .\}
 .PP
-To add a new attribute to a type:
+To add a new attribute to a composite type:
 .sp
 .if n \{\
 .RS 4
@@ -265,6 +398,23 @@ To rename an enum value:
 .\}
 .nf
 ALTER TYPE colors RENAME VALUE \*(Aqpurple\*(Aq TO \*(Aqmauve\*(Aq;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To create binary I/O functions for an existing base type:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE FUNCTION mytypesend(mytype) RETURNS bytea \&.\&.\&.;
+CREATE FUNCTION mytyperecv(internal, oid, integer) RETURNS mytype \&.\&.\&.;
+ALTER TYPE mytype SET (
+    SEND = mytypesend,
+    RECEIVE = mytyperecv
+);
 .fi
 .if n \{\
 .RE

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.6. Control Structures</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plpgsql-statements.html" title="43.5. Basic Statements" /><link rel="next" href="plpgsql-cursors.html" title="43.7. Cursors" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.6. Control Structures</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-statements.html" title="43.5. Basic Statements">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL - SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> - <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpgsql-cursors.html" title="43.7. Cursors">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPGSQL-CONTROL-STRUCTURES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.6. Control Structures</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-STATEMENTS-RETURNING">43.6.1. Returning From a Function</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-STATEMENTS-RETURNING-PROCEDURE">43.6.2. Returning From a Procedure</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-STATEMENTS-CALLING-PROCEDURE">43.6.3. Calling a Procedure</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-CONDITIONALS">43.6.4. Conditionals</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-CONTROL-STRUCTURES-LOOPS">43.6.5. Simple Loops</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-RECORDS-ITERATING">43.6.6. Looping Through Query Results</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-FOREACH-ARRAY">43.6.7. Looping Through Arrays</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-ERROR-TRAPPING">43.6.8. Trapping Errors</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-CALL-STACK">43.6.9. Obtaining Execution Location Information</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.6. Control Structures</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="plpgsql-statements.html" title="43.5. Basic Statements" /><link rel="next" href="plpgsql-cursors.html" title="43.7. Cursors" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.6. Control Structures</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-statements.html" title="43.5. Basic Statements">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL — SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span class="application">PL/pgSQL</span> — <acronym class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpgsql-cursors.html" title="43.7. Cursors">Next</a></td></tr></table><hr /></div><div class="sect1" id="PLPGSQL-CONTROL-STRUCTURES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.6. Control Structures <a href="#PLPGSQL-CONTROL-STRUCTURES" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-STATEMENTS-RETURNING">43.6.1. Returning from a Function</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-STATEMENTS-RETURNING-PROCEDURE">43.6.2. Returning from a Procedure</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-STATEMENTS-CALLING-PROCEDURE">43.6.3. Calling a Procedure</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-CONDITIONALS">43.6.4. Conditionals</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-CONTROL-STRUCTURES-LOOPS">43.6.5. Simple Loops</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-RECORDS-ITERATING">43.6.6. Looping through Query Results</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-FOREACH-ARRAY">43.6.7. Looping through Arrays</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-ERROR-TRAPPING">43.6.8. Trapping Errors</a></span></dt><dt><span class="sect2"><a href="plpgsql-control-structures.html#PLPGSQL-CALL-STACK">43.6.9. Obtaining Execution Location Information</a></span></dt></dl></div><p>
     Control structures are probably the most useful (and
     important) part of <span class="application">PL/pgSQL</span>. With
     <span class="application">PL/pgSQL</span>'s control structures,
     you can manipulate <span class="productname">PostgreSQL</span> data in a very
     flexible and powerful way.
-   </p><div class="sect2" id="PLPGSQL-STATEMENTS-RETURNING"><div class="titlepage"><div><div><h3 class="title">43.6.1. Returning From a Function</h3></div></div></div><p>
+   </p><div class="sect2" id="PLPGSQL-STATEMENTS-RETURNING"><div class="titlepage"><div><div><h3 class="title">43.6.1. Returning from a Function <a href="#PLPGSQL-STATEMENTS-RETURNING" class="id_link">#</a></h3></div></div></div><p>
      There are two commands available that allow you to return data
      from a function: <code class="command">RETURN</code> and <code class="command">RETURN
      NEXT</code>.
-    </p><div class="sect3" id="id-1.8.8.8.3.3"><div class="titlepage"><div><div><h4 class="title">43.6.1.1. <code class="command">RETURN</code></h4></div></div></div><pre class="synopsis">
+    </p><div class="sect3" id="PLPGSQL-STATEMENTS-RETURNING-RETURN"><div class="titlepage"><div><div><h4 class="title">43.6.1.1. <code class="command">RETURN</code> <a href="#PLPGSQL-STATEMENTS-RETURNING-RETURN" class="id_link">#</a></h4></div></div></div><pre class="synopsis">
 RETURN <em class="replaceable"><code>expression</code></em>;
 </pre><p>
       <code class="command">RETURN</code> with an expression terminates the
@@ -52,7 +52,7 @@ RETURN scalar_var;
 RETURN composite_type_var;
 RETURN (1, 2, 'three'::text);  -- must cast columns to correct types
 </pre><p>
-     </p></div><div class="sect3" id="id-1.8.8.8.3.4"><div class="titlepage"><div><div><h4 class="title">43.6.1.2. <code class="command">RETURN NEXT</code> and <code class="command">RETURN QUERY</code></h4></div></div></div><a id="id-1.8.8.8.3.4.2" class="indexterm"></a><a id="id-1.8.8.8.3.4.3" class="indexterm"></a><pre class="synopsis">
+     </p></div><div class="sect3" id="PLPGSQL-STATEMENTS-RETURNING-RETURN-NEXT"><div class="titlepage"><div><div><h4 class="title">43.6.1.2. <code class="command">RETURN NEXT</code> and <code class="command">RETURN QUERY</code> <a href="#PLPGSQL-STATEMENTS-RETURNING-RETURN-NEXT" class="id_link">#</a></h4></div></div></div><a id="id-1.8.8.8.3.4.2" class="indexterm"></a><a id="id-1.8.8.8.3.4.3" class="indexterm"></a><pre class="synopsis">
 RETURN NEXT <em class="replaceable"><code>expression</code></em>;
 RETURN QUERY <em class="replaceable"><code>query</code></em>;
 RETURN QUERY EXECUTE <em class="replaceable"><code>command-string</code></em> [<span class="optional"> USING <em class="replaceable"><code>expression</code></em> [<span class="optional">, ... </span>] </span>];
@@ -121,7 +121,7 @@ BEGIN
         RETURN NEXT r; -- return current row of SELECT
     END LOOP;
     RETURN;
-END
+END;
 $BODY$
 LANGUAGE plpgsql;
 
@@ -147,7 +147,7 @@ BEGIN
     END IF;
 
     RETURN;
- END
+ END;
 $BODY$
 LANGUAGE plpgsql;
 
@@ -171,7 +171,7 @@ SELECT * FROM get_available_flightid(CURRENT_DATE);
        configuration variable.  Administrators who have sufficient
        memory to store larger result sets in memory should consider
        increasing this parameter.
-      </p></div></div></div><div class="sect2" id="PLPGSQL-STATEMENTS-RETURNING-PROCEDURE"><div class="titlepage"><div><div><h3 class="title">43.6.2. Returning From a Procedure</h3></div></div></div><p>
+      </p></div></div></div><div class="sect2" id="PLPGSQL-STATEMENTS-RETURNING-PROCEDURE"><div class="titlepage"><div><div><h3 class="title">43.6.2. Returning from a Procedure <a href="#PLPGSQL-STATEMENTS-RETURNING-PROCEDURE" class="id_link">#</a></h3></div></div></div><p>
      A procedure does not have a return value.  A procedure can therefore end
      without a <code class="command">RETURN</code> statement.  If you wish to use
      a <code class="command">RETURN</code> statement to exit the code early, write
@@ -179,12 +179,13 @@ SELECT * FROM get_available_flightid(CURRENT_DATE);
     </p><p>
      If the procedure has output parameters, the final values of the output
      parameter variables will be returned to the caller.
-    </p></div><div class="sect2" id="PLPGSQL-STATEMENTS-CALLING-PROCEDURE"><div class="titlepage"><div><div><h3 class="title">43.6.3. Calling a Procedure</h3></div></div></div><p>
+    </p></div><div class="sect2" id="PLPGSQL-STATEMENTS-CALLING-PROCEDURE"><div class="titlepage"><div><div><h3 class="title">43.6.3. Calling a Procedure <a href="#PLPGSQL-STATEMENTS-CALLING-PROCEDURE" class="id_link">#</a></h3></div></div></div><p>
      A <span class="application">PL/pgSQL</span> function, procedure,
      or <code class="command">DO</code> block can call a procedure
      using <code class="command">CALL</code>.  Output parameters are handled
      differently from the way that <code class="command">CALL</code> works in plain
-     SQL.  Each <code class="literal">INOUT</code> parameter of the procedure must
+     SQL.  Each <code class="literal">OUT</code> or <code class="literal">INOUT</code>
+     parameter of the procedure must
      correspond to a variable in the <code class="command">CALL</code> statement, and
      whatever the procedure returns is assigned back to that variable after
      it returns.  For example:
@@ -202,10 +203,13 @@ DECLARE myvar int := 5;
 BEGIN
   CALL triple(myvar);
   RAISE NOTICE 'myvar = %', myvar;  -- prints 15
-END
+END;
 $$;
 </pre><p>
-    </p></div><div class="sect2" id="PLPGSQL-CONDITIONALS"><div class="titlepage"><div><div><h3 class="title">43.6.4. Conditionals</h3></div></div></div><p>
+     The variable corresponding to an output parameter can be a simple
+     variable or a field of a composite-type variable.  Currently,
+     it cannot be an element of an array.
+    </p></div><div class="sect2" id="PLPGSQL-CONDITIONALS"><div class="titlepage"><div><div><h3 class="title">43.6.4. Conditionals <a href="#PLPGSQL-CONDITIONALS" class="id_link">#</a></h3></div></div></div><p>
      <code class="command">IF</code> and <code class="command">CASE</code> statements let you execute
      alternative commands based on certain conditions.
      <span class="application">PL/pgSQL</span> has three forms of <code class="command">IF</code>:
@@ -213,7 +217,7 @@ $$;
 
     and two forms of <code class="command">CASE</code>:
     </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="literal">CASE ... WHEN ... THEN ... ELSE ... END CASE</code></p></li><li class="listitem"><p><code class="literal">CASE WHEN ... THEN ... ELSE ... END CASE</code></p></li></ul></div><p>
-    </p><div class="sect3" id="id-1.8.8.8.6.3"><div class="titlepage"><div><div><h4 class="title">43.6.4.1. <code class="literal">IF-THEN</code></h4></div></div></div><pre class="synopsis">
+    </p><div class="sect3" id="PLPGSQL-CONDITIONALS-IF-THEN"><div class="titlepage"><div><div><h4 class="title">43.6.4.1. <code class="literal">IF-THEN</code> <a href="#PLPGSQL-CONDITIONALS-IF-THEN" class="id_link">#</a></h4></div></div></div><pre class="synopsis">
 IF <em class="replaceable"><code>boolean-expression</code></em> THEN
     <em class="replaceable"><code>statements</code></em>
 END IF;
@@ -230,7 +234,7 @@ IF v_user_id &lt;&gt; 0 THEN
     UPDATE users SET email = v_email WHERE user_id = v_user_id;
 END IF;
 </pre><p>
-       </p></div><div class="sect3" id="id-1.8.8.8.6.4"><div class="titlepage"><div><div><h4 class="title">43.6.4.2. <code class="literal">IF-THEN-ELSE</code></h4></div></div></div><pre class="synopsis">
+       </p></div><div class="sect3" id="PLPGSQL-CONDITIONALS-IF-THEN-ELSE"><div class="titlepage"><div><div><h4 class="title">43.6.4.2. <code class="literal">IF-THEN-ELSE</code> <a href="#PLPGSQL-CONDITIONALS-IF-THEN-ELSE" class="id_link">#</a></h4></div></div></div><pre class="synopsis">
 IF <em class="replaceable"><code>boolean-expression</code></em> THEN
     <em class="replaceable"><code>statements</code></em>
 ELSE
@@ -261,7 +265,7 @@ ELSE
     RETURN 'f';
 END IF;
 </pre><p>
-     </p></div><div class="sect3" id="id-1.8.8.8.6.5"><div class="titlepage"><div><div><h4 class="title">43.6.4.3. <code class="literal">IF-THEN-ELSIF</code></h4></div></div></div><pre class="synopsis">
+     </p></div><div class="sect3" id="PLPGSQL-CONDITIONALS-IF-THEN-ELSIF"><div class="titlepage"><div><div><h4 class="title">43.6.4.3. <code class="literal">IF-THEN-ELSIF</code> <a href="#PLPGSQL-CONDITIONALS-IF-THEN-ELSIF" class="id_link">#</a></h4></div></div></div><pre class="synopsis">
 IF <em class="replaceable"><code>boolean-expression</code></em> THEN
     <em class="replaceable"><code>statements</code></em>
 [<span class="optional"> ELSIF <em class="replaceable"><code>boolean-expression</code></em> THEN
@@ -321,7 +325,7 @@ END IF;
         However, this method requires writing a matching <code class="literal">END IF</code>
         for each <code class="literal">IF</code>, so it is much more cumbersome than
         using <code class="literal">ELSIF</code> when there are many alternatives.
-       </p></div><div class="sect3" id="id-1.8.8.8.6.6"><div class="titlepage"><div><div><h4 class="title">43.6.4.4. Simple <code class="literal">CASE</code></h4></div></div></div><pre class="synopsis">
+       </p></div><div class="sect3" id="PLPGSQL-CONDITIONALS-SIMPLE-CASE"><div class="titlepage"><div><div><h4 class="title">43.6.4.4. Simple <code class="literal">CASE</code> <a href="#PLPGSQL-CONDITIONALS-SIMPLE-CASE" class="id_link">#</a></h4></div></div></div><pre class="synopsis">
 CASE <em class="replaceable"><code>search-expression</code></em>
     WHEN <em class="replaceable"><code>expression</code></em> [<span class="optional">, <em class="replaceable"><code>expression</code></em> [<span class="optional"> ... </span>]</span>] THEN
       <em class="replaceable"><code>statements</code></em>
@@ -354,7 +358,7 @@ CASE x
         msg := 'other value than one or two';
 END CASE;
 </pre><p>
-      </p></div><div class="sect3" id="id-1.8.8.8.6.7"><div class="titlepage"><div><div><h4 class="title">43.6.4.5. Searched <code class="literal">CASE</code></h4></div></div></div><pre class="synopsis">
+      </p></div><div class="sect3" id="PLPGSQL-CONDITIONALS-SEARCHED-CASE"><div class="titlepage"><div><div><h4 class="title">43.6.4.5. Searched <code class="literal">CASE</code> <a href="#PLPGSQL-CONDITIONALS-SEARCHED-CASE" class="id_link">#</a></h4></div></div></div><pre class="synopsis">
 CASE
     WHEN <em class="replaceable"><code>boolean-expression</code></em> THEN
       <em class="replaceable"><code>statements</code></em>
@@ -392,12 +396,12 @@ END CASE;
        <code class="literal">IF-THEN-ELSIF</code>, except for the rule that reaching
        an omitted <code class="literal">ELSE</code> clause results in an error rather
        than doing nothing.
-      </p></div></div><div class="sect2" id="PLPGSQL-CONTROL-STRUCTURES-LOOPS"><div class="titlepage"><div><div><h3 class="title">43.6.5. Simple Loops</h3></div></div></div><a id="id-1.8.8.8.7.2" class="indexterm"></a><p>
+      </p></div></div><div class="sect2" id="PLPGSQL-CONTROL-STRUCTURES-LOOPS"><div class="titlepage"><div><div><h3 class="title">43.6.5. Simple Loops <a href="#PLPGSQL-CONTROL-STRUCTURES-LOOPS" class="id_link">#</a></h3></div></div></div><a id="id-1.8.8.8.7.2" class="indexterm"></a><p>
      With the <code class="literal">LOOP</code>, <code class="literal">EXIT</code>,
      <code class="literal">CONTINUE</code>, <code class="literal">WHILE</code>, <code class="literal">FOR</code>,
      and <code class="literal">FOREACH</code> statements, you can arrange for your
      <span class="application">PL/pgSQL</span> function to repeat a series of commands.
-    </p><div class="sect3" id="id-1.8.8.8.7.4"><div class="titlepage"><div><div><h4 class="title">43.6.5.1. <code class="literal">LOOP</code></h4></div></div></div><pre class="synopsis">
+    </p><div class="sect3" id="PLPGSQL-CONTROL-STRUCTURES-LOOPS-LOOP"><div class="titlepage"><div><div><h4 class="title">43.6.5.1. <code class="literal">LOOP</code> <a href="#PLPGSQL-CONTROL-STRUCTURES-LOOPS-LOOP" class="id_link">#</a></h4></div></div></div><pre class="synopsis">
 [<span class="optional"> &lt;&lt;<em class="replaceable"><code>label</code></em>&gt;&gt; </span>]
 LOOP
     <em class="replaceable"><code>statements</code></em>
@@ -409,7 +413,7 @@ END LOOP [<span class="optional"> <em class="replaceable"><code>label</code></em
       <em class="replaceable"><code>label</code></em> can be used by <code class="literal">EXIT</code>
       and <code class="literal">CONTINUE</code> statements within nested loops to
       specify which loop those statements refer to.
-     </p></div><div class="sect3" id="id-1.8.8.8.7.5"><div class="titlepage"><div><div><h4 class="title">43.6.5.2. <code class="literal">EXIT</code></h4></div></div></div><a id="id-1.8.8.8.7.5.2" class="indexterm"></a><pre class="synopsis">
+     </p></div><div class="sect3" id="PLPGSQL-CONTROL-STRUCTURES-LOOPS-EXIT"><div class="titlepage"><div><div><h4 class="title">43.6.5.2. <code class="literal">EXIT</code> <a href="#PLPGSQL-CONTROL-STRUCTURES-LOOPS-EXIT" class="id_link">#</a></h4></div></div></div><a id="id-1.8.8.8.7.5.2" class="indexterm"></a><pre class="synopsis">
 EXIT [<span class="optional"> <em class="replaceable"><code>label</code></em> </span>] [<span class="optional"> WHEN <em class="replaceable"><code>boolean-expression</code></em> </span>];
 </pre><p>
         If no <em class="replaceable"><code>label</code></em> is given, the innermost
@@ -460,7 +464,7 @@ BEGIN
     -- computations here will be skipped when stocks &gt; 100000
 END;
 </pre><p>
-       </p></div><div class="sect3" id="id-1.8.8.8.7.6"><div class="titlepage"><div><div><h4 class="title">43.6.5.3. <code class="literal">CONTINUE</code></h4></div></div></div><a id="id-1.8.8.8.7.6.2" class="indexterm"></a><pre class="synopsis">
+       </p></div><div class="sect3" id="PLPGSQL-CONTROL-STRUCTURES-LOOPS-CONTINUE"><div class="titlepage"><div><div><h4 class="title">43.6.5.3. <code class="literal">CONTINUE</code> <a href="#PLPGSQL-CONTROL-STRUCTURES-LOOPS-CONTINUE" class="id_link">#</a></h4></div></div></div><a id="id-1.8.8.8.7.6.2" class="indexterm"></a><pre class="synopsis">
 CONTINUE [<span class="optional"> <em class="replaceable"><code>label</code></em> </span>] [<span class="optional"> WHEN <em class="replaceable"><code>boolean-expression</code></em> </span>];
 </pre><p>
         If no <em class="replaceable"><code>label</code></em> is given, the next iteration of
@@ -489,7 +493,7 @@ LOOP
     -- some computations for count IN [50 .. 100]
 END LOOP;
 </pre><p>
-       </p></div><div class="sect3" id="id-1.8.8.8.7.7"><div class="titlepage"><div><div><h4 class="title">43.6.5.4. <code class="literal">WHILE</code></h4></div></div></div><a id="id-1.8.8.8.7.7.2" class="indexterm"></a><pre class="synopsis">
+       </p></div><div class="sect3" id="PLPGSQL-CONTROL-STRUCTURES-LOOPS-WHILE"><div class="titlepage"><div><div><h4 class="title">43.6.5.4. <code class="literal">WHILE</code> <a href="#PLPGSQL-CONTROL-STRUCTURES-LOOPS-WHILE" class="id_link">#</a></h4></div></div></div><a id="id-1.8.8.8.7.7.2" class="indexterm"></a><pre class="synopsis">
 [<span class="optional"> &lt;&lt;<em class="replaceable"><code>label</code></em>&gt;&gt; </span>]
 WHILE <em class="replaceable"><code>boolean-expression</code></em> LOOP
     <em class="replaceable"><code>statements</code></em>
@@ -511,7 +515,7 @@ WHILE NOT done LOOP
     -- some computations here
 END LOOP;
 </pre><p>
-       </p></div><div class="sect3" id="PLPGSQL-INTEGER-FOR"><div class="titlepage"><div><div><h4 class="title">43.6.5.5. <code class="literal">FOR</code> (Integer Variant)</h4></div></div></div><pre class="synopsis">
+       </p></div><div class="sect3" id="PLPGSQL-INTEGER-FOR"><div class="titlepage"><div><div><h4 class="title">43.6.5.5. <code class="literal">FOR</code> (Integer Variant) <a href="#PLPGSQL-INTEGER-FOR" class="id_link">#</a></h4></div></div></div><pre class="synopsis">
 [<span class="optional"> &lt;&lt;<em class="replaceable"><code>label</code></em>&gt;&gt; </span>]
 FOR <em class="replaceable"><code>name</code></em> IN [<span class="optional"> REVERSE </span>] <em class="replaceable"><code>expression</code></em> .. <em class="replaceable"><code>expression</code></em> [<span class="optional"> BY <em class="replaceable"><code>expression</code></em> </span>] LOOP
     <em class="replaceable"><code>statements</code></em>
@@ -553,7 +557,7 @@ END LOOP;
         <code class="literal">FOR</code> loop then the integer loop variable can be
         referenced with a qualified name, using that
         <em class="replaceable"><code>label</code></em>.
-       </p></div></div><div class="sect2" id="PLPGSQL-RECORDS-ITERATING"><div class="titlepage"><div><div><h3 class="title">43.6.6. Looping Through Query Results</h3></div></div></div><p>
+       </p></div></div><div class="sect2" id="PLPGSQL-RECORDS-ITERATING"><div class="titlepage"><div><div><h3 class="title">43.6.6. Looping through Query Results <a href="#PLPGSQL-RECORDS-ITERATING" class="id_link">#</a></h3></div></div></div><p>
      Using a different type of <code class="literal">FOR</code> loop, you can iterate through
      the results of a query and manipulate that data
      accordingly. The syntax is:
@@ -569,19 +573,29 @@ END LOOP [<span class="optional"> <em class="replaceable"><code>label</code></em
      resulting from the <em class="replaceable"><code>query</code></em> and the loop body is
      executed for each row. Here is an example:
 </p><pre class="programlisting">
-CREATE FUNCTION cs_refresh_mviews() RETURNS integer AS $$
+CREATE FUNCTION refresh_mviews() RETURNS integer AS $$
 DECLARE
     mviews RECORD;
 BEGIN
-    RAISE NOTICE 'Refreshing materialized views...';
+    RAISE NOTICE 'Refreshing all materialized views...';
 
-    FOR mviews IN SELECT * FROM cs_materialized_views ORDER BY sort_key LOOP
+    FOR mviews IN
+       SELECT n.nspname AS mv_schema,
+              c.relname AS mv_name,
+              pg_catalog.pg_get_userbyid(c.relowner) AS owner
+         FROM pg_catalog.pg_class c
+    LEFT JOIN pg_catalog.pg_namespace n ON (n.oid = c.relnamespace)
+        WHERE c.relkind = 'm'
+     ORDER BY 1
+    LOOP
 
-        -- Now "mviews" has one record from cs_materialized_views
+        -- Now "mviews" has one record with information about the materialized view
 
-        RAISE NOTICE 'Refreshing materialized view %s ...', quote_ident(mviews.mv_name);
-        EXECUTE format('TRUNCATE TABLE %I', mviews.mv_name);
-        EXECUTE format('INSERT INTO %I %s', mviews.mv_name, mviews.mv_query);
+        RAISE NOTICE 'Refreshing materialized view %.% (owner: %)...',
+                     quote_ident(mviews.mv_schema),
+                     quote_ident(mviews.mv_name),
+                     quote_ident(mviews.owner);
+        EXECUTE format('REFRESH MATERIALIZED VIEW %I.%I', mviews.mv_schema, mviews.mv_name);
     END LOOP;
 
     RAISE NOTICE 'Done refreshing materialized views.';
@@ -600,7 +614,7 @@ $$ LANGUAGE plpgsql;
      <code class="command">DELETE</code> with a <code class="literal">RETURNING</code> clause.  Some utility
      commands such as <code class="command">EXPLAIN</code> will work too.
     </p><p>
-     <span class="application">PL/pgSQL</span> variables are substituted into the query text,
+     <span class="application">PL/pgSQL</span> variables are replaced by query parameters,
      and the query plan is cached for possible re-use, as discussed in
      detail in <a class="xref" href="plpgsql-implementation.html#PLPGSQL-VAR-SUBST" title="43.11.1. Variable Substitution">Section 43.11.1</a> and
      <a class="xref" href="plpgsql-implementation.html#PLPGSQL-PLAN-CACHING" title="43.11.2. Plan Caching">Section 43.11.2</a>.
@@ -623,10 +637,10 @@ END LOOP [<span class="optional"> <em class="replaceable"><code>label</code></em
     </p><p>
      Another way to specify the query whose results should be iterated
      through is to declare it as a cursor.  This is described in
-     <a class="xref" href="plpgsql-cursors.html#PLPGSQL-CURSOR-FOR-LOOP" title="43.7.4. Looping Through a Cursor's Result">Section 43.7.4</a>.
-    </p></div><div class="sect2" id="PLPGSQL-FOREACH-ARRAY"><div class="titlepage"><div><div><h3 class="title">43.6.7. Looping Through Arrays</h3></div></div></div><p>
+     <a class="xref" href="plpgsql-cursors.html#PLPGSQL-CURSOR-FOR-LOOP" title="43.7.4. Looping through a Cursor's Result">Section 43.7.4</a>.
+    </p></div><div class="sect2" id="PLPGSQL-FOREACH-ARRAY"><div class="titlepage"><div><div><h3 class="title">43.6.7. Looping through Arrays <a href="#PLPGSQL-FOREACH-ARRAY" class="id_link">#</a></h3></div></div></div><p>
      The <code class="literal">FOREACH</code> loop is much like a <code class="literal">FOR</code> loop,
-     but instead of iterating through the rows returned by a SQL query,
+     but instead of iterating through the rows returned by an SQL query,
      it iterates through the elements of an array value.
      (In general, <code class="literal">FOREACH</code> is meant for looping through
      components of a composite-valued expression; variants for looping
@@ -698,10 +712,10 @@ NOTICE:  row = {4,5,6}
 NOTICE:  row = {7,8,9}
 NOTICE:  row = {10,11,12}
 </pre><p>
-    </p></div><div class="sect2" id="PLPGSQL-ERROR-TRAPPING"><div class="titlepage"><div><div><h3 class="title">43.6.8. Trapping Errors</h3></div></div></div><a id="id-1.8.8.8.10.2" class="indexterm"></a><p>
+    </p></div><div class="sect2" id="PLPGSQL-ERROR-TRAPPING"><div class="titlepage"><div><div><h3 class="title">43.6.8. Trapping Errors <a href="#PLPGSQL-ERROR-TRAPPING" class="id_link">#</a></h3></div></div></div><a id="id-1.8.8.8.10.2" class="indexterm"></a><p>
      By default, any error occurring in a <span class="application">PL/pgSQL</span>
-     function aborts execution of the function, and indeed of the
-     surrounding transaction as well.  You can trap errors and recover
+     function aborts execution of the function and the
+     surrounding transaction.  You can trap errors and recover
      from them by using a <code class="command">BEGIN</code> block with an
      <code class="literal">EXCEPTION</code> clause.  The syntax is an extension of the
      normal syntax for a <code class="command">BEGIN</code> block:
@@ -834,7 +848,7 @@ SELECT merge_db(1, 'dennis');
      More safety could be had by using the
      features discussed next to check that the trapped error was the one
      expected.
-    </p></div></div><br class="example-break" /><div class="sect3" id="PLPGSQL-EXCEPTION-DIAGNOSTICS"><div class="titlepage"><div><div><h4 class="title">43.6.8.1. Obtaining Information About an Error</h4></div></div></div><p>
+    </p></div></div><br class="example-break" /><div class="sect3" id="PLPGSQL-EXCEPTION-DIAGNOSTICS"><div class="titlepage"><div><div><h4 class="title">43.6.8.1. Obtaining Information about an Error <a href="#PLPGSQL-EXCEPTION-DIAGNOSTICS" class="id_link">#</a></h4></div></div></div><p>
      Exception handlers frequently need to identify the specific error that
      occurred.  There are two ways to get information about the current
      exception in <span class="application">PL/pgSQL</span>: special variables and the
@@ -860,7 +874,7 @@ GET STACKED DIAGNOSTICS <em class="replaceable"><code>variable</code></em> { = |
      (which should be of the right data type to receive it).  The currently
      available status items are shown
      in <a class="xref" href="plpgsql-control-structures.html#PLPGSQL-EXCEPTION-DIAGNOSTICS-VALUES" title="Table 43.2. Error Diagnostics Items">Table 43.2</a>.
-    </p><div class="table" id="PLPGSQL-EXCEPTION-DIAGNOSTICS-VALUES"><p class="title"><strong>Table 43.2. Error Diagnostics Items</strong></p><div class="table-contents"><table class="table" summary="Error Diagnostics Items" border="1"><colgroup><col /><col /><col /></colgroup><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">RETURNED_SQLSTATE</code></td><td><code class="type">text</code></td><td>the SQLSTATE error code of the exception</td></tr><tr><td><code class="literal">COLUMN_NAME</code></td><td><code class="type">text</code></td><td>the name of the column related to exception</td></tr><tr><td><code class="literal">CONSTRAINT_NAME</code></td><td><code class="type">text</code></td><td>the name of the constraint related to exception</td></tr><tr><td><code class="literal">PG_DATATYPE_NAME</code></td><td><code class="type">text</code></td><td>the name of the data type related to exception</td></tr><tr><td><code class="literal">MESSAGE_TEXT</code></td><td><code class="type">text</code></td><td>the text of the exception's primary message</td></tr><tr><td><code class="literal">TABLE_NAME</code></td><td><code class="type">text</code></td><td>the name of the table related to exception</td></tr><tr><td><code class="literal">SCHEMA_NAME</code></td><td><code class="type">text</code></td><td>the name of the schema related to exception</td></tr><tr><td><code class="literal">PG_EXCEPTION_DETAIL</code></td><td><code class="type">text</code></td><td>the text of the exception's detail message, if any</td></tr><tr><td><code class="literal">PG_EXCEPTION_HINT</code></td><td><code class="type">text</code></td><td>the text of the exception's hint message, if any</td></tr><tr><td><code class="literal">PG_EXCEPTION_CONTEXT</code></td><td><code class="type">text</code></td><td>line(s) of text describing the call stack at the time of the
+    </p><div class="table" id="PLPGSQL-EXCEPTION-DIAGNOSTICS-VALUES"><p class="title"><strong>Table 43.2. Error Diagnostics Items</strong></p><div class="table-contents"><table class="table" summary="Error Diagnostics Items" border="1"><colgroup><col class="col1" /><col class="col2" /><col class="col3" /></colgroup><thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">RETURNED_SQLSTATE</code></td><td><code class="type">text</code></td><td>the SQLSTATE error code of the exception</td></tr><tr><td><code class="literal">COLUMN_NAME</code></td><td><code class="type">text</code></td><td>the name of the column related to exception</td></tr><tr><td><code class="literal">CONSTRAINT_NAME</code></td><td><code class="type">text</code></td><td>the name of the constraint related to exception</td></tr><tr><td><code class="literal">PG_DATATYPE_NAME</code></td><td><code class="type">text</code></td><td>the name of the data type related to exception</td></tr><tr><td><code class="literal">MESSAGE_TEXT</code></td><td><code class="type">text</code></td><td>the text of the exception's primary message</td></tr><tr><td><code class="literal">TABLE_NAME</code></td><td><code class="type">text</code></td><td>the name of the table related to exception</td></tr><tr><td><code class="literal">SCHEMA_NAME</code></td><td><code class="type">text</code></td><td>the name of the schema related to exception</td></tr><tr><td><code class="literal">PG_EXCEPTION_DETAIL</code></td><td><code class="type">text</code></td><td>the text of the exception's detail message, if any</td></tr><tr><td><code class="literal">PG_EXCEPTION_HINT</code></td><td><code class="type">text</code></td><td>the text of the exception's hint message, if any</td></tr><tr><td><code class="literal">PG_EXCEPTION_CONTEXT</code></td><td><code class="type">text</code></td><td>line(s) of text describing the call stack at the time of the
           exception (see <a class="xref" href="plpgsql-control-structures.html#PLPGSQL-CALL-STACK" title="43.6.9. Obtaining Execution Location Information">Section 43.6.9</a>)</td></tr></tbody></table></div></div><br class="table-break" /><p>
      If the exception did not set a value for an item, an empty string
      will be returned.
@@ -880,7 +894,7 @@ EXCEPTION WHEN OTHERS THEN
                           text_var3 = PG_EXCEPTION_HINT;
 END;
 </pre><p>
-    </p></div></div><div class="sect2" id="PLPGSQL-CALL-STACK"><div class="titlepage"><div><div><h3 class="title">43.6.9. Obtaining Execution Location Information</h3></div></div></div><p>
+    </p></div></div><div class="sect2" id="PLPGSQL-CALL-STACK"><div class="titlepage"><div><div><h3 class="title">43.6.9. Obtaining Execution Location Information <a href="#PLPGSQL-CALL-STACK" class="id_link">#</a></h3></div></div></div><p>
     The <code class="command">GET DIAGNOSTICS</code> command, previously described
     in <a class="xref" href="plpgsql-statements.html#PLPGSQL-STATEMENTS-DIAGNOSTICS" title="43.5.5. Obtaining the Result Status">Section 43.5.5</a>, retrieves information
     about current execution state (whereas the <code class="command">GET STACKED
@@ -926,4 +940,4 @@ CONTEXT:  PL/pgSQL function outer_func() line 3 at RETURN
     <code class="literal">GET STACKED DIAGNOSTICS ... PG_EXCEPTION_CONTEXT</code>
     returns the same sort of stack trace, but describing the location
     at which an error was detected, rather than the current location.
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-statements.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpgsql-cursors.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.5. Basic Statements </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 43.7. Cursors</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-statements.html" title="43.5. Basic Statements">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL — SQL Procedural Language">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpgsql-cursors.html" title="43.7. Cursors">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.5. Basic Statements </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 43.7. Cursors</td></tr></table></div></body></html>

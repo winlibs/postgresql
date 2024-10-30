@@ -3,14 +3,13 @@
  */
 #include "postgres.h"
 
-#include "access/hash.h"
 #include "access/htup_details.h"
 #include "catalog/pg_type.h"
+#include "common/hashfn.h"
 #include "funcapi.h"
+#include "hstore.h"
 #include "utils/builtins.h"
 #include "utils/memutils.h"
-
-#include "hstore.h"
 
 /* old names for C functions */
 HSTORE_POLLUTE(hstore_fetchval, fetchval);
@@ -81,9 +80,7 @@ hstoreArrayToPairs(ArrayType *a, int *npairs)
 	int			i,
 				j;
 
-	deconstruct_array(a,
-					  TEXTOID, -1, false, 'i',
-					  &key_datums, &key_nulls, &key_count);
+	deconstruct_array_builtin(a, TEXTOID, &key_datums, &key_nulls, &key_count);
 
 	if (key_count == 0)
 	{
@@ -583,9 +580,7 @@ hstore_slice_to_array(PG_FUNCTION_ARGS)
 	int			key_count;
 	int			i;
 
-	deconstruct_array(key_array,
-					  TEXTOID, -1, false, 'i',
-					  &key_datums, &key_nulls, &key_count);
+	deconstruct_array_builtin(key_array, TEXTOID, &key_datums, &key_nulls, &key_count);
 
 	if (key_count == 0)
 	{
@@ -613,9 +608,9 @@ hstore_slice_to_array(PG_FUNCTION_ARGS)
 		}
 		else
 		{
-			out_datums[i] = PointerGetDatum(
-											cstring_to_text_with_len(HSTORE_VAL(entries, ptr, idx),
-																	 HSTORE_VALLEN(entries, idx)));
+			out_datums[i] =
+				PointerGetDatum(cstring_to_text_with_len(HSTORE_VAL(entries, ptr, idx),
+														 HSTORE_VALLEN(entries, idx)));
 			out_nulls[i] = false;
 		}
 	}
@@ -624,7 +619,7 @@ hstore_slice_to_array(PG_FUNCTION_ARGS)
 							  ARR_NDIM(key_array),
 							  ARR_DIMS(key_array),
 							  ARR_LBOUND(key_array),
-							  TEXTOID, -1, false, 'i');
+							  TEXTOID, -1, false, TYPALIGN_INT);
 
 	PG_RETURN_POINTER(aout);
 }
@@ -682,8 +677,8 @@ hstore_slice_to_hstore(PG_FUNCTION_ARGS)
 	}
 
 	/*
-	 * we don't use uniquePairs here because we know that the pairs list is
-	 * already sorted and uniq'ed.
+	 * we don't use hstoreUniquePairs here because we know that the pairs list
+	 * is already sorted and uniq'ed.
 	 */
 
 	out = hstorePairs(out_pairs, out_count, bufsiz);
@@ -720,8 +715,7 @@ hstore_akeys(PG_FUNCTION_ARGS)
 		d[i] = PointerGetDatum(t);
 	}
 
-	a = construct_array(d, count,
-						TEXTOID, -1, false, 'i');
+	a = construct_array_builtin(d, count, TEXTOID);
 
 	PG_RETURN_POINTER(a);
 }
@@ -768,7 +762,7 @@ hstore_avals(PG_FUNCTION_ARGS)
 	}
 
 	a = construct_md_array(d, nulls, 1, &count, &lb,
-						   TEXTOID, -1, false, 'i');
+						   TEXTOID, -1, false, TYPALIGN_INT);
 
 	PG_RETURN_POINTER(a);
 }
@@ -820,7 +814,7 @@ hstore_to_array_internal(HStore *hs, int ndims)
 
 	return construct_md_array(out_datums, out_nulls,
 							  ndims, out_size, lb,
-							  TEXTOID, -1, false, 'i');
+							  TEXTOID, -1, false, TYPALIGN_INT);
 }
 
 PG_FUNCTION_INFO_V1(hstore_to_array);
@@ -854,7 +848,7 @@ hstore_to_matrix(PG_FUNCTION_ARGS)
 
 static void
 setup_firstcall(FuncCallContext *funcctx, HStore *hs,
-				FunctionCallInfoData *fcinfo)
+				FunctionCallInfo fcinfo)
 {
 	MemoryContext oldcontext;
 	HStore	   *st;
@@ -1070,7 +1064,7 @@ hstore_each(PG_FUNCTION_ARGS)
 		tuple = heap_form_tuple(funcctx->tuple_desc, dvalues, nulls);
 		res = HeapTupleGetDatum(tuple);
 
-		SRF_RETURN_NEXT(funcctx, PointerGetDatum(res));
+		SRF_RETURN_NEXT(funcctx, res);
 	}
 
 	SRF_RETURN_DONE(funcctx);
@@ -1240,10 +1234,34 @@ hstore_hash(PG_FUNCTION_ARGS)
 								VARSIZE(hs) - VARHDRSZ);
 
 	/*
-	 * this is the only place in the code that cares whether the overall
-	 * varlena size exactly matches the true data size; this assertion should
-	 * be maintained by all the other code, but we make it explicit here.
+	 * This (along with hstore_hash_extended) is the only place in the code
+	 * that cares whether the overall varlena size exactly matches the true
+	 * data size; this assertion should be maintained by all the other code,
+	 * but we make it explicit here.
 	 */
+	Assert(VARSIZE(hs) ==
+		   (HS_COUNT(hs) != 0 ?
+			CALCDATASIZE(HS_COUNT(hs),
+						 HSE_ENDPOS(ARRPTR(hs)[2 * HS_COUNT(hs) - 1])) :
+			HSHRDSIZE));
+
+	PG_FREE_IF_COPY(hs, 0);
+	PG_RETURN_DATUM(hval);
+}
+
+PG_FUNCTION_INFO_V1(hstore_hash_extended);
+Datum
+hstore_hash_extended(PG_FUNCTION_ARGS)
+{
+	HStore	   *hs = PG_GETARG_HSTORE_P(0);
+	uint64		seed = PG_GETARG_INT64(1);
+	Datum		hval;
+
+	hval = hash_any_extended((unsigned char *) VARDATA(hs),
+							 VARSIZE(hs) - VARHDRSZ,
+							 seed);
+
+	/* See comment in hstore_hash */
 	Assert(VARSIZE(hs) ==
 		   (HS_COUNT(hs) != 0 ?
 			CALCDATASIZE(HS_COUNT(hs),

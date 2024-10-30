@@ -4,7 +4,7 @@
  *	  POSTGRES free space map for quickly finding free space in relations
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -24,6 +24,7 @@
 #include "postgres.h"
 
 #include "access/htup_details.h"
+#include "access/xloginsert.h"
 #include "access/xlogutils.h"
 #include "miscadmin.h"
 #include "storage/freespace.h"
@@ -67,7 +68,7 @@
 /*
  * Depth of the on-disk tree. We need to be able to address 2^32-1 blocks,
  * and 1626 is the smallest number that satisfies X^3 >= 2^32-1. Likewise,
- * 216 is the smallest number that satisfies X^4 >= 2^32-1. In practice,
+ * 256 is the smallest number that satisfies X^4 >= 2^32-1. In practice,
  * this means that 4096 bytes is the smallest BLCKSZ that we can get away
  * with a 3-level tree, and 512 is the smallest we support.
  */
@@ -97,7 +98,7 @@ static BlockNumber fsm_get_heap_blk(FSMAddress addr, uint16 slot);
 static BlockNumber fsm_logical_to_physical(FSMAddress addr);
 
 static Buffer fsm_readbuf(Relation rel, FSMAddress addr, bool extend);
-static void fsm_extend(Relation rel, BlockNumber fsm_nblocks);
+static Buffer fsm_extend(Relation rel, BlockNumber fsm_nblocks);
 
 /* functions to convert amount of free space to a FSM category */
 static uint8 fsm_space_avail_to_cat(Size avail);
@@ -105,12 +106,13 @@ static uint8 fsm_space_needed_to_cat(Size needed);
 static Size fsm_space_cat_to_avail(uint8 cat);
 
 /* workhorse functions for various operations */
-static int fsm_set_and_search(Relation rel, FSMAddress addr, uint16 slot,
-				   uint8 newValue, uint8 minValue);
+static int	fsm_set_and_search(Relation rel, FSMAddress addr, uint16 slot,
+							   uint8 newValue, uint8 minValue);
 static BlockNumber fsm_search(Relation rel, uint8 min_cat);
 static uint8 fsm_vacuum_page(Relation rel, FSMAddress addr,
-				BlockNumber start, BlockNumber end,
-				bool *eof);
+							 BlockNumber start, BlockNumber end,
+							 bool *eof_p);
+static bool fsm_does_block_exist(Relation rel, BlockNumber blknumber);
 
 
 /******** Public API ********/
@@ -127,6 +129,9 @@ static uint8 fsm_vacuum_page(Relation rel, FSMAddress addr,
  * amount of free space available on that page and then try again (see
  * RecordAndGetPageWithFreeSpace).  If InvalidBlockNumber is returned,
  * extend the relation.
+ *
+ * This can trigger FSM updates if any FSM entry is found to point to a block
+ * past the end of the relation.
  */
 BlockNumber
 GetPageWithFreeSpace(Relation rel, Size spaceNeeded)
@@ -165,9 +170,17 @@ RecordAndGetPageWithFreeSpace(Relation rel, BlockNumber oldPage,
 	 * Otherwise, search as usual.
 	 */
 	if (search_slot != -1)
-		return fsm_get_heap_blk(addr, search_slot);
-	else
-		return fsm_search(rel, search_cat);
+	{
+		BlockNumber blknum = fsm_get_heap_blk(addr, search_slot);
+
+		/*
+		 * Check that the blknum is actually in the relation. Don't try to
+		 * update the FSM in that case, just fall back to the other case
+		 */
+		if (fsm_does_block_exist(rel, blknum))
+			return blknum;
+	}
+	return fsm_search(rel, search_cat);
 }
 
 /*
@@ -195,7 +208,7 @@ RecordPageWithFreeSpace(Relation rel, BlockNumber heapBlk, Size spaceAvail)
  *		WAL replay
  */
 void
-XLogRecordPageWithFreeSpace(RelFileNode rnode, BlockNumber heapBlk,
+XLogRecordPageWithFreeSpace(RelFileLocator rlocator, BlockNumber heapBlk,
 							Size spaceAvail)
 {
 	int			new_cat = fsm_space_avail_to_cat(spaceAvail);
@@ -210,7 +223,8 @@ XLogRecordPageWithFreeSpace(RelFileNode rnode, BlockNumber heapBlk,
 	blkno = fsm_logical_to_physical(addr);
 
 	/* If the page doesn't exist already, extend */
-	buf = XLogReadBufferExtended(rnode, FSM_FORKNUM, blkno, RBM_ZERO_ON_ERROR);
+	buf = XLogReadBufferExtended(rlocator, FSM_FORKNUM, blkno,
+								 RBM_ZERO_ON_ERROR, InvalidBuffer);
 	LockBuffer(buf, BUFFER_LOCK_EXCLUSIVE);
 
 	page = BufferGetPage(buf);
@@ -223,7 +237,7 @@ XLogRecordPageWithFreeSpace(RelFileNode rnode, BlockNumber heapBlk,
 }
 
 /*
- * GetRecordedFreePage - return the amount of free space on a particular page,
+ * GetRecordedFreeSpace - return the amount of free space on a particular page,
  *		according to the FSM.
  */
 Size
@@ -247,30 +261,30 @@ GetRecordedFreeSpace(Relation rel, BlockNumber heapBlk)
 }
 
 /*
- * FreeSpaceMapTruncateRel - adjust for truncation of a relation.
- *
- * The caller must hold AccessExclusiveLock on the relation, to ensure that
- * other backends receive the smgr invalidation event that this function sends
- * before they access the FSM again.
+ * FreeSpaceMapPrepareTruncateRel - prepare for truncation of a relation.
  *
  * nblocks is the new size of the heap.
+ *
+ * Return the number of blocks of new FSM.
+ * If it's InvalidBlockNumber, there is nothing to truncate;
+ * otherwise the caller is responsible for calling smgrtruncate()
+ * to truncate the FSM pages, and FreeSpaceMapVacuumRange()
+ * to update upper-level pages in the FSM.
  */
-void
-FreeSpaceMapTruncateRel(Relation rel, BlockNumber nblocks)
+BlockNumber
+FreeSpaceMapPrepareTruncateRel(Relation rel, BlockNumber nblocks)
 {
 	BlockNumber new_nfsmblocks;
 	FSMAddress	first_removed_address;
 	uint16		first_removed_slot;
 	Buffer		buf;
 
-	RelationOpenSmgr(rel);
-
 	/*
 	 * If no FSM has been created yet for this relation, there's nothing to
 	 * truncate.
 	 */
-	if (!smgrexists(rel->rd_smgr, FSM_FORKNUM))
-		return;
+	if (!smgrexists(RelationGetSmgr(rel), FSM_FORKNUM))
+		return InvalidBlockNumber;
 
 	/* Get the location in the FSM of the first removed heap block */
 	first_removed_address = fsm_get_location(nblocks, &first_removed_slot);
@@ -285,7 +299,8 @@ FreeSpaceMapTruncateRel(Relation rel, BlockNumber nblocks)
 	{
 		buf = fsm_readbuf(rel, first_removed_address, false);
 		if (!BufferIsValid(buf))
-			return;				/* nothing to do; the FSM was already smaller */
+			return InvalidBlockNumber;	/* nothing to do; the FSM was already
+										 * smaller */
 		LockBuffer(buf, BUFFER_LOCK_EXCLUSIVE);
 
 		/* NO EREPORT(ERROR) from here till changes are logged */
@@ -294,14 +309,25 @@ FreeSpaceMapTruncateRel(Relation rel, BlockNumber nblocks)
 		fsm_truncate_avail(BufferGetPage(buf), first_removed_slot);
 
 		/*
-		 * Truncation of a relation is WAL-logged at a higher-level, and we
-		 * will be called at WAL replay. But if checksums are enabled, we need
-		 * to still write a WAL record to protect against a torn page, if the
-		 * page is flushed to disk before the truncation WAL record. We cannot
-		 * use MarkBufferDirtyHint here, because that will not dirty the page
-		 * during recovery.
+		 * This change is non-critical, because fsm_does_block_exist() would
+		 * stop us from returning a truncated-away block.  However, since this
+		 * may remove up to SlotsPerFSMPage slots, it's nice to avoid the cost
+		 * of that many fsm_does_block_exist() rejections.  Use a full
+		 * MarkBufferDirty(), not MarkBufferDirtyHint().
 		 */
 		MarkBufferDirty(buf);
+
+		/*
+		 * WAL-log like MarkBufferDirtyHint() might have done, just to avoid
+		 * differing from the rest of the file in this respect.  This is
+		 * optional; see README mention of full page images.  XXX consider
+		 * XLogSaveBufferForHint() for even closer similarity.
+		 *
+		 * A higher-level operation calls us at WAL replay.  If we crash
+		 * before the XLOG_SMGR_TRUNCATE flushes to disk, main fork length has
+		 * not changed, and our fork remains valid.  If we crash after that
+		 * flush, redo will return here.
+		 */
 		if (!InRecovery && RelationNeedsWAL(rel) && XLogHintBitIsNeeded())
 			log_newpage_buffer(buf, false);
 
@@ -314,29 +340,12 @@ FreeSpaceMapTruncateRel(Relation rel, BlockNumber nblocks)
 	else
 	{
 		new_nfsmblocks = fsm_logical_to_physical(first_removed_address);
-		if (smgrnblocks(rel->rd_smgr, FSM_FORKNUM) <= new_nfsmblocks)
-			return;				/* nothing to do; the FSM was already smaller */
+		if (smgrnblocks(RelationGetSmgr(rel), FSM_FORKNUM) <= new_nfsmblocks)
+			return InvalidBlockNumber;	/* nothing to do; the FSM was already
+										 * smaller */
 	}
 
-	/* Truncate the unused FSM pages, and send smgr inval message */
-	smgrtruncate(rel->rd_smgr, FSM_FORKNUM, new_nfsmblocks);
-
-	/*
-	 * We might as well update the local smgr_fsm_nblocks setting.
-	 * smgrtruncate sent an smgr cache inval message, which will cause other
-	 * backends to invalidate their copy of smgr_fsm_nblocks, and this one too
-	 * at the next command boundary.  But this ensures it isn't outright wrong
-	 * until then.
-	 */
-	if (rel->rd_smgr)
-		rel->rd_smgr->smgr_fsm_nblocks = new_nfsmblocks;
-
-	/*
-	 * Update upper-level FSM pages to account for the truncation.  This is
-	 * important because the just-truncated pages were likely marked as
-	 * all-free, and would be preferentially selected.
-	 */
-	FreeSpaceMapVacuumRange(rel, nblocks, InvalidBlockNumber);
+	return new_nfsmblocks;
 }
 
 /*
@@ -417,7 +426,7 @@ fsm_space_cat_to_avail(uint8 cat)
 
 /*
  * Which category does a page need to have, to accommodate x bytes of data?
- * While fsm_size_to_avail_cat() rounds down, this needs to round up.
+ * While fsm_space_avail_to_cat() rounds down, this needs to round up.
  */
 static uint8
 fsm_space_needed_to_cat(Size needed)
@@ -546,8 +555,14 @@ fsm_readbuf(Relation rel, FSMAddress addr, bool extend)
 {
 	BlockNumber blkno = fsm_logical_to_physical(addr);
 	Buffer		buf;
+	SMgrRelation reln;
 
-	RelationOpenSmgr(rel);
+	/*
+	 * Caution: re-using this smgr pointer could fail if the relcache entry
+	 * gets closed.  It's safe as long as we only do smgr-level operations
+	 * between here and the last use of the pointer.
+	 */
+	reln = RelationGetSmgr(rel);
 
 	/*
 	 * If we haven't cached the size of the FSM yet, check it first.  Also
@@ -555,34 +570,41 @@ fsm_readbuf(Relation rel, FSMAddress addr, bool extend)
 	 * value might be stale.  (We send smgr inval messages on truncation, but
 	 * not on extension.)
 	 */
-	if (rel->rd_smgr->smgr_fsm_nblocks == InvalidBlockNumber ||
-		blkno >= rel->rd_smgr->smgr_fsm_nblocks)
+	if (reln->smgr_cached_nblocks[FSM_FORKNUM] == InvalidBlockNumber ||
+		blkno >= reln->smgr_cached_nblocks[FSM_FORKNUM])
 	{
-		if (smgrexists(rel->rd_smgr, FSM_FORKNUM))
-			rel->rd_smgr->smgr_fsm_nblocks = smgrnblocks(rel->rd_smgr,
-														 FSM_FORKNUM);
+		/* Invalidate the cache so smgrnblocks asks the kernel. */
+		reln->smgr_cached_nblocks[FSM_FORKNUM] = InvalidBlockNumber;
+		if (smgrexists(reln, FSM_FORKNUM))
+			smgrnblocks(reln, FSM_FORKNUM);
 		else
-			rel->rd_smgr->smgr_fsm_nblocks = 0;
-	}
-
-	/* Handle requests beyond EOF */
-	if (blkno >= rel->rd_smgr->smgr_fsm_nblocks)
-	{
-		if (extend)
-			fsm_extend(rel, blkno + 1);
-		else
-			return InvalidBuffer;
+			reln->smgr_cached_nblocks[FSM_FORKNUM] = 0;
 	}
 
 	/*
-	 * Use ZERO_ON_ERROR mode, and initialize the page if necessary. The FSM
-	 * information is not accurate anyway, so it's better to clear corrupt
-	 * pages than error out. Since the FSM changes are not WAL-logged, the
-	 * so-called torn page problem on crash can lead to pages with corrupt
-	 * headers, for example.
+	 * For reading we use ZERO_ON_ERROR mode, and initialize the page if
+	 * necessary.  The FSM information is not accurate anyway, so it's better
+	 * to clear corrupt pages than error out. Since the FSM changes are not
+	 * WAL-logged, the so-called torn page problem on crash can lead to pages
+	 * with corrupt headers, for example.
 	 *
-	 * The initialize-the-page part is trickier than it looks, because of the
-	 * possibility of multiple backends doing this concurrently, and our
+	 * We use the same path below to initialize pages when extending the
+	 * relation, as a concurrent extension can end up with vm_extend()
+	 * returning an already-initialized page.
+	 */
+	if (blkno >= reln->smgr_cached_nblocks[FSM_FORKNUM])
+	{
+		if (extend)
+			buf = fsm_extend(rel, blkno + 1);
+		else
+			return InvalidBuffer;
+	}
+	else
+		buf = ReadBufferExtended(rel, FSM_FORKNUM, blkno, RBM_ZERO_ON_ERROR, NULL);
+
+	/*
+	 * Initializing the page when needed is trickier than it looks, because of
+	 * the possibility of multiple backends doing this concurrently, and our
 	 * desire to not uselessly take the buffer lock in the normal path where
 	 * the page is OK.  We must take the lock to initialize the page, so
 	 * recheck page newness after we have the lock, in case someone else
@@ -595,7 +617,6 @@ fsm_readbuf(Relation rel, FSMAddress addr, bool extend)
 	 * long as it doesn't depend on the page header having correct contents.
 	 * Current usage is safe because PageGetContents() does not require that.
 	 */
-	buf = ReadBufferExtended(rel, FSM_FORKNUM, blkno, RBM_ZERO_ON_ERROR, NULL);
 	if (PageIsNew(BufferGetPage(buf)))
 	{
 		LockBuffer(buf, BUFFER_LOCK_EXCLUSIVE);
@@ -611,53 +632,14 @@ fsm_readbuf(Relation rel, FSMAddress addr, bool extend)
  * it if necessary with empty pages. And by empty, I mean pages filled
  * with zeros, meaning there's no free space.
  */
-static void
+static Buffer
 fsm_extend(Relation rel, BlockNumber fsm_nblocks)
 {
-	BlockNumber fsm_nblocks_now;
-	PGAlignedBlock pg;
-
-	PageInit((Page) pg.data, BLCKSZ, 0);
-
-	/*
-	 * We use the relation extension lock to lock out other backends trying to
-	 * extend the FSM at the same time. It also locks out extension of the
-	 * main fork, unnecessarily, but extending the FSM happens seldom enough
-	 * that it doesn't seem worthwhile to have a separate lock tag type for
-	 * it.
-	 *
-	 * Note that another backend might have extended or created the relation
-	 * by the time we get the lock.
-	 */
-	LockRelationForExtension(rel, ExclusiveLock);
-
-	/* Might have to re-open if a cache flush happened */
-	RelationOpenSmgr(rel);
-
-	/*
-	 * Create the FSM file first if it doesn't exist.  If smgr_fsm_nblocks is
-	 * positive then it must exist, no need for an smgrexists call.
-	 */
-	if ((rel->rd_smgr->smgr_fsm_nblocks == 0 ||
-		 rel->rd_smgr->smgr_fsm_nblocks == InvalidBlockNumber) &&
-		!smgrexists(rel->rd_smgr, FSM_FORKNUM))
-		smgrcreate(rel->rd_smgr, FSM_FORKNUM, false);
-
-	fsm_nblocks_now = smgrnblocks(rel->rd_smgr, FSM_FORKNUM);
-
-	while (fsm_nblocks_now < fsm_nblocks)
-	{
-		PageSetChecksumInplace((Page) pg.data, fsm_nblocks_now);
-
-		smgrextend(rel->rd_smgr, FSM_FORKNUM, fsm_nblocks_now,
-				   pg.data, false);
-		fsm_nblocks_now++;
-	}
-
-	/* Update local cache with the up-to-date size */
-	rel->rd_smgr->smgr_fsm_nblocks = fsm_nblocks_now;
-
-	UnlockRelationForExtension(rel, ExclusiveLock);
+	return ExtendBufferedRelTo(BMR_REL(rel), FSM_FORKNUM, NULL,
+							   EB_CREATE_FORK_IF_NEEDED |
+							   EB_CLEAR_SIZE_CACHE,
+							   fsm_nblocks,
+							   RBM_ZERO_ON_ERROR);
 }
 
 /*
@@ -722,8 +704,15 @@ fsm_search(Relation rel, uint8 min_cat)
 									(addr.level == FSM_BOTTOM_LEVEL),
 									false);
 			if (slot == -1)
+			{
 				max_avail = fsm_get_max_avail(BufferGetPage(buf));
-			UnlockReleaseBuffer(buf);
+				UnlockReleaseBuffer(buf);
+			}
+			else
+			{
+				/* Keep the pin for possible update below */
+				LockBuffer(buf, BUFFER_LOCK_UNLOCK);
+			}
 		}
 		else
 			slot = -1;
@@ -735,8 +724,37 @@ fsm_search(Relation rel, uint8 min_cat)
 			 * bottom.
 			 */
 			if (addr.level == FSM_BOTTOM_LEVEL)
-				return fsm_get_heap_blk(addr, slot);
+			{
+				BlockNumber blkno = fsm_get_heap_blk(addr, slot);
+				Page		page;
 
+				if (fsm_does_block_exist(rel, blkno))
+				{
+					ReleaseBuffer(buf);
+					return blkno;
+				}
+
+				/*
+				 * Block is past the end of the relation.  Update FSM, and
+				 * restart from root.  The usual "advancenext" behavior is
+				 * pessimal for this rare scenario, since every later slot is
+				 * unusable in the same way.  We could zero all affected slots
+				 * on the same FSM page, but don't bet on the benefits of that
+				 * optimization justifying its compiled code bulk.
+				 */
+				page = BufferGetPage(buf);
+				LockBuffer(buf, BUFFER_LOCK_EXCLUSIVE);
+				fsm_set_avail(page, slot, 0);
+				MarkBufferDirtyHint(buf, false);
+				UnlockReleaseBuffer(buf);
+				if (restarts++ > 10000) /* same rationale as below */
+					return InvalidBlockNumber;
+				addr = FSM_ROOT_ADDRESS;
+			}
+			else
+			{
+				ReleaseBuffer(buf);
+			}
 			addr = fsm_get_child(addr, slot);
 		}
 		else if (addr.level == FSM_ROOT_LEVEL)
@@ -903,4 +921,27 @@ fsm_vacuum_page(Relation rel, FSMAddress addr,
 	ReleaseBuffer(buf);
 
 	return max_avail;
+}
+
+
+/*
+ * Check whether a block number is past the end of the relation.  This can
+ * happen after WAL replay, if the FSM reached disk but newly-extended pages
+ * it refers to did not.
+ */
+static bool
+fsm_does_block_exist(Relation rel, BlockNumber blknumber)
+{
+	SMgrRelation smgr = RelationGetSmgr(rel);
+
+	/*
+	 * If below the cached nblocks, the block surely exists.  Otherwise, we
+	 * face a trade-off.  We opt to compare to a fresh nblocks, incurring
+	 * lseek() overhead.  The alternative would be to assume the block does
+	 * not exist, but that would cause FSM to set zero space available for
+	 * blocks that main fork extension just recorded.
+	 */
+	return ((BlockNumberIsValid(smgr->smgr_cached_nblocks[MAIN_FORKNUM]) &&
+			 blknumber < smgr->smgr_cached_nblocks[MAIN_FORKNUM]) ||
+			blknumber < RelationGetNumberOfBlocks(rel));
 }

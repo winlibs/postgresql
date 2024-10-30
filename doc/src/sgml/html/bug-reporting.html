@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>5. Bug Reporting Guidelines</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="resources.html" title="4. Further Information" /><link rel="next" href="tutorial.html" title="Part I. Tutorial" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">5. Bug Reporting Guidelines</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="resources.html" title="4. Further Information">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="preface.html" title="Preface">Up</a></td><th width="60%" align="center">Preface</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="tutorial.html" title="Part I. Tutorial">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="BUG-REPORTING"><div class="titlepage"><div><div><h2 class="title" style="clear: both">5. Bug Reporting Guidelines</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="bug-reporting.html#id-1.3.8.5">5.1. Identifying Bugs</a></span></dt><dt><span class="sect2"><a href="bug-reporting.html#id-1.3.8.6">5.2. What to Report</a></span></dt><dt><span class="sect2"><a href="bug-reporting.html#id-1.3.8.7">5.3. Where to Report Bugs</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>5. Bug Reporting Guidelines</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="resources.html" title="4. Further Information" /><link rel="next" href="tutorial.html" title="Part I. Tutorial" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">5. Bug Reporting Guidelines</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="resources.html" title="4. Further Information">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="preface.html" title="Preface">Up</a></td><th width="60%" align="center">Preface</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="tutorial.html" title="Part I. Tutorial">Next</a></td></tr></table><hr /></div><div class="sect1" id="BUG-REPORTING"><div class="titlepage"><div><div><h2 class="title" style="clear: both">5. Bug Reporting Guidelines <a href="#BUG-REPORTING" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="bug-reporting.html#BUG-REPORTING-IDENTIFYING-BUGS">5.1. Identifying Bugs</a></span></dt><dt><span class="sect2"><a href="bug-reporting.html#BUG-REPORTING-WHAT-TO-REPORT">5.2. What to Report</a></span></dt><dt><span class="sect2"><a href="bug-reporting.html#BUG-REPORTING-WHERE-TO-REPORT-BUGS">5.3. Where to Report Bugs</a></span></dt></dl></div><p>
   When you find a bug in <span class="productname">PostgreSQL</span> we want to
   hear about it. Your bug reports play an important part in making
   <span class="productname">PostgreSQL</span> more reliable because even the utmost
@@ -18,7 +18,7 @@
   cannot be fixed before some major rewrite we might be planning is done. Or
   perhaps it is simply too hard and there are more important things on the agenda.
   If you need help immediately, consider obtaining a commercial support contract.
- </p><div class="sect2" id="id-1.3.8.5"><div class="titlepage"><div><div><h3 class="title">5.1. Identifying Bugs</h3></div></div></div><p>
+ </p><div class="sect2" id="BUG-REPORTING-IDENTIFYING-BUGS"><div class="titlepage"><div><div><h3 class="title">5.1. Identifying Bugs <a href="#BUG-REPORTING-IDENTIFYING-BUGS" class="id_link">#</a></h3></div></div></div><p>
    Before you report a bug, please read and re-read the
    documentation to verify that you can really do whatever it is you are
    trying. If it is not clear from the documentation whether you can do
@@ -56,7 +56,7 @@
    Before you continue, check on the TODO list and in the FAQ to see if your bug is
    already known. If you cannot decode the information on the TODO list, report your
    problem. The least we can do is make the TODO list clearer.
-  </p></div><div class="sect2" id="id-1.3.8.6"><div class="titlepage"><div><div><h3 class="title">5.2. What to Report</h3></div></div></div><p>
+  </p></div><div class="sect2" id="BUG-REPORTING-WHAT-TO-REPORT"><div class="titlepage"><div><div><h3 class="title">5.2. What to Report <a href="#BUG-REPORTING-WHAT-TO-REPORT" class="id_link">#</a></h3></div></div></div><p>
    The most important thing to remember about bug reporting is to state all
    the facts and only facts. Do not speculate what you think went wrong, what
    <span class="quote">“<span class="quote">it seemed to do</span>”</span>, or which part of the program has a fault.
@@ -154,7 +154,7 @@
       subversion the package might have. If you are talking about a Git
       snapshot, mention that, including the commit hash.
      </p><p>
-      If your version is older than 11.4 we will almost certainly
+      If your version is older than 16.4 we will almost certainly
       tell you to upgrade. There are many bug fixes and improvements
       in each new release, so it is quite possible that a bug you have
       encountered in an older release of <span class="productname">PostgreSQL</span>
@@ -168,7 +168,7 @@
       C library, processor, memory information, and so on. In most
       cases it is sufficient to report the vendor and version, but do
       not assume everyone knows what exactly <span class="quote">“<span class="quote">Debian</span>”</span>
-      contains or that everyone runs on i386s. If you have
+      contains or that everyone runs on x86_64. If you have
       installation problems then information about the toolchain on
       your machine (compiler, <span class="application">make</span>, and so
       on) is also necessary.
@@ -198,7 +198,7 @@
    Also, client programs such as the interactive frontend <span class="quote">“<span class="quote"><span class="application">psql</span></span>”</span>
    are completely separate from the backend.  Please try to be specific
    about whether the problem is on the client or server side.
-  </p></div><div class="sect2" id="id-1.3.8.7"><div class="titlepage"><div><div><h3 class="title">5.3. Where to Report Bugs</h3></div></div></div><p>
+  </p></div><div class="sect2" id="BUG-REPORTING-WHERE-TO-REPORT-BUGS"><div class="titlepage"><div><div><h3 class="title">5.3. Where to Report Bugs <a href="#BUG-REPORTING-WHERE-TO-REPORT-BUGS" class="id_link">#</a></h3></div></div></div><p>
    In general, send bug reports to the bug report mailing list at
    <code class="email">&lt;<a class="email" href="mailto:pgsql-bugs@lists.postgresql.org">pgsql-bugs@lists.postgresql.org</a>&gt;</code>.
    You are requested to use a descriptive subject for your email
@@ -245,4 +245,4 @@
     will be some delay before the email is delivered. If you wish to subscribe
     to the lists, please visit
     <a class="ulink" href="https://lists.postgresql.org/" target="_top">https://lists.postgresql.org/</a> for instructions.
-   </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="resources.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="preface.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="tutorial.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4. Further Information </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Part I. Tutorial</td></tr></table></div></body></html>
+   </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="resources.html" title="4. Further Information">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="preface.html" title="Preface">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="tutorial.html" title="Part I. Tutorial">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4. Further Information </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> Part I. Tutorial</td></tr></table></div></body></html>

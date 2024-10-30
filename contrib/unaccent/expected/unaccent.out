@@ -6,23 +6,47 @@ SELECT getdatabaseencoding();
  UTF8
 (1 row)
 
-SET client_encoding TO 'KOI8';
+SET client_encoding TO 'UTF8';
 SELECT unaccent('foobar');
  unaccent 
 ----------
  foobar
 (1 row)
 
-SELECT unaccent('£ÌËÁ');
+SELECT unaccent('Ñ‘Ð»ÐºÐ°');
  unaccent 
 ----------
- ÅÌËÁ
+ ÐµÐ»ÐºÐ°
 (1 row)
 
-SELECT unaccent('³öéë');
+SELECT unaccent('ÐÐ–Ð˜Ðš');
  unaccent 
 ----------
- åöéë
+ Ð•Ð–Ð˜Ðš
+(1 row)
+
+SELECT unaccent('ËƒË–Ë—Ëœ');
+ unaccent 
+----------
+ >+-~
+(1 row)
+
+SELECT unaccent('AÌ€');  -- Remove combining diacritical 0x0300
+ unaccent 
+----------
+ A
+(1 row)
+
+SELECT unaccent('â„ƒâ„‰'); -- degree signs
+ unaccent 
+----------
+ Â°CÂ°F
+(1 row)
+
+SELECT unaccent('â„—'); -- sound recording copyright
+ unaccent 
+----------
+ (P)
 (1 row)
 
 SELECT unaccent('unaccent', 'foobar');
@@ -31,16 +55,40 @@ SELECT unaccent('unaccent', 'foobar');
  foobar
 (1 row)
 
-SELECT unaccent('unaccent', '£ÌËÁ');
+SELECT unaccent('unaccent', 'Ñ‘Ð»ÐºÐ°');
  unaccent 
 ----------
- ÅÌËÁ
+ ÐµÐ»ÐºÐ°
 (1 row)
 
-SELECT unaccent('unaccent', '³öéë');
+SELECT unaccent('unaccent', 'ÐÐ–Ð˜Ðš');
  unaccent 
 ----------
- åöéë
+ Ð•Ð–Ð˜Ðš
+(1 row)
+
+SELECT unaccent('unaccent', 'ËƒË–Ë—Ëœ');
+ unaccent 
+----------
+ >+-~
+(1 row)
+
+SELECT unaccent('unaccent', 'AÌ€');
+ unaccent 
+----------
+ A
+(1 row)
+
+SELECT unaccent('unaccent', 'â„ƒâ„‰');
+ unaccent 
+----------
+ Â°CÂ°F
+(1 row)
+
+SELECT unaccent('unaccent', 'â„—');
+ unaccent 
+----------
+ (P)
 (1 row)
 
 SELECT ts_lexize('unaccent', 'foobar');
@@ -49,15 +97,47 @@ SELECT ts_lexize('unaccent', 'foobar');
  
 (1 row)
 
-SELECT ts_lexize('unaccent', '£ÌËÁ');
+SELECT ts_lexize('unaccent', 'Ñ‘Ð»ÐºÐ°');
  ts_lexize 
 -----------
- {ÅÌËÁ}
+ {ÐµÐ»ÐºÐ°}
 (1 row)
 
-SELECT ts_lexize('unaccent', '³öéë');
+SELECT ts_lexize('unaccent', 'ÐÐ–Ð˜Ðš');
  ts_lexize 
 -----------
- {åöéë}
+ {Ð•Ð–Ð˜Ðš}
+(1 row)
+
+SELECT ts_lexize('unaccent', 'ËƒË–Ë—Ëœ');
+ ts_lexize 
+-----------
+ {>+-~}
+(1 row)
+
+SELECT ts_lexize('unaccent', 'AÌ€');
+ ts_lexize 
+-----------
+ {A}
+(1 row)
+
+SELECT ts_lexize('unaccent', 'â„ƒâ„‰');
+ ts_lexize 
+-----------
+ {Â°CÂ°F}
+(1 row)
+
+SELECT ts_lexize('unaccent', 'â„—');
+ ts_lexize 
+-----------
+ {(P)}
+(1 row)
+
+-- Controversial case.  Black-Letter Capital H (U+210C) is translated by
+-- Latin-ASCII.xml as 'x', but it should be 'H'.
+SELECT unaccent('â„Œ');
+ unaccent 
+----------
+ x
 (1 row)
 

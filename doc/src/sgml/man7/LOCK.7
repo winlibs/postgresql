@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: LOCK
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "LOCK" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "LOCK" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -143,25 +143,30 @@ should not wait for any conflicting locks to be released: if the specified lock(
 .RE
 .SH "NOTES"
 .PP
-LOCK TABLE \&.\&.\&. IN ACCESS SHARE MODE
-requires
+To lock a table, the user must have the right privilege for the specified
+\fIlockmode\fR, or be the table\*(Aqs owner or a superuser\&. If the user has
+UPDATE,
+DELETE, or
+TRUNCATE
+privileges on the table, any
+\fIlockmode\fR
+is permitted\&. If the user has
+INSERT
+privileges on the table,
+ROW EXCLUSIVE MODE
+(or a less\-conflicting mode as described in
+Section\ \&13.3) is permitted\&. If a user has
 SELECT
-privileges on the target table\&.
-LOCK TABLE \&.\&.\&. IN ROW EXCLUSIVE MODE
-requires
-INSERT,
-UPDATE,
-DELETE, or
-TRUNCATE
-privileges on the target table\&. All other forms of
-\fBLOCK\fR
-require table\-level
-UPDATE,
-DELETE, or
-TRUNCATE
-privileges\&.
+privileges on the table,
+ACCESS SHARE MODE
+is permitted\&.
 .PP
-The user performing the lock on the view must have the corresponding privilege on the view\&. In addition the view\*(Aqs owner must have the relevant privileges on the underlying base relations, but the user performing the lock does not need any permissions on the underlying base relations\&.
+The user performing the lock on the view must have the corresponding privilege on the view\&. In addition, by default, the view\*(Aqs owner must have the relevant privileges on the underlying base relations, whereas the user performing the lock does not need any permissions on the underlying base relations\&. However, if the view has
+security_invoker
+set to
+true
+(see
+\fBCREATE VIEW\fR), the user performing the lock, rather than the view owner, must have the relevant privileges on the underlying base relations\&.
 .PP
 \fBLOCK TABLE\fR
 is useless outside a transaction block: the lock would remain held only to the completion of the statement\&. Therefore
@@ -169,11 +174,11 @@ PostgreSQL
 reports an error if
 \fBLOCK\fR
 is used outside a transaction block\&. Use
-\fBBEGIN\fR(7)
+\fBBEGIN\fR
 and
-\fBCOMMIT\fR(7)
+\fBCOMMIT\fR
 (or
-\fBROLLBACK\fR(7)) to define a transaction block\&.
+\fBROLLBACK\fR) to define a transaction block\&.
 .PP
 \fBLOCK TABLE\fR
 only deals with table\-level locks, and so the mode names involving
@@ -184,11 +189,11 @@ mode is a shareable table lock\&. Keep in mind that all the lock modes have iden
 \fBLOCK TABLE\fR
 is concerned, differing only in the rules about which modes conflict with which\&. For information on how to acquire an actual row\-level lock, see
 Section\ \&13.3.2
-and the
+and
 The Locking Clause
 in the
-\fBSELECT\fR
-reference documentation\&.
+\fBSELECT\fR(7)
+documentation\&.
 .SH "EXAMPLES"
 .PP
 Obtain a

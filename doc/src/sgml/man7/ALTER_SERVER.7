@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER SERVER
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER SERVER" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER SERVER" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,7 @@ ALTER_SERVER \- change the definition of a foreign server
 .nf
 ALTER SERVER \fIname\fR [ VERSION \*(Aq\fInew_version\fR\*(Aq ]
     [ OPTIONS ( [ ADD | SET | DROP ] \fIoption\fR [\*(Aq\fIvalue\fR\*(Aq] [, \&.\&.\&. ] ) ]
-ALTER SERVER \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+ALTER SERVER \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 ALTER SERVER \fIname\fR RENAME TO \fInew_name\fR
 .fi
 .SH "DESCRIPTION"
@@ -42,7 +42,9 @@ ALTER SERVER \fIname\fR RENAME TO \fInew_name\fR
 \fBALTER SERVER\fR
 changes the definition of a foreign server\&. The first form changes the server version string or the generic options of the server (at least one clause is required)\&. The second form changes the owner of the server\&.
 .PP
-To alter the server you must be the owner of the server\&. Additionally to alter the owner, you must own the server and also be a direct or indirect member of the new owning role, and you must have
+To alter the server you must be the owner of the server\&. Additionally to alter the owner, you must be able to
+SET ROLE
+to the new owning role, and you must have
 USAGE
 privilege on the server\*(Aqs foreign\-data wrapper\&. (Note that superusers satisfy all these criteria automatically\&.)
 .SH "PARAMETERS"

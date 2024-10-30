@@ -15,7 +15,7 @@
  * The error constants are taken from the Frambak Bakfram LGSOCKET
  * library guys who in turn took them from the Winsock FAQ.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  */
@@ -271,10 +271,6 @@ struct MessageDLL
  * Returns a description of the socket error by first trying
  * to find it in the lookup table, and if that fails, tries
  * to load any of the winsock dlls to find that message.
- * The DLL thing works from Nt4 (spX ?) up, but some special
- * versions of winsock might have this as well (seen on Win98 SE
- * special install)			   / Magnus Naeslund (mag@fbab.net)
- *
  */
 
 const char *
@@ -291,8 +287,7 @@ winsock_strerror(int err, char *strerrbuf, size_t buflen)
 		if (!dlls[i].loaded)
 		{
 			dlls[i].loaded = 1; /* Only load once */
-			dlls[i].handle = (void *) LoadLibraryEx(
-													dlls[i].dll_name,
+			dlls[i].handle = (void *) LoadLibraryEx(dlls[i].dll_name,
 													0,
 													LOAD_LIBRARY_AS_DATAFILE);
 		}
@@ -304,13 +299,11 @@ winsock_strerror(int err, char *strerrbuf, size_t buflen)
 			| FORMAT_MESSAGE_IGNORE_INSERTS
 			| (dlls[i].handle ? FORMAT_MESSAGE_FROM_HMODULE : 0);
 
-		success = 0 != FormatMessage(
-									 flags,
+		success = 0 != FormatMessage(flags,
 									 dlls[i].handle, err,
 									 MAKELANGID(LANG_ENGLISH, SUBLANG_DEFAULT),
 									 strerrbuf, buflen - 64,
-									 0
-			);
+									 0);
 	}
 
 	if (!success)

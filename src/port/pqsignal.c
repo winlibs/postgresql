@@ -4,7 +4,7 @@
  *	  reliable BSD-style signal(2) routine stolen from RWW who stole it
  *	  from Stevens...
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -29,7 +29,9 @@
 
 #include <signal.h>
 
-#if !defined(WIN32) || defined(FRONTEND)
+#ifndef FRONTEND
+#include "libpq/pqsignal.h"
+#endif
 
 /*
  * Set up a signal handler, with SA_RESTART, for signal "signo"
@@ -39,7 +41,7 @@
 pqsigfunc
 pqsignal(int signo, pqsigfunc func)
 {
-#ifndef WIN32
+#if !(defined(WIN32) && defined(FRONTEND))
 	struct sigaction act,
 				oact;
 
@@ -53,38 +55,8 @@ pqsignal(int signo, pqsigfunc func)
 	if (sigaction(signo, &act, &oact) < 0)
 		return SIG_ERR;
 	return oact.sa_handler;
-#else							/* WIN32 */
+#else
+	/* Forward to Windows native signal system. */
 	return signal(signo, func);
 #endif
 }
-
-/*
- * Set up a signal handler, without SA_RESTART, for signal "signo"
- *
- * Returns the previous handler.
- *
- * On Windows, this would be identical to pqsignal(), so don't bother.
- */
-#ifndef WIN32
-
-pqsigfunc
-pqsignal_no_restart(int signo, pqsigfunc func)
-{
-	struct sigaction act,
-				oact;
-
-	act.sa_handler = func;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;
-#ifdef SA_NOCLDSTOP
-	if (signo == SIGCHLD)
-		act.sa_flags |= SA_NOCLDSTOP;
-#endif
-	if (sigaction(signo, &act, &oact) < 0)
-		return SIG_ERR;
-	return oact.sa_handler;
-}
-
-#endif							/* !WIN32 */
-
-#endif							/* !defined(WIN32) || defined(FRONTEND) */

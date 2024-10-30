@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SET
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "SET" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "SET" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,16 +33,18 @@ SET \- change a run\-time parameter
 .sp
 .nf
 SET [ SESSION | LOCAL ] \fIconfiguration_parameter\fR { TO | = } { \fIvalue\fR | \*(Aq\fIvalue\fR\*(Aq | DEFAULT }
-SET [ SESSION | LOCAL ] TIME ZONE { \fItimezone\fR | LOCAL | DEFAULT }
+SET [ SESSION | LOCAL ] TIME ZONE { \fIvalue\fR | \*(Aq\fIvalue\fR\*(Aq | LOCAL | DEFAULT }
 .fi
 .SH "DESCRIPTION"
 .PP
 The
 \fBSET\fR
 command changes run\-time configuration parameters\&. Many of the run\-time parameters listed in
-Chapter\ \&19
+Chapter\ \&20
 can be changed on\-the\-fly with
-\fBSET\fR\&. (But some require superuser privileges to change, and others cannot be changed after server or session start\&.)
+\fBSET\fR\&. (Some parameters can only be changed by superusers and users who have been granted
+SET
+privilege on that parameter\&. There are also parameters that cannot be changed after server or session start\&.)
 \fBSET\fR
 only affects the value used by the current session\&.
 .PP
@@ -132,7 +134,7 @@ or
 \fIconfiguration_parameter\fR
 .RS 4
 Name of a settable run\-time parameter\&. Available parameters are documented in
-Chapter\ \&19
+Chapter\ \&20
 and below\&.
 .RE
 .PP
@@ -146,7 +148,7 @@ had been executed in the current session)\&.
 .RE
 .PP
 Besides the configuration parameters documented in
-Chapter\ \&19, there are a few that can only be adjusted using the
+Chapter\ \&20, there are a few that can only be adjusted using the
 \fBSET\fR
 command or that have a special syntax:
 .PP
@@ -167,7 +169,7 @@ SET client_encoding TO \fIvalue\fR\&.
 SEED
 .RS 4
 Sets the internal seed for the random number generator (the function
-\fBrandom\fR)\&. Allowed values are floating\-point numbers between \-1 and 1, which are then multiplied by 2^31\-1\&.
+\fBrandom\fR)\&. Allowed values are floating\-point numbers between \-1 and 1 inclusive\&.
 .sp
 The seed can also be set by invoking the function
 \fBsetseed\fR:
@@ -185,9 +187,9 @@ SELECT setseed(\fIvalue\fR);
 .PP
 TIME ZONE
 .RS 4
-SET TIME ZONE \fIvalue\fR
+SET TIME ZONE \*(Aq\fIvalue\fR\*(Aq
 is an alias for
-SET timezone TO \fIvalue\fR\&. The syntax
+SET timezone TO \*(Aq\fIvalue\fR\*(Aq\&. The syntax
 SET TIME ZONE
 allows special syntax for the time zone specification\&. Here are examples of valid values:
 .PP
@@ -225,7 +227,8 @@ SET TIME ZONE \-7,
 would report
 <\-07>+07\&.
 .sp
-See
+Time zone abbreviations are not supported by
+\fBSET\fR; see
 Section\ \&8.5.3
 for more information about time zones\&.
 .RE
@@ -234,7 +237,7 @@ for more information about time zones\&.
 The function
 \fBset_config\fR
 provides equivalent functionality; see
-Section\ \&9.26\&. Also, it is possible to UPDATE the
+Section\ \&9.27.1\&. Also, it is possible to UPDATE the
 pg_settings
 system view to perform the equivalent of
 \fBSET\fR\&.

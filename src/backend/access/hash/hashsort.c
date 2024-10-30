@@ -14,7 +14,7 @@
  * plenty of locality of access.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -26,7 +26,10 @@
 #include "postgres.h"
 
 #include "access/hash.h"
+#include "commands/progress.h"
 #include "miscadmin.h"
+#include "pgstat.h"
+#include "port/pg_bitutils.h"
 #include "utils/tuplesort.h"
 
 
@@ -39,9 +42,10 @@ struct HSpool
 	Relation	index;
 
 	/*
-	 * We sort the hash keys based on the buckets they belong to. Below masks
-	 * are used in _hash_hashkey2bucket to determine the bucket of given hash
-	 * key.
+	 * We sort the hash keys based on the buckets they belong to, then by the
+	 * hash values themselves, to optimize insertions onto hash pages.  The
+	 * masks below are used in _hash_hashkey2bucket to determine the bucket of
+	 * a given hash key.
 	 */
 	uint32		high_mask;
 	uint32		low_mask;
@@ -67,7 +71,7 @@ _h_spoolinit(Relation heap, Relation index, uint32 num_buckets)
 	 * NOTE : This hash mask calculation should be in sync with similar
 	 * calculation in _hash_init_metabuffer.
 	 */
-	hspool->high_mask = (((uint32) 1) << _hash_log2(num_buckets + 1)) - 1;
+	hspool->high_mask = pg_nextpower2_32(num_buckets + 1) - 1;
 	hspool->low_mask = (hspool->high_mask >> 1);
 	hspool->max_buckets = num_buckets - 1;
 
@@ -83,7 +87,7 @@ _h_spoolinit(Relation heap, Relation index, uint32 num_buckets)
 												   hspool->max_buckets,
 												   maintenance_work_mem,
 												   NULL,
-												   false);
+												   TUPLESORT_NONE);
 
 	return hspool;
 }
@@ -116,6 +120,7 @@ void
 _h_indexbuild(HSpool *hspool, Relation heapRel)
 {
 	IndexTuple	itup;
+	int64		tups_done = 0;
 #ifdef USE_ASSERT_CHECKING
 	uint32		hashkey = 0;
 #endif
@@ -140,6 +145,10 @@ _h_indexbuild(HSpool *hspool, Relation heapRel)
 		Assert(hashkey >= lasthashkey);
 #endif
 
-		_hash_doinsert(hspool->index, itup, heapRel);
+		/* the tuples are sorted by hashkey, so pass 'sorted' as true */
+		_hash_doinsert(hspool->index, itup, heapRel, true);
+
+		pgstat_progress_update_param(PROGRESS_CREATEIDX_TUPLES_DONE,
+									 ++tups_done);
 	}
 }

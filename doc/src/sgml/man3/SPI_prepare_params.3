@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SPI_prepare_params
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "SPI_PREPARE_PARAMS" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "SPI_PREPARE_PARAMS" "3" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -42,6 +42,9 @@ SPIPlanPtr SPI_prepare_params(const char * \fIcommand\fR,
 \fBSPI_prepare_params\fR
 creates and returns a prepared statement for the specified command, but doesn\*(Aqt execute the command\&. This function is equivalent to
 \fBSPI_prepare_cursor\fR, with the addition that the caller can specify parser hook functions to control the parsing of external parameter references\&.
+.PP
+This function is now deprecated in favor of
+\fBSPI_prepare_extended\fR\&.
 .SH "ARGUMENTS"
 .PP
 const char * \fIcommand\fR

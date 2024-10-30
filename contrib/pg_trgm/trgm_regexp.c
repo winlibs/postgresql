@@ -73,7 +73,7 @@
  * (two prefix colors plus a state number from the original NFA) an
  * "enter key".
  *
- * Each arc of the expanded graph is labelled with a trigram that must be
+ * Each arc of the expanded graph is labeled with a trigram that must be
  * present in the string to match.  We can construct this from an out-arc of
  * the underlying NFA state by combining the expanded state's prefix with the
  * color label of the underlying out-arc, if neither prefix position is
@@ -123,7 +123,7 @@
  * false positives that we would have to traverse a large fraction of the
  * index, the graph is simplified further in a lossy fashion by removing
  * color trigrams. When a color trigram is removed, the states connected by
- * any arcs labelled with that trigram are merged.
+ * any arcs labeled with that trigram are merged.
  *
  * Trigrams do not all have equivalent value for searching: some of them are
  * more frequent and some of them are less frequent. Ideally, we would like
@@ -181,7 +181,7 @@
  * 7) Mark state 3 final because state 5 of source NFA is marked as final.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -191,18 +191,17 @@
  */
 #include "postgres.h"
 
-#include "trgm.h"
-
 #include "regex/regexport.h"
+#include "trgm.h"
 #include "tsearch/ts_locale.h"
 #include "utils/hsearch.h"
 #include "utils/memutils.h"
-
+#include "varatt.h"
 
 /*
  * Uncomment (or use -DTRGM_REGEXP_DEBUG) to print debug info,
  * for exploring and debugging the algorithm implementation.
- * This produces three graph files in /tmp, in Graphviz .dot format.
+ * This produces three graph files in /tmp, in Graphviz .gv format.
  * Some progress information is also printed to postmaster stderr.
  */
 /* #define TRGM_REGEXP_DEBUG */
@@ -284,8 +283,8 @@ typedef struct
 typedef int TrgmColor;
 
 /* We assume that colors returned by the regexp engine cannot be these: */
-#define COLOR_UNKNOWN	(-1)
-#define COLOR_BLANK		(-2)
+#define COLOR_UNKNOWN	(-3)
+#define COLOR_BLANK		(-4)
 
 typedef struct
 {
@@ -441,9 +440,9 @@ typedef struct
 struct TrgmPackedGraph
 {
 	/*
-	 * colorTrigramsCount and colorTrigramsGroups contain information about
-	 * how trigrams are grouped into color trigrams.  "colorTrigramsCount" is
-	 * the count of color trigrams and "colorTrigramGroups" contains number of
+	 * colorTrigramsCount and colorTrigramGroups contain information about how
+	 * trigrams are grouped into color trigrams.  "colorTrigramsCount" is the
+	 * count of color trigrams and "colorTrigramGroups" contains number of
 	 * simple trigrams for each color trigram.  The array of simple trigrams
 	 * (stored separately from this struct) is ordered so that the simple
 	 * trigrams for each color trigram are consecutive, and they're in order
@@ -478,9 +477,9 @@ typedef struct
 
 /* prototypes for private functions */
 static TRGM *createTrgmNFAInternal(regex_t *regex, TrgmPackedGraph **graph,
-					  MemoryContext rcontext);
+								   MemoryContext rcontext);
 static void RE_compile(regex_t *regex, text *text_re,
-		   int cflags, Oid collation);
+					   int cflags, Oid collation);
 static void getColorInfo(regex_t *regex, TrgmNFA *trgmNFA);
 static bool convertPgWchar(pg_wchar c, trgm_mb_char *result);
 static void transformGraph(TrgmNFA *trgmNFA);
@@ -489,7 +488,7 @@ static void addKey(TrgmNFA *trgmNFA, TrgmState *state, TrgmStateKey *key);
 static void addKeyToQueue(TrgmNFA *trgmNFA, TrgmStateKey *key);
 static void addArcs(TrgmNFA *trgmNFA, TrgmState *state);
 static void addArc(TrgmNFA *trgmNFA, TrgmState *state, TrgmStateKey *key,
-	   TrgmColor co, TrgmStateKey *destKey);
+				   TrgmColor co, TrgmStateKey *destKey);
 static bool validArcLabel(TrgmStateKey *key, TrgmColor co);
 static TrgmState *getState(TrgmNFA *trgmNFA, TrgmStateKey *key);
 static bool prefixContains(TrgmPrefix *prefix1, TrgmPrefix *prefix2);
@@ -543,30 +542,16 @@ createTrgmNFA(text *text_re, Oid collation,
 	 * Stage 1: Compile the regexp into a NFA, using the regexp library.
 	 */
 #ifdef IGNORECASE
-	RE_compile(&regex, text_re, REG_ADVANCED | REG_ICASE, collation);
+	RE_compile(&regex, text_re,
+			   REG_ADVANCED | REG_NOSUB | REG_ICASE, collation);
 #else
-	RE_compile(&regex, text_re, REG_ADVANCED, collation);
+	RE_compile(&regex, text_re,
+			   REG_ADVANCED | REG_NOSUB, collation);
 #endif
 
-	/*
-	 * Since the regexp library allocates its internal data structures with
-	 * malloc, we need to use a PG_TRY block to ensure that pg_regfree() gets
-	 * done even if there's an error.
-	 */
-	PG_TRY();
-	{
-		trg = createTrgmNFAInternal(&regex, graph, rcontext);
-	}
-	PG_CATCH();
-	{
-		pg_regfree(&regex);
-		PG_RE_THROW();
-	}
-	PG_END_TRY();
+	trg = createTrgmNFAInternal(&regex, graph, rcontext);
 
-	pg_regfree(&regex);
-
-	/* Clean up all the cruft we created */
+	/* Clean up all the cruft we created (including regex) */
 	MemoryContextSwitchTo(oldcontext);
 	MemoryContextDelete(tmpcontext);
 
@@ -785,7 +770,8 @@ getColorInfo(regex_t *regex, TrgmNFA *trgmNFA)
 		palloc0(colorsCount * sizeof(TrgmColorInfo));
 
 	/*
-	 * Loop over colors, filling TrgmColorInfo about each.
+	 * Loop over colors, filling TrgmColorInfo about each.  Note we include
+	 * WHITE (0) even though we know it'll be reported as non-expandable.
 	 */
 	for (i = 0; i < colorsCount; i++)
 	{
@@ -909,6 +895,7 @@ transformGraph(TrgmNFA *trgmNFA)
 	HASHCTL		hashCtl;
 	TrgmStateKey initkey;
 	TrgmState  *initstate;
+	ListCell   *lc;
 
 	/* Initialize this stage's workspace in trgmNFA struct */
 	trgmNFA->queue = NIL;
@@ -939,12 +926,13 @@ transformGraph(TrgmNFA *trgmNFA)
 	/*
 	 * Recursively build the expanded graph by processing queue of states
 	 * (breadth-first search).  getState already put initstate in the queue.
+	 * Note that getState will append new states to the queue within the loop,
+	 * too; this works as long as we don't do repeat fetches using the "lc"
+	 * pointer.
 	 */
-	while (trgmNFA->queue != NIL)
+	foreach(lc, trgmNFA->queue)
 	{
-		TrgmState  *state = (TrgmState *) linitial(trgmNFA->queue);
-
-		trgmNFA->queue = list_delete_first(trgmNFA->queue);
+		TrgmState  *state = (TrgmState *) lfirst(lc);
 
 		/*
 		 * If we overflowed then just mark state as final.  Otherwise do
@@ -968,21 +956,28 @@ transformGraph(TrgmNFA *trgmNFA)
 static void
 processState(TrgmNFA *trgmNFA, TrgmState *state)
 {
+	ListCell   *lc;
+
 	/* keysQueue should be NIL already, but make sure */
 	trgmNFA->keysQueue = NIL;
 
 	/*
 	 * Add state's own key, and then process all keys added to keysQueue until
-	 * queue is empty.  But we can quit if the state gets marked final.
+	 * queue is finished.  But we can quit if the state gets marked final.
 	 */
 	addKey(trgmNFA, state, &state->stateKey);
-	while (trgmNFA->keysQueue != NIL && !(state->flags & TSTATE_FIN))
+	foreach(lc, trgmNFA->keysQueue)
 	{
-		TrgmStateKey *key = (TrgmStateKey *) linitial(trgmNFA->keysQueue);
+		TrgmStateKey *key = (TrgmStateKey *) lfirst(lc);
 
-		trgmNFA->keysQueue = list_delete_first(trgmNFA->keysQueue);
+		if (state->flags & TSTATE_FIN)
+			break;
 		addKey(trgmNFA, state, key);
 	}
+
+	/* Release keysQueue to clean up for next cycle */
+	list_free(trgmNFA->keysQueue);
+	trgmNFA->keysQueue = NIL;
 
 	/*
 	 * Add outgoing arcs only if state isn't final (we have no interest in
@@ -1013,9 +1008,7 @@ addKey(TrgmNFA *trgmNFA, TrgmState *state, TrgmStateKey *key)
 {
 	regex_arc_t *arcs;
 	TrgmStateKey destKey;
-	ListCell   *cell,
-			   *prev,
-			   *next;
+	ListCell   *cell;
 	int			i,
 				arcsCount;
 
@@ -1030,13 +1023,10 @@ addKey(TrgmNFA *trgmNFA, TrgmState *state, TrgmStateKey *key)
 	 * redundancy.  We can drop either old key(s) or the new key if we find
 	 * redundancy.
 	 */
-	prev = NULL;
-	cell = list_head(state->enterKeys);
-	while (cell)
+	foreach(cell, state->enterKeys)
 	{
 		TrgmStateKey *existingKey = (TrgmStateKey *) lfirst(cell);
 
-		next = lnext(cell);
 		if (existingKey->nstate == key->nstate)
 		{
 			if (prefixContains(&existingKey->prefix, &key->prefix))
@@ -1050,15 +1040,10 @@ addKey(TrgmNFA *trgmNFA, TrgmState *state, TrgmStateKey *key)
 				 * The new key covers this old key. Remove the old key, it's
 				 * no longer needed once we add this key to the list.
 				 */
-				state->enterKeys = list_delete_cell(state->enterKeys,
-													cell, prev);
+				state->enterKeys = foreach_delete_current(state->enterKeys,
+														  cell);
 			}
-			else
-				prev = cell;
 		}
-		else
-			prev = cell;
-		cell = next;
 	}
 
 	/* No redundancy, so add this key to the state's list */
@@ -1113,9 +1098,9 @@ addKey(TrgmNFA *trgmNFA, TrgmState *state, TrgmStateKey *key)
 			/* Add enter key to this state */
 			addKeyToQueue(trgmNFA, &destKey);
 		}
-		else
+		else if (arc->co >= 0)
 		{
-			/* Regular color */
+			/* Regular color (including WHITE) */
 			TrgmColorInfo *colorInfo = &trgmNFA->colorInfo[arc->co];
 
 			if (colorInfo->expandable)
@@ -1170,6 +1155,14 @@ addKey(TrgmNFA *trgmNFA, TrgmState *state, TrgmStateKey *key)
 				destKey.nstate = arc->to;
 				addKeyToQueue(trgmNFA, &destKey);
 			}
+		}
+		else
+		{
+			/* RAINBOW: treat as unexpandable color */
+			destKey.prefix.colors[0] = COLOR_UNKNOWN;
+			destKey.prefix.colors[1] = COLOR_UNKNOWN;
+			destKey.nstate = arc->to;
+			addKeyToQueue(trgmNFA, &destKey);
 		}
 	}
 
@@ -1226,16 +1219,22 @@ addArcs(TrgmNFA *trgmNFA, TrgmState *state)
 		for (i = 0; i < arcsCount; i++)
 		{
 			regex_arc_t *arc = &arcs[i];
-			TrgmColorInfo *colorInfo = &trgmNFA->colorInfo[arc->co];
+			TrgmColorInfo *colorInfo;
 
 			/*
 			 * Ignore non-expandable colors; addKey already handled the case.
 			 *
-			 * We need no special check for begin/end pseudocolors here.  We
-			 * don't need to do any processing for them, and they will be
-			 * marked non-expandable since the regex engine will have reported
-			 * them that way.
+			 * We need no special check for WHITE or begin/end pseudocolors
+			 * here.  We don't need to do any processing for them, and they
+			 * will be marked non-expandable since the regex engine will have
+			 * reported them that way.  We do have to watch out for RAINBOW,
+			 * which has a negative color number.
 			 */
+			if (arc->co < 0)
+				continue;
+			Assert(arc->co < trgmNFA->ncolors);
+
+			colorInfo = &trgmNFA->colorInfo[arc->co];
 			if (!colorInfo->expandable)
 				continue;
 
@@ -1935,9 +1934,7 @@ packGraph(TrgmNFA *trgmNFA, MemoryContext rcontext)
 				arcsCount;
 	HASH_SEQ_STATUS scan_status;
 	TrgmState  *state;
-	TrgmPackArcInfo *arcs,
-			   *p1,
-			   *p2;
+	TrgmPackArcInfo *arcs;
 	TrgmPackedArc *packedArcs;
 	TrgmPackedGraph *result;
 	int			i,
@@ -2009,17 +2006,25 @@ packGraph(TrgmNFA *trgmNFA, MemoryContext rcontext)
 	qsort(arcs, arcIndex, sizeof(TrgmPackArcInfo), packArcInfoCmp);
 
 	/* We could have duplicates because states were merged. Remove them. */
-	/* p1 is probe point, p2 is last known non-duplicate. */
-	p2 = arcs;
-	for (p1 = arcs + 1; p1 < arcs + arcIndex; p1++)
+	if (arcIndex > 1)
 	{
-		if (packArcInfoCmp(p1, p2) > 0)
+		/* p1 is probe point, p2 is last known non-duplicate. */
+		TrgmPackArcInfo *p1,
+				   *p2;
+
+		p2 = arcs;
+		for (p1 = arcs + 1; p1 < arcs + arcIndex; p1++)
 		{
-			p2++;
-			*p2 = *p1;
+			if (packArcInfoCmp(p1, p2) > 0)
+			{
+				p2++;
+				*p2 = *p1;
+			}
 		}
+		arcsCount = (p2 - arcs) + 1;
 	}
-	arcsCount = (p2 - arcs) + 1;
+	else
+		arcsCount = arcIndex;
 
 	/* Create packed representation */
 	result = (TrgmPackedGraph *)
@@ -2187,8 +2192,8 @@ printSourceNFA(regex_t *regex, TrgmColorInfo *colors, int ncolors)
 	appendStringInfoString(&buf, "}\n");
 
 	{
-		/* dot -Tpng -o /tmp/source.png < /tmp/source.dot */
-		FILE	   *fp = fopen("/tmp/source.dot", "w");
+		/* dot -Tpng -o /tmp/source.png < /tmp/source.gv */
+		FILE	   *fp = fopen("/tmp/source.gv", "w");
 
 		fprintf(fp, "%s", buf.data);
 		fclose(fp);
@@ -2249,8 +2254,8 @@ printTrgmNFA(TrgmNFA *trgmNFA)
 	appendStringInfoString(&buf, "}\n");
 
 	{
-		/* dot -Tpng -o /tmp/transformed.png < /tmp/transformed.dot */
-		FILE	   *fp = fopen("/tmp/transformed.dot", "w");
+		/* dot -Tpng -o /tmp/transformed.png < /tmp/transformed.gv */
+		FILE	   *fp = fopen("/tmp/transformed.gv", "w");
 
 		fprintf(fp, "%s", buf.data);
 		fclose(fp);
@@ -2340,8 +2345,8 @@ printTrgmPackedGraph(TrgmPackedGraph *packedGraph, TRGM *trigrams)
 	appendStringInfoString(&buf, "}\n");
 
 	{
-		/* dot -Tpng -o /tmp/packed.png < /tmp/packed.dot */
-		FILE	   *fp = fopen("/tmp/packed.dot", "w");
+		/* dot -Tpng -o /tmp/packed.png < /tmp/packed.gv */
+		FILE	   *fp = fopen("/tmp/packed.gv", "w");
 
 		fprintf(fp, "%s", buf.data);
 		fclose(fp);

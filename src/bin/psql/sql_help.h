@@ -6,23 +6,25 @@
  *
  */
 
-#ifndef SQL_HELP_H
-#define SQL_HELP_H
+#ifndef SQL_HELP
+#define SQL_HELP
 
 #include "pqexpbuffer.h"
 
 struct _helpStruct
 {
-	const char	   *cmd;		/* the command name */
-	const char	   *help;		/* the help associated with it */
-	void (*syntaxfunc)(PQExpBuffer);	/* function that prints the syntax associated with it */
-	int				nl_count;	/* number of newlines in syntax (for pager) */
+	const char *cmd;			/* the command name */
+	const char *help;			/* the help associated with it */
+	const char *docbook_id;		/* DocBook XML id (for generating URL) */
+	void		(*syntaxfunc) (PQExpBuffer);	/* function that prints the
+												 * syntax associated with it */
+	int			nl_count;		/* number of newlines in syntax (for pager) */
 };
 
 extern const struct _helpStruct QL_HELP[];
 
-#define QL_HELP_COUNT	184		/* number of help items */
+#define QL_HELP_COUNT	185		/* number of help items */
 #define QL_MAX_CMD_LEN	32		/* largest strlen(cmd) */
 
 
-#endif /* SQL_HELP_H */
+#endif							/* SQL_HELP */

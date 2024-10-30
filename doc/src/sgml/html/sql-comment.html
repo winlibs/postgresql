@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>COMMENT</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-cluster.html" title="CLUSTER" /><link rel="next" href="sql-commit.html" title="COMMIT" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">COMMENT</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-cluster.html" title="CLUSTER">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-commit.html" title="COMMIT">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-COMMENT"><div class="titlepage"></div><a id="id-1.9.3.52.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">COMMENT</span></h2><p>COMMENT — define or change the comment of an object</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>COMMENT</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-cluster.html" title="CLUSTER" /><link rel="next" href="sql-commit.html" title="COMMIT" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">COMMENT</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-cluster.html" title="CLUSTER">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-commit.html" title="COMMIT">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-COMMENT"><div class="titlepage"></div><a id="id-1.9.3.52.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">COMMENT</span></h2><p>COMMENT — define or change the comment of an object</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 COMMENT ON
 {
   ACCESS METHOD <em class="replaceable"><code>object_name</code></em> |
@@ -45,7 +45,7 @@ COMMENT ON
   TRIGGER <em class="replaceable"><code>trigger_name</code></em> ON <em class="replaceable"><code>table_name</code></em> |
   TYPE <em class="replaceable"><code>object_name</code></em> |
   VIEW <em class="replaceable"><code>object_name</code></em>
-} IS '<em class="replaceable"><code>text</code></em>'
+} IS { <em class="replaceable"><code>string_literal</code></em> | NULL }
 
 <span class="phrase">where <em class="replaceable"><code>aggregate_signature</code></em> is:</span>
 
@@ -60,10 +60,14 @@ COMMENT ON
    comment, write <code class="literal">NULL</code> in place of the text string.
    Comments are automatically dropped when their object is dropped.
   </p><p>
+   A <code class="literal">SHARE UPDATE EXCLUSIVE</code> lock is acquired on the
+   object to be commented.
+  </p><p>
    For most kinds of object, only the object's owner can set the comment.
    Roles don't have owners, so the rule for <code class="literal">COMMENT ON ROLE</code> is
    that you must be superuser to comment on a superuser role, or have the
-   <code class="literal">CREATEROLE</code> privilege to comment on non-superuser roles.
+   <code class="literal">CREATEROLE</code> privilege and have been granted
+   <code class="literal">ADMIN OPTION</code> on the target role.
    Likewise, access methods don't have owners either; you must be superuser
    to comment on an access method.
    Of course, a superuser can comment on anything.
@@ -74,12 +78,10 @@ COMMENT ON
     the same built-in functions that <span class="application">psql</span> uses, namely
     <code class="function">obj_description</code>, <code class="function">col_description</code>,
     and <code class="function">shobj_description</code>
-    (see <a class="xref" href="functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE" title="Table 9.68. Comment Information Functions">Table 9.68</a>).
+    (see <a class="xref" href="functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE" title="Table 9.78. Comment Information Functions">Table 9.78</a>).
   </p></div><div class="refsect1" id="id-1.9.3.52.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>object_name</code></em><br /></span><span class="term"><em class="replaceable"><code>relation_name</code></em>.<em class="replaceable"><code>column_name</code></em><br /></span><span class="term"><em class="replaceable"><code>aggregate_name</code></em><br /></span><span class="term"><em class="replaceable"><code>constraint_name</code></em><br /></span><span class="term"><em class="replaceable"><code>function_name</code></em><br /></span><span class="term"><em class="replaceable"><code>operator_name</code></em><br /></span><span class="term"><em class="replaceable"><code>policy_name</code></em><br /></span><span class="term"><em class="replaceable"><code>procedure_name</code></em><br /></span><span class="term"><em class="replaceable"><code>routine_name</code></em><br /></span><span class="term"><em class="replaceable"><code>rule_name</code></em><br /></span><span class="term"><em class="replaceable"><code>trigger_name</code></em></span></dt><dd><p>
-      The name of the object to be commented.  Names of tables,
-      aggregates, collations, conversions, domains, foreign tables, functions,
-      indexes, operators, operator classes, operator families, procedures, routines, sequences,
-      statistics, text search objects, types, and views can be
+      The name of the object to be commented.  Names of objects that reside in
+      schemas (tables, functions, etc.) can be
       schema-qualified. When commenting on a column,
       <em class="replaceable"><code>relation_name</code></em> must refer
       to a table, view, composite type, or foreign table.
@@ -113,16 +115,17 @@ COMMENT ON
      </p></dd><dt><span class="term"><em class="replaceable"><code>left_type</code></em><br /></span><span class="term"><em class="replaceable"><code>right_type</code></em></span></dt><dd><p>
       The data type(s) of the operator's arguments (optionally
       schema-qualified).  Write <code class="literal">NONE</code> for the missing argument
-      of a prefix or postfix operator.
+      of a prefix operator.
      </p></dd><dt><span class="term"><code class="literal">PROCEDURAL</code></span></dt><dd><p>
        This is a noise word.
       </p></dd><dt><span class="term"><em class="replaceable"><code>type_name</code></em></span></dt><dd><p>
        The name of the data type of the transform.
       </p></dd><dt><span class="term"><em class="replaceable"><code>lang_name</code></em></span></dt><dd><p>
        The name of the language of the transform.
-      </p></dd><dt><span class="term"><em class="replaceable"><code>text</code></em></span></dt><dd><p>
-      The new comment, written as a string literal; or <code class="literal">NULL</code>
-      to drop the comment.
+      </p></dd><dt><span class="term"><em class="replaceable"><code>string_literal</code></em></span></dt><dd><p>
+      The new comment contents, written as a string literal.
+     </p></dd><dt><span class="term"><code class="literal">NULL</code></span></dt><dd><p>
+      Write <code class="literal">NULL</code> to drop the comment.
      </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.52.7"><h2>Notes</h2><p>
    There is presently no security mechanism for viewing comments: any user
    connected to a database can see all the comments for objects in
@@ -147,7 +150,7 @@ COMMENT ON TABLE mytable IS NULL;
    Some more examples:
 
 </p><pre class="programlisting">
-COMMENT ON ACCESS METHOD rtree IS 'R-Tree access method';
+COMMENT ON ACCESS METHOD gin IS 'GIN index access method';
 COMMENT ON AGGREGATE my_aggregate (double precision) IS 'Computes sample variance';
 COMMENT ON CAST (text AS int4) IS 'Allow casts from text to int4';
 COMMENT ON COLLATION "fr_CA" IS 'Canadian French';
@@ -157,6 +160,7 @@ COMMENT ON CONSTRAINT bar_col_cons ON bar IS 'Constrains column col';
 COMMENT ON CONSTRAINT dom_col_constr ON DOMAIN dom IS 'Constrains col of domain';
 COMMENT ON DATABASE my_database IS 'Development Database';
 COMMENT ON DOMAIN my_domain IS 'Email Address Domain';
+COMMENT ON EVENT TRIGGER abort_ddl IS 'Aborts all DDL commands';
 COMMENT ON EXTENSION hstore IS 'implements the hstore data type';
 COMMENT ON FOREIGN DATA WRAPPER mywrapper IS 'my foreign data wrapper';
 COMMENT ON FOREIGN TABLE my_foreign_table IS 'Employee Information in other database';
@@ -171,22 +175,25 @@ COMMENT ON OPERATOR CLASS int4ops USING btree IS '4 byte integer operators for b
 COMMENT ON OPERATOR FAMILY integer_ops USING btree IS 'all integer operators for btrees';
 COMMENT ON POLICY my_policy ON mytable IS 'Filter rows by users';
 COMMENT ON PROCEDURE my_proc (integer, integer) IS 'Runs a report';
+COMMENT ON PUBLICATION alltables IS 'Publishes all operations on all tables';
 COMMENT ON ROLE my_role IS 'Administration group for finance tables';
+COMMENT ON ROUTINE my_routine (integer, integer) IS 'Runs a routine (which is a function or procedure)';
 COMMENT ON RULE my_rule ON my_table IS 'Logs updates of employee records';
 COMMENT ON SCHEMA my_schema IS 'Departmental data';
 COMMENT ON SEQUENCE my_sequence IS 'Used to generate primary keys';
 COMMENT ON SERVER myserver IS 'my foreign server';
 COMMENT ON STATISTICS my_statistics IS 'Improves planner row estimations';
+COMMENT ON SUBSCRIPTION alltables IS 'Subscription for all operations on all tables';
 COMMENT ON TABLE my_schema.my_table IS 'Employee Information';
 COMMENT ON TABLESPACE my_tablespace IS 'Tablespace for indexes';
 COMMENT ON TEXT SEARCH CONFIGURATION my_config IS 'Special word filtering';
 COMMENT ON TEXT SEARCH DICTIONARY swedish IS 'Snowball stemmer for Swedish language';
 COMMENT ON TEXT SEARCH PARSER my_parser IS 'Splits text into words';
 COMMENT ON TEXT SEARCH TEMPLATE snowball IS 'Snowball stemmer';
-COMMENT ON TRANSFORM FOR hstore LANGUAGE plpythonu IS 'Transform between hstore and Python dict';
+COMMENT ON TRANSFORM FOR hstore LANGUAGE plpython3u IS 'Transform between hstore and Python dict';
 COMMENT ON TRIGGER my_trigger ON my_table IS 'Used for RI';
 COMMENT ON TYPE complex IS 'Complex number data type';
 COMMENT ON VIEW my_view IS 'View of departmental costs';
 </pre></div><div class="refsect1" id="id-1.9.3.52.9"><h2>Compatibility</h2><p>
    There is no <code class="command">COMMENT</code> command in the SQL standard.
-  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-cluster.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-commit.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CLUSTER </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> COMMIT</td></tr></table></div></body></html>
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-cluster.html" title="CLUSTER">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-commit.html" title="COMMIT">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CLUSTER </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> COMMIT</td></tr></table></div></body></html>

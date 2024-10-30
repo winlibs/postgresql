@@ -7,6 +7,7 @@
 
 #include "access/htup.h"
 #include "fmgr.h"
+#include "plpython.h"
 #include "utils/typcache.h"
 
 struct PLyProcedure;			/* avoid requiring plpy_procedure.h here */
@@ -146,29 +147,29 @@ struct PLyObToDatum
 };
 
 
-extern PyObject *PLy_input_convert(PLyDatumToOb *arg, Datum val);
-extern Datum PLy_output_convert(PLyObToDatum *arg, PyObject *val,
-				   bool *isnull);
+extern PGDLLEXPORT PyObject *PLy_input_convert(PLyDatumToOb *arg, Datum val);
+extern PGDLLEXPORT Datum PLy_output_convert(PLyObToDatum *arg, PyObject *val,
+											bool *isnull);
 
-extern PyObject *PLy_input_from_tuple(PLyDatumToOb *arg, HeapTuple tuple,
-					 TupleDesc desc);
+extern PGDLLEXPORT PyObject *PLy_input_from_tuple(PLyDatumToOb *arg, HeapTuple tuple,
+												  TupleDesc desc, bool include_generated);
 
-extern void PLy_input_setup_func(PLyDatumToOb *arg, MemoryContext arg_mcxt,
-					 Oid typeOid, int32 typmod,
-					 struct PLyProcedure *proc);
-extern void PLy_output_setup_func(PLyObToDatum *arg, MemoryContext arg_mcxt,
-					  Oid typeOid, int32 typmod,
-					  struct PLyProcedure *proc);
+extern PGDLLEXPORT void PLy_input_setup_func(PLyDatumToOb *arg, MemoryContext arg_mcxt,
+											 Oid typeOid, int32 typmod,
+											 struct PLyProcedure *proc);
+extern PGDLLEXPORT void PLy_output_setup_func(PLyObToDatum *arg, MemoryContext arg_mcxt,
+											  Oid typeOid, int32 typmod,
+											  struct PLyProcedure *proc);
 
-extern void PLy_input_setup_tuple(PLyDatumToOb *arg, TupleDesc desc,
-					  struct PLyProcedure *proc);
-extern void PLy_output_setup_tuple(PLyObToDatum *arg, TupleDesc desc,
-					   struct PLyProcedure *proc);
+extern PGDLLEXPORT void PLy_input_setup_tuple(PLyDatumToOb *arg, TupleDesc desc,
+											  struct PLyProcedure *proc);
+extern PGDLLEXPORT void PLy_output_setup_tuple(PLyObToDatum *arg, TupleDesc desc,
+											   struct PLyProcedure *proc);
 
-extern void PLy_output_setup_record(PLyObToDatum *arg, TupleDesc desc,
-						struct PLyProcedure *proc);
+extern PGDLLEXPORT void PLy_output_setup_record(PLyObToDatum *arg, TupleDesc desc,
+												struct PLyProcedure *proc);
 
 /* conversion from Python objects to C strings --- exported for transforms */
-extern char *PLyObject_AsString(PyObject *plrv);
+extern PGDLLEXPORT char *PLyObject_AsString(PyObject *plrv);
 
 #endif							/* PLPY_TYPEIO_H */

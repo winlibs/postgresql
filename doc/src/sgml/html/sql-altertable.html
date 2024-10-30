@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ALTER TABLE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-altersystem.html" title="ALTER SYSTEM" /><link rel="next" href="sql-altertablespace.html" title="ALTER TABLESPACE" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">ALTER TABLE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-altersystem.html" title="ALTER SYSTEM">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-altertablespace.html" title="ALTER TABLESPACE">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-ALTERTABLE"><div class="titlepage"></div><a id="id-1.9.3.35.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">ALTER TABLE</span></h2><p>ALTER TABLE — change the definition of a table</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ALTER TABLE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-altersystem.html" title="ALTER SYSTEM" /><link rel="next" href="sql-altertablespace.html" title="ALTER TABLESPACE" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">ALTER TABLE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-altersystem.html" title="ALTER SYSTEM">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-altertablespace.html" title="ALTER TABLESPACE">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-ALTERTABLE"><div class="titlepage"></div><a id="id-1.9.3.35.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">ALTER TABLE</span></h2><p>ALTER TABLE — change the definition of a table</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 ALTER TABLE [ IF EXISTS ] [ ONLY ] <em class="replaceable"><code>name</code></em> [ * ]
     <em class="replaceable"><code>action</code></em> [, ... ]
 ALTER TABLE [ IF EXISTS ] [ ONLY ] <em class="replaceable"><code>name</code></em> [ * ]
@@ -15,7 +15,7 @@ ALTER TABLE ALL IN TABLESPACE <em class="replaceable"><code>name</code></em> [ O
 ALTER TABLE [ IF EXISTS ] <em class="replaceable"><code>name</code></em>
     ATTACH PARTITION <em class="replaceable"><code>partition_name</code></em> { FOR VALUES <em class="replaceable"><code>partition_bound_spec</code></em> | DEFAULT }
 ALTER TABLE [ IF EXISTS ] <em class="replaceable"><code>name</code></em>
-    DETACH PARTITION <em class="replaceable"><code>partition_name</code></em>
+    DETACH PARTITION <em class="replaceable"><code>partition_name</code></em> [ CONCURRENTLY | FINALIZE ]
 
 <span class="phrase">where <em class="replaceable"><code>action</code></em> is one of:</span>
 
@@ -25,13 +25,15 @@ ALTER TABLE [ IF EXISTS ] <em class="replaceable"><code>name</code></em>
     ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> SET DEFAULT <em class="replaceable"><code>expression</code></em>
     ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> DROP DEFAULT
     ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> { SET | DROP } NOT NULL
+    ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> DROP EXPRESSION [ IF EXISTS ]
     ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> ADD GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY [ ( <em class="replaceable"><code>sequence_options</code></em> ) ]
     ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> { SET GENERATED { ALWAYS | BY DEFAULT } | SET <em class="replaceable"><code>sequence_option</code></em> | RESTART [ [ WITH ] <em class="replaceable"><code>restart</code></em> ] } [...]
     ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> DROP IDENTITY [ IF EXISTS ]
     ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> SET STATISTICS <em class="replaceable"><code>integer</code></em>
     ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> SET ( <em class="replaceable"><code>attribute_option</code></em> = <em class="replaceable"><code>value</code></em> [, ... ] )
     ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> RESET ( <em class="replaceable"><code>attribute_option</code></em> [, ... ] )
-    ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
+    ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN | DEFAULT }
+    ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> SET COMPRESSION <em class="replaceable"><code>compression_method</code></em>
     ADD <em class="replaceable"><code>table_constraint</code></em> [ NOT VALID ]
     ADD <em class="replaceable"><code>table_constraint_using_index</code></em>
     ALTER CONSTRAINT <em class="replaceable"><code>constraint_name</code></em> [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
@@ -51,24 +53,24 @@ ALTER TABLE [ IF EXISTS ] <em class="replaceable"><code>name</code></em>
     NO FORCE ROW LEVEL SECURITY
     CLUSTER ON <em class="replaceable"><code>index_name</code></em>
     SET WITHOUT CLUSTER
-    SET WITH OIDS
     SET WITHOUT OIDS
+    SET ACCESS METHOD <em class="replaceable"><code>new_access_method</code></em>
     SET TABLESPACE <em class="replaceable"><code>new_tablespace</code></em>
     SET { LOGGED | UNLOGGED }
-    SET ( <em class="replaceable"><code>storage_parameter</code></em> = <em class="replaceable"><code>value</code></em> [, ... ] )
+    SET ( <em class="replaceable"><code>storage_parameter</code></em> [= <em class="replaceable"><code>value</code></em>] [, ... ] )
     RESET ( <em class="replaceable"><code>storage_parameter</code></em> [, ... ] )
     INHERIT <em class="replaceable"><code>parent_table</code></em>
     NO INHERIT <em class="replaceable"><code>parent_table</code></em>
     OF <em class="replaceable"><code>type_name</code></em>
     NOT OF
-    OWNER TO { <em class="replaceable"><code>new_owner</code></em> | CURRENT_USER | SESSION_USER }
+    OWNER TO { <em class="replaceable"><code>new_owner</code></em> | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
     REPLICA IDENTITY { DEFAULT | USING INDEX <em class="replaceable"><code>index_name</code></em> | FULL | NOTHING }
 
 <span class="phrase">and <em class="replaceable"><code>partition_bound_spec</code></em> is:</span>
 
-IN ( { <em class="replaceable"><code>numeric_literal</code></em> | <em class="replaceable"><code>string_literal</code></em> | TRUE | FALSE | NULL } [, ...] ) |
-FROM ( { <em class="replaceable"><code>numeric_literal</code></em> | <em class="replaceable"><code>string_literal</code></em> | TRUE | FALSE | MINVALUE | MAXVALUE } [, ...] )
-  TO ( { <em class="replaceable"><code>numeric_literal</code></em> | <em class="replaceable"><code>string_literal</code></em> | TRUE | FALSE | MINVALUE | MAXVALUE } [, ...] ) |
+IN ( <em class="replaceable"><code>partition_bound_expr</code></em> [, ...] ) |
+FROM ( { <em class="replaceable"><code>partition_bound_expr</code></em> | MINVALUE | MAXVALUE } [, ...] )
+  TO ( { <em class="replaceable"><code>partition_bound_expr</code></em> | MINVALUE | MAXVALUE } [, ...] ) |
 WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAINDER <em class="replaceable"><code>numeric_literal</code></em> )
 
 <span class="phrase">and <em class="replaceable"><code>column_constraint</code></em> is:</span>
@@ -78,22 +80,23 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
   NULL |
   CHECK ( <em class="replaceable"><code>expression</code></em> ) [ NO INHERIT ] |
   DEFAULT <em class="replaceable"><code>default_expr</code></em> |
+  GENERATED ALWAYS AS ( <em class="replaceable"><code>generation_expr</code></em> ) STORED |
   GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY [ ( <em class="replaceable"><code>sequence_options</code></em> ) ] |
-  UNIQUE <em class="replaceable"><code>index_parameters</code></em> |
+  UNIQUE [ NULLS [ NOT ] DISTINCT ] <em class="replaceable"><code>index_parameters</code></em> |
   PRIMARY KEY <em class="replaceable"><code>index_parameters</code></em> |
   REFERENCES <em class="replaceable"><code>reftable</code></em> [ ( <em class="replaceable"><code>refcolumn</code></em> ) ] [ MATCH FULL | MATCH PARTIAL | MATCH SIMPLE ]
-    [ ON DELETE <em class="replaceable"><code>action</code></em> ] [ ON UPDATE <em class="replaceable"><code>action</code></em> ] }
+    [ ON DELETE <em class="replaceable"><code>referential_action</code></em> ] [ ON UPDATE <em class="replaceable"><code>referential_action</code></em> ] }
 [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
 
 <span class="phrase">and <em class="replaceable"><code>table_constraint</code></em> is:</span>
 
 [ CONSTRAINT <em class="replaceable"><code>constraint_name</code></em> ]
 { CHECK ( <em class="replaceable"><code>expression</code></em> ) [ NO INHERIT ] |
-  UNIQUE ( <em class="replaceable"><code>column_name</code></em> [, ... ] ) <em class="replaceable"><code>index_parameters</code></em> |
+  UNIQUE [ NULLS [ NOT ] DISTINCT ] ( <em class="replaceable"><code>column_name</code></em> [, ... ] ) <em class="replaceable"><code>index_parameters</code></em> |
   PRIMARY KEY ( <em class="replaceable"><code>column_name</code></em> [, ... ] ) <em class="replaceable"><code>index_parameters</code></em> |
   EXCLUDE [ USING <em class="replaceable"><code>index_method</code></em> ] ( <em class="replaceable"><code>exclude_element</code></em> WITH <em class="replaceable"><code>operator</code></em> [, ... ] ) <em class="replaceable"><code>index_parameters</code></em> [ WHERE ( <em class="replaceable"><code>predicate</code></em> ) ] |
   FOREIGN KEY ( <em class="replaceable"><code>column_name</code></em> [, ... ] ) REFERENCES <em class="replaceable"><code>reftable</code></em> [ ( <em class="replaceable"><code>refcolumn</code></em> [, ... ] ) ]
-    [ MATCH FULL | MATCH PARTIAL | MATCH SIMPLE ] [ ON DELETE <em class="replaceable"><code>action</code></em> ] [ ON UPDATE <em class="replaceable"><code>action</code></em> ] }
+    [ MATCH FULL | MATCH PARTIAL | MATCH SIMPLE ] [ ON DELETE <em class="replaceable"><code>referential_action</code></em> ] [ ON UPDATE <em class="replaceable"><code>referential_action</code></em> ] }
 [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
 
 <span class="phrase">and <em class="replaceable"><code>table_constraint_using_index</code></em> is:</span>
@@ -110,20 +113,24 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
 
 <span class="phrase"><em class="replaceable"><code>exclude_element</code></em> in an <code class="literal">EXCLUDE</code> constraint is:</span>
 
-{ <em class="replaceable"><code>column_name</code></em> | ( <em class="replaceable"><code>expression</code></em> ) } [ <em class="replaceable"><code>opclass</code></em> ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ]
+{ <em class="replaceable"><code>column_name</code></em> | ( <em class="replaceable"><code>expression</code></em> ) } [ COLLATE <em class="replaceable"><code>collation</code></em> ] [ <em class="replaceable"><code>opclass</code></em> [ ( <em class="replaceable"><code>opclass_parameter</code></em> = <em class="replaceable"><code>value</code></em> [, ... ] ) ] ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ]
+
+<span class="phrase"><em class="replaceable"><code>referential_action</code></em> in a <code class="literal">FOREIGN KEY</code>/<code class="literal">REFERENCES</code> constraint is:</span>
+
+{ NO ACTION | RESTRICT | CASCADE | SET NULL [ ( <em class="replaceable"><code>column_name</code></em> [, ... ] ) ] | SET DEFAULT [ ( <em class="replaceable"><code>column_name</code></em> [, ... ] ) ] }
 </pre></div><div class="refsect1" id="id-1.9.3.35.5"><h2>Description</h2><p>
    <code class="command">ALTER TABLE</code> changes the definition of an existing table.
    There are several subforms described below. Note that the lock level required
-   may differ for each subform. An <code class="literal">ACCESS EXCLUSIVE</code> lock is held
-   unless explicitly noted. When multiple subcommands are listed, the lock
-   held will be the strictest one required from any subcommand.
+   may differ for each subform. An <code class="literal">ACCESS EXCLUSIVE</code> lock is
+   acquired unless explicitly noted. When multiple subcommands are given, the
+   lock acquired will be the strictest one required by any subcommand.
 
-  </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">ADD COLUMN [ IF NOT EXISTS ]</code></span></dt><dd><p>
+  </p><div class="variablelist"><dl class="variablelist"><dt id="SQL-ALTERTABLE-DESC-ADD-COLUMN"><span class="term"><code class="literal">ADD COLUMN [ IF NOT EXISTS ]</code></span> <a href="#SQL-ALTERTABLE-DESC-ADD-COLUMN" class="id_link">#</a></dt><dd><p>
       This form adds a new column to the table, using the same syntax as
-      <a class="xref" href="sql-createtable.html" title="CREATE TABLE"><span class="refentrytitle">CREATE TABLE</span></a>. If <code class="literal">IF NOT EXISTS</code>
+      <a class="link" href="sql-createtable.html" title="CREATE TABLE"><code class="command">CREATE TABLE</code></a>. If <code class="literal">IF NOT EXISTS</code>
       is specified and a column already exists with this name,
       no error is thrown.
-     </p></dd><dt><span class="term"><code class="literal">DROP COLUMN [ IF EXISTS ]</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-DROP-COLUMN"><span class="term"><code class="literal">DROP COLUMN [ IF EXISTS ]</code></span> <a href="#SQL-ALTERTABLE-DESC-DROP-COLUMN" class="id_link">#</a></dt><dd><p>
       This form drops a column from a table.  Indexes and
       table constraints involving the column will be automatically
       dropped as well.
@@ -135,7 +142,7 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
       If <code class="literal">IF EXISTS</code> is specified and the column
       does not exist, no error is thrown. In this case a notice
       is issued instead.
-     </p></dd><dt><span class="term"><code class="literal">SET DATA TYPE</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-DATA-TYPE"><span class="term"><code class="literal">SET DATA TYPE</code></span> <a href="#SQL-ALTERTABLE-DESC-SET-DATA-TYPE" class="id_link">#</a></dt><dd><p>
       This form changes the type of a column of a table. Indexes and
       simple table constraints involving the column will be automatically
       converted to use the new column type by reparsing the originally
@@ -149,15 +156,27 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
       cast from old data type to new.  A  <code class="literal">USING</code>
       clause must be provided if there is no implicit or assignment
       cast from old to new type.
-     </p></dd><dt><span class="term"><code class="literal">SET</code>/<code class="literal">DROP DEFAULT</code></span></dt><dd><p>
-      These forms set or remove the default value for a column.
-      Default values only apply in subsequent <code class="command">INSERT</code>
-      or <code class="command">UPDATE</code> commands; they do not cause rows already in the
-      table to change.
-     </p></dd><dt><span class="term"><code class="literal">SET</code>/<code class="literal">DROP NOT NULL</code></span></dt><dd><p>
+     </p><p>
+      When this form is used, the column's statistics are removed,
+      so running <a class="link" href="sql-analyze.html" title="ANALYZE"><code class="command">ANALYZE</code></a>
+      on the table afterwards is recommended.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-DROP-DEFAULT"><span class="term"><code class="literal">SET</code>/<code class="literal">DROP DEFAULT</code></span> <a href="#SQL-ALTERTABLE-DESC-SET-DROP-DEFAULT" class="id_link">#</a></dt><dd><p>
+      These forms set or remove the default value for a column (where
+      removal is equivalent to setting the default value to NULL).  The new
+      default value will only apply in subsequent <code class="command">INSERT</code>
+      or <code class="command">UPDATE</code> commands; it does not cause rows already
+      in the table to change.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-DROP-NOT-NULL"><span class="term"><code class="literal">SET</code>/<code class="literal">DROP NOT NULL</code></span> <a href="#SQL-ALTERTABLE-DESC-SET-DROP-NOT-NULL" class="id_link">#</a></dt><dd><p>
       These forms change whether a column is marked to allow null
-      values or to reject null values.  You can only use <code class="literal">SET
-      NOT NULL</code> when the column contains no null values.
+      values or to reject null values.
+     </p><p>
+      <code class="literal">SET NOT NULL</code> may only be applied to a column
+      provided none of the records in the table contain a
+      <code class="literal">NULL</code> value for the column.  Ordinarily this is
+      checked during the <code class="literal">ALTER TABLE</code> by scanning the
+      entire table; however, if a valid <code class="literal">CHECK</code> constraint is
+      found which proves no <code class="literal">NULL</code> can exist, then the
+      table scan is skipped.
      </p><p>
       If this table is a partition, one cannot perform <code class="literal">DROP NOT NULL</code>
       on a column if it is marked <code class="literal">NOT NULL</code> in the parent
@@ -167,23 +186,35 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
       parent, such a constraint can still be added to individual partitions,
       if desired; that is, the children can disallow nulls even if the parent
       allows them, but not the other way around.
-     </p></dd><dt><span class="term"><code class="literal">ADD GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY</code><br /></span><span class="term"><code class="literal">SET GENERATED { ALWAYS | BY DEFAULT }</code><br /></span><span class="term"><code class="literal">DROP IDENTITY [ IF EXISTS ]</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-DROP-EXPRESSION"><span class="term"><code class="literal">DROP EXPRESSION [ IF EXISTS ]</code></span> <a href="#SQL-ALTERTABLE-DESC-DROP-EXPRESSION" class="id_link">#</a></dt><dd><p>
+      This form turns a stored generated column into a normal base column.
+      Existing data in the columns is retained, but future changes will no
+      longer apply the generation expression.
+     </p><p>
+      If <code class="literal">DROP EXPRESSION IF EXISTS</code> is specified and the
+      column is not a stored generated column, no error is thrown.  In this
+      case a notice is issued instead.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-GENERATED-IDENTITY"><span class="term"><code class="literal">ADD GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY</code><br /></span><span class="term"><code class="literal">SET GENERATED { ALWAYS | BY DEFAULT }</code><br /></span><span class="term"><code class="literal">DROP IDENTITY [ IF EXISTS ]</code></span> <a href="#SQL-ALTERTABLE-DESC-GENERATED-IDENTITY" class="id_link">#</a></dt><dd><p>
       These forms change whether a column is an identity column or change the
       generation attribute of an existing identity column.
-      See <a class="xref" href="sql-createtable.html" title="CREATE TABLE"><span class="refentrytitle">CREATE TABLE</span></a> for details.
+      See <a class="link" href="sql-createtable.html" title="CREATE TABLE"><code class="command">CREATE TABLE</code></a> for details.
+      Like <code class="literal">SET DEFAULT</code>, these forms only affect the
+      behavior of subsequent <code class="command">INSERT</code>
+      and <code class="command">UPDATE</code> commands; they do not cause rows
+      already in the table to change.
      </p><p>
       If <code class="literal">DROP IDENTITY IF EXISTS</code> is specified and the
       column is not an identity column, no error is thrown.  In this case a
       notice is issued instead.
-     </p></dd><dt><span class="term"><code class="literal">SET <em class="replaceable"><code>sequence_option</code></em></code><br /></span><span class="term"><code class="literal">RESTART</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-SEQUENCE-OPTION"><span class="term"><code class="literal">SET <em class="replaceable"><code>sequence_option</code></em></code><br /></span><span class="term"><code class="literal">RESTART</code></span> <a href="#SQL-ALTERTABLE-DESC-SET-SEQUENCE-OPTION" class="id_link">#</a></dt><dd><p>
       These forms alter the sequence that underlies an existing identity
       column.  <em class="replaceable"><code>sequence_option</code></em> is an option
-      supported by <a class="xref" href="sql-altersequence.html" title="ALTER SEQUENCE"><span class="refentrytitle">ALTER SEQUENCE</span></a> such
+      supported by <a class="link" href="sql-altersequence.html" title="ALTER SEQUENCE"><code class="command">ALTER SEQUENCE</code></a> such
       as <code class="literal">INCREMENT BY</code>.
-     </p></dd><dt><span class="term"><code class="literal">SET STATISTICS</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-STATISTICS"><span class="term"><code class="literal">SET STATISTICS</code></span> <a href="#SQL-ALTERTABLE-DESC-SET-STATISTICS" class="id_link">#</a></dt><dd><p>
       This form
       sets the per-column statistics-gathering target for subsequent
-      <a class="xref" href="sql-analyze.html" title="ANALYZE"><span class="refentrytitle">ANALYZE</span></a> operations.
+      <a class="link" href="sql-analyze.html" title="ANALYZE"><code class="command">ANALYZE</code></a> operations.
       The target can be set in the range 0 to 10000; alternatively, set it
       to -1 to revert to using the system default statistics
       target (<a class="xref" href="runtime-config-query.html#GUC-DEFAULT-STATISTICS-TARGET">default_statistics_target</a>).
@@ -193,12 +224,12 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
      </p><p>
       <code class="literal">SET STATISTICS</code> acquires a
       <code class="literal">SHARE UPDATE EXCLUSIVE</code> lock.
-     </p></dd><dt><span class="term"><code class="literal">SET ( <em class="replaceable"><code>attribute_option</code></em> = <em class="replaceable"><code>value</code></em> [, ... ] )</code><br /></span><span class="term"><code class="literal">RESET ( <em class="replaceable"><code>attribute_option</code></em> [, ... ] )</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-ATTRIBUTE-OPTION"><span class="term"><code class="literal">SET ( <em class="replaceable"><code>attribute_option</code></em> = <em class="replaceable"><code>value</code></em> [, ... ] )</code><br /></span><span class="term"><code class="literal">RESET ( <em class="replaceable"><code>attribute_option</code></em> [, ... ] )</code></span> <a href="#SQL-ALTERTABLE-DESC-SET-ATTRIBUTE-OPTION" class="id_link">#</a></dt><dd><p>
       This form sets or resets per-attribute options.  Currently, the only
       defined per-attribute options are <code class="literal">n_distinct</code> and
       <code class="literal">n_distinct_inherited</code>, which override the
       number-of-distinct-values estimates made by subsequent
-      <a class="xref" href="sql-analyze.html" title="ANALYZE"><span class="refentrytitle">ANALYZE</span></a>
+      <a class="link" href="sql-analyze.html" title="ANALYZE"><code class="command">ANALYZE</code></a>
       operations.  <code class="literal">n_distinct</code> affects the statistics for the table
       itself, while <code class="literal">n_distinct_inherited</code> affects the statistics
       gathered for the table plus its inheritance children.  When set to a
@@ -220,49 +251,87 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
      </p><p>
       Changing per-attribute options acquires a
       <code class="literal">SHARE UPDATE EXCLUSIVE</code> lock.
-     </p></dd><dt><span class="term">
-     <code class="literal">SET STORAGE</code>
-     <a id="id-1.9.3.35.5.2.3.10.1.2" class="indexterm"></a>
-    </span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-STORAGE"><span class="term">
+     <code class="literal">SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN | DEFAULT }</code>
+     <a id="id-1.9.3.35.5.2.3.11.1.2" class="indexterm"></a>
+    </span> <a href="#SQL-ALTERTABLE-DESC-SET-STORAGE" class="id_link">#</a></dt><dd><p>
       This form sets the storage mode for a column. This controls whether this
-      column is held inline or in a secondary <acronym class="acronym">TOAST</acronym> table, and
-      whether the data
+      column is held inline or in a secondary <acronym class="acronym">TOAST</acronym> table,
+      and whether the data
       should be compressed or not. <code class="literal">PLAIN</code> must be used
       for fixed-length values such as <code class="type">integer</code> and is
       inline, uncompressed. <code class="literal">MAIN</code> is for inline,
       compressible data. <code class="literal">EXTERNAL</code> is for external,
       uncompressed data, and <code class="literal">EXTENDED</code> is for external,
-      compressed data.  <code class="literal">EXTENDED</code> is the default for most
-      data types that support non-<code class="literal">PLAIN</code> storage.
+      compressed data.
+      Writing <code class="literal">DEFAULT</code> sets the storage mode to the default
+      mode for the column's data type.  <code class="literal">EXTENDED</code> is the
+      default for most data types that support non-<code class="literal">PLAIN</code>
+      storage.
       Use of <code class="literal">EXTERNAL</code> will make substring operations on
       very large <code class="type">text</code> and <code class="type">bytea</code> values run faster,
-      at the penalty of increased storage space.  Note that
-      <code class="literal">SET STORAGE</code> doesn't itself change anything in the table,
-      it just sets the strategy to be pursued during future table updates.
-      See <a class="xref" href="storage-toast.html" title="68.2. TOAST">Section 68.2</a> for more information.
-     </p></dd><dt><span class="term"><code class="literal">ADD <em class="replaceable"><code>table_constraint</code></em> [ NOT VALID ]</code></span></dt><dd><p>
-      This form adds a new constraint to a table using the same syntax as
-      <a class="xref" href="sql-createtable.html" title="CREATE TABLE"><span class="refentrytitle">CREATE TABLE</span></a>, plus the option <code class="literal">NOT
+      at the penalty of increased storage space.
+      Note that <code class="literal">ALTER TABLE ... SET STORAGE</code> doesn't itself
+      change anything in the table; it just sets the strategy to be pursued
+      during future table updates.
+      See <a class="xref" href="storage-toast.html" title="73.2. TOAST">Section 73.2</a> for more information.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-COMPRESSION"><span class="term">
+     <code class="literal">SET COMPRESSION <em class="replaceable"><code>compression_method</code></em></code>
+    </span> <a href="#SQL-ALTERTABLE-DESC-SET-COMPRESSION" class="id_link">#</a></dt><dd><p>
+      This form sets the compression method for a column, determining how
+      values inserted in future will be compressed (if the storage mode
+      permits compression at all).
+      This does not cause the table to be rewritten, so existing data may still
+      be compressed with other compression methods.  If the table is restored
+      with <span class="application">pg_restore</span>, then all values are rewritten
+      with the configured compression method.
+      However, when data is inserted from another relation (for example,
+      by <code class="command">INSERT ... SELECT</code>), values from the source table are
+      not necessarily detoasted, so any previously compressed data may retain
+      its existing compression method, rather than being recompressed with the
+      compression method of the target column.
+      The supported compression
+      methods are <code class="literal">pglz</code> and <code class="literal">lz4</code>.
+      (<code class="literal">lz4</code> is available only if <code class="option">--with-lz4</code>
+      was used when building <span class="productname">PostgreSQL</span>.)  In
+      addition, <em class="replaceable"><code>compression_method</code></em>
+      can be <code class="literal">default</code>, which selects the default behavior of
+      consulting the <a class="xref" href="runtime-config-client.html#GUC-DEFAULT-TOAST-COMPRESSION">default_toast_compression</a> setting
+      at the time of data insertion to determine the method to use.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-ADD-TABLE-CONSTRAINT"><span class="term"><code class="literal">ADD <em class="replaceable"><code>table_constraint</code></em> [ NOT VALID ]</code></span> <a href="#SQL-ALTERTABLE-DESC-ADD-TABLE-CONSTRAINT" class="id_link">#</a></dt><dd><p>
+      This form adds a new constraint to a table using the same constraint
+      syntax as <a class="link" href="sql-createtable.html" title="CREATE TABLE"><code class="command">CREATE TABLE</code></a>, plus the option <code class="literal">NOT
       VALID</code>, which is currently only allowed for foreign key
       and CHECK constraints.
-      If the constraint is marked <code class="literal">NOT VALID</code>, the
-      potentially-lengthy initial check to verify that all rows in the table
-      satisfy the constraint is skipped.  The constraint will still be
+     </p><p>
+      Normally, this form will cause a scan of the table to verify that all
+      existing rows in the table satisfy the new constraint.  But if
+      the <code class="literal">NOT VALID</code> option is used, this
+      potentially-lengthy scan is skipped.  The constraint will still be
       enforced against subsequent inserts or updates (that is, they'll fail
       unless there is a matching row in the referenced table, in the case
-      of foreign keys; and they'll fail unless the new row matches the
-      specified check constraints).  But the
+      of foreign keys, or they'll fail unless the new row matches the
+      specified check condition).  But the
       database will not assume that the constraint holds for all rows in
       the table, until it is validated by using the <code class="literal">VALIDATE
-      CONSTRAINT</code> option.  Foreign key constraints on partitioned
-      tables may not be declared <code class="literal">NOT VALID</code> at present.
+      CONSTRAINT</code> option.
+      See <a class="xref" href="sql-altertable.html#SQL-ALTERTABLE-NOTES" title="Notes">Notes</a> below for more information
+      about using the <code class="literal">NOT VALID</code> option.
      </p><p>
-      The addition of a foreign key constraint requires a
-      <code class="literal">SHARE ROW EXCLUSIVE</code> lock on the referenced table.
+      Although most forms of <code class="literal">ADD
+      <em class="replaceable"><code>table_constraint</code></em></code>
+      require an <code class="literal">ACCESS EXCLUSIVE</code> lock, <code class="literal">ADD
+      FOREIGN KEY</code> requires only a <code class="literal">SHARE ROW
+      EXCLUSIVE</code> lock.  Note that <code class="literal">ADD FOREIGN KEY</code>
+      also acquires a <code class="literal">SHARE ROW EXCLUSIVE</code> lock on the
+      referenced table, in addition to the lock on the table on which the
+      constraint is declared.
      </p><p>
       Additional restrictions apply when unique or primary key constraints
-      are added to partitioned tables; see <a class="xref" href="sql-createtable.html" title="CREATE TABLE"><span class="refentrytitle">CREATE TABLE</span></a>.
-     </p></dd><dt><span class="term"><code class="literal">ADD <em class="replaceable"><code>table_constraint_using_index</code></em></code></span></dt><dd><p>
+      are added to partitioned tables; see <a class="link" href="sql-createtable.html" title="CREATE TABLE"><code class="command">CREATE TABLE</code></a>.
+      Also, foreign key constraints on partitioned
+      tables may not be declared <code class="literal">NOT VALID</code> at present.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-ADD-TABLE-CONSTRAINT-USING-INDEX"><span class="term"><code class="literal">ADD <em class="replaceable"><code>table_constraint_using_index</code></em></code></span> <a href="#SQL-ALTERTABLE-DESC-ADD-TABLE-CONSTRAINT-USING-INDEX" class="id_link">#</a></dt><dd><p>
       This form adds a new <code class="literal">PRIMARY KEY</code> or <code class="literal">UNIQUE</code>
       constraint to a table based on an existing unique index.  All the
       columns of the index will be included in the constraint.
@@ -296,39 +365,32 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
        table updates for a long time.  To do that, create the index using
        <code class="command">CREATE INDEX CONCURRENTLY</code>, and then install it as an
        official constraint using this syntax.  See the example below.
-      </p></div></dd><dt><span class="term"><code class="literal">ALTER CONSTRAINT</code></span></dt><dd><p>
+      </p></div></dd><dt id="SQL-ALTERTABLE-DESC-ALTER-CONSTRAINT"><span class="term"><code class="literal">ALTER CONSTRAINT</code></span> <a href="#SQL-ALTERTABLE-DESC-ALTER-CONSTRAINT" class="id_link">#</a></dt><dd><p>
       This form alters the attributes of a constraint that was previously
       created. Currently only foreign key constraints may be altered.
-     </p></dd><dt><span class="term"><code class="literal">VALIDATE CONSTRAINT</code></span></dt><dd><p>
-      This form validates a foreign key or check constraint that was previously created
-      as <code class="literal">NOT VALID</code>, by scanning the table to ensure there
-      are no rows for which the constraint is not satisfied.
-      Nothing happens if the constraint is already marked valid.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-VALIDATE-CONSTRAINT"><span class="term"><code class="literal">VALIDATE CONSTRAINT</code></span> <a href="#SQL-ALTERTABLE-DESC-VALIDATE-CONSTRAINT" class="id_link">#</a></dt><dd><p>
+      This form validates a foreign key or check constraint that was
+      previously created as <code class="literal">NOT VALID</code>, by scanning the
+      table to ensure there are no rows for which the constraint is not
+      satisfied.  Nothing happens if the constraint is already marked valid.
+      (See <a class="xref" href="sql-altertable.html#SQL-ALTERTABLE-NOTES" title="Notes">Notes</a> below for an explanation
+      of the usefulness of this command.)
      </p><p>
-      Validation can be a long process on larger tables. The value of separating
-      validation from initial creation is that you can defer validation to less
-      busy times, or can be used to give additional time to correct pre-existing
-      errors while preventing new errors. Note also that validation on its own
-      does not prevent normal write commands against the table while it runs.
-     </p><p>
-      Validation acquires only a <code class="literal">SHARE UPDATE EXCLUSIVE</code> lock
-      on the table being altered. If the constraint is a foreign key then
-      a <code class="literal">ROW SHARE</code> lock is also required on
-      the table referenced by the constraint.
-     </p></dd><dt><span class="term"><code class="literal">DROP CONSTRAINT [ IF EXISTS ]</code></span></dt><dd><p>
+      This command acquires a <code class="literal">SHARE UPDATE EXCLUSIVE</code> lock.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-DROP-CONSTRAINT"><span class="term"><code class="literal">DROP CONSTRAINT [ IF EXISTS ]</code></span> <a href="#SQL-ALTERTABLE-DESC-DROP-CONSTRAINT" class="id_link">#</a></dt><dd><p>
       This form drops the specified constraint on a table, along with
       any index underlying the constraint.
       If <code class="literal">IF EXISTS</code> is specified and the constraint
       does not exist, no error is thrown. In this case a notice is issued instead.
-     </p></dd><dt><span class="term"><code class="literal">DISABLE</code>/<code class="literal">ENABLE [ REPLICA | ALWAYS ] TRIGGER</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-DISABLE-ENABLE-TRIGGER"><span class="term"><code class="literal">DISABLE</code>/<code class="literal">ENABLE [ REPLICA | ALWAYS ] TRIGGER</code></span> <a href="#SQL-ALTERTABLE-DESC-DISABLE-ENABLE-TRIGGER" class="id_link">#</a></dt><dd><p>
       These forms configure the firing of trigger(s) belonging to the table.
       A disabled trigger is still known to the system, but is not executed
-      when its triggering event occurs.  For a deferred trigger, the enable
+      when its triggering event occurs.  (For a deferred trigger, the enable
       status is checked when the event occurs, not when the trigger function
-      is actually executed.  One can disable or enable a single
+      is actually executed.)  One can disable or enable a single
       trigger specified by name, or all triggers on the table, or only
       user triggers (this option excludes internally generated constraint
-      triggers such as those that are used to implement foreign key
+      triggers, such as those that are used to implement foreign key
       constraints or deferrable uniqueness and exclusion constraints).
       Disabling or enabling internally generated constraint triggers
       requires superuser privileges; it should be done with caution since
@@ -346,15 +408,19 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
       The effect of this mechanism is that in the default configuration,
       triggers do not fire on replicas.  This is useful because if a trigger
       is used on the origin to propagate data between tables, then the
-      replication system will also replicate the propagated data, and the
+      replication system will also replicate the propagated data; so the
       trigger should not fire a second time on the replica, because that would
       lead to duplication.  However, if a trigger is used for another purpose
       such as creating external alerts, then it might be appropriate to set it
       to <code class="literal">ENABLE ALWAYS</code> so that it is also fired on
       replicas.
      </p><p>
+      When this command is applied to a partitioned table, the states of
+      corresponding clone triggers in the partitions are updated too,
+      unless <code class="literal">ONLY</code> is specified.
+     </p><p>
       This command acquires a <code class="literal">SHARE ROW EXCLUSIVE</code> lock.
-     </p></dd><dt><span class="term"><code class="literal">DISABLE</code>/<code class="literal">ENABLE [ REPLICA | ALWAYS ] RULE</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-DISABLE-ENABLE-RULE"><span class="term"><code class="literal">DISABLE</code>/<code class="literal">ENABLE [ REPLICA | ALWAYS ] RULE</code></span> <a href="#SQL-ALTERTABLE-DESC-DISABLE-ENABLE-RULE" class="id_link">#</a></dt><dd><p>
       These forms configure the firing of rewrite rules belonging to the table.
       A disabled rule is still known to the system, but is not applied
       during query rewriting. The semantics are as for disabled/enabled
@@ -365,54 +431,52 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
       The rule firing mechanism is also affected by the configuration variable
       <a class="xref" href="runtime-config-client.html#GUC-SESSION-REPLICATION-ROLE">session_replication_role</a>, analogous to triggers as
       described above.
-     </p></dd><dt><span class="term"><code class="literal">DISABLE</code>/<code class="literal">ENABLE ROW LEVEL SECURITY</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-DISABLE-ENABLE-ROW-LEVEL-SECURITY"><span class="term"><code class="literal">DISABLE</code>/<code class="literal">ENABLE ROW LEVEL SECURITY</code></span> <a href="#SQL-ALTERTABLE-DESC-DISABLE-ENABLE-ROW-LEVEL-SECURITY" class="id_link">#</a></dt><dd><p>
       These forms control the application of row security policies belonging
       to the table.  If enabled and no policies exist for the table, then a
       default-deny policy is applied.  Note that policies can exist for a table
-      even if row level security is disabled - in this case, the policies will
-      NOT be applied and the policies will be ignored.
+      even if row-level security is disabled.  In this case, the policies will
+      <span class="emphasis"><em>not</em></span> be applied and the policies will be ignored.
       See also
-      <a class="xref" href="sql-createpolicy.html" title="CREATE POLICY"><span class="refentrytitle">CREATE POLICY</span></a>.
-     </p></dd><dt><span class="term"><code class="literal">NO FORCE</code>/<code class="literal">FORCE ROW LEVEL SECURITY</code></span></dt><dd><p>
+      <a class="link" href="sql-createpolicy.html" title="CREATE POLICY"><code class="command">CREATE POLICY</code></a>.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-FORCE-ROW-LEVEL-SECURITY"><span class="term"><code class="literal">NO FORCE</code>/<code class="literal">FORCE ROW LEVEL SECURITY</code></span> <a href="#SQL-ALTERTABLE-DESC-FORCE-ROW-LEVEL-SECURITY" class="id_link">#</a></dt><dd><p>
       These forms control the application of row security policies belonging
-      to the table when the user is the table owner.  If enabled, row level
+      to the table when the user is the table owner.  If enabled, row-level
       security policies will be applied when the user is the table owner.  If
-      disabled (the default) then row level security will not be applied when
+      disabled (the default) then row-level security will not be applied when
       the user is the table owner.
       See also
-      <a class="xref" href="sql-createpolicy.html" title="CREATE POLICY"><span class="refentrytitle">CREATE POLICY</span></a>.
-     </p></dd><dt><span class="term"><code class="literal">CLUSTER ON</code></span></dt><dd><p>
+      <a class="link" href="sql-createpolicy.html" title="CREATE POLICY"><code class="command">CREATE POLICY</code></a>.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-CLUSTER-ON"><span class="term"><code class="literal">CLUSTER ON</code></span> <a href="#SQL-ALTERTABLE-DESC-CLUSTER-ON" class="id_link">#</a></dt><dd><p>
       This form selects the default index for future
-      <a class="xref" href="sql-cluster.html" title="CLUSTER"><span class="refentrytitle">CLUSTER</span></a>
+      <a class="link" href="sql-cluster.html" title="CLUSTER"><code class="command">CLUSTER</code></a>
       operations.  It does not actually re-cluster the table.
      </p><p>
       Changing cluster options acquires a <code class="literal">SHARE UPDATE EXCLUSIVE</code> lock.
-     </p></dd><dt><span class="term"><code class="literal">SET WITHOUT CLUSTER</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-WITHOUT-CLUSTER"><span class="term"><code class="literal">SET WITHOUT CLUSTER</code></span> <a href="#SQL-ALTERTABLE-DESC-SET-WITHOUT-CLUSTER" class="id_link">#</a></dt><dd><p>
       This form removes the most recently used
-      <a class="xref" href="sql-cluster.html" title="CLUSTER"><span class="refentrytitle">CLUSTER</span></a>
+      <a class="link" href="sql-cluster.html" title="CLUSTER"><code class="command">CLUSTER</code></a>
       index specification from the table.  This affects
       future cluster operations that don't specify an index.
      </p><p>
       Changing cluster options acquires a <code class="literal">SHARE UPDATE EXCLUSIVE</code> lock.
-     </p></dd><dt><span class="term"><code class="literal">SET WITH OIDS</code></span></dt><dd><p>
-      This form adds an <code class="literal">oid</code> system column to the
-      table (see <a class="xref" href="ddl-system-columns.html" title="5.4. System Columns">Section 5.4</a>).
-      It does nothing if the table already has OIDs.
-     </p><p>
-      Note that this is not equivalent to <code class="literal">ADD COLUMN oid oid</code>;
-      that would add a normal column that happened to be named
-      <code class="literal">oid</code>, not a system column.
-     </p></dd><dt><span class="term"><code class="literal">SET WITHOUT OIDS</code></span></dt><dd><p>
-      This form removes the <code class="literal">oid</code> system column from the
-      table.  This is exactly equivalent to
-      <code class="literal">DROP COLUMN oid RESTRICT</code>,
-      except that it will not complain if there is already no
-      <code class="literal">oid</code> column.
-     </p></dd><dt><span class="term"><code class="literal">SET TABLESPACE</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-WITHOUT-OIDS"><span class="term"><code class="literal">SET WITHOUT OIDS</code></span> <a href="#SQL-ALTERTABLE-DESC-SET-WITHOUT-OIDS" class="id_link">#</a></dt><dd><p>
+      Backward-compatible syntax for removing the <code class="literal">oid</code>
+      system column.  As <code class="literal">oid</code> system columns cannot be
+      added anymore, this never has an effect.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-ACCESS-METHOD"><span class="term"><code class="literal">SET ACCESS METHOD</code></span> <a href="#SQL-ALTERTABLE-DESC-SET-ACCESS-METHOD" class="id_link">#</a></dt><dd><p>
+      This form changes the access method of the table by rewriting it. See
+      <a class="xref" href="tableam.html" title="Chapter 63. Table Access Method Interface Definition">Chapter 63</a> for more information.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-TABLESPACE"><span class="term"><code class="literal">SET TABLESPACE</code></span> <a href="#SQL-ALTERTABLE-DESC-SET-TABLESPACE" class="id_link">#</a></dt><dd><p>
       This form changes the table's tablespace to the specified tablespace and
       moves the data file(s) associated with the table to the new tablespace.
       Indexes on the table, if any, are not moved; but they can be moved
       separately with additional <code class="literal">SET TABLESPACE</code> commands.
+      When applied to a partitioned table, nothing is moved, but any
+      partitions created afterwards with
+      <code class="command">CREATE TABLE PARTITION OF</code> will use that tablespace,
+      unless overridden by a <code class="literal">TABLESPACE</code> clause.
+     </p><p>
       All tables in the current database in a tablespace can be moved by using
       the <code class="literal">ALL IN TABLESPACE</code> form, which will lock all tables
       to be moved first and then move each one.  This form also supports
@@ -420,24 +484,29 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
       roles specified.  If the <code class="literal">NOWAIT</code> option is specified
       then the command will fail if it is unable to acquire all of the locks
       required immediately.  Note that system catalogs are not moved by this
-      command, use <code class="command">ALTER DATABASE</code> or explicit
+      command; use <code class="command">ALTER DATABASE</code> or explicit
       <code class="command">ALTER TABLE</code> invocations instead if desired.  The
       <code class="literal">information_schema</code> relations are not considered part
       of the system catalogs and will be moved.
       See also
-      <a class="xref" href="sql-createtablespace.html" title="CREATE TABLESPACE"><span class="refentrytitle">CREATE TABLESPACE</span></a>.
-     </p></dd><dt><span class="term"><code class="literal">SET { LOGGED | UNLOGGED }</code></span></dt><dd><p>
+      <a class="link" href="sql-createtablespace.html" title="CREATE TABLESPACE"><code class="command">CREATE TABLESPACE</code></a>.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-LOGGED-UNLOGGED"><span class="term"><code class="literal">SET { LOGGED | UNLOGGED }</code></span> <a href="#SQL-ALTERTABLE-DESC-SET-LOGGED-UNLOGGED" class="id_link">#</a></dt><dd><p>
       This form changes the table from unlogged to logged or vice-versa
       (see <a class="xref" href="sql-createtable.html#SQL-CREATETABLE-UNLOGGED"><code class="literal">UNLOGGED</code></a>).  It cannot be applied
       to a temporary table.
-     </p></dd><dt><span class="term"><code class="literal">SET ( <em class="replaceable"><code>storage_parameter</code></em> = <em class="replaceable"><code>value</code></em> [, ... ] )</code></span></dt><dd><p>
+     </p><p>
+      This also changes the persistence of any sequences linked to the table
+      (for identity or serial columns).  However, it is also possible to
+      change the persistence of such sequences separately.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-STORAGE-PARAMETER"><span class="term"><code class="literal">SET ( <em class="replaceable"><code>storage_parameter</code></em> [= <em class="replaceable"><code>value</code></em>] [, ... ] )</code></span> <a href="#SQL-ALTERTABLE-DESC-SET-STORAGE-PARAMETER" class="id_link">#</a></dt><dd><p>
       This form changes one or more storage parameters for the table.  See
-      <a class="xref" href="sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS" title="Storage Parameters">Storage Parameters</a>
+      <a class="xref" href="sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS" title="Storage Parameters">Storage Parameters</a> in the
+      <a class="link" href="sql-createtable.html" title="CREATE TABLE"><code class="command">CREATE TABLE</code></a> documentation
       for details on the available parameters.  Note that the table contents
       will not be modified immediately by this command; depending on the
       parameter you might need to rewrite the table to get the desired effects.
-      That can be done with <a class="link" href="sql-vacuum.html" title="VACUUM">VACUUM
-      FULL</a>, <a class="xref" href="sql-cluster.html" title="CLUSTER"><span class="refentrytitle">CLUSTER</span></a> or one of the forms
+      That can be done with <a class="link" href="sql-vacuum.html" title="VACUUM"><code class="command">VACUUM
+      FULL</code></a>, <a class="link" href="sql-cluster.html" title="CLUSTER"><code class="command">CLUSTER</code></a> or one of the forms
       of <code class="command">ALTER TABLE</code> that forces a table rewrite.
       For planner related parameters, changes will take effect from the next
       time the table is locked so currently executing queries will not be
@@ -445,20 +514,12 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
      </p><p>
       <code class="literal">SHARE UPDATE EXCLUSIVE</code> lock will be taken for
       fillfactor, toast and autovacuum storage parameters, as well as the
-      following planner related parameters:
-      <code class="varname">effective_io_concurrency</code>, <code class="varname">parallel_workers</code>, <code class="varname">seq_page_cost</code>,
-      <code class="varname">random_page_cost</code>, <code class="varname">n_distinct</code> and <code class="varname">n_distinct_inherited</code>.
-     </p><div class="note"><h3 class="title">Note</h3><p>
-       While <code class="command">CREATE TABLE</code> allows <code class="literal">OIDS</code> to be specified
-       in the <code class="literal">WITH (<em class="replaceable"><code>storage_parameter</code></em>)</code> syntax,
-       <code class="command">ALTER TABLE</code> does not treat <code class="literal">OIDS</code> as a
-       storage parameter.  Instead use the <code class="literal">SET WITH OIDS</code>
-       and <code class="literal">SET WITHOUT OIDS</code> forms to change OID status.
-      </p></div></dd><dt><span class="term"><code class="literal">RESET ( <em class="replaceable"><code>storage_parameter</code></em> [, ... ] )</code></span></dt><dd><p>
+      planner parameter <code class="varname">parallel_workers</code>.
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-RESET-STORAGE-PARAMETER"><span class="term"><code class="literal">RESET ( <em class="replaceable"><code>storage_parameter</code></em> [, ... ] )</code></span> <a href="#SQL-ALTERTABLE-DESC-RESET-STORAGE-PARAMETER" class="id_link">#</a></dt><dd><p>
       This form resets one or more storage parameters to their
       defaults.  As with <code class="literal">SET</code>, a table rewrite might be
       needed to update the table entirely.
-     </p></dd><dt><span class="term"><code class="literal">INHERIT <em class="replaceable"><code>parent_table</code></em></code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-INHERIT"><span class="term"><code class="literal">INHERIT <em class="replaceable"><code>parent_table</code></em></code></span> <a href="#SQL-ALTERTABLE-DESC-INHERIT" class="id_link">#</a></dt><dd><p>
       This form adds the target table as a new child of the specified parent
       table.  Subsequently, queries against the parent will include records
       of the target table.  To be added as a child, the target table must
@@ -477,64 +538,72 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
       <code class="literal">UNIQUE</code>, <code class="literal">PRIMARY KEY</code>, and
       <code class="literal">FOREIGN KEY</code> constraints are not considered, but
       this might change in the future.
-     </p></dd><dt><span class="term"><code class="literal">NO INHERIT <em class="replaceable"><code>parent_table</code></em></code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-NO-INHERIT"><span class="term"><code class="literal">NO INHERIT <em class="replaceable"><code>parent_table</code></em></code></span> <a href="#SQL-ALTERTABLE-DESC-NO-INHERIT" class="id_link">#</a></dt><dd><p>
       This form removes the target table from the list of children of the
       specified parent table.
       Queries against the parent table will no longer include records drawn
       from the target table.
-     </p></dd><dt><span class="term"><code class="literal">OF <em class="replaceable"><code>type_name</code></em></code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-OF"><span class="term"><code class="literal">OF <em class="replaceable"><code>type_name</code></em></code></span> <a href="#SQL-ALTERTABLE-DESC-OF" class="id_link">#</a></dt><dd><p>
       This form links the table to a composite type as though <code class="command">CREATE
       TABLE OF</code> had formed it.  The table's list of column names and types
-      must precisely match that of the composite type; the presence of
-      an <code class="literal">oid</code> system column is permitted to differ.  The table must
+      must precisely match that of the composite type.  The table must
       not inherit from any other table.  These restrictions ensure
       that <code class="command">CREATE TABLE OF</code> would permit an equivalent table
       definition.
-     </p></dd><dt><span class="term"><code class="literal">NOT OF</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-NOT-OF"><span class="term"><code class="literal">NOT OF</code></span> <a href="#SQL-ALTERTABLE-DESC-NOT-OF" class="id_link">#</a></dt><dd><p>
       This form dissociates a typed table from its type.
-     </p></dd><dt><span class="term"><code class="literal">OWNER TO</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-OWNER-TO"><span class="term"><code class="literal">OWNER TO</code></span> <a href="#SQL-ALTERTABLE-DESC-OWNER-TO" class="id_link">#</a></dt><dd><p>
       This form changes the owner of the table, sequence, view, materialized view,
       or foreign table to the specified user.
-     </p></dd><dt id="SQL-CREATETABLE-REPLICA-IDENTITY"><span class="term"><code class="literal">REPLICA IDENTITY</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-REPLICA-IDENTITY"><span class="term"><code class="literal">REPLICA IDENTITY</code></span> <a href="#SQL-ALTERTABLE-REPLICA-IDENTITY" class="id_link">#</a></dt><dd><p>
       This form changes the information which is written to the write-ahead log
-      to identify rows which are updated or deleted.  This option has no effect
-      except when logical replication is in use.  <code class="literal">DEFAULT</code>
-      (the default for non-system tables) records the
-      old values of the columns of the primary key, if any.  <code class="literal">USING INDEX</code>
-      records the old values of the columns covered by the named index, which
-      must be unique, not partial, not deferrable, and include only columns marked
-      <code class="literal">NOT NULL</code>.  <code class="literal">FULL</code> records the old values of all columns
-      in the row.  <code class="literal">NOTHING</code> records no information about the old row.
-      (This is the default for system tables.)
-      In all cases, no old values are logged unless at least one of the columns
-      that would be logged differs between the old and new versions of the row.
-     </p></dd><dt><span class="term"><code class="literal">RENAME</code></span></dt><dd><p>
+      to identify rows which are updated or deleted.
+      In most cases, the old value of each column is only logged if it differs
+      from the new value; however, if the old value is stored externally, it is
+      always logged regardless of whether it changed.
+      This option has no effect except when logical replication is in use.
+     </p><div class="variablelist"><dl class="variablelist"><dt id="SQL-ALTERTABLE-REPLICA-IDENTITY-DEFAULT"><span class="term"><code class="literal">DEFAULT</code></span> <a href="#SQL-ALTERTABLE-REPLICA-IDENTITY-DEFAULT" class="id_link">#</a></dt><dd><p>
+         Records the old values of the columns of the primary key, if any.
+         This is the default for non-system tables.
+        </p></dd><dt id="SQL-ALTERTABLE-REPLICA-IDENTITY-USING-INDEX"><span class="term"><code class="literal">USING INDEX <em class="replaceable"><code>index_name</code></em></code></span> <a href="#SQL-ALTERTABLE-REPLICA-IDENTITY-USING-INDEX" class="id_link">#</a></dt><dd><p>
+         Records the old values of the columns covered by the named index,
+         that must be unique, not partial, not deferrable, and include only
+         columns marked <code class="literal">NOT NULL</code>. If this index is
+         dropped, the behavior is the same as <code class="literal">NOTHING</code>.
+        </p></dd><dt id="SQL-ALTERTABLE-REPLICA-IDENTITY-FULL"><span class="term"><code class="literal">FULL</code></span> <a href="#SQL-ALTERTABLE-REPLICA-IDENTITY-FULL" class="id_link">#</a></dt><dd><p>
+         Records the old values of all columns in the row.
+        </p></dd><dt id="SQL-ALTERTABLE-REPLICA-IDENTITY-NOTHING"><span class="term"><code class="literal">NOTHING</code></span> <a href="#SQL-ALTERTABLE-REPLICA-IDENTITY-NOTHING" class="id_link">#</a></dt><dd><p>
+         Records no information about the old row. This is the default for
+         system tables.
+        </p></dd></dl></div></dd><dt id="SQL-ALTERTABLE-DESC-RENAME"><span class="term"><code class="literal">RENAME</code></span> <a href="#SQL-ALTERTABLE-DESC-RENAME" class="id_link">#</a></dt><dd><p>
       The <code class="literal">RENAME</code> forms change the name of a table
       (or an index, sequence, view, materialized view, or foreign table), the
       name of an individual column in a table, or the name of a constraint of
       the table.  When renaming a constraint that has an underlying index,
       the index is renamed as well.
       There is no effect on the stored data.
-     </p></dd><dt><span class="term"><code class="literal">SET SCHEMA</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-DESC-SET-SCHEMA"><span class="term"><code class="literal">SET SCHEMA</code></span> <a href="#SQL-ALTERTABLE-DESC-SET-SCHEMA" class="id_link">#</a></dt><dd><p>
       This form moves the table into another schema.  Associated indexes,
       constraints, and sequences owned by table columns are moved as well.
-     </p></dd><dt><span class="term"><code class="literal">ATTACH PARTITION <em class="replaceable"><code>partition_name</code></em> { FOR VALUES <em class="replaceable"><code>partition_bound_spec</code></em> | DEFAULT }</code></span></dt><dd><p>
+     </p></dd><dt id="SQL-ALTERTABLE-ATTACH-PARTITION"><span class="term"><code class="literal">ATTACH PARTITION <em class="replaceable"><code>partition_name</code></em> { FOR VALUES <em class="replaceable"><code>partition_bound_spec</code></em> | DEFAULT }</code></span> <a href="#SQL-ALTERTABLE-ATTACH-PARTITION" class="id_link">#</a></dt><dd><p>
       This form attaches an existing table (which might itself be partitioned)
       as a partition of the target table. The table can be attached
       as a partition for specific values using <code class="literal">FOR VALUES</code>
       or as a default partition by using <code class="literal">DEFAULT</code>.
       For each index in the target table, a corresponding
       one will be created in the attached table; or, if an equivalent
-      index already exists, will be attached to the target table's index,
+      index already exists, it will be attached to the target table's index,
       as if <code class="command">ALTER INDEX ATTACH PARTITION</code> had been executed.
       Note that if the existing table is a foreign table, it is currently not
       allowed to attach the table as a partition of the target table if there
-      are indexes on the target table.  (See also
-      <a class="xref" href="sql-createforeigntable.html" title="CREATE FOREIGN TABLE"><span class="refentrytitle">CREATE FOREIGN TABLE</span></a>.)
+      are <code class="literal">UNIQUE</code> indexes on the target table.  (See also
+      <a class="xref" href="sql-createforeigntable.html" title="CREATE FOREIGN TABLE"><span class="refentrytitle">CREATE FOREIGN TABLE</span></a>.)  For each user-defined
+      row-level trigger that exists in the target table, a corresponding one
+      is created in the attached table.
      </p><p>
       A partition using <code class="literal">FOR VALUES</code> uses same syntax for
       <em class="replaceable"><code>partition_bound_spec</code></em> as
-      <a class="xref" href="sql-createtable.html" title="CREATE TABLE"><span class="refentrytitle">CREATE TABLE</span></a>.  The partition bound specification
+      <a class="link" href="sql-createtable.html" title="CREATE TABLE"><code class="command">CREATE TABLE</code></a>.  The partition bound specification
       must correspond to the partitioning strategy and partition key of the
       target table.  The table to be attached must have all the same columns
       as the target table and no more; moreover, the column types must also
@@ -545,22 +614,23 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
       from the parent table will be created in the partition, if they don't
       already exist.
       If any of the <code class="literal">CHECK</code> constraints of the table being
-      attached is marked <code class="literal">NO INHERIT</code>, the command will fail;
-      such a constraint must be recreated without the <code class="literal">NO INHERIT</code>
-      clause.
+      attached are marked <code class="literal">NO INHERIT</code>, the command will fail;
+      such constraints must be recreated without the
+      <code class="literal">NO INHERIT</code> clause.
      </p><p>
       If the new partition is a regular table, a full table scan is performed
-      to check that no existing row in the table violates the partition
-      constraint.  It is possible to avoid this scan by adding a valid
-      <code class="literal">CHECK</code> constraint to the table that would allow only
-      the rows satisfying the desired partition constraint before running this
-      command.  It will be determined using such a constraint that the table
-      need not be scanned to validate the partition constraint.  This does not
-      work, however, if any of the partition keys is an expression and the
-      partition does not accept <code class="literal">NULL</code> values.  If attaching
-      a list partition that will not accept <code class="literal">NULL</code> values,
-      also add <code class="literal">NOT NULL</code> constraint to the partition key
-      column, unless it's an expression.
+      to check that existing rows in the table do not violate the partition
+      constraint. It is possible to avoid this scan by adding a valid
+      <code class="literal">CHECK</code> constraint to the table that allows only
+      rows satisfying the desired partition constraint before running this
+      command. The <code class="literal">CHECK</code> constraint will be used to
+      determine that the table need not be scanned to validate the partition
+      constraint. This does not work, however, if any of the partition keys
+      is an expression and the partition does not accept
+      <code class="literal">NULL</code> values. If attaching a list partition that will
+      not accept <code class="literal">NULL</code> values, also add a
+      <code class="literal">NOT NULL</code> constraint to the partition key column,
+      unless it's an expression.
      </p><p>
       If the new partition is a foreign table, nothing is done to verify
       that all the rows in the foreign table obey the partition constraint.
@@ -575,11 +645,47 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
       appropriate <code class="literal">CHECK</code> constraint is present. Also like
       the scan of the new partition, it is always skipped when the default
       partition is a foreign table.
-     </p></dd><dt><span class="term"><code class="literal">DETACH PARTITION</code> <em class="replaceable"><code>partition_name</code></em></span></dt><dd><p>
-      This form detaches specified partition of the target table.  The detached
+     </p><p>
+      Attaching a partition acquires a
+      <code class="literal">SHARE UPDATE EXCLUSIVE</code> lock on the parent table,
+      in addition to the <code class="literal">ACCESS EXCLUSIVE</code> locks on the table
+      being attached and on the default partition (if any).
+     </p><p>
+      Further locks must also be held on all sub-partitions if the table being
+      attached is itself a partitioned table.  Likewise if the default
+      partition is itself a partitioned table.  The locking of the
+      sub-partitions can be avoided by adding a <code class="literal">CHECK</code>
+      constraint as described in
+      <a class="xref" href="ddl-partitioning.html#DDL-PARTITIONING-DECLARATIVE-MAINTENANCE" title="5.11.2.2. Partition Maintenance">Section 5.11.2.2</a>.
+     </p></dd><dt id="SQL-ALTERTABLE-DETACH-PARTITION"><span class="term"><code class="literal">DETACH PARTITION <em class="replaceable"><code>partition_name</code></em> [ CONCURRENTLY | FINALIZE ]</code></span> <a href="#SQL-ALTERTABLE-DETACH-PARTITION" class="id_link">#</a></dt><dd><p>
+      This form detaches the specified partition of the target table.  The detached
       partition continues to exist as a standalone table, but no longer has any
       ties to the table from which it was detached.  Any indexes that were
-      attached to the target table's indexes are detached.
+      attached to the target table's indexes are detached.  Any triggers that
+      were created as clones of those in the target table are removed.
+      <code class="literal">SHARE</code> lock is obtained on any tables that reference
+      this partitioned table in foreign key constraints.
+     </p><p>
+      If <code class="literal">CONCURRENTLY</code> is specified, it runs using a reduced
+      lock level to avoid blocking other sessions that might be accessing the
+      partitioned table.  In this mode, two transactions are used internally.
+      During the first transaction, a <code class="literal">SHARE UPDATE EXCLUSIVE</code>
+      lock is taken on both parent table and partition, and the partition is
+      marked as undergoing detach; at that point, the transaction is committed
+      and all other transactions using the partitioned table are waited for.
+      Once all those transactions have completed, the second transaction
+      acquires <code class="literal">SHARE UPDATE EXCLUSIVE</code> on the partitioned
+      table and <code class="literal">ACCESS EXCLUSIVE</code> on the partition,
+      and the detach process completes.  A <code class="literal">CHECK</code> constraint
+      that duplicates the partition constraint is added to the partition.
+      <code class="literal">CONCURRENTLY</code> cannot be run in a transaction block and
+      is not allowed if the partitioned table contains a default partition.
+     </p><p>
+      If <code class="literal">FINALIZE</code> is specified, a previous
+      <code class="literal">DETACH CONCURRENTLY</code> invocation that was canceled or
+      interrupted is completed.
+      At most one partition in a partitioned table can be pending detach at
+      a time.
      </p></dd></dl></div><p>
   </p><p>
    All the forms of ALTER TABLE that act on a single table, except
@@ -597,79 +703,82 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
    To add the table as a new child of a parent table, you must own the parent
    table as well.  Also, to attach a table as a new partition of the table,
    you must own the table being attached.
-   To alter the owner, you must also be a direct or indirect member of the new
-   owning role, and that role must have <code class="literal">CREATE</code> privilege on
-   the table's schema.  (These restrictions enforce that altering the owner
+   To alter the owner, you must be able to <code class="literal">SET ROLE</code> to the
+   new owning role, and that role must have <code class="literal">CREATE</code>
+   privilege on the table's schema.
+   (These restrictions enforce that altering the owner
    doesn't do anything you couldn't do by dropping and recreating the table.
    However, a superuser can alter ownership of any table anyway.)
    To add a column or alter a column type or use the <code class="literal">OF</code>
    clause, you must also have <code class="literal">USAGE</code> privilege on the data
    type.
-  </p></div><div class="refsect1" id="id-1.9.3.35.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">IF EXISTS</code></span></dt><dd><p>
+  </p></div><div class="refsect1" id="id-1.9.3.35.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt id="SQL-ALTERTABLE-PARMS-IF-EXISTS"><span class="term"><code class="literal">IF EXISTS</code></span> <a href="#SQL-ALTERTABLE-PARMS-IF-EXISTS" class="id_link">#</a></dt><dd><p>
         Do not throw an error if the table does not exist. A notice is issued
         in this case.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>name</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-NAME"><span class="term"><em class="replaceable"><code>name</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-NAME" class="id_link">#</a></dt><dd><p>
         The name (optionally schema-qualified) of an existing table to
         alter. If <code class="literal">ONLY</code> is specified before the table name, only
         that table is altered. If <code class="literal">ONLY</code> is not specified, the table
         and all its descendant tables (if any) are altered.  Optionally,
         <code class="literal">*</code> can be specified after the table name to explicitly
         indicate that descendant tables are included.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>column_name</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-COLUMN-NAME"><span class="term"><em class="replaceable"><code>column_name</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-COLUMN-NAME" class="id_link">#</a></dt><dd><p>
         Name of a new or existing column.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>new_column_name</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-NEW-COLUMN-NAME"><span class="term"><em class="replaceable"><code>new_column_name</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-NEW-COLUMN-NAME" class="id_link">#</a></dt><dd><p>
         New name for an existing column.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>new_name</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-NEW-NAME"><span class="term"><em class="replaceable"><code>new_name</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-NEW-NAME" class="id_link">#</a></dt><dd><p>
         New name for the table.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>data_type</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-DATA-TYPE"><span class="term"><em class="replaceable"><code>data_type</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-DATA-TYPE" class="id_link">#</a></dt><dd><p>
         Data type of the new column, or new data type for an existing
         column.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>table_constraint</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-TABLE-CONSTRAINT"><span class="term"><em class="replaceable"><code>table_constraint</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-TABLE-CONSTRAINT" class="id_link">#</a></dt><dd><p>
         New table constraint for the table.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>constraint_name</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-CONSTRAINT-NAME"><span class="term"><em class="replaceable"><code>constraint_name</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-CONSTRAINT-NAME" class="id_link">#</a></dt><dd><p>
         Name of a new or existing constraint.
-       </p></dd><dt><span class="term"><code class="literal">CASCADE</code></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-CASCADE"><span class="term"><code class="literal">CASCADE</code></span> <a href="#SQL-ALTERTABLE-PARMS-CASCADE" class="id_link">#</a></dt><dd><p>
         Automatically drop objects that depend on the dropped column
         or constraint (for example, views referencing the column),
         and in turn all objects that depend on those objects
-        (see <a class="xref" href="ddl-depend.html" title="5.13. Dependency Tracking">Section 5.13</a>).
-       </p></dd><dt><span class="term"><code class="literal">RESTRICT</code></span></dt><dd><p>
+        (see <a class="xref" href="ddl-depend.html" title="5.14. Dependency Tracking">Section 5.14</a>).
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-RESTRICT"><span class="term"><code class="literal">RESTRICT</code></span> <a href="#SQL-ALTERTABLE-PARMS-RESTRICT" class="id_link">#</a></dt><dd><p>
         Refuse to drop the column or constraint if there are any dependent
         objects. This is the default behavior.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>trigger_name</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-TRIGGER-NAME"><span class="term"><em class="replaceable"><code>trigger_name</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-TRIGGER-NAME" class="id_link">#</a></dt><dd><p>
         Name of a single trigger to disable or enable.
-       </p></dd><dt><span class="term"><code class="literal">ALL</code></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-ALL"><span class="term"><code class="literal">ALL</code></span> <a href="#SQL-ALTERTABLE-PARMS-ALL" class="id_link">#</a></dt><dd><p>
         Disable or enable all triggers belonging to the table.
         (This requires superuser privilege if any of the triggers are
-        internally generated constraint triggers such as those that are used
+        internally generated constraint triggers, such as those that are used
         to implement foreign key constraints or deferrable uniqueness and
         exclusion constraints.)
-       </p></dd><dt><span class="term"><code class="literal">USER</code></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-USER"><span class="term"><code class="literal">USER</code></span> <a href="#SQL-ALTERTABLE-PARMS-USER" class="id_link">#</a></dt><dd><p>
         Disable or enable all triggers belonging to the table except for
-        internally generated constraint triggers such as those that are used
+        internally generated constraint triggers, such as those that are used
         to implement foreign key constraints or deferrable uniqueness and
         exclusion constraints.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>index_name</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-INDEX-NAME"><span class="term"><em class="replaceable"><code>index_name</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-INDEX-NAME" class="id_link">#</a></dt><dd><p>
         The name of an existing index.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>storage_parameter</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-STORAGE-PARAMETER"><span class="term"><em class="replaceable"><code>storage_parameter</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-STORAGE-PARAMETER" class="id_link">#</a></dt><dd><p>
         The name of a table storage parameter.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>value</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-VALUE"><span class="term"><em class="replaceable"><code>value</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-VALUE" class="id_link">#</a></dt><dd><p>
         The new value for a table storage parameter.
         This might be a number or a word depending on the parameter.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>parent_table</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-PARENT-TABLE"><span class="term"><em class="replaceable"><code>parent_table</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-PARENT-TABLE" class="id_link">#</a></dt><dd><p>
         A parent table to associate or de-associate with this table.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>new_owner</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-NEW-OWNER"><span class="term"><em class="replaceable"><code>new_owner</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-NEW-OWNER" class="id_link">#</a></dt><dd><p>
         The user name of the new owner of the table.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>new_tablespace</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-NEW-ACCESS-METHOD"><span class="term"><em class="replaceable"><code>new_access_method</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-NEW-ACCESS-METHOD" class="id_link">#</a></dt><dd><p>
+        The name of the access method to which the table will be converted.
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-NEW-TABLESPACE"><span class="term"><em class="replaceable"><code>new_tablespace</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-NEW-TABLESPACE" class="id_link">#</a></dt><dd><p>
         The name of the tablespace to which the table will be moved.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>new_schema</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-NEW-SCHEMA"><span class="term"><em class="replaceable"><code>new_schema</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-NEW-SCHEMA" class="id_link">#</a></dt><dd><p>
         The name of the schema to which the table will be moved.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>partition_name</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-PARTITION-NAME"><span class="term"><em class="replaceable"><code>partition_name</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-PARTITION-NAME" class="id_link">#</a></dt><dd><p>
         The name of the table to attach as a new partition or to detach from this table.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>partition_bound_spec</code></em></span></dt><dd><p>
+       </p></dd><dt id="SQL-ALTERTABLE-PARMS-PARTITION-BOUND-SPEC"><span class="term"><em class="replaceable"><code>partition_bound_spec</code></em></span> <a href="#SQL-ALTERTABLE-PARMS-PARTITION-BOUND-SPEC" class="id_link">#</a></dt><dd><p>
         The partition bound specification for a new partition.  Refer to
         <a class="xref" href="sql-createtable.html" title="CREATE TABLE"><span class="refentrytitle">CREATE TABLE</span></a> for more details on the syntax of the same.
-       </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.35.7"><h2>Notes</h2><p>
+       </p></dd></dl></div></div><div class="refsect1" id="SQL-ALTERTABLE-NOTES"><h2>Notes</h2><p>
     The key word <code class="literal">COLUMN</code> is noise and can be omitted.
    </p><p>
     When a column is added with <code class="literal">ADD COLUMN</code> and a
@@ -685,9 +794,14 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
     existing column, if the <code class="literal">USING</code> clause does not change
     the column contents and the old type is either binary coercible to the new
     type or an unconstrained domain over the new type, a table rewrite is not
-    needed; but any indexes on the affected columns must still be rebuilt.
-    Adding or removing a system <code class="literal">oid</code> column also requires
-    rewriting the entire table.  Table and/or index rebuilds may take a
+    needed. However, indexes must always be rebuilt unless the system can
+    verify that the new index would be logically equivalent to the existing
+    one.  For example, if the collation for a column has been changed, an index
+    rebuild is always required because the new sort order might be different.
+    However, in the absence of a collation change, a column can be changed
+    from <code class="type">text</code> to <code class="type">varchar</code> (or vice versa) without
+    rebuilding the indexes because these data types sort identically.
+    Table and/or index rebuilds may take a
     significant amount of time for a large table; and will temporarily require
     as much as double the disk space.
    </p><p>
@@ -702,15 +816,37 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
     in a single <code class="command">ALTER TABLE</code> is that multiple table scans or
     rewrites can thereby be combined into a single pass over the table.
    </p><p>
+    Scanning a large table to verify a new foreign key or check constraint
+    can take a long time, and other updates to the table are locked out
+    until the <code class="command">ALTER TABLE ADD CONSTRAINT</code> command is
+    committed.  The main purpose of the <code class="literal">NOT VALID</code>
+    constraint option is to reduce the impact of adding a constraint on
+    concurrent updates.  With <code class="literal">NOT VALID</code>,
+    the <code class="command">ADD CONSTRAINT</code> command does not scan the table
+    and can be committed immediately.  After that, a <code class="literal">VALIDATE
+    CONSTRAINT</code> command can be issued to verify that existing rows
+    satisfy the constraint.  The validation step does not need to lock out
+    concurrent updates, since it knows that other transactions will be
+    enforcing the constraint for rows that they insert or update; only
+    pre-existing rows need to be checked.  Hence, validation acquires only
+    a <code class="literal">SHARE UPDATE EXCLUSIVE</code> lock on the table being
+    altered.  (If the constraint is a foreign key then a <code class="literal">ROW
+    SHARE</code> lock is also required on the table referenced by the
+    constraint.)  In addition to improving concurrency, it can be useful to
+    use <code class="literal">NOT VALID</code> and <code class="literal">VALIDATE
+    CONSTRAINT</code> in cases where the table is known to contain
+    pre-existing violations.  Once the constraint is in place, no new
+    violations can be inserted, and the existing problems can be corrected
+    at leisure until <code class="literal">VALIDATE CONSTRAINT</code> finally
+    succeeds.
+   </p><p>
     The <code class="literal">DROP COLUMN</code> form does not physically remove
     the column, but simply makes it invisible to SQL operations.  Subsequent
     insert and update operations in the table will store a null value for the
     column. Thus, dropping a column is quick but it will not immediately
     reduce the on-disk size of your table, as the space occupied
     by the dropped column is not reclaimed.  The space will be
-    reclaimed over time as existing rows are updated.  (These statements do
-    not apply when dropping the system <code class="literal">oid</code> column; that is done
-    with an immediate rewrite.)
+    reclaimed over time as existing rows are updated.
    </p><p>
     To force immediate reclamation of space occupied by a dropped column,
     you can execute one of the forms of <code class="command">ALTER TABLE</code> that
@@ -720,7 +856,7 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
     The rewriting forms of <code class="command">ALTER TABLE</code> are not MVCC-safe.
     After a table rewrite, the table will appear empty to concurrent
     transactions, if they are using a snapshot taken before the rewrite
-    occurred.  See <a class="xref" href="mvcc-caveats.html" title="13.5. Caveats">Section 13.5</a> for more details.
+    occurred.  See <a class="xref" href="mvcc-caveats.html" title="13.6. Caveats">Section 13.6</a> for more details.
    </p><p>
     The <code class="literal">USING</code> option of <code class="literal">SET DATA TYPE</code> can actually
     specify any expression involving the old values of the row; that is, it
@@ -764,9 +900,12 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
     The actions for identity columns (<code class="literal">ADD
     GENERATED</code>, <code class="literal">SET</code> etc., <code class="literal">DROP
     IDENTITY</code>), as well as the actions
-    <code class="literal">TRIGGER</code>, <code class="literal">CLUSTER</code>, <code class="literal">OWNER</code>,
+    <code class="literal">CLUSTER</code>, <code class="literal">OWNER</code>,
     and <code class="literal">TABLESPACE</code> never recurse to descendant tables;
     that is, they always act as though <code class="literal">ONLY</code> were specified.
+    Actions affecting trigger states recurse to partitions of partitioned
+    tables (unless <code class="literal">ONLY</code> is specified), but never to
+    traditional-inheritance descendants.
     Adding a constraint recurses only for <code class="literal">CHECK</code> constraints
     that are not marked <code class="literal">NO INHERIT</code>.
    </p><p>
@@ -780,6 +919,28 @@ WITH ( MODULUS <em class="replaceable"><code>numeric_literal</code></em>, REMAIN
 </p><pre class="programlisting">
 ALTER TABLE distributors ADD COLUMN address varchar(30);
 </pre><p>
+   That will cause all existing rows in the table to be filled with null
+   values for the new column.
+  </p><p>
+   To add a column with a non-null default:
+</p><pre class="programlisting">
+ALTER TABLE measurements
+  ADD COLUMN mtime timestamp with time zone DEFAULT now();
+</pre><p>
+   Existing rows will be filled with the current time as the value of the
+   new column, and then new rows will receive the time of their insertion.
+  </p><p>
+   To add a column and fill it with a value different from the default to
+   be used later:
+</p><pre class="programlisting">
+ALTER TABLE transactions
+  ADD COLUMN status varchar(30) DEFAULT 'old',
+  ALTER COLUMN status SET default 'current';
+</pre><p>
+   Existing rows will be filled with <code class="literal">old</code>, but then
+   the default for subsequent commands will be <code class="literal">current</code>.
+   The effects are the same as if the two sub-commands had been issued
+   in separate <code class="command">ALTER TABLE</code> commands.
   </p><p>
    To drop a column from a table:
 </p><pre class="programlisting">
@@ -935,4 +1096,4 @@ ALTER TABLE measurement
    <code class="command">ALTER TABLE DROP COLUMN</code> can be used to drop the only
    column of a table, leaving a zero-column table.  This is an
    extension of SQL, which disallows zero-column tables.
-  </p></div><div class="refsect1" id="id-1.9.3.35.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-createtable.html" title="CREATE TABLE"><span class="refentrytitle">CREATE TABLE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-altersystem.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-altertablespace.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ALTER SYSTEM </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> ALTER TABLESPACE</td></tr></table></div></body></html>
+  </p></div><div class="refsect1" id="id-1.9.3.35.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-createtable.html" title="CREATE TABLE"><span class="refentrytitle">CREATE TABLE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-altersystem.html" title="ALTER SYSTEM">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-altertablespace.html" title="ALTER TABLESPACE">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ALTER SYSTEM </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> ALTER TABLESPACE</td></tr></table></div></body></html>

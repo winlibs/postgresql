@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE DOMAIN</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-createdatabase.html" title="CREATE DATABASE" /><link rel="next" href="sql-createeventtrigger.html" title="CREATE EVENT TRIGGER" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE DOMAIN</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createdatabase.html" title="CREATE DATABASE">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createeventtrigger.html" title="CREATE EVENT TRIGGER">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-CREATEDOMAIN"><div class="titlepage"></div><a id="id-1.9.3.62.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE DOMAIN</span></h2><p>CREATE DOMAIN — define a new domain</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE DOMAIN</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-createdatabase.html" title="CREATE DATABASE" /><link rel="next" href="sql-createeventtrigger.html" title="CREATE EVENT TRIGGER" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE DOMAIN</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createdatabase.html" title="CREATE DATABASE">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createeventtrigger.html" title="CREATE EVENT TRIGGER">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-CREATEDOMAIN"><div class="titlepage"></div><a id="id-1.9.3.62.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE DOMAIN</span></h2><p>CREATE DOMAIN — define a new domain</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 CREATE DOMAIN <em class="replaceable"><code>name</code></em> [ AS ] <em class="replaceable"><code>data_type</code></em>
     [ COLLATE <em class="replaceable"><code>collation</code></em> ]
     [ DEFAULT <em class="replaceable"><code>expression</code></em> ]
@@ -37,7 +37,8 @@ CREATE DOMAIN <em class="replaceable"><code>name</code></em> [ AS ] <em class="r
         specifiers.
        </p></dd><dt><span class="term"><em class="replaceable"><code>collation</code></em></span></dt><dd><p>
         An optional collation for the domain.  If no collation is
-        specified, the underlying data type's default collation is used.
+        specified, the domain has the same collation behavior as its
+        underlying data type.
         The underlying type must be collatable if <code class="literal">COLLATE</code>
         is specified.
        </p></dd><dt><span class="term"><code class="literal">DEFAULT <em class="replaceable"><code>expression</code></em></code></span></dt><dd><p>
@@ -101,6 +102,29 @@ INSERT INTO tab (domcol) VALUES ((SELECT domcol FROM tab WHERE false));
    therefore is to design a domain's constraints so that a null value is allowed,
    and then to apply column <code class="literal">NOT NULL</code> constraints to columns of
    the domain type as needed, rather than directly to the domain type.
+  </p><p>
+   <span class="productname">PostgreSQL</span> assumes that
+   <code class="literal">CHECK</code> constraints' conditions are immutable, that is,
+   they will always give the same result for the same input value.  This
+   assumption is what justifies examining <code class="literal">CHECK</code>
+   constraints only when a value is first converted to be of a domain type,
+   and not at other times.  (This is essentially the same as the treatment
+   of table <code class="literal">CHECK</code> constraints, as described in
+   <a class="xref" href="ddl-constraints.html#DDL-CONSTRAINTS-CHECK-CONSTRAINTS" title="5.4.1. Check Constraints">Section 5.4.1</a>.)
+  </p><p>
+   An example of a common way to break this assumption is to reference a
+   user-defined function in a <code class="literal">CHECK</code> expression, and then
+   change the behavior of that
+   function.  <span class="productname">PostgreSQL</span> does not disallow that,
+   but it will not notice if there are stored values of the domain type that
+   now violate the <code class="literal">CHECK</code> constraint. That would cause a
+   subsequent database dump and restore to fail.  The recommended way to
+   handle such a change is to drop the constraint (using <code class="command">ALTER
+   DOMAIN</code>), adjust the function definition, and re-add the
+   constraint, thereby rechecking it against stored data.
+  </p><p>
+   It's also good practice to ensure that domain <code class="literal">CHECK</code>
+   expressions will not throw errors.
   </p></div><div class="refsect1" id="id-1.9.3.62.8"><h2>Examples</h2><p>
    This example creates the <code class="type">us_postal_code</code> data type and
    then uses the type in a table definition.  A regular expression test
@@ -124,4 +148,4 @@ CREATE TABLE us_snail_addy (
 </pre></div><div class="refsect1" id="SQL-CREATEDOMAIN-COMPATIBILITY"><h2>Compatibility</h2><p>
    The command <code class="command">CREATE DOMAIN</code> conforms to the SQL
    standard.
-  </p></div><div class="refsect1" id="SQL-CREATEDOMAIN-SEE-ALSO"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-alterdomain.html" title="ALTER DOMAIN"><span class="refentrytitle">ALTER DOMAIN</span></a>, <a class="xref" href="sql-dropdomain.html" title="DROP DOMAIN"><span class="refentrytitle">DROP DOMAIN</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createdatabase.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createeventtrigger.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE DATABASE </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> CREATE EVENT TRIGGER</td></tr></table></div></body></html>
+  </p></div><div class="refsect1" id="SQL-CREATEDOMAIN-SEE-ALSO"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-alterdomain.html" title="ALTER DOMAIN"><span class="refentrytitle">ALTER DOMAIN</span></a>, <a class="xref" href="sql-dropdomain.html" title="DROP DOMAIN"><span class="refentrytitle">DROP DOMAIN</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createdatabase.html" title="CREATE DATABASE">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createeventtrigger.html" title="CREATE EVENT TRIGGER">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE DATABASE </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> CREATE EVENT TRIGGER</td></tr></table></div></body></html>

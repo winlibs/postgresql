@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SPI_connect
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "SPI_CONNECT" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "SPI_CONNECT" "3" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -49,11 +49,8 @@ does the same but has an argument that allows passing option flags\&. Currently,
 SPI_OPT_NONATOMIC
 .RS 4
 Sets the SPI connection to be
-nonatomic, which means that transaction control calls
-\fBSPI_commit\fR,
-\fBSPI_rollback\fR, and
-\fBSPI_start_transaction\fR
-are allowed\&. Otherwise, calling these functions will result in an immediate error\&.
+nonatomic, which means that transaction control calls (\fBSPI_commit\fR,
+\fBSPI_rollback\fR) are allowed\&. Otherwise, calling those functions will result in an immediate error\&.
 .RE
 .PP
 SPI_connect()

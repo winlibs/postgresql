@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>pg_restore</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="app-pgrecvlogical.html" title="pg_recvlogical" /><link rel="next" href="app-psql.html" title="psql" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">pg_restore</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="app-pgrecvlogical.html" title="pg_recvlogical">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="reference-client.html" title="PostgreSQL Client Applications">Up</a></td><th width="60%" align="center">PostgreSQL Client Applications</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="app-psql.html" title="psql">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="APP-PGRESTORE"><div class="titlepage"></div><a id="id-1.9.4.17.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">pg_restore</span></h2><p>pg_restore — 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>pg_restore</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="app-pgrecvlogical.html" title="pg_recvlogical" /><link rel="next" href="app-pgverifybackup.html" title="pg_verifybackup" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center"><span class="application">pg_restore</span></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="app-pgrecvlogical.html" title="pg_recvlogical">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="reference-client.html" title="PostgreSQL Client Applications">Up</a></td><th width="60%" align="center">PostgreSQL Client Applications</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="app-pgverifybackup.html" title="pg_verifybackup">Next</a></td></tr></table><hr /></div><div class="refentry" id="APP-PGRESTORE"><div class="titlepage"></div><a id="id-1.9.4.18.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle"><span class="application">pg_restore</span></span></h2><p>pg_restore — 
    restore a <span class="productname">PostgreSQL</span> database from an
    archive file created by <span class="application">pg_dump</span>
-  </p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p id="id-1.9.4.17.4.1"><code class="command">pg_restore</code> [<em class="replaceable"><code>connection-option</code></em>...] [<em class="replaceable"><code>option</code></em>...] [<em class="replaceable"><code>filename</code></em>]</p></div></div><div class="refsect1" id="APP-PGRESTORE-DESCRIPTION"><h2>Description</h2><p>
+  </p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p id="id-1.9.4.18.4.1"><code class="command">pg_restore</code> [<em class="replaceable"><code>connection-option</code></em>...] [<em class="replaceable"><code>option</code></em>...] [<em class="replaceable"><code>filename</code></em>]</p></div></div><div class="refsect1" id="APP-PGRESTORE-DESCRIPTION"><h2>Description</h2><p>
    <span class="application">pg_restore</span> is a utility for restoring a
    <span class="productname">PostgreSQL</span> database from an archive
-   created by <a class="xref" href="app-pgdump.html" title="pg_dump"><span class="refentrytitle">pg_dump</span></a> in one of the non-plain-text
+   created by <a class="xref" href="app-pgdump.html" title="pg_dump"><span class="refentrytitle"><span class="application">pg_dump</span></span></a> in one of the non-plain-text
    formats.  It will issue the commands necessary to reconstruct the
    database to the state it was in at the time it was saved.  The
    archive files also allow <span class="application">pg_restore</span> to
@@ -45,10 +45,12 @@
         This option is similar to, but for historical reasons not identical
         to, specifying <code class="option">--section=data</code>.
        </p></dd><dt><span class="term"><code class="option">-c</code><br /></span><span class="term"><code class="option">--clean</code></span></dt><dd><p>
-        Clean (drop) database objects before recreating them.
-        (Unless <code class="option">--if-exists</code> is used,
-        this might generate some harmless error messages, if any objects
-        were not present in the destination database.)
+        Before restoring database objects, issue commands
+        to <code class="command">DROP</code> all the objects that will be restored.
+        This option is useful for overwriting an existing database.
+        If any of the objects do not exist in the destination database,
+        ignorable error messages will be reported,
+        unless <code class="option">--if-exists</code> is also specified.
        </p></dd><dt><span class="term"><code class="option">-C</code><br /></span><span class="term"><code class="option">--create</code></span></dt><dd><p>
         Create the database before restoring into it.
         If <code class="option">--clean</code> is also specified, drop and
@@ -69,15 +71,18 @@
         database name that appears in the archive.
        </p></dd><dt><span class="term"><code class="option">-d <em class="replaceable"><code>dbname</code></em></code><br /></span><span class="term"><code class="option">--dbname=<em class="replaceable"><code>dbname</code></em></code></span></dt><dd><p>
         Connect to database <em class="replaceable"><code>dbname</code></em> and restore directly
-        into the database.
+        into the database.  The <em class="replaceable"><code>dbname</code></em> can
+        be a <a class="link" href="libpq-connect.html#LIBPQ-CONNSTRING" title="34.1.1. Connection Strings">connection string</a>.
+        If so, connection string parameters will override any conflicting
+        command line options.
        </p></dd><dt><span class="term"><code class="option">-e</code><br /></span><span class="term"><code class="option">--exit-on-error</code></span></dt><dd><p>
         Exit if an error is encountered while sending SQL commands to
         the database. The default is to continue and to display a count of
         errors at the end of the restoration.
        </p></dd><dt><span class="term"><code class="option">-f <em class="replaceable"><code>filename</code></em></code><br /></span><span class="term"><code class="option">--file=<em class="replaceable"><code>filename</code></em></code></span></dt><dd><p>
         Specify output file for generated script, or for the listing
-        when used with <code class="option">-l</code>. Default is the standard
-        output.
+        when used with <code class="option">-l</code>. Use <code class="literal">-</code>
+        for <span class="systemitem">stdout</span>.
        </p></dd><dt><span class="term"><code class="option">-F <em class="replaceable"><code>format</code></em></code><br /></span><span class="term"><code class="option">--format=<em class="replaceable"><code>format</code></em></code></span></dt><dd><p>
         Specify format of the archive.  It is not necessary to specify
         the format, since <span class="application">pg_restore</span> will
@@ -95,12 +100,14 @@
         Restore definition of named index only.  Multiple indexes
         may be specified with multiple <code class="option">-I</code> switches.
        </p></dd><dt><span class="term"><code class="option">-j <em class="replaceable"><code>number-of-jobs</code></em></code><br /></span><span class="term"><code class="option">--jobs=<em class="replaceable"><code>number-of-jobs</code></em></code></span></dt><dd><p>
-        Run the most time-consuming parts
-        of <span class="application">pg_restore</span> — those which load data,
-        create indexes, or create constraints — using multiple
-        concurrent jobs.  This option can dramatically reduce the time
+        Run the most time-consuming steps
+        of <span class="application">pg_restore</span> — those that load data,
+        create indexes, or create constraints — concurrently, using up
+        to <em class="replaceable"><code>number-of-jobs</code></em>
+        concurrent sessions.  This option can dramatically reduce the time
         to restore a large database to a server running on a
-        multiprocessor machine.
+        multiprocessor machine.  This option is ignored when emitting a script
+        rather than connecting directly to a database server.
        </p><p>
         Each job is one process or one thread, depending on the
         operating system, and uses a separate connection to the
@@ -117,8 +124,7 @@
         Only the custom and directory archive formats are supported
         with this option.
         The input must be a regular file or directory (not, for example, a
-        pipe).  This option is ignored when emitting a script rather
-        than connecting directly to a database server.  Also, multiple
+        pipe or standard input).  Also, multiple
         jobs cannot be used together with the
         option <code class="option">--single-transaction</code>.
        </p></dd><dt><span class="term"><code class="option">-l</code><br /></span><span class="term"><code class="option">--list</code></span></dt><dd><p>
@@ -211,7 +217,12 @@
         Restore named trigger only.  Multiple triggers may be specified with
         multiple <code class="option">-T</code> switches.
        </p></dd><dt><span class="term"><code class="option">-v</code><br /></span><span class="term"><code class="option">--verbose</code></span></dt><dd><p>
-        Specifies verbose mode.
+        Specifies verbose mode.  This will cause
+        <span class="application">pg_restore</span> to output detailed object
+        comments and start/stop times to the output file, and progress
+        messages to standard error.
+        Repeating the option causes additional debug-level messages
+        to appear on standard error.
        </p></dd><dt><span class="term"><code class="option">-V</code><br /></span><span class="term"><code class="option">--version</code></span></dt><dd><p>
        Print the <span class="application">pg_restore</span> version and exit.
        </p></dd><dt><span class="term"><code class="option">-x</code><br /></span><span class="term"><code class="option">--no-privileges</code><br /></span><span class="term"><code class="option">--no-acl</code></span></dt><dd><p>
@@ -226,9 +237,9 @@
         This option is relevant only when performing a data-only restore.
         It instructs <span class="application">pg_restore</span> to execute commands
         to temporarily disable triggers on the target tables while
-        the data is reloaded.  Use this if you have referential
+        the data is restored.  Use this if you have referential
         integrity checks or other triggers on the tables that you
-        do not want to invoke during data reload.
+        do not want to invoke during data restore.
        </p><p>
         Presently, the commands emitted for
         <code class="option">--disable-triggers</code> must be done as superuser.  So you
@@ -250,9 +261,11 @@
         Note that this option currently also requires the dump be in <code class="command">INSERT</code>
         format, as <code class="command">COPY FROM</code> does not support row security.
        </p></dd><dt><span class="term"><code class="option">--if-exists</code></span></dt><dd><p>
-        Use conditional commands (i.e. add an <code class="literal">IF EXISTS</code>
-        clause) to drop database objects.  This option is not valid
-        unless <code class="option">--clean</code> is also specified.
+        Use <code class="literal">DROP ... IF EXISTS</code> commands to drop objects
+        in <code class="option">--clean</code> mode.  This suppresses <span class="quote">“<span class="quote">does not
+        exist</span>”</span> errors that might otherwise be reported.  This
+        option is not valid unless <code class="option">--clean</code> is also
+        specified.
        </p></dd><dt><span class="term"><code class="option">--no-comments</code></span></dt><dd><p>
         Do not output commands to restore comments, even if the archive
         contains them.
@@ -278,6 +291,10 @@
        </p></dd><dt><span class="term"><code class="option">--no-subscriptions</code></span></dt><dd><p>
         Do not output commands to restore subscriptions, even if the archive
         contains them.
+       </p></dd><dt><span class="term"><code class="option">--no-table-access-method</code></span></dt><dd><p>
+        Do not output commands to select table access methods.
+        With this option, all objects will be created with whichever
+        access method is the default during restore.
        </p></dd><dt><span class="term"><code class="option">--no-tablespaces</code></span></dt><dd><p>
         Do not output commands to select tablespaces.
         With this option, all objects will be created in whichever
@@ -354,12 +371,16 @@
         logging in directly as a superuser, and use of this option allows
         restores to be performed without violating the policy.
        </p></dd></dl></div><p>
-   </p></div><div class="refsect1" id="id-1.9.4.17.7"><h2>Environment</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="envar">PGHOST</code><br /></span><span class="term"><code class="envar">PGOPTIONS</code><br /></span><span class="term"><code class="envar">PGPORT</code><br /></span><span class="term"><code class="envar">PGUSER</code></span></dt><dd><p>
+   </p></div><div class="refsect1" id="id-1.9.4.18.7"><h2>Environment</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="envar">PGHOST</code><br /></span><span class="term"><code class="envar">PGOPTIONS</code><br /></span><span class="term"><code class="envar">PGPORT</code><br /></span><span class="term"><code class="envar">PGUSER</code></span></dt><dd><p>
       Default connection parameters
+     </p></dd><dt><span class="term"><code class="envar">PG_COLOR</code></span></dt><dd><p>
+      Specifies whether to use color in diagnostic messages. Possible values
+      are <code class="literal">always</code>, <code class="literal">auto</code> and
+      <code class="literal">never</code>.
      </p></dd></dl></div><p>
    This utility, like most other <span class="productname">PostgreSQL</span> utilities,
    also uses the environment variables supported by <span class="application">libpq</span>
-   (see <a class="xref" href="libpq-envars.html" title="34.14. Environment Variables">Section 34.14</a>).  However, it does not read
+   (see <a class="xref" href="libpq-envars.html" title="34.15. Environment Variables">Section 34.15</a>).  However, it does not read
    <code class="envar">PGDATABASE</code> when a database name is not supplied.
   </p></div><div class="refsect1" id="APP-PGRESTORE-DIAGNOSTICS"><h2>Diagnostics</h2><p>
    When a direct database connection is specified using the
@@ -397,13 +418,13 @@ CREATE DATABASE foo WITH TEMPLATE template0;
       <code class="option">-t</code>, or other options.
      </p></li></ul></div><p>
   </p><p>
-   See also the <a class="xref" href="app-pgdump.html" title="pg_dump"><span class="refentrytitle">pg_dump</span></a> documentation for details on
+   See also the <a class="xref" href="app-pgdump.html" title="pg_dump"><span class="refentrytitle"><span class="application">pg_dump</span></span></a> documentation for details on
    limitations of <span class="application">pg_dump</span>.
   </p><p>
    Once restored, it is wise to run <code class="command">ANALYZE</code> on each
    restored table so the optimizer has useful statistics; see
-   <a class="xref" href="routine-vacuuming.html#VACUUM-FOR-STATISTICS" title="24.1.3. Updating Planner Statistics">Section 24.1.3</a> and
-   <a class="xref" href="routine-vacuuming.html#AUTOVACUUM" title="24.1.6. The Autovacuum Daemon">Section 24.1.6</a> for more information.
+   <a class="xref" href="routine-vacuuming.html#VACUUM-FOR-STATISTICS" title="25.1.3. Updating Planner Statistics">Section 25.1.3</a> and
+   <a class="xref" href="routine-vacuuming.html#AUTOVACUUM" title="25.1.6. The Autovacuum Daemon">Section 25.1.6</a> for more information.
   </p></div><div class="refsect1" id="APP-PGRESTORE-EXAMPLES"><h2>Examples</h2><p>
    Assume we have dumped a database called <code class="literal">mydb</code> into a
    custom-format dump file:
@@ -425,7 +446,7 @@ CREATE DATABASE foo WITH TEMPLATE template0;
    <code class="option">-C</code>, data is always restored into the database name that appears
    in the dump file.
   </p><p>
-   To reload the dump into a new database called <code class="literal">newdb</code>:
+   To restore the dump into a new database called <code class="literal">newdb</code>:
 
 </p><pre class="screen">
 <code class="prompt">$</code> <strong class="userinput"><code>createdb -T template0 newdb</code></strong>
@@ -480,4 +501,4 @@ CREATE DATABASE foo WITH TEMPLATE template0;
    items 10 and 6, in that order:
 </p><pre class="screen">
 <code class="prompt">$</code> <strong class="userinput"><code>pg_restore -L db.list db.dump</code></strong>
-</pre></div><div class="refsect1" id="id-1.9.4.17.11"><h2>See Also</h2><span class="simplelist"><a class="xref" href="app-pgdump.html" title="pg_dump"><span class="refentrytitle">pg_dump</span></a>, <a class="xref" href="app-pg-dumpall.html" title="pg_dumpall"><span class="refentrytitle"><span class="application">pg_dumpall</span></span></a>, <a class="xref" href="app-psql.html" title="psql"><span class="refentrytitle"><span class="application">psql</span></span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="app-pgrecvlogical.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="reference-client.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="app-psql.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"><span class="application">pg_recvlogical</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> <span class="application">psql</span></td></tr></table></div></body></html>
+</pre></div><div class="refsect1" id="id-1.9.4.18.11"><h2>See Also</h2><span class="simplelist"><a class="xref" href="app-pgdump.html" title="pg_dump"><span class="refentrytitle"><span class="application">pg_dump</span></span></a>, <a class="xref" href="app-pg-dumpall.html" title="pg_dumpall"><span class="refentrytitle"><span class="application">pg_dumpall</span></span></a>, <a class="xref" href="app-psql.html" title="psql"><span class="refentrytitle"><span class="application">psql</span></span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="app-pgrecvlogical.html" title="pg_recvlogical">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="reference-client.html" title="PostgreSQL Client Applications">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="app-pgverifybackup.html" title="pg_verifybackup">Next</a></td></tr><tr><td width="40%" align="left" valign="top"><span class="application">pg_recvlogical</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> <span class="application">pg_verifybackup</span></td></tr></table></div></body></html>

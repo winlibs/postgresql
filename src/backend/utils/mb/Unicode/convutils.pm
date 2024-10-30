@@ -1,11 +1,12 @@
 #
-# Copyright (c) 2001-2018, PostgreSQL Global Development Group
+# Copyright (c) 2001-2023, PostgreSQL Global Development Group
 #
 # src/backend/utils/mb/Unicode/convutils.pm
 
 package convutils;
 
 use strict;
+use warnings;
 
 use Carp;
 use Exporter 'import';
@@ -15,10 +16,10 @@ our @EXPORT =
 
 # Constants used in the 'direction' field of the character maps
 use constant {
-	NONE         => 0,
-	TO_UNICODE   => 1,
+	NONE => 0,
+	TO_UNICODE => 1,
 	FROM_UNICODE => 2,
-	BOTH         => 3
+	BOTH => 3
 };
 
 #######################################################################
@@ -52,12 +53,12 @@ sub read_source
 			exit;
 		}
 		my $out = {
-			code      => hex($1),
-			ucs       => hex($2),
-			comment   => $4,
+			code => hex($1),
+			ucs => hex($2),
+			comment => $4,
 			direction => BOTH,
-			f         => $fname,
-			l         => $.
+			f => $fname,
+			l => $.
 		};
 
 		# Ignore pure ASCII mappings. PostgreSQL character conversion code
@@ -123,14 +124,14 @@ sub print_conversion_tables_direction
 	my $tblname;
 	if ($direction == TO_UNICODE)
 	{
-		$fname   = lc("${csname}_to_utf8.map");
+		$fname = lc("${csname}_to_utf8.map");
 		$tblname = lc("${csname}_to_unicode_tree");
 
 		print "- Writing ${csname}=>UTF8 conversion table: $fname\n";
 	}
 	else
 	{
-		$fname   = lc("utf8_to_${csname}.map");
+		$fname = lc("utf8_to_${csname}.map");
 		$tblname = lc("${csname}_from_unicode_tree");
 
 		print "- Writing UTF8=>${csname} conversion table: $fname\n";
@@ -172,7 +173,7 @@ sub print_from_utf8_combined_map
 
 	printf $out "\n/* Combined character map */\n";
 	printf $out
-	  "static const pg_utf_to_local_combined ULmap${charset}_combined[ %d ] = {",
+	  "static const pg_utf_to_local_combined ULmap${charset}_combined[%d] = {",
 	  scalar(@$table);
 	my $first = 1;
 	foreach my $i (sort { $a->{utf8} <=> $b->{utf8} } @$table)
@@ -207,7 +208,7 @@ sub print_to_utf8_combined_map
 
 	printf $out "\n/* Combined character map */\n";
 	printf $out
-	  "static const pg_local_to_utf_combined LUmap${charset}_combined[ %d ] = {",
+	  "static const pg_local_to_utf_combined LUmap${charset}_combined[%d] = {",
 	  scalar(@$table);
 
 	my $first = 1;
@@ -377,9 +378,10 @@ sub print_radix_table
 
 	unshift @segments,
 	  {
-		header  => "Dummy map, for invalid values",
+		header => "Dummy map, for invalid values",
 		min_idx => 0,
-		max_idx => $widest_range
+		max_idx => $widest_range,
+		label => "dummy map"
 	  };
 
 	###
@@ -395,7 +397,7 @@ sub print_radix_table
 	###
 	for (my $j = 0; $j < $#segments - 1; $j++)
 	{
-		my $seg     = $segments[$j];
+		my $seg = $segments[$j];
 		my $nextseg = $segments[ $j + 1 ];
 
 		# Count the number of zero values at the end of this segment.
@@ -470,35 +472,37 @@ sub print_radix_table
 	}
 
 	# Also look up the positions of the roots in the table.
-	my $b1root = $segmap{"1-byte"};
-	my $b2root = $segmap{"2-byte"};
-	my $b3root = $segmap{"3-byte"};
-	my $b4root = $segmap{"4-byte"};
+	# Missing map represents dummy mapping.
+	my $b1root = $segmap{"1-byte"} || 0;
+	my $b2root = $segmap{"2-byte"} || 0;
+	my $b3root = $segmap{"3-byte"} || 0;
+	my $b4root = $segmap{"4-byte"} || 0;
 
 	# And the lower-upper values of each level in each radix tree.
-	my $b1_lower = $min_idx{1}{1};
-	my $b1_upper = $max_idx{1}{1};
+	# Missing values represent zero.
+	my $b1_lower = $min_idx{1}{1} || 0;
+	my $b1_upper = $max_idx{1}{1} || 0;
 
-	my $b2_1_lower = $min_idx{2}{1};
-	my $b2_1_upper = $max_idx{2}{1};
-	my $b2_2_lower = $min_idx{2}{2};
-	my $b2_2_upper = $max_idx{2}{2};
+	my $b2_1_lower = $min_idx{2}{1} || 0;
+	my $b2_1_upper = $max_idx{2}{1} || 0;
+	my $b2_2_lower = $min_idx{2}{2} || 0;
+	my $b2_2_upper = $max_idx{2}{2} || 0;
 
-	my $b3_1_lower = $min_idx{3}{1};
-	my $b3_1_upper = $max_idx{3}{1};
-	my $b3_2_lower = $min_idx{3}{2};
-	my $b3_2_upper = $max_idx{3}{2};
-	my $b3_3_lower = $min_idx{3}{3};
-	my $b3_3_upper = $max_idx{3}{3};
+	my $b3_1_lower = $min_idx{3}{1} || 0;
+	my $b3_1_upper = $max_idx{3}{1} || 0;
+	my $b3_2_lower = $min_idx{3}{2} || 0;
+	my $b3_2_upper = $max_idx{3}{2} || 0;
+	my $b3_3_lower = $min_idx{3}{3} || 0;
+	my $b3_3_upper = $max_idx{3}{3} || 0;
 
-	my $b4_1_lower = $min_idx{4}{1};
-	my $b4_1_upper = $max_idx{4}{1};
-	my $b4_2_lower = $min_idx{4}{2};
-	my $b4_2_upper = $max_idx{4}{2};
-	my $b4_3_lower = $min_idx{4}{3};
-	my $b4_3_upper = $max_idx{4}{3};
-	my $b4_4_lower = $min_idx{4}{4};
-	my $b4_4_upper = $max_idx{4}{4};
+	my $b4_1_lower = $min_idx{4}{1} || 0;
+	my $b4_1_upper = $max_idx{4}{1} || 0;
+	my $b4_2_lower = $min_idx{4}{2} || 0;
+	my $b4_2_upper = $max_idx{4}{2} || 0;
+	my $b4_3_lower = $min_idx{4}{3} || 0;
+	my $b4_3_upper = $max_idx{4}{3} || 0;
+	my $b4_4_lower = $min_idx{4}{4} || 0;
+	my $b4_4_upper = $max_idx{4}{4} || 0;
 
 	###
 	### Find the maximum value in the whole table, to determine if we can
@@ -523,17 +527,17 @@ sub print_radix_table
 	if ($max_val <= 0xffff)
 	{
 		$vals_per_line = 8;
-		$colwidth      = 4;
+		$colwidth = 4;
 	}
 	elsif ($max_val <= 0xffffff)
 	{
 		$vals_per_line = 4;
-		$colwidth      = 6;
+		$colwidth = 6;
 	}
 	else
 	{
 		$vals_per_line = 4;
-		$colwidth      = 8;
+		$colwidth = 8;
 	}
 
 	###
@@ -575,7 +579,7 @@ sub print_radix_table
 	printf $out "  0x%02x, /* b3_3_lower */\n", $b3_3_lower;
 	printf $out "  0x%02x, /* b3_3_upper */\n", $b3_3_upper;
 	printf $out "\n";
-	printf $out "  0x%04x, /* offset of table for 3-byte inputs */\n",
+	printf $out "  0x%04x, /* offset of table for 4-byte inputs */\n",
 	  $b4root;
 	printf $out "  0x%02x, /* b4_1_lower */\n", $b4_1_lower;
 	printf $out "  0x%02x, /* b4_1_upper */\n", $b4_1_upper;
@@ -603,10 +607,13 @@ sub print_radix_table
 			# Print the next line's worth of values.
 			# XXX pad to begin at a nice boundary
 			printf $out "  /* %02x */ ", $i;
-			for (my $j = 0;
-				$j < $vals_per_line && $i <= $seg->{max_idx}; $j++)
+			for (
+				my $j = 0;
+				$j < $vals_per_line && $i <= $seg->{max_idx};
+				$j++)
 			{
-				my $val = $seg->{values}->{$i};
+				# missing values represent zero.
+				my $val = $seg->{values}->{$i} || 0;
 
 				printf $out " 0x%0*x", $colwidth, $val;
 				$off++;
@@ -666,10 +673,10 @@ sub build_segments_recurse
 		push @segments,
 		  {
 			header => $header . ", leaf: ${path}xx",
-			label  => $label,
-			level  => $level,
-			depth  => $depth,
-			path   => $path,
+			label => $label,
+			level => $level,
+			depth => $depth,
+			path => $path,
 			values => $map
 		  };
 	}
@@ -691,10 +698,10 @@ sub build_segments_recurse
 		push @segments,
 		  {
 			header => $header . ", byte #$level: ${path}xx",
-			label  => $label,
-			level  => $level,
-			depth  => $depth,
-			path   => $path,
+			label => $label,
+			level => $level,
+			depth => $depth,
+			path => $path,
 			values => \%children
 		  };
 	}
@@ -784,12 +791,12 @@ sub make_charmap_combined
 		if (defined $c->{ucs_second})
 		{
 			my $entry = {
-				utf8        => ucs2utf($c->{ucs}),
+				utf8 => ucs2utf($c->{ucs}),
 				utf8_second => ucs2utf($c->{ucs_second}),
-				code        => $c->{code},
-				comment     => $c->{comment},
-				f           => $c->{f},
-				l           => $c->{l}
+				code => $c->{code},
+				comment => $c->{comment},
+				f => $c->{f},
+				l => $c->{l}
 			};
 			push @combined, $entry;
 		}

@@ -5,19 +5,19 @@
 
 #include <limits.h>
 #include <unistd.h>
-#include "ecpg-pthread-win32.h"
-#include "ecpgtype.h"
-#include "ecpglib.h"
-#include "ecpgerrno.h"
-#include "extern.h"
-#include "sqlca.h"
-#include "pgtypes_numeric.h"
-#include "pgtypes_date.h"
-#include "pgtypes_timestamp.h"
-#include "pgtypes_interval.h"
-#include "pg_config_paths.h"
 
-#ifdef HAVE_LONG_LONG_INT
+#include "ecpg-pthread-win32.h"
+#include "ecpgerrno.h"
+#include "ecpglib.h"
+#include "ecpglib_extern.h"
+#include "ecpgtype.h"
+#include "pg_config_paths.h"
+#include "pgtypes_date.h"
+#include "pgtypes_interval.h"
+#include "pgtypes_numeric.h"
+#include "pgtypes_timestamp.h"
+#include "sqlca.h"
+
 #ifndef LONG_LONG_MIN
 #ifdef LLONG_MIN
 #define LONG_LONG_MIN LLONG_MIN
@@ -25,7 +25,6 @@
 #define LONG_LONG_MIN LONGLONG_MIN
 #endif							/* LLONG_MIN */
 #endif							/* LONG_LONG_MIN */
-#endif							/* HAVE_LONG_LONG_INT */
 
 bool		ecpg_internal_regression_mode = false;
 
@@ -92,7 +91,7 @@ static struct sqlca_t sqlca =
 static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t debug_init_mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
-static int	simple_debug = 0;
+static volatile int simple_debug = 0;
 static FILE *debugstream = NULL;
 
 void
@@ -192,7 +191,6 @@ ECPGtransactionStatus(const char *connection_name)
 	}
 
 	return PQtransactionStatus(con->connection);
-
 }
 
 bool
@@ -243,7 +241,11 @@ void
 ECPGdebug(int n, FILE *dbgs)
 {
 #ifdef ENABLE_THREAD_SAFETY
+	/* Interlock against concurrent executions of ECPGdebug() */
 	pthread_mutex_lock(&debug_init_mutex);
+
+	/* Prevent ecpg_log() from printing while we change settings */
+	pthread_mutex_lock(&debug_mutex);
 #endif
 
 	if (n > 100)
@@ -256,6 +258,12 @@ ECPGdebug(int n, FILE *dbgs)
 
 	debugstream = dbgs;
 
+	/* We must release debug_mutex before invoking ecpg_log() ... */
+#ifdef ENABLE_THREAD_SAFETY
+	pthread_mutex_unlock(&debug_mutex);
+#endif
+
+	/* ... but keep holding debug_init_mutex to avoid racy printout */
 	ecpg_log("ECPGdebug: set to %d\n", simple_debug);
 
 #ifdef ENABLE_THREAD_SAFETY
@@ -272,6 +280,11 @@ ecpg_log(const char *format,...)
 	int			bufsize;
 	char	   *fmt;
 
+	/*
+	 * For performance reasons, inspect simple_debug without taking the mutex.
+	 * This could be problematic if fetching an int isn't atomic, but we
+	 * assume that it is in many other places too.
+	 */
 	if (!simple_debug)
 		return;
 
@@ -296,18 +309,22 @@ ecpg_log(const char *format,...)
 	pthread_mutex_lock(&debug_mutex);
 #endif
 
-	va_start(ap, format);
-	vfprintf(debugstream, fmt, ap);
-	va_end(ap);
-
-	/* dump out internal sqlca variables */
-	if (ecpg_internal_regression_mode && sqlca != NULL)
+	/* Now that we hold the mutex, recheck simple_debug */
+	if (simple_debug)
 	{
-		fprintf(debugstream, "[NO_PID]: sqlca: code: %ld, state: %s\n",
-				sqlca->sqlcode, sqlca->sqlstate);
-	}
+		va_start(ap, format);
+		vfprintf(debugstream, fmt, ap);
+		va_end(ap);
 
-	fflush(debugstream);
+		/* dump out internal sqlca variables */
+		if (ecpg_internal_regression_mode && sqlca != NULL)
+		{
+			fprintf(debugstream, "[NO_PID]: sqlca: code: %ld, state: %s\n",
+					sqlca->sqlcode, sqlca->sqlstate);
+		}
+
+		fflush(debugstream);
+	}
 
 #ifdef ENABLE_THREAD_SAFETY
 	pthread_mutex_unlock(&debug_mutex);
@@ -339,12 +356,10 @@ ECPGset_noind_null(enum ECPGttype type, void *ptr)
 		case ECPGt_date:
 			*((long *) ptr) = LONG_MIN;
 			break;
-#ifdef HAVE_LONG_LONG_INT
 		case ECPGt_long_long:
 		case ECPGt_unsigned_long_long:
 			*((long long *) ptr) = LONG_LONG_MIN;
 			break;
-#endif							/* HAVE_LONG_LONG_INT */
 		case ECPGt_float:
 			memset((char *) ptr, 0xff, sizeof(float));
 			break;
@@ -354,6 +369,9 @@ ECPGset_noind_null(enum ECPGttype type, void *ptr)
 		case ECPGt_varchar:
 			*(((struct ECPGgeneric_varchar *) ptr)->arr) = 0x00;
 			((struct ECPGgeneric_varchar *) ptr)->len = 0;
+			break;
+		case ECPGt_bytea:
+			((struct ECPGgeneric_bytea *) ptr)->len = 0;
 			break;
 		case ECPGt_decimal:
 			memset((char *) ptr, 0, sizeof(decimal));
@@ -411,13 +429,11 @@ ECPGis_noind_null(enum ECPGttype type, const void *ptr)
 			if (*((const long *) ptr) == LONG_MIN)
 				return true;
 			break;
-#ifdef HAVE_LONG_LONG_INT
 		case ECPGt_long_long:
 		case ECPGt_unsigned_long_long:
 			if (*((const long long *) ptr) == LONG_LONG_MIN)
 				return true;
 			break;
-#endif							/* HAVE_LONG_LONG_INT */
 		case ECPGt_float:
 			return _check(ptr, sizeof(float));
 			break;
@@ -426,6 +442,10 @@ ECPGis_noind_null(enum ECPGttype type, const void *ptr)
 			break;
 		case ECPGt_varchar:
 			if (*(((const struct ECPGgeneric_varchar *) ptr)->arr) == 0x00)
+				return true;
+			break;
+		case ECPGt_bytea:
+			if (((const struct ECPGgeneric_bytea *) ptr)->len == 0)
 				return true;
 			break;
 		case ECPGt_decimal:
@@ -452,17 +472,38 @@ ECPGis_noind_null(enum ECPGttype type, const void *ptr)
 #ifdef WIN32
 #ifdef ENABLE_THREAD_SAFETY
 
-void
-win32_pthread_mutex(volatile pthread_mutex_t *mutex)
+int
+pthread_mutex_init(pthread_mutex_t *mp, void *attr)
 {
-	if (mutex->handle == NULL)
+	mp->initstate = 0;
+	return 0;
+}
+
+int
+pthread_mutex_lock(pthread_mutex_t *mp)
+{
+	/* Initialize the csection if not already done */
+	if (mp->initstate != 1)
 	{
-		while (InterlockedExchange((LONG *) &mutex->initlock, 1) == 1)
-			Sleep(0);
-		if (mutex->handle == NULL)
-			mutex->handle = CreateMutex(NULL, FALSE, NULL);
-		InterlockedExchange((LONG *) &mutex->initlock, 0);
+		LONG		istate;
+
+		while ((istate = InterlockedExchange(&mp->initstate, 2)) == 2)
+			Sleep(0);			/* wait, another thread is doing this */
+		if (istate != 1)
+			InitializeCriticalSection(&mp->csection);
+		InterlockedExchange(&mp->initstate, 1);
 	}
+	EnterCriticalSection(&mp->csection);
+	return 0;
+}
+
+int
+pthread_mutex_unlock(pthread_mutex_t *mp)
+{
+	if (mp->initstate != 1)
+		return EINVAL;
+	LeaveCriticalSection(&mp->csection);
+	return 0;
 }
 
 static pthread_mutex_t win32_pthread_once_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -475,8 +516,8 @@ win32_pthread_once(volatile pthread_once_t *once, void (*fn) (void))
 		pthread_mutex_lock(&win32_pthread_once_lock);
 		if (!*once)
 		{
-			*once = true;
 			fn();
+			*once = true;
 		}
 		pthread_mutex_unlock(&win32_pthread_once_lock);
 	}
@@ -489,7 +530,15 @@ win32_pthread_once(volatile pthread_once_t *once, void (*fn) (void))
 char *
 ecpg_gettext(const char *msgid)
 {
-	static bool already_bound = false;
+	/*
+	 * At least on Windows, there are gettext implementations that fail if
+	 * multiple threads call bindtextdomain() concurrently.  Use a mutex and
+	 * flag variable to ensure that we call it just once per process.  It is
+	 * not known that similar bugs exist on non-Windows platforms, but we
+	 * might as well do it the same way everywhere.
+	 */
+	static volatile bool already_bound = false;
+	static pthread_mutex_t binddomain_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 	if (!already_bound)
 	{
@@ -499,14 +548,26 @@ ecpg_gettext(const char *msgid)
 #else
 		int			save_errno = errno;
 #endif
-		const char *ldir;
 
-		already_bound = true;
-		/* No relocatable lookup here because the binary could be anywhere */
-		ldir = getenv("PGLOCALEDIR");
-		if (!ldir)
-			ldir = LOCALEDIR;
-		bindtextdomain(PG_TEXTDOMAIN("ecpglib"), ldir);
+		(void) pthread_mutex_lock(&binddomain_mutex);
+
+		if (!already_bound)
+		{
+			const char *ldir;
+
+			/*
+			 * No relocatable lookup here because the calling executable could
+			 * be anywhere
+			 */
+			ldir = getenv("PGLOCALEDIR");
+			if (!ldir)
+				ldir = LOCALEDIR;
+			bindtextdomain(PG_TEXTDOMAIN("ecpglib"), ldir);
+			already_bound = true;
+		}
+
+		(void) pthread_mutex_unlock(&binddomain_mutex);
+
 #ifdef WIN32
 		SetLastError(save_errno);
 #else
@@ -525,6 +586,17 @@ ECPGset_var(int number, void *pointer, int lineno)
 {
 	struct var_list *ptr;
 
+	struct sqlca_t *sqlca = ECPGget_sqlca();
+
+	if (sqlca == NULL)
+	{
+		ecpg_raise(lineno, ECPG_OUT_OF_MEMORY,
+				   ECPG_SQLSTATE_ECPG_OUT_OF_MEMORY, NULL);
+		return;
+	}
+
+	ecpg_init_sqlca(sqlca);
+
 	for (ptr = ivlist; ptr != NULL; ptr = ptr->next)
 	{
 		if (ptr->number == number)
@@ -539,7 +611,7 @@ ECPGset_var(int number, void *pointer, int lineno)
 	ptr = (struct var_list *) calloc(1L, sizeof(struct var_list));
 	if (!ptr)
 	{
-		struct sqlca_t *sqlca = ECPGget_sqlca();
+		sqlca = ECPGget_sqlca();
 
 		if (sqlca == NULL)
 		{

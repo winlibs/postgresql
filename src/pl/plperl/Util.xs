@@ -12,17 +12,15 @@
 
 /* this must be first: */
 #include "postgres.h"
+
 #include "fmgr.h"
 #include "utils/builtins.h"
 #include "utils/bytea.h"       /* for byteain & byteaout */
-
-/* Defined by Perl */
-#undef _
+#include "varatt.h"
 
 /* perl stuff */
 #define PG_NEED_PERL_XSUB_H
 #include "plperl.h"
-#include "plperl_helpers.h"
 
 
 static text *

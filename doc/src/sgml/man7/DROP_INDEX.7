@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DROP INDEX
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DROP INDEX" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DROP INDEX" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -44,7 +44,9 @@ CONCURRENTLY
 .RS 4
 Drop the index without locking out concurrent selects, inserts, updates, and deletes on the index\*(Aqs table\&. A normal
 \fBDROP INDEX\fR
-acquires exclusive lock on the table, blocking other accesses until the index drop can be completed\&. With this option, the command instead waits until conflicting transactions have completed\&.
+acquires an
+ACCESS EXCLUSIVE
+lock on the table, blocking other accesses until the index drop can be completed\&. With this option, the command instead waits until conflicting transactions have completed\&.
 .sp
 There are several caveats to be aware of when using this option\&. Only one index name can be specified, and the
 CASCADE
@@ -56,7 +58,11 @@ constraint cannot be dropped this way\&.) Also, regular
 \fBDROP INDEX\fR
 commands can be performed within a transaction block, but
 \fBDROP INDEX CONCURRENTLY\fR
-cannot\&.
+cannot\&. Lastly, indexes on partitioned tables cannot be dropped using this option\&.
+.sp
+For temporary tables,
+\fBDROP INDEX\fR
+is always non\-concurrent, as no other session can access them, and non\-concurrent index drop is cheaper\&.
 .RE
 .PP
 IF EXISTS
@@ -72,7 +78,7 @@ The name (optionally schema\-qualified) of an index to remove\&.
 CASCADE
 .RS 4
 Automatically drop objects that depend on the index, and in turn all objects that depend on those objects (see
-Section\ \&5.13)\&.
+Section\ \&5.14)\&.
 .RE
 .PP
 RESTRICT

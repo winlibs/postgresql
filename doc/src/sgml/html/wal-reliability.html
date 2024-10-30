@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>30.1. Reliability</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="wal.html" title="Chapter 30. Reliability and the Write-Ahead Log" /><link rel="next" href="wal-intro.html" title="30.2. Write-Ahead Logging (WAL)" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">30.1. Reliability</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="wal.html" title="Chapter 30. Reliability and the Write-Ahead Log">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="wal.html" title="Chapter 30. Reliability and the Write-Ahead Log">Up</a></td><th width="60%" align="center">Chapter 30. Reliability and the Write-Ahead Log</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="wal-intro.html" title="30.2. Write-Ahead Logging (WAL)">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="WAL-RELIABILITY"><div class="titlepage"><div><div><h2 class="title" style="clear: both">30.1. Reliability</h2></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>30.1. Reliability</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="wal.html" title="Chapter 30. Reliability and the Write-Ahead Log" /><link rel="next" href="checksums.html" title="30.2. Data Checksums" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">30.1. Reliability</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="wal.html" title="Chapter 30. Reliability and the Write-Ahead Log">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="wal.html" title="Chapter 30. Reliability and the Write-Ahead Log">Up</a></td><th width="60%" align="center">Chapter 30. Reliability and the Write-Ahead Log</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="checksums.html" title="30.2. Data Checksums">Next</a></td></tr></table><hr /></div><div class="sect1" id="WAL-RELIABILITY"><div class="titlepage"><div><div><h2 class="title" style="clear: both">30.1. Reliability <a href="#WAL-RELIABILITY" class="id_link">#</a></h2></div></div></div><p>
    Reliability is an important property of any serious database
    system, and <span class="productname">PostgreSQL</span> does everything possible to
    guarantee reliable operation. One aspect of reliable operation is
@@ -57,7 +57,7 @@
         to disable it.
       </p></li><li class="listitem"><p>
         On <span class="productname">FreeBSD</span>, IDE drives can be queried using
-        <code class="command">atacontrol</code> and write caching turned off using
+        <code class="command">camcontrol identify</code> and write caching turned off using
         <code class="literal">hw.ata.wc=0</code> in <code class="filename">/boot/loader.conf</code>;
         SCSI drives can be queried using <code class="command">camcontrol identify</code>,
         and the write cache both queried and changed using
@@ -72,7 +72,8 @@
         <code class="literal">open_datasync</code> (the default), write caching can be disabled
         by unchecking <code class="literal">My Computer\Open\<em class="replaceable"><code>disk drive</code></em>\Properties\Hardware\Properties\Policies\Enable write caching on the disk</code>.
         Alternatively, set <code class="varname">wal_sync_method</code> to
-        <code class="literal">fsync</code> or <code class="literal">fsync_writethrough</code>, which prevent
+        <code class="literal">fdatasync</code> (NTFS only), <code class="literal">fsync</code> or
+        <code class="literal">fsync_writethrough</code>, which prevent
         write caching.
       </p></li><li class="listitem"><p>
         On <span class="productname">macOS</span>, write caching can be prevented by
@@ -139,7 +140,7 @@
      </p></li><li class="listitem"><p>
       Data pages are not currently checksummed by default, though full page images
       recorded in WAL records will be protected; see <a class="link" href="app-initdb.html#APP-INITDB-DATA-CHECKSUMS"><span class="application">initdb</span></a>
-      for details about enabling data page checksums.
+      for details about enabling data checksums.
      </p></li><li class="listitem"><p>
       Internal data structures such as <code class="filename">pg_xact</code>, <code class="filename">pg_subtrans</code>, <code class="filename">pg_multixact</code>,
       <code class="filename">pg_serial</code>, <code class="filename">pg_notify</code>, <code class="filename">pg_stat</code>, <code class="filename">pg_snapshots</code> are not directly
@@ -158,4 +159,4 @@
    <span class="productname">PostgreSQL</span> does not protect against correctable memory errors
    and it is assumed you will operate using RAM that uses industry standard
    Error Correcting Codes (ECC) or better protection.
-  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="wal.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="wal.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="wal-intro.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 30. Reliability and the Write-Ahead Log </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 30.2. Write-Ahead Logging (<acronym class="acronym">WAL</acronym>)</td></tr></table></div></body></html>
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="wal.html" title="Chapter 30. Reliability and the Write-Ahead Log">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="wal.html" title="Chapter 30. Reliability and the Write-Ahead Log">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="checksums.html" title="30.2. Data Checksums">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 30. Reliability and the Write-Ahead Log </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 30.2. Data Checksums</td></tr></table></div></body></html>

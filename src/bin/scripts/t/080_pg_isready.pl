@@ -1,20 +1,26 @@
+
+# Copyright (c) 2021-2023, PostgreSQL Global Development Group
+
 use strict;
 use warnings;
 
-use PostgresNode;
-use TestLib;
-use Test::More tests => 10;
+use PostgreSQL::Test::Cluster;
+use PostgreSQL::Test::Utils;
+use Test::More;
 
 program_help_ok('pg_isready');
 program_version_ok('pg_isready');
 program_options_handling_ok('pg_isready');
 
-command_fails(['pg_isready'], 'fails with no server running');
-
-my $node = get_new_node('main');
+my $node = PostgreSQL::Test::Cluster->new('main');
 $node->init;
+
+$node->command_fails(['pg_isready'], 'fails with no server running');
+
 $node->start;
 
-# use a long timeout for the benefit of very slow buildfarm machines
-$node->command_ok([qw(pg_isready --timeout=60)],
+$node->command_ok(
+	[ 'pg_isready', "--timeout=$PostgreSQL::Test::Utils::timeout_default" ],
 	'succeeds with server running');
+
+done_testing();

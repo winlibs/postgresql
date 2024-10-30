@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DROP OPERATOR
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DROP OPERATOR" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DROP OPERATOR" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ DROP_OPERATOR \- remove an operator
 .SH "SYNOPSIS"
 .sp
 .nf
-DROP OPERATOR [ IF EXISTS ] \fIname\fR ( { \fIleft_type\fR | NONE } , { \fIright_type\fR | NONE } ) [, \&.\&.\&.] [ CASCADE | RESTRICT ]
+DROP OPERATOR [ IF EXISTS ] \fIname\fR ( { \fIleft_type\fR | NONE } , \fIright_type\fR ) [, \&.\&.\&.] [ CASCADE | RESTRICT ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -59,15 +59,13 @@ if the operator has no left operand\&.
 .PP
 \fIright_type\fR
 .RS 4
-The data type of the operator\*(Aqs right operand; write
-NONE
-if the operator has no right operand\&.
+The data type of the operator\*(Aqs right operand\&.
 .RE
 .PP
 CASCADE
 .RS 4
 Automatically drop objects that depend on the operator (such as views using it), and in turn all objects that depend on those objects (see
-Section\ \&5.13)\&.
+Section\ \&5.14)\&.
 .RE
 .PP
 RESTRICT
@@ -91,7 +89,7 @@ DROP OPERATOR ^ (integer, integer);
 .RE
 .\}
 .PP
-Remove the left unary bitwise complement operator
+Remove the bitwise\-complement prefix operator
 ~b
 for type
 bit:
@@ -106,28 +104,13 @@ DROP OPERATOR ~ (none, bit);
 .RE
 .\}
 .PP
-Remove the right unary factorial operator
-x!
-for type
-bigint:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-DROP OPERATOR ! (bigint, none);
-.fi
-.if n \{\
-.RE
-.\}
-.PP
 Remove multiple operators in one command:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-DROP OPERATOR ~ (none, bit), ! (bigint, none);
+DROP OPERATOR ~ (none, bit), ^ (integer, integer);
 .fi
 .if n \{\
 .RE

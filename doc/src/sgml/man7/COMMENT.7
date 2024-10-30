@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: COMMENT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "COMMENT" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "COMMENT" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -77,7 +77,7 @@ COMMENT ON
   TRIGGER \fItrigger_name\fR ON \fItable_name\fR |
   TYPE \fIobject_name\fR |
   VIEW \fIobject_name\fR
-} IS \*(Aq\fItext\fR\*(Aq
+} IS { \fIstring_literal\fR | NULL }
 
 where \fIaggregate_signature\fR is:
 
@@ -96,11 +96,17 @@ command for the same object\&. To remove a comment, write
 NULL
 in place of the text string\&. Comments are automatically dropped when their object is dropped\&.
 .PP
+A
+SHARE UPDATE EXCLUSIVE
+lock is acquired on the object to be commented\&.
+.PP
 For most kinds of object, only the object\*(Aqs owner can set the comment\&. Roles don\*(Aqt have owners, so the rule for
 COMMENT ON ROLE
 is that you must be superuser to comment on a superuser role, or have the
 CREATEROLE
-privilege to comment on non\-superuser roles\&. Likewise, access methods don\*(Aqt have owners either; you must be superuser to comment on an access method\&. Of course, a superuser can comment on anything\&.
+privilege and have been granted
+ADMIN OPTION
+on the target role\&. Likewise, access methods don\*(Aqt have owners either; you must be superuser to comment on an access method\&. Of course, a superuser can comment on anything\&.
 .PP
 Comments can be viewed using
 psql\*(Aqs
@@ -112,7 +118,7 @@ uses, namely
 \fBcol_description\fR, and
 \fBshobj_description\fR
 (see
-Table\ \&9.68)\&.
+Table\ \&9.78)\&.
 .SH "PARAMETERS"
 .PP
 \fIobject_name\fR
@@ -137,7 +143,7 @@ Table\ \&9.68)\&.
 .br
 \fItrigger_name\fR
 .RS 4
-The name of the object to be commented\&. Names of tables, aggregates, collations, conversions, domains, foreign tables, functions, indexes, operators, operator classes, operator families, procedures, routines, sequences, statistics, text search objects, types, and views can be schema\-qualified\&. When commenting on a column,
+The name of the object to be commented\&. Names of objects that reside in schemas (tables, functions, etc\&.) can be schema\-qualified\&. When commenting on a column,
 \fIrelation_name\fR
 must refer to a table, view, composite type, or foreign table\&.
 .RE
@@ -200,7 +206,7 @@ The OID of the large object\&.
 .RS 4
 The data type(s) of the operator\*(Aqs arguments (optionally schema\-qualified)\&. Write
 NONE
-for the missing argument of a prefix or postfix operator\&.
+for the missing argument of a prefix operator\&.
 .RE
 .PP
 PROCEDURAL
@@ -218,9 +224,14 @@ The name of the data type of the transform\&.
 The name of the language of the transform\&.
 .RE
 .PP
-\fItext\fR
+\fIstring_literal\fR
 .RS 4
-The new comment, written as a string literal; or
+The new comment contents, written as a string literal\&.
+.RE
+.PP
+NULL
+.RS 4
+Write
 NULL
 to drop the comment\&.
 .RE
@@ -260,7 +271,7 @@ Some more examples:
 .RS 4
 .\}
 .nf
-COMMENT ON ACCESS METHOD rtree IS \*(AqR\-Tree access method\*(Aq;
+COMMENT ON ACCESS METHOD gin IS \*(AqGIN index access method\*(Aq;
 COMMENT ON AGGREGATE my_aggregate (double precision) IS \*(AqComputes sample variance\*(Aq;
 COMMENT ON CAST (text AS int4) IS \*(AqAllow casts from text to int4\*(Aq;
 COMMENT ON COLLATION "fr_CA" IS \*(AqCanadian French\*(Aq;
@@ -270,6 +281,7 @@ COMMENT ON CONSTRAINT bar_col_cons ON bar IS \*(AqConstrains column col\*(Aq;
 COMMENT ON CONSTRAINT dom_col_constr ON DOMAIN dom IS \*(AqConstrains col of domain\*(Aq;
 COMMENT ON DATABASE my_database IS \*(AqDevelopment Database\*(Aq;
 COMMENT ON DOMAIN my_domain IS \*(AqEmail Address Domain\*(Aq;
+COMMENT ON EVENT TRIGGER abort_ddl IS \*(AqAborts all DDL commands\*(Aq;
 COMMENT ON EXTENSION hstore IS \*(Aqimplements the hstore data type\*(Aq;
 COMMENT ON FOREIGN DATA WRAPPER mywrapper IS \*(Aqmy foreign data wrapper\*(Aq;
 COMMENT ON FOREIGN TABLE my_foreign_table IS \*(AqEmployee Information in other database\*(Aq;
@@ -284,19 +296,22 @@ COMMENT ON OPERATOR CLASS int4ops USING btree IS \*(Aq4 byte integer operators f
 COMMENT ON OPERATOR FAMILY integer_ops USING btree IS \*(Aqall integer operators for btrees\*(Aq;
 COMMENT ON POLICY my_policy ON mytable IS \*(AqFilter rows by users\*(Aq;
 COMMENT ON PROCEDURE my_proc (integer, integer) IS \*(AqRuns a report\*(Aq;
+COMMENT ON PUBLICATION alltables IS \*(AqPublishes all operations on all tables\*(Aq;
 COMMENT ON ROLE my_role IS \*(AqAdministration group for finance tables\*(Aq;
+COMMENT ON ROUTINE my_routine (integer, integer) IS \*(AqRuns a routine (which is a function or procedure)\*(Aq;
 COMMENT ON RULE my_rule ON my_table IS \*(AqLogs updates of employee records\*(Aq;
 COMMENT ON SCHEMA my_schema IS \*(AqDepartmental data\*(Aq;
 COMMENT ON SEQUENCE my_sequence IS \*(AqUsed to generate primary keys\*(Aq;
 COMMENT ON SERVER myserver IS \*(Aqmy foreign server\*(Aq;
 COMMENT ON STATISTICS my_statistics IS \*(AqImproves planner row estimations\*(Aq;
+COMMENT ON SUBSCRIPTION alltables IS \*(AqSubscription for all operations on all tables\*(Aq;
 COMMENT ON TABLE my_schema\&.my_table IS \*(AqEmployee Information\*(Aq;
 COMMENT ON TABLESPACE my_tablespace IS \*(AqTablespace for indexes\*(Aq;
 COMMENT ON TEXT SEARCH CONFIGURATION my_config IS \*(AqSpecial word filtering\*(Aq;
 COMMENT ON TEXT SEARCH DICTIONARY swedish IS \*(AqSnowball stemmer for Swedish language\*(Aq;
 COMMENT ON TEXT SEARCH PARSER my_parser IS \*(AqSplits text into words\*(Aq;
 COMMENT ON TEXT SEARCH TEMPLATE snowball IS \*(AqSnowball stemmer\*(Aq;
-COMMENT ON TRANSFORM FOR hstore LANGUAGE plpythonu IS \*(AqTransform between hstore and Python dict\*(Aq;
+COMMENT ON TRANSFORM FOR hstore LANGUAGE plpython3u IS \*(AqTransform between hstore and Python dict\*(Aq;
 COMMENT ON TRIGGER my_trigger ON my_table IS \*(AqUsed for RI\*(Aq;
 COMMENT ON TYPE complex IS \*(AqComplex number data type\*(Aq;
 COMMENT ON VIEW my_view IS \*(AqView of departmental costs\*(Aq;

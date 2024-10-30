@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.3. Declarations</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plpgsql-structure.html" title="43.2. Structure of PL/pgSQL" /><link rel="next" href="plpgsql-expressions.html" title="43.4. Expressions" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.3. Declarations</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-structure.html" title="43.2. Structure of PL/pgSQL">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL - SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> - <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpgsql-expressions.html" title="43.4. Expressions">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPGSQL-DECLARATIONS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.3. Declarations</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-PARAMETERS">43.3.1. Declaring Function Parameters</a></span></dt><dt><span class="sect2"><a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-ALIAS">43.3.2. <code class="literal">ALIAS</code></a></span></dt><dt><span class="sect2"><a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-TYPE">43.3.3. Copying Types</a></span></dt><dt><span class="sect2"><a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-ROWTYPES">43.3.4. Row Types</a></span></dt><dt><span class="sect2"><a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS">43.3.5. Record Types</a></span></dt><dt><span class="sect2"><a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-COLLATION">43.3.6. Collation of <span class="application">PL/pgSQL</span> Variables</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.3. Declarations</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="plpgsql-structure.html" title="43.2. Structure of PL/pgSQL" /><link rel="next" href="plpgsql-expressions.html" title="43.4. Expressions" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.3. Declarations</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-structure.html" title="43.2. Structure of PL/pgSQL">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL — SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span class="application">PL/pgSQL</span> — <acronym class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpgsql-expressions.html" title="43.4. Expressions">Next</a></td></tr></table><hr /></div><div class="sect1" id="PLPGSQL-DECLARATIONS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.3. Declarations <a href="#PLPGSQL-DECLARATIONS" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-PARAMETERS">43.3.1. Declaring Function Parameters</a></span></dt><dt><span class="sect2"><a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-ALIAS">43.3.2. <code class="literal">ALIAS</code></a></span></dt><dt><span class="sect2"><a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-TYPE">43.3.3. Copying Types</a></span></dt><dt><span class="sect2"><a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-ROWTYPES">43.3.4. Row Types</a></span></dt><dt><span class="sect2"><a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-RECORDS">43.3.5. Record Types</a></span></dt><dt><span class="sect2"><a href="plpgsql-declarations.html#PLPGSQL-DECLARATION-COLLATION">43.3.6. Collation of <span class="application">PL/pgSQL</span> Variables</a></span></dt></dl></div><p>
      All variables used in a block must be declared in the
      declarations section of the block.
      (The only exceptions are that the loop variable of a <code class="literal">FOR</code> loop
@@ -53,9 +53,17 @@ arow RECORD;
 </p><pre class="programlisting">
 quantity integer DEFAULT 32;
 url varchar := 'http://mysite.com';
-user_id CONSTANT integer := 10;
+transaction_time CONSTANT timestamp with time zone := now();
 </pre><p>
-     </p><div class="sect2" id="PLPGSQL-DECLARATION-PARAMETERS"><div class="titlepage"><div><div><h3 class="title">43.3.1. Declaring Function Parameters</h3></div></div></div><p>
+     </p><p>
+      Once declared, a variable's value can be used in later initialization
+      expressions in the same block, for example:
+</p><pre class="programlisting">
+DECLARE
+  x integer := 1;
+  y integer := x + 1;
+</pre><p>
+     </p><div class="sect2" id="PLPGSQL-DECLARATION-PARAMETERS"><div class="titlepage"><div><div><h3 class="title">43.3.1. Declaring Function Parameters <a href="#PLPGSQL-DECLARATION-PARAMETERS" class="id_link">#</a></h3></div></div></div><p>
       Parameters passed to functions are named with the identifiers
       <code class="literal">$1</code>, <code class="literal">$2</code>,
       etc.  Optionally, aliases can be declared for
@@ -136,6 +144,12 @@ $$ LANGUAGE plpgsql;
       Notice that we omitted <code class="literal">RETURNS real</code> — we could have
       included it, but it would be redundant.
      </p><p>
+      To call a function with <code class="literal">OUT</code> parameters, omit the
+      output parameter(s) in the function call:
+</p><pre class="programlisting">
+SELECT sales_tax(100.00);
+</pre><p>
+     </p><p>
       Output parameters are most useful when returning multiple values.
       A trivial example is:
 
@@ -146,12 +160,44 @@ BEGIN
     prod := x * y;
 END;
 $$ LANGUAGE plpgsql;
+
+SELECT * FROM sum_n_product(2, 4);
+ sum | prod
+-----+------
+   6 |    8
 </pre><p>
 
       As discussed in <a class="xref" href="xfunc-sql.html#XFUNC-OUTPUT-PARAMETERS" title="38.5.4. SQL Functions with Output Parameters">Section 38.5.4</a>, this
       effectively creates an anonymous record type for the function's
       results.  If a <code class="literal">RETURNS</code> clause is given, it must say
       <code class="literal">RETURNS record</code>.
+     </p><p>
+      This also works with procedures, for example:
+
+</p><pre class="programlisting">
+CREATE PROCEDURE sum_n_product(x int, y int, OUT sum int, OUT prod int) AS $$
+BEGIN
+    sum := x + y;
+    prod := x * y;
+END;
+$$ LANGUAGE plpgsql;
+</pre><p>
+
+      In a call to a procedure, all the parameters must be specified.  For
+      output parameters, <code class="literal">NULL</code> may be specified when
+      calling the procedure from plain SQL:
+</p><pre class="programlisting">
+CALL sum_n_product(2, 4, NULL, NULL);
+ sum | prod
+-----+------
+   6 |    8
+</pre><p>
+
+      However, when calling a procedure
+      from <span class="application">PL/pgSQL</span>, you should instead write a
+      variable for any output parameter; the variable will receive the result
+      of the call.  See <a class="xref" href="plpgsql-control-structures.html#PLPGSQL-STATEMENTS-CALLING-PROCEDURE" title="43.6.3. Calling a Procedure">Section 43.6.3</a>
+      for details.
      </p><p>
       Another way to declare a <span class="application">PL/pgSQL</span> function
       is with <code class="literal">RETURNS TABLE</code>, for example:
@@ -170,12 +216,11 @@ $$ LANGUAGE plpgsql;
       parameters and specifying <code class="literal">RETURNS SETOF
       <em class="replaceable"><code>sometype</code></em></code>.
      </p><p>
-      When the return type of a <span class="application">PL/pgSQL</span>
-      function is declared as a polymorphic type (<code class="type">anyelement</code>,
-      <code class="type">anyarray</code>, <code class="type">anynonarray</code>, <code class="type">anyenum</code>,
-      or <code class="type">anyrange</code>), a special parameter <code class="literal">$0</code>
-      is created.  Its data type is the actual return type of the function,
-      as deduced from the actual input types (see <a class="xref" href="extend-type-system.html#EXTEND-TYPES-POLYMORPHIC" title="38.2.5. Polymorphic Types">Section 38.2.5</a>).
+      When the return type of a <span class="application">PL/pgSQL</span> function
+      is declared as a polymorphic type (see
+      <a class="xref" href="extend-type-system.html#EXTEND-TYPES-POLYMORPHIC" title="38.2.5. Polymorphic Types">Section 38.2.5</a>), a special
+      parameter <code class="literal">$0</code> is created.  Its data type is the actual
+      return type of the function, as deduced from the actual input types.
       This allows the function to access its actual return type
       as shown in <a class="xref" href="plpgsql-declarations.html#PLPGSQL-DECLARATION-TYPE" title="43.3.3. Copying Types">Section 43.3.3</a>.
       <code class="literal">$0</code> is initialized to null and can be modified by
@@ -210,7 +255,31 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 </pre><p>
-     </p></div><div class="sect2" id="PLPGSQL-DECLARATION-ALIAS"><div class="titlepage"><div><div><h3 class="title">43.3.2. <code class="literal">ALIAS</code></h3></div></div></div><pre class="synopsis">
+     </p><p>
+      In practice it might be more useful to declare a polymorphic function
+      using the <code class="type">anycompatible</code> family of types, so that automatic
+      promotion of the input arguments to a common type will occur.
+      For example:
+
+</p><pre class="programlisting">
+CREATE FUNCTION add_three_values(v1 anycompatible, v2 anycompatible, v3 anycompatible)
+RETURNS anycompatible AS $$
+BEGIN
+    RETURN v1 + v2 + v3;
+END;
+$$ LANGUAGE plpgsql;
+</pre><p>
+
+      With this example, a call such as
+
+</p><pre class="programlisting">
+SELECT add_three_values(1, 2, 4.7);
+</pre><p>
+
+      will work, automatically promoting the integer inputs to numeric.
+      The function using <code class="type">anyelement</code> would require you to
+      cast the three inputs to the same type manually.
+     </p></div><div class="sect2" id="PLPGSQL-DECLARATION-ALIAS"><div class="titlepage"><div><div><h3 class="title">43.3.2. <code class="literal">ALIAS</code> <a href="#PLPGSQL-DECLARATION-ALIAS" class="id_link">#</a></h3></div></div></div><pre class="synopsis">
 <em class="replaceable"><code>newname</code></em> ALIAS FOR <em class="replaceable"><code>oldname</code></em>;
 </pre><p>
     The <code class="literal">ALIAS</code> syntax is more general than is suggested in the
@@ -230,7 +299,7 @@ DECLARE
     Since <code class="literal">ALIAS</code> creates two different ways to name the same
     object, unrestricted use can be confusing.  It's best to use it only
     for the purpose of overriding predetermined names.
-   </p></div><div class="sect2" id="PLPGSQL-DECLARATION-TYPE"><div class="titlepage"><div><div><h3 class="title">43.3.3. Copying Types</h3></div></div></div><pre class="synopsis">
+   </p></div><div class="sect2" id="PLPGSQL-DECLARATION-TYPE"><div class="titlepage"><div><div><h3 class="title">43.3.3. Copying Types <a href="#PLPGSQL-DECLARATION-TYPE" class="id_link">#</a></h3></div></div></div><pre class="synopsis">
 <em class="replaceable"><code>variable</code></em>%TYPE
 </pre><p>
     <code class="literal">%TYPE</code> provides the data type of a variable or
@@ -255,7 +324,7 @@ user_id users.user_id%TYPE;
     change from one call to the next.  Appropriate variables can be
     created by applying <code class="literal">%TYPE</code> to the function's
     arguments or result placeholders.
-   </p></div><div class="sect2" id="PLPGSQL-DECLARATION-ROWTYPES"><div class="titlepage"><div><div><h3 class="title">43.3.4. Row Types</h3></div></div></div><pre class="synopsis">
+   </p></div><div class="sect2" id="PLPGSQL-DECLARATION-ROWTYPES"><div class="titlepage"><div><div><h3 class="title">43.3.4. Row Types <a href="#PLPGSQL-DECLARATION-ROWTYPES" class="id_link">#</a></h3></div></div></div><pre class="synopsis">
 <em class="replaceable"><code>name</code></em> <em class="replaceable"><code>table_name</code></em><code class="literal">%ROWTYPE</code>;
 <em class="replaceable"><code>name</code></em> <em class="replaceable"><code>composite_type_name</code></em>;
 </pre><p>
@@ -298,7 +367,7 @@ $$ LANGUAGE plpgsql;
 
 SELECT merge_fields(t.*) FROM table1 t WHERE ... ;
 </pre><p>
-   </p></div><div class="sect2" id="PLPGSQL-DECLARATION-RECORDS"><div class="titlepage"><div><div><h3 class="title">43.3.5. Record Types</h3></div></div></div><pre class="synopsis">
+   </p></div><div class="sect2" id="PLPGSQL-DECLARATION-RECORDS"><div class="titlepage"><div><div><h3 class="title">43.3.5. Record Types <a href="#PLPGSQL-DECLARATION-RECORDS" class="id_link">#</a></h3></div></div></div><pre class="synopsis">
 <em class="replaceable"><code>name</code></em> RECORD;
 </pre><p>
     Record variables are similar to row-type variables, but they have no
@@ -318,11 +387,11 @@ SELECT merge_fields(t.*) FROM table1 t WHERE ... ;
     returning <code class="type">record</code> the actual structure is determined when the
     calling query is parsed, whereas a record variable can change its row
     structure on-the-fly.
-   </p></div><div class="sect2" id="PLPGSQL-DECLARATION-COLLATION"><div class="titlepage"><div><div><h3 class="title">43.3.6. Collation of <span class="application">PL/pgSQL</span> Variables</h3></div></div></div><a id="id-1.8.8.5.13.2" class="indexterm"></a><p>
+   </p></div><div class="sect2" id="PLPGSQL-DECLARATION-COLLATION"><div class="titlepage"><div><div><h3 class="title">43.3.6. Collation of <span class="application">PL/pgSQL</span> Variables <a href="#PLPGSQL-DECLARATION-COLLATION" class="id_link">#</a></h3></div></div></div><a id="id-1.8.8.5.14.2" class="indexterm"></a><p>
     When a <span class="application">PL/pgSQL</span> function has one or more
     parameters of collatable data types, a collation is identified for each
     function call depending on the collations assigned to the actual
-    arguments, as described in <a class="xref" href="collation.html" title="23.2. Collation Support">Section 23.2</a>.  If a collation is
+    arguments, as described in <a class="xref" href="collation.html" title="24.2. Collation Support">Section 24.2</a>.  If a collation is
     successfully identified (i.e., there are no conflicts of implicit
     collations among the arguments) then all the collatable parameters are
     treated as having that collation implicitly.  This will affect the
@@ -392,4 +461,4 @@ $$ LANGUAGE plpgsql;
     This overrides the collations associated with the table columns,
     parameters, or local variables used in the expression, just as would
     happen in a plain SQL command.
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-structure.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpgsql-expressions.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.2. Structure of <span class="application">PL/pgSQL</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 43.4. Expressions</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-structure.html" title="43.2. Structure of PL/pgSQL">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL — SQL Procedural Language">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpgsql-expressions.html" title="43.4. Expressions">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.2. Structure of <span class="application">PL/pgSQL</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 43.4. Expressions</td></tr></table></div></body></html>

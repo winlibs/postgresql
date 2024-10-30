@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_archivecleanup
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "PG_ARCHIVECLEANUP" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "PG_ARCHIVECLEANUP" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,13 +38,13 @@ pg_archivecleanup
 is designed to be used as an
 archive_cleanup_command
 to clean up WAL file archives when running as a standby server (see
-Section\ \&26.2)\&.
+Section\ \&27.2)\&.
 pg_archivecleanup
 can also be used as a standalone program to clean WAL file archives\&.
 .PP
 To configure a standby server to use
 pg_archivecleanup, put this into its
-recovery\&.conf
+postgresql\&.conf
 configuration file:
 .sp
 .if n \{\
@@ -145,6 +145,15 @@ Show help about
 pg_archivecleanup
 command line arguments, and exit\&.
 .RE
+.SH "ENVIRONMENT"
+.PP
+The environment variable
+\fBPG_COLOR\fR
+specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
 .SH "NOTES"
 .PP
 pg_archivecleanup
@@ -196,5 +205,3 @@ cleanup\&.log
 .\}
 remove no\-longer\-needed files from the archive directory
 .RE
-.SH "SEE ALSO"
-\fBpg_standby\fR(1)

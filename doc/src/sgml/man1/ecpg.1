@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ecpg
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ECPG" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ECPG" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,12 +38,19 @@ ecpg \- embedded SQL C preprocessor
 is the embedded SQL preprocessor for C programs\&. It converts C programs with embedded SQL statements to normal C code by replacing the SQL invocations with special function calls\&. The output files can then be processed with any C compiler tool chain\&.
 .PP
 \fBecpg\fR
-will convert each input file given on the command line to the corresponding C output file\&. Input files preferably have the extension
-\&.pgc\&. The extension will be replaced by
+will convert each input file given on the command line to the corresponding C output file\&. If an input file name does not have any extension,
+\&.pgc
+is assumed\&. The file\*(Aqs extension will be replaced by
 \&.c
-to determine the output file name\&. The output file name can also be overridden using the
+to construct the output file name\&. But the output file name can be overridden using the
 \fB\-o\fR
 option\&.
+.PP
+If an input file name is just
+\-,
+\fBecpg\fR
+reads the program from standard input (and writes to standard output, unless that is overridden with
+\fB\-o\fR)\&.
 .PP
 This reference page does not describe the embedded SQL language\&. See
 Chapter\ \&36
@@ -69,9 +76,27 @@ INFORMIX_SE, or
 ORACLE\&.
 .RE
 .PP
-\fB\-D \fR\fB\fIsymbol\fR\fR
+\fB\-D \fR\fB\fIsymbol\fR\fR\fB[=\fR\fB\fIvalue\fR\fR\fB]\fR
 .RS 4
-Define a C preprocessor symbol\&.
+Define a preprocessor symbol, equivalently to the
+\fBEXEC SQL DEFINE\fR
+directive\&. If no
+\fIvalue\fR
+is specified, the symbol is defined with the value
+1\&.
+.RE
+.PP
+\fB\-h\fR
+.RS 4
+Process header files\&. When this option is specified, the output file extension becomes
+\&.h
+not
+\&.c, and the default input file extension is
+\&.pgh
+not
+\&.pgc\&. Also, the
+\fB\-c\fR
+option is forced on\&.
 .RE
 .PP
 \fB\-i\fR
@@ -97,7 +122,9 @@ include directory which is defined at compile time (default:
 Specifies that
 \fBecpg\fR
 should write all its output to the given
-\fIfilename\fR\&.
+\fIfilename\fR\&. Write
+\-o \-
+to send all output to standard output\&.
 .RE
 .PP
 \fB\-r \fR\fB\fIoption\fR\fR

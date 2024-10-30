@@ -41,7 +41,7 @@
 #ifdef __i386__
 #define BF_ASM				0	/* 1 */
 #define BF_SCALE			1
-#elif defined(__x86_64__) || defined(__alpha__) || defined(__hppa__)
+#elif defined(__x86_64__) || defined(__hppa__)
 #define BF_ASM				0
 #define BF_SCALE			1
 #else
@@ -469,7 +469,7 @@ BF_swap(BF_word *x, int count)
 	tmp3 ^= tmp2; \
 	(R) ^= data.ctx.P[(N) + 1]; \
 	tmp3 += tmp1; \
-	(R) ^= tmp3;
+	(R) ^= tmp3
 #else
 /* Architectures with no complicated addressing modes supported */
 #define BF_INDEX(S, i) \
@@ -490,7 +490,7 @@ BF_swap(BF_word *x, int count)
 	tmp3 ^= tmp2; \
 	(R) ^= data.ctx.P[(N) + 1]; \
 	tmp3 += tmp1; \
-	(R) ^= tmp3;
+	(R) ^= tmp3
 #endif
 
 /*
@@ -516,17 +516,18 @@ BF_swap(BF_word *x, int count)
 	BF_ROUND(R, L, 15); \
 	tmp4 = R; \
 	R = L; \
-	L = tmp4 ^ data.ctx.P[BF_N + 1];
+	L = tmp4 ^ data.ctx.P[BF_N + 1]
 
 #if BF_ASM
 
 extern void _BF_body_r(BF_ctx *ctx);
 
 #define BF_body() \
-	_BF_body_r(&data.ctx);
+	_BF_body_r(&data.ctx)
 #else
 
 #define BF_body() \
+do { \
 	L = R = 0; \
 	ptr = data.ctx.P; \
 	do { \
@@ -542,7 +543,8 @@ extern void _BF_body_r(BF_ctx *ctx);
 		BF_ENCRYPT; \
 		*(ptr - 2) = L; \
 		*(ptr - 1) = R; \
-	} while (ptr < &data.ctx.S[3][0xFF]);
+	} while (ptr < &data.ctx.S[3][0xFF]); \
+} while (0)
 #endif
 
 static void

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>1.3. Creating a Database</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="tutorial-arch.html" title="1.2. Architectural Fundamentals" /><link rel="next" href="tutorial-accessdb.html" title="1.4. Accessing a Database" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">1.3. Creating a Database</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="tutorial-arch.html" title="1.2. Architectural Fundamentals">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="tutorial-start.html" title="Chapter 1. Getting Started">Up</a></td><th width="60%" align="center">Chapter 1. Getting Started</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="tutorial-accessdb.html" title="1.4. Accessing a Database">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TUTORIAL-CREATEDB"><div class="titlepage"><div><div><h2 class="title" style="clear: both">1.3. Creating a Database</h2></div></div></div><a id="id-1.4.3.4.2" class="indexterm"></a><a id="id-1.4.3.4.3" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>1.3. Creating a Database</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="tutorial-arch.html" title="1.2. Architectural Fundamentals" /><link rel="next" href="tutorial-accessdb.html" title="1.4. Accessing a Database" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">1.3. Creating a Database</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="tutorial-arch.html" title="1.2. Architectural Fundamentals">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="tutorial-start.html" title="Chapter 1. Getting Started">Up</a></td><th width="60%" align="center">Chapter 1. Getting Started</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="tutorial-accessdb.html" title="1.4. Accessing a Database">Next</a></td></tr></table><hr /></div><div class="sect1" id="TUTORIAL-CREATEDB"><div class="titlepage"><div><div><h2 class="title" style="clear: both">1.3. Creating a Database <a href="#TUTORIAL-CREATEDB" class="id_link">#</a></h2></div></div></div><a id="id-1.4.3.4.2" class="indexterm"></a><a id="id-1.4.3.4.3" class="indexterm"></a><p>
     The first test to see whether you can access the database server
     is to try to create a database.  A running
     <span class="productname">PostgreSQL</span> server can manage many
@@ -34,23 +34,22 @@ createdb: command not found
    </p><p>
     Another response could be this:
 </p><pre class="screen">
-createdb: could not connect to database postgres: could not connect to server: No such file or directory
-        Is the server running locally and accepting
-        connections on Unix domain socket "/tmp/.s.PGSQL.5432"?
+createdb: error: connection to server on socket "/tmp/.s.PGSQL.5432" failed: No such file or directory
+        Is the server running locally and accepting connections on that socket?
 </pre><p>
-    This means that the server was not started, or it was not started
-    where <code class="command">createdb</code> expected it.  Again, check the
+    This means that the server was not started, or it is not listening
+    where <code class="command">createdb</code> expects to contact it.  Again, check the
     installation instructions or consult the administrator.
    </p><p>
     Another response could be this:
 </p><pre class="screen">
-createdb: could not connect to database postgres: FATAL:  role "joe" does not exist
+createdb: error: connection to server on socket "/tmp/.s.PGSQL.5432" failed: FATAL:  role "joe" does not exist
 </pre><p>
     where your own login name is mentioned.  This will happen if the
     administrator has not created a <span class="productname">PostgreSQL</span> user account
     for you.  (<span class="productname">PostgreSQL</span> user accounts are distinct from
     operating system user accounts.)  If you are the administrator, see
-    <a class="xref" href="user-manag.html" title="Chapter 21. Database Roles">Chapter 21</a> for help creating accounts.  You will need to
+    <a class="xref" href="user-manag.html" title="Chapter 22. Database Roles">Chapter 22</a> for help creating accounts.  You will need to
     become the operating system user under which <span class="productname">PostgreSQL</span>
     was installed (usually <code class="literal">postgres</code>) to create the first user
     account.  It could also be that you were assigned a
@@ -62,7 +61,7 @@ createdb: could not connect to database postgres: FATAL:  role "joe" does not ex
     If you have a user account but it does not have the privileges required to
     create a database, you will see the following:
 </p><pre class="screen">
-createdb: database creation failed: ERROR:  permission denied to create database
+createdb: error: database creation failed: ERROR:  permission denied to create database
 </pre><p>
     Not every user has authorization to create new databases.  If
     <span class="productname">PostgreSQL</span> refuses to create databases
@@ -116,4 +115,4 @@ createdb: database creation failed: ERROR:  permission denied to create database
       create databases.  Instead of logging in as that user you can
       also specify the <code class="option">-U</code> option everywhere to select
       a <span class="productname">PostgreSQL</span> user name to connect as.
-     </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="tutorial-arch.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="tutorial-start.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="tutorial-accessdb.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">1.2. Architectural Fundamentals </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 1.4. Accessing a Database</td></tr></table></div></body></html>
+     </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="tutorial-arch.html" title="1.2. Architectural Fundamentals">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="tutorial-start.html" title="Chapter 1. Getting Started">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="tutorial-accessdb.html" title="1.4. Accessing a Database">Next</a></td></tr><tr><td width="40%" align="left" valign="top">1.2. Architectural Fundamentals </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 1.4. Accessing a Database</td></tr></table></div></body></html>

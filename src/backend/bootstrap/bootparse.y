@@ -4,7 +4,7 @@
  * bootparse.y
  *	  yacc grammar for the "bootstrap" mode (BKI file format)
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -18,16 +18,10 @@
 
 #include <unistd.h>
 
-#include "access/attnum.h"
-#include "access/htup.h"
-#include "access/itup.h"
-#include "access/tupdesc.h"
 #include "bootstrap/bootstrap.h"
-#include "catalog/catalog.h"
 #include "catalog/heap.h"
 #include "catalog/namespace.h"
 #include "catalog/pg_am.h"
-#include "catalog/pg_attribute.h"
 #include "catalog/pg_authid.h"
 #include "catalog/pg_class.h"
 #include "catalog/pg_namespace.h"
@@ -36,29 +30,13 @@
 #include "commands/defrem.h"
 #include "miscadmin.h"
 #include "nodes/makefuncs.h"
-#include "nodes/nodes.h"
-#include "nodes/parsenodes.h"
-#include "nodes/pg_list.h"
-#include "nodes/primnodes.h"
-#include "rewrite/prs2lock.h"
-#include "storage/block.h"
-#include "storage/fd.h"
-#include "storage/ipc.h"
-#include "storage/itemptr.h"
-#include "storage/off.h"
-#include "storage/smgr.h"
-#include "tcop/dest.h"
 #include "utils/memutils.h"
-#include "utils/rel.h"
 
 
 /*
  * Bison doesn't allocate anything that needs to live across parser calls,
  * so we can easily have it use palloc instead of malloc.  This prevents
- * memory leaks if we error out during parsing.  Note this only works with
- * bison >= 2.0.  However, in bison 1.875 the default is to use alloca()
- * if possible, so there's not really much problem anyhow, at least if
- * you're building with gcc.
+ * memory leaks if we error out during parsing.
  */
 #define YYMALLOC palloc
 #define YYFREE   pfree
@@ -113,8 +91,8 @@ static int num_columns_read = 0;
 %type <list>  boot_index_params
 %type <ielem> boot_index_param
 %type <str>   boot_ident
-%type <ival>  optbootstrap optsharedrelation optwithoutoids boot_column_nullness
-%type <oidval> oidspec optoideq optrowtypeoid
+%type <ival>  optbootstrap optsharedrelation boot_column_nullness
+%type <oidval> oidspec optrowtypeoid
 
 %token <str> ID
 %token COMMA EQUALS LPAREN RPAREN
@@ -123,7 +101,7 @@ static int num_columns_read = 0;
 /* All the rest are unreserved, and should be handled in boot_ident! */
 %token <kw> OPEN XCLOSE XCREATE INSERT_TUPLE
 %token <kw> XDECLARE INDEX ON USING XBUILD INDICES UNIQUE XTOAST
-%token <kw> OBJ_ID XBOOTSTRAP XSHARED_RELATION XWITHOUT_OIDS XROWTYPE_OID
+%token <kw> OBJ_ID XBOOTSTRAP XSHARED_RELATION XROWTYPE_OID
 %token <kw> XFORCE XNOT XNULL
 
 %start TopLevel
@@ -170,7 +148,7 @@ Boot_CloseStmt:
 		;
 
 Boot_CreateStmt:
-		  XCREATE boot_ident oidspec optbootstrap optsharedrelation optwithoutoids optrowtypeoid LPAREN
+		  XCREATE boot_ident oidspec optbootstrap optsharedrelation optrowtypeoid LPAREN
 				{
 					do_start();
 					numattr = 0;
@@ -186,13 +164,13 @@ Boot_CreateStmt:
 				}
 		  RPAREN
 				{
-					TupleDesc tupdesc;
-					bool	shared_relation;
-					bool	mapped_relation;
+					TupleDesc	tupdesc;
+					bool		shared_relation;
+					bool		mapped_relation;
 
 					do_start();
 
-					tupdesc = CreateTupleDesc(numattr, !($6), attrtypes);
+					tupdesc = CreateTupleDesc(numattr, attrtypes);
 
 					shared_relation = $5;
 
@@ -209,6 +187,9 @@ Boot_CreateStmt:
 
 					if ($4)
 					{
+						TransactionId relfrozenxid;
+						MultiXactId relminmxid;
+
 						if (boot_reldesc)
 						{
 							elog(DEBUG4, "create bootstrap: warning, open relation exists, closing first");
@@ -220,33 +201,36 @@ Boot_CreateStmt:
 												   shared_relation ? GLOBALTABLESPACE_OID : 0,
 												   $3,
 												   InvalidOid,
+												   HEAP_TABLE_AM_OID,
 												   tupdesc,
 												   RELKIND_RELATION,
 												   RELPERSISTENCE_PERMANENT,
 												   shared_relation,
 												   mapped_relation,
+												   true,
+												   &relfrozenxid,
+												   &relminmxid,
 												   true);
 						elog(DEBUG4, "bootstrap relation created");
 					}
 					else
 					{
-						Oid id;
+						Oid			id;
 
 						id = heap_create_with_catalog($2,
 													  PG_CATALOG_NAMESPACE,
 													  shared_relation ? GLOBALTABLESPACE_OID : 0,
 													  $3,
-													  $7,
+													  $6,
 													  InvalidOid,
 													  BOOTSTRAP_SUPERUSERID,
+													  HEAP_TABLE_AM_OID,
 													  tupdesc,
 													  NIL,
 													  RELKIND_RELATION,
 													  RELPERSISTENCE_PERMANENT,
 													  shared_relation,
 													  mapped_relation,
-													  true,
-													  0,
 													  ONCOMMIT_NOOP,
 													  (Datum) 0,
 													  false,
@@ -261,13 +245,10 @@ Boot_CreateStmt:
 		;
 
 Boot_InsertStmt:
-		  INSERT_TUPLE optoideq
+		  INSERT_TUPLE
 				{
 					do_start();
-					if ($2)
-						elog(DEBUG4, "inserting row with oid %u", $2);
-					else
-						elog(DEBUG4, "inserting row");
+					elog(DEBUG4, "inserting row");
 					num_columns_read = 0;
 				}
 		  LPAREN boot_column_val_list RPAREN
@@ -277,7 +258,7 @@ Boot_InsertStmt:
 							 numattr, num_columns_read);
 					if (boot_reldesc == NULL)
 						elog(FATAL, "relation not open");
-					InsertOneTuple($2);
+					InsertOneTuple();
 					do_end();
 				}
 		;
@@ -285,8 +266,8 @@ Boot_InsertStmt:
 Boot_DeclareIndexStmt:
 		  XDECLARE INDEX boot_ident oidspec ON boot_ident USING boot_ident LPAREN boot_index_params RPAREN
 				{
-					IndexStmt *stmt = makeNode(IndexStmt);
-					Oid		relationId;
+					IndexStmt  *stmt = makeNode(IndexStmt);
+					Oid			relationId;
 
 					elog(DEBUG4, "creating index \"%s\"", $3);
 
@@ -303,7 +284,9 @@ Boot_DeclareIndexStmt:
 					stmt->excludeOpNames = NIL;
 					stmt->idxcomment = NULL;
 					stmt->indexOid = InvalidOid;
-					stmt->oldNode = InvalidOid;
+					stmt->oldNumber = InvalidRelFileNumber;
+					stmt->oldCreateSubid = InvalidSubTransactionId;
+					stmt->oldFirstRelfilelocatorSubid = InvalidSubTransactionId;
 					stmt->unique = false;
 					stmt->primary = false;
 					stmt->isconstraint = false;
@@ -312,6 +295,7 @@ Boot_DeclareIndexStmt:
 					stmt->transformed = false;
 					stmt->concurrent = false;
 					stmt->if_not_exists = false;
+					stmt->reset_default_tblspc = false;
 
 					/* locks and races need not concern us in bootstrap mode */
 					relationId = RangeVarGetRelid(stmt->relation, NoLock,
@@ -322,6 +306,7 @@ Boot_DeclareIndexStmt:
 								$4,
 								InvalidOid,
 								InvalidOid,
+								-1,
 								false,
 								false,
 								false,
@@ -334,8 +319,8 @@ Boot_DeclareIndexStmt:
 Boot_DeclareUniqueIndexStmt:
 		  XDECLARE UNIQUE INDEX boot_ident oidspec ON boot_ident USING boot_ident LPAREN boot_index_params RPAREN
 				{
-					IndexStmt *stmt = makeNode(IndexStmt);
-					Oid		relationId;
+					IndexStmt  *stmt = makeNode(IndexStmt);
+					Oid			relationId;
 
 					elog(DEBUG4, "creating unique index \"%s\"", $4);
 
@@ -352,7 +337,9 @@ Boot_DeclareUniqueIndexStmt:
 					stmt->excludeOpNames = NIL;
 					stmt->idxcomment = NULL;
 					stmt->indexOid = InvalidOid;
-					stmt->oldNode = InvalidOid;
+					stmt->oldNumber = InvalidRelFileNumber;
+					stmt->oldCreateSubid = InvalidSubTransactionId;
+					stmt->oldFirstRelfilelocatorSubid = InvalidSubTransactionId;
 					stmt->unique = true;
 					stmt->primary = false;
 					stmt->isconstraint = false;
@@ -361,6 +348,7 @@ Boot_DeclareUniqueIndexStmt:
 					stmt->transformed = false;
 					stmt->concurrent = false;
 					stmt->if_not_exists = false;
+					stmt->reset_default_tblspc = false;
 
 					/* locks and races need not concern us in bootstrap mode */
 					relationId = RangeVarGetRelid(stmt->relation, NoLock,
@@ -371,6 +359,7 @@ Boot_DeclareUniqueIndexStmt:
 								$5,
 								InvalidOid,
 								InvalidOid,
+								-1,
 								false,
 								false,
 								false,
@@ -410,7 +399,8 @@ boot_index_params:
 boot_index_param:
 		boot_ident boot_ident
 				{
-					IndexElem *n = makeNode(IndexElem);
+					IndexElem  *n = makeNode(IndexElem);
+
 					n->name = $1;
 					n->expr = NULL;
 					n->indexcolname = NULL;
@@ -430,11 +420,6 @@ optbootstrap:
 optsharedrelation:
 			XSHARED_RELATION	{ $$ = 1; }
 		|						{ $$ = 0; }
-		;
-
-optwithoutoids:
-			XWITHOUT_OIDS	{ $$ = 1; }
-		|					{ $$ = 0; }
 		;
 
 optrowtypeoid:
@@ -464,11 +449,6 @@ boot_column_nullness:
 
 oidspec:
 			boot_ident							{ $$ = atooid($1); }
-		;
-
-optoideq:
-			OBJ_ID EQUALS oidspec				{ $$ = $3; }
-		|										{ $$ = InvalidOid; }
 		;
 
 boot_column_val_list:
@@ -501,12 +481,9 @@ boot_ident:
 		| OBJ_ID		{ $$ = pstrdup($1); }
 		| XBOOTSTRAP	{ $$ = pstrdup($1); }
 		| XSHARED_RELATION	{ $$ = pstrdup($1); }
-		| XWITHOUT_OIDS	{ $$ = pstrdup($1); }
 		| XROWTYPE_OID	{ $$ = pstrdup($1); }
 		| XFORCE		{ $$ = pstrdup($1); }
 		| XNOT			{ $$ = pstrdup($1); }
 		| XNULL			{ $$ = pstrdup($1); }
 		;
 %%
-
-#include "bootscanner.c"

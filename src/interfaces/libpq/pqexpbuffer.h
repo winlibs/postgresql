@@ -15,7 +15,7 @@
  * a usable vsnprintf(), then a copy of our own implementation of it will
  * be linked into libpq.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/interfaces/libpq/pqexpbuffer.h
@@ -158,6 +158,16 @@ extern void printfPQExpBuffer(PQExpBuffer str, const char *fmt,...) pg_attribute
 extern void appendPQExpBuffer(PQExpBuffer str, const char *fmt,...) pg_attribute_printf(2, 3);
 
 /*------------------------
+ * appendPQExpBufferVA
+ * Attempt to format data and append it to str.  Returns true if done
+ * (either successful or hard failure), false if need to retry.
+ *
+ * Caution: callers must be sure to preserve their entry-time errno
+ * when looping, in case the fmt contains "%m".
+ */
+extern bool appendPQExpBufferVA(PQExpBuffer str, const char *fmt, va_list args) pg_attribute_printf(2, 0);
+
+/*------------------------
  * appendPQExpBufferStr
  * Append the given string to a PQExpBuffer, allocating more space
  * if necessary.
@@ -177,6 +187,6 @@ extern void appendPQExpBufferChar(PQExpBuffer str, char ch);
  * if necessary.
  */
 extern void appendBinaryPQExpBuffer(PQExpBuffer str,
-						const char *data, size_t datalen);
+									const char *data, size_t datalen);
 
 #endif							/* PQEXPBUFFER_H */

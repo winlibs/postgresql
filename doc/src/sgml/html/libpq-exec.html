@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>34.3. Command Execution Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="libpq-status.html" title="34.2. Connection Status Functions" /><link rel="next" href="libpq-async.html" title="34.4. Asynchronous Command Processing" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">34.3. Command Execution Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="libpq-status.html" title="34.2. Connection Status Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="libpq.html" title="Chapter 34. libpq - C Library">Up</a></td><th width="60%" align="center">Chapter 34. <span xmlns="http://www.w3.org/1999/xhtml" class="application">libpq</span> - C Library</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="libpq-async.html" title="34.4. Asynchronous Command Processing">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="LIBPQ-EXEC"><div class="titlepage"><div><div><h2 class="title" style="clear: both">34.3. Command Execution Functions</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="libpq-exec.html#LIBPQ-EXEC-MAIN">34.3.1. Main Functions</a></span></dt><dt><span class="sect2"><a href="libpq-exec.html#LIBPQ-EXEC-SELECT-INFO">34.3.2. Retrieving Query Result Information</a></span></dt><dt><span class="sect2"><a href="libpq-exec.html#LIBPQ-EXEC-NONSELECT">34.3.3. Retrieving Other Result Information</a></span></dt><dt><span class="sect2"><a href="libpq-exec.html#LIBPQ-EXEC-ESCAPE-STRING">34.3.4. Escaping Strings for Inclusion in SQL Commands</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>34.3. Command Execution Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="libpq-status.html" title="34.2. Connection Status Functions" /><link rel="next" href="libpq-async.html" title="34.4. Asynchronous Command Processing" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">34.3. Command Execution Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="libpq-status.html" title="34.2. Connection Status Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="libpq.html" title="Chapter 34. libpq — C Library">Up</a></td><th width="60%" align="center">Chapter 34. <span class="application">libpq</span> — C Library</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="libpq-async.html" title="34.4. Asynchronous Command Processing">Next</a></td></tr></table><hr /></div><div class="sect1" id="LIBPQ-EXEC"><div class="titlepage"><div><div><h2 class="title" style="clear: both">34.3. Command Execution Functions <a href="#LIBPQ-EXEC" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="libpq-exec.html#LIBPQ-EXEC-MAIN">34.3.1. Main Functions</a></span></dt><dt><span class="sect2"><a href="libpq-exec.html#LIBPQ-EXEC-SELECT-INFO">34.3.2. Retrieving Query Result Information</a></span></dt><dt><span class="sect2"><a href="libpq-exec.html#LIBPQ-EXEC-NONSELECT">34.3.3. Retrieving Other Result Information</a></span></dt><dt><span class="sect2"><a href="libpq-exec.html#LIBPQ-EXEC-ESCAPE-STRING">34.3.4. Escaping Strings for Inclusion in SQL Commands</a></span></dt></dl></div><p>
    Once a connection to a database server has been successfully
    established, the functions described here are used to perform
    SQL queries and commands.
-  </p><div class="sect2" id="LIBPQ-EXEC-MAIN"><div class="titlepage"><div><div><h3 class="title">34.3.1. Main Functions</h3></div></div></div><p>
-    </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQEXEC"><span class="term">
-       <code class="function">PQexec</code>
-       <a id="id-1.7.3.10.3.2.1.1.1.2" class="indexterm"></a>
-      </span></dt><dd><p>
+  </p><div class="sect2" id="LIBPQ-EXEC-MAIN"><div class="titlepage"><div><div><h3 class="title">34.3.1. Main Functions <a href="#LIBPQ-EXEC-MAIN" class="id_link">#</a></h3></div></div></div><p>
+    </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQEXEC"><span class="term"><code class="function">PQexec</code><a id="id-1.7.3.10.3.2.1.1.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQEXEC" class="id_link">#</a></dt><dd><p>
         Submits a command to the server and waits for the result.
 
 </p><pre class="synopsis">
@@ -17,20 +14,20 @@ PGresult *PQexec(PGconn *conn, const char *command);
         Returns a <code class="structname">PGresult</code> pointer or possibly a null
         pointer.  A non-null pointer will generally be returned except in
         out-of-memory conditions or serious errors such as inability to send
-        the command to the server.  The <code class="function">PQresultStatus</code> function
+        the command to the server.  The <a class="xref" href="libpq-exec.html#LIBPQ-PQRESULTSTATUS"><code class="function">PQresultStatus</code></a> function
         should be called to check the return value for any errors (including
         the value of a null pointer, in which case it will return
         <code class="symbol">PGRES_FATAL_ERROR</code>).  Use
-        <code class="function">PQerrorMessage</code> to get more information about such
+        <a class="xref" href="libpq-status.html#LIBPQ-PQERRORMESSAGE"><code class="function">PQerrorMessage</code></a> to get more information about such
         errors.
        </p></dd></dl></div><p>
 
     The command string can include multiple SQL commands
     (separated by semicolons).  Multiple queries sent in a single
-    <code class="function">PQexec</code> call are processed in a single transaction, unless
+    <a class="xref" href="libpq-exec.html#LIBPQ-PQEXEC"><code class="function">PQexec</code></a> call are processed in a single transaction, unless
     there are explicit <code class="command">BEGIN</code>/<code class="command">COMMIT</code>
     commands included in the query string to divide it into multiple
-    transactions.  (See <a class="xref" href="protocol-flow.html#PROTOCOL-FLOW-MULTI-STATEMENT" title="53.2.2.1. Multiple Statements in a Simple Query">Section 53.2.2.1</a>
+    transactions.  (See <a class="xref" href="protocol-flow.html#PROTOCOL-FLOW-MULTI-STATEMENT" title="55.2.2.1. Multiple Statements in a Simple Query">Section 55.2.2.1</a>
     for more details about how the server handles multi-query strings.)
     Note however that the returned
     <code class="structname">PGresult</code> structure describes only the result
@@ -38,10 +35,7 @@ PGresult *PQexec(PGconn *conn, const char *command);
     commands fail, processing of the string stops with it and the returned
     <code class="structname">PGresult</code> describes the error condition.
    </p><p>
-    </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQEXECPARAMS"><span class="term">
-       <code class="function">PQexecParams</code>
-       <a id="id-1.7.3.10.3.3.1.1.1.2" class="indexterm"></a>
-      </span></dt><dd><p>
+    </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQEXECPARAMS"><span class="term"><code class="function">PQexecParams</code><a id="id-1.7.3.10.3.3.1.1.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQEXECPARAMS" class="id_link">#</a></dt><dd><p>
         Submits a command to the server and waits for the result,
         with the ability to pass parameters separately from the SQL
         command text.
@@ -57,11 +51,10 @@ PGresult *PQexecParams(PGconn *conn,
                        int resultFormat);
 </pre><p>
        </p><p>
-        <code class="function">PQexecParams</code> is like <code class="function">PQexec</code>, but offers additional
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQEXECPARAMS"><code class="function">PQexecParams</code></a> is like <a class="xref" href="libpq-exec.html#LIBPQ-PQEXEC"><code class="function">PQexec</code></a>, but offers additional
         functionality: parameter values can be specified separately from the command
         string proper, and query results can be requested in either text or binary
-        format.  <code class="function">PQexecParams</code> is supported only in protocol 3.0 and later
-        connections; it will fail when using protocol 2.0.
+        format.
        </p><p>
         The function arguments are:
 
@@ -116,12 +109,12 @@ PGresult *PQexecParams(PGconn *conn,
            </p></dd></dl></div><p>
        </p></dd></dl></div><p>
    </p><p>
-    The primary advantage of <code class="function">PQexecParams</code> over
-    <code class="function">PQexec</code> is that parameter values can be separated from the
+    The primary advantage of <a class="xref" href="libpq-exec.html#LIBPQ-PQEXECPARAMS"><code class="function">PQexecParams</code></a> over
+    <a class="xref" href="libpq-exec.html#LIBPQ-PQEXEC"><code class="function">PQexec</code></a> is that parameter values can be separated from the
     command string, thus avoiding the need for tedious and error-prone
     quoting and escaping.
    </p><p>
-    Unlike <code class="function">PQexec</code>, <code class="function">PQexecParams</code> allows at most
+    Unlike <a class="xref" href="libpq-exec.html#LIBPQ-PQEXEC"><code class="function">PQexec</code></a>, <a class="xref" href="libpq-exec.html#LIBPQ-PQEXECPARAMS"><code class="function">PQexecParams</code></a> allows at most
     one SQL command in the given string.  (There can be semicolons in it,
     but not more than one nonempty command.)  This is a limitation of the
     underlying protocol, but has some usefulness as an extra defense against
@@ -143,9 +136,7 @@ SELECT * FROM mytable WHERE x = $1::bigint;
      binary format has less redundancy than text format and so there is less chance
      that the server will detect a type mismatch mistake for you.
     </p></div><p>
-    </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQPREPARE"><span class="term"><code class="function">PQprepare</code>
-       <a id="id-1.7.3.10.3.7.1.1.1.2" class="indexterm"></a>
-      </span></dt><dd><p>
+    </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQPREPARE"><span class="term"><code class="function">PQprepare</code><a id="id-1.7.3.10.3.7.1.1.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQPREPARE" class="id_link">#</a></dt><dd><p>
         Submits a request to create a prepared statement with the
         given parameters, and waits for completion.
 </p><pre class="synopsis">
@@ -156,12 +147,10 @@ PGresult *PQprepare(PGconn *conn,
                     const Oid *paramTypes);
 </pre><p>
        </p><p>
-        <code class="function">PQprepare</code> creates a prepared statement for later
-        execution with <code class="function">PQexecPrepared</code>.  This feature allows
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQPREPARE"><code class="function">PQprepare</code></a> creates a prepared statement for later
+        execution with <a class="xref" href="libpq-exec.html#LIBPQ-PQEXECPREPARED"><code class="function">PQexecPrepared</code></a>.  This feature allows
         commands to be executed repeatedly without being parsed and
         planned each time;  see <a class="xref" href="sql-prepare.html" title="PREPARE"><span class="refentrytitle">PREPARE</span></a> for details.
-        <code class="function">PQprepare</code> is supported only in protocol 3.0 and later
-        connections; it will fail when using protocol 2.0.
        </p><p>
         The function creates a prepared statement named
         <em class="parameter"><code>stmtName</code></em> from the <em class="parameter"><code>query</code></em> string, which
@@ -182,27 +171,24 @@ PGresult *PQprepare(PGconn *conn,
         for an untyped literal string.  Also, the query can use parameter
         symbols with numbers higher than <em class="parameter"><code>nParams</code></em>; data types
         will be inferred for these symbols as well.  (See
-        <code class="function">PQdescribePrepared</code> for a means to find out
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQDESCRIBEPREPARED"><code class="function">PQdescribePrepared</code></a> for a means to find out
         what data types were inferred.)
        </p><p>
-        As with <code class="function">PQexec</code>, the result is normally a
+        As with <a class="xref" href="libpq-exec.html#LIBPQ-PQEXEC"><code class="function">PQexec</code></a>, the result is normally a
         <code class="structname">PGresult</code> object whose contents indicate
         server-side success or failure.  A null result indicates
         out-of-memory or inability to send the command at all.  Use
-        <code class="function">PQerrorMessage</code> to get more information about
+        <a class="xref" href="libpq-status.html#LIBPQ-PQERRORMESSAGE"><code class="function">PQerrorMessage</code></a> to get more information about
         such errors.
        </p></dd></dl></div><p>
 
-    Prepared statements for use with <code class="function">PQexecPrepared</code> can also
+    Prepared statements for use with <a class="xref" href="libpq-exec.html#LIBPQ-PQEXECPREPARED"><code class="function">PQexecPrepared</code></a> can also
     be created by executing SQL <a class="xref" href="sql-prepare.html" title="PREPARE"><span class="refentrytitle">PREPARE</span></a>
     statements.  Also, although there is no <span class="application">libpq</span>
     function for deleting a prepared statement, the SQL <a class="xref" href="sql-deallocate.html" title="DEALLOCATE"><span class="refentrytitle">DEALLOCATE</span></a> statement
     can be used for that purpose.
    </p><p>
-    </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQEXECPREPARED"><span class="term">
-       <code class="function">PQexecPrepared</code>
-       <a id="id-1.7.3.10.3.8.1.1.1.2" class="indexterm"></a>
-      </span></dt><dd><p>
+    </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQEXECPREPARED"><span class="term"><code class="function">PQexecPrepared</code><a id="id-1.7.3.10.3.8.1.1.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQEXECPREPARED" class="id_link">#</a></dt><dd><p>
         Sends a request to execute a prepared statement with given
         parameters, and waits for the result.
 </p><pre class="synopsis">
@@ -215,70 +201,58 @@ PGresult *PQexecPrepared(PGconn *conn,
                          int resultFormat);
 </pre><p>
        </p><p>
-        <code class="function">PQexecPrepared</code> is like <code class="function">PQexecParams</code>,
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQEXECPREPARED"><code class="function">PQexecPrepared</code></a> is like <a class="xref" href="libpq-exec.html#LIBPQ-PQEXECPARAMS"><code class="function">PQexecParams</code></a>,
         but the command to be executed is specified by naming a
         previously-prepared statement, instead of giving a query string.
         This feature allows commands that will be used repeatedly to be
         parsed and planned just once, rather than each time they are
         executed.  The statement must have been prepared previously in
-        the current session.  <code class="function">PQexecPrepared</code> is supported
-        only in protocol 3.0 and later connections; it will fail when
-        using protocol 2.0.
+        the current session.
        </p><p>
-        The parameters are identical to <code class="function">PQexecParams</code>, except that the
+        The parameters are identical to <a class="xref" href="libpq-exec.html#LIBPQ-PQEXECPARAMS"><code class="function">PQexecParams</code></a>, except that the
         name of a prepared statement is given instead of a query string, and the
         <em class="parameter"><code>paramTypes[]</code></em> parameter is not present (it is not needed since
         the prepared statement's parameter types were determined when it was created).
-       </p></dd><dt id="LIBPQ-PQDESCRIBEPREPARED"><span class="term">
-       <code class="function">PQdescribePrepared</code>
-       <a id="id-1.7.3.10.3.8.1.2.1.2" class="indexterm"></a>
-      </span></dt><dd><p>
+       </p></dd><dt id="LIBPQ-PQDESCRIBEPREPARED"><span class="term"><code class="function">PQdescribePrepared</code><a id="id-1.7.3.10.3.8.1.2.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQDESCRIBEPREPARED" class="id_link">#</a></dt><dd><p>
         Submits a request to obtain information about the specified
         prepared statement, and waits for completion.
 </p><pre class="synopsis">
 PGresult *PQdescribePrepared(PGconn *conn, const char *stmtName);
 </pre><p>
        </p><p>
-        <code class="function">PQdescribePrepared</code> allows an application to obtain
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQDESCRIBEPREPARED"><code class="function">PQdescribePrepared</code></a> allows an application to obtain
         information about a previously prepared statement.
-        <code class="function">PQdescribePrepared</code> is supported only in protocol 3.0
-        and later connections; it will fail when using protocol 2.0.
        </p><p>
         <em class="parameter"><code>stmtName</code></em> can be <code class="literal">""</code> or <code class="symbol">NULL</code> to reference
         the unnamed statement, otherwise it must be the name of an existing
         prepared statement.  On success, a <code class="structname">PGresult</code> with
         status <code class="literal">PGRES_COMMAND_OK</code> is returned.  The
-        functions <code class="function">PQnparams</code> and
-        <code class="function">PQparamtype</code> can be applied to this
+        functions <a class="xref" href="libpq-exec.html#LIBPQ-PQNPARAMS"><code class="function">PQnparams</code></a> and
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQPARAMTYPE"><code class="function">PQparamtype</code></a> can be applied to this
         <code class="structname">PGresult</code> to obtain information about the parameters
         of the prepared statement, and the functions
-        <code class="function">PQnfields</code>, <code class="function">PQfname</code>,
-        <code class="function">PQftype</code>, etc provide information about the
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQNFIELDS"><code class="function">PQnfields</code></a>, <a class="xref" href="libpq-exec.html#LIBPQ-PQFNAME"><code class="function">PQfname</code></a>,
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQFTYPE"><code class="function">PQftype</code></a>, etc. provide information about the
         result columns (if any) of the statement.
-       </p></dd><dt id="LIBPQ-PQDESCRIBEPORTAL"><span class="term">
-       <code class="function">PQdescribePortal</code>
-       <a id="id-1.7.3.10.3.8.1.3.1.2" class="indexterm"></a>
-      </span></dt><dd><p>
+       </p></dd><dt id="LIBPQ-PQDESCRIBEPORTAL"><span class="term"><code class="function">PQdescribePortal</code><a id="id-1.7.3.10.3.8.1.3.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQDESCRIBEPORTAL" class="id_link">#</a></dt><dd><p>
         Submits a request to obtain information about the specified
         portal, and waits for completion.
 </p><pre class="synopsis">
 PGresult *PQdescribePortal(PGconn *conn, const char *portalName);
 </pre><p>
        </p><p>
-        <code class="function">PQdescribePortal</code> allows an application to obtain
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQDESCRIBEPORTAL"><code class="function">PQdescribePortal</code></a> allows an application to obtain
         information about a previously created portal.
         (<span class="application">libpq</span> does not provide any direct access to
         portals, but you can use this function to inspect the properties
         of a cursor created with a <code class="command">DECLARE CURSOR</code> SQL command.)
-        <code class="function">PQdescribePortal</code> is supported only in protocol 3.0
-        and later connections; it will fail when using protocol 2.0.
        </p><p>
         <em class="parameter"><code>portalName</code></em> can be <code class="literal">""</code> or <code class="symbol">NULL</code> to reference
         the unnamed portal, otherwise it must be the name of an existing
         portal.  On success, a <code class="structname">PGresult</code> with status
         <code class="literal">PGRES_COMMAND_OK</code> is returned.  The functions
-        <code class="function">PQnfields</code>, <code class="function">PQfname</code>,
-        <code class="function">PQftype</code>, etc can be applied to the
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQNFIELDS"><code class="function">PQnfields</code></a>, <a class="xref" href="libpq-exec.html#LIBPQ-PQFNAME"><code class="function">PQfname</code></a>,
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQFTYPE"><code class="function">PQftype</code></a>, etc. can be applied to the
         <code class="structname">PGresult</code> to obtain information about the result
         columns (if any) of the portal.
        </p></dd></dl></div><p>
@@ -292,43 +266,52 @@ PGresult *PQdescribePortal(PGconn *conn, const char *portalName);
     fields of the <code class="structname">PGresult</code> structure because they
     are subject to change in the future.
 
-    </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQRESULTSTATUS"><span class="term">
-       <code class="function">PQresultStatus</code>
-       <a id="id-1.7.3.10.3.9.7.1.1.2" class="indexterm"></a>
-      </span></dt><dd><p>
+    </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQRESULTSTATUS"><span class="term"><code class="function">PQresultStatus</code><a id="id-1.7.3.10.3.9.7.1.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQRESULTSTATUS" class="id_link">#</a></dt><dd><p>
         Returns the result status of the command.
 </p><pre class="synopsis">
 ExecStatusType PQresultStatus(const PGresult *res);
 </pre><p>
        </p><p>
-        <code class="function">PQresultStatus</code> can return one of the following values:
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQRESULTSTATUS"><code class="function">PQresultStatus</code></a> can return one of the following values:
 
-        </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PGRES-EMPTY-QUERY"><span class="term"><code class="literal">PGRES_EMPTY_QUERY</code></span></dt><dd><p>
+        </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PGRES-EMPTY-QUERY"><span class="term"><code class="literal">PGRES_EMPTY_QUERY</code></span> <a href="#LIBPQ-PGRES-EMPTY-QUERY" class="id_link">#</a></dt><dd><p>
             The string sent to the server was empty.
-           </p></dd><dt id="LIBPQ-PGRES-COMMAND-OK"><span class="term"><code class="literal">PGRES_COMMAND_OK</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PGRES-COMMAND-OK"><span class="term"><code class="literal">PGRES_COMMAND_OK</code></span> <a href="#LIBPQ-PGRES-COMMAND-OK" class="id_link">#</a></dt><dd><p>
             Successful completion of a command returning no data.
-           </p></dd><dt id="LIBPQ-PGRES-TUPLES-OK"><span class="term"><code class="literal">PGRES_TUPLES_OK</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PGRES-TUPLES-OK"><span class="term"><code class="literal">PGRES_TUPLES_OK</code></span> <a href="#LIBPQ-PGRES-TUPLES-OK" class="id_link">#</a></dt><dd><p>
             Successful completion of a command returning data (such as
             a <code class="command">SELECT</code> or <code class="command">SHOW</code>).
-           </p></dd><dt id="LIBPQ-PGRES-COPY-OUT"><span class="term"><code class="literal">PGRES_COPY_OUT</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PGRES-COPY-OUT"><span class="term"><code class="literal">PGRES_COPY_OUT</code></span> <a href="#LIBPQ-PGRES-COPY-OUT" class="id_link">#</a></dt><dd><p>
             Copy Out (from server) data transfer started.
-           </p></dd><dt id="LIBPQ-PGRES-COPY-IN"><span class="term"><code class="literal">PGRES_COPY_IN</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PGRES-COPY-IN"><span class="term"><code class="literal">PGRES_COPY_IN</code></span> <a href="#LIBPQ-PGRES-COPY-IN" class="id_link">#</a></dt><dd><p>
             Copy In (to server) data transfer started.
-           </p></dd><dt id="LIBPQ-PGRES-BAD-RESPONSE"><span class="term"><code class="literal">PGRES_BAD_RESPONSE</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PGRES-BAD-RESPONSE"><span class="term"><code class="literal">PGRES_BAD_RESPONSE</code></span> <a href="#LIBPQ-PGRES-BAD-RESPONSE" class="id_link">#</a></dt><dd><p>
             The server's response was not understood.
-           </p></dd><dt id="LIBPQ-PGRES-NONFATAL-ERROR"><span class="term"><code class="literal">PGRES_NONFATAL_ERROR</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PGRES-NONFATAL-ERROR"><span class="term"><code class="literal">PGRES_NONFATAL_ERROR</code></span> <a href="#LIBPQ-PGRES-NONFATAL-ERROR" class="id_link">#</a></dt><dd><p>
             A nonfatal error (a notice or warning) occurred.
-           </p></dd><dt id="LIBPQ-PGRES-FATAL-ERROR"><span class="term"><code class="literal">PGRES_FATAL_ERROR</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PGRES-FATAL-ERROR"><span class="term"><code class="literal">PGRES_FATAL_ERROR</code></span> <a href="#LIBPQ-PGRES-FATAL-ERROR" class="id_link">#</a></dt><dd><p>
             A fatal error occurred.
-           </p></dd><dt id="LIBPQ-PGRES-COPY-BOTH"><span class="term"><code class="literal">PGRES_COPY_BOTH</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PGRES-COPY-BOTH"><span class="term"><code class="literal">PGRES_COPY_BOTH</code></span> <a href="#LIBPQ-PGRES-COPY-BOTH" class="id_link">#</a></dt><dd><p>
             Copy In/Out (to and from server) data transfer started.  This
             feature is currently used only for streaming replication,
             so this status should not occur in ordinary applications.
-           </p></dd><dt id="LIBPQ-PGRES-SINGLE-TUPLE"><span class="term"><code class="literal">PGRES_SINGLE_TUPLE</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PGRES-SINGLE-TUPLE"><span class="term"><code class="literal">PGRES_SINGLE_TUPLE</code></span> <a href="#LIBPQ-PGRES-SINGLE-TUPLE" class="id_link">#</a></dt><dd><p>
             The <code class="structname">PGresult</code> contains a single result tuple
             from the current command.  This status occurs only when
             single-row mode has been selected for the query
-            (see <a class="xref" href="libpq-single-row-mode.html" title="34.5. Retrieving Query Results Row-By-Row">Section 34.5</a>).
+            (see <a class="xref" href="libpq-single-row-mode.html" title="34.6. Retrieving Query Results Row-by-Row">Section 34.6</a>).
+           </p></dd><dt id="LIBPQ-PGRES-PIPELINE-SYNC"><span class="term"><code class="literal">PGRES_PIPELINE_SYNC</code></span> <a href="#LIBPQ-PGRES-PIPELINE-SYNC" class="id_link">#</a></dt><dd><p>
+            The <code class="structname">PGresult</code> represents a
+            synchronization point in pipeline mode, requested by
+            <a class="xref" href="libpq-pipeline-mode.html#LIBPQ-PQPIPELINESYNC"><code class="function">PQpipelineSync</code></a>.
+            This status occurs only when pipeline mode has been selected.
+           </p></dd><dt id="LIBPQ-PGRES-PIPELINE-ABORTED"><span class="term"><code class="literal">PGRES_PIPELINE_ABORTED</code></span> <a href="#LIBPQ-PGRES-PIPELINE-ABORTED" class="id_link">#</a></dt><dd><p>
+            The <code class="structname">PGresult</code> represents a pipeline that has
+            received an error from the server.  <code class="function">PQgetResult</code>
+            must be called repeatedly, and each time it will return this status code
+            until the end of the current pipeline, at which point it will return
+            <code class="literal">PGRES_PIPELINE_SYNC</code> and normal processing can
+            resume.
            </p></dd></dl></div><p>
 
         If the result status is <code class="literal">PGRES_TUPLES_OK</code> or
@@ -344,24 +327,18 @@ ExecStatusType PQresultStatus(const PGresult *res);
         indicate a bug in the client software.
        </p><p>
         A result of status <code class="symbol">PGRES_NONFATAL_ERROR</code> will
-        never be returned directly by <code class="function">PQexec</code> or other
+        never be returned directly by <a class="xref" href="libpq-exec.html#LIBPQ-PQEXEC"><code class="function">PQexec</code></a> or other
         query execution functions; results of this kind are instead passed
-        to the notice processor (see <a class="xref" href="libpq-notice-processing.html" title="34.12. Notice Processing">Section 34.12</a>).
-       </p></dd><dt id="LIBPQ-PQRESSTATUS"><span class="term">
-       <code class="function">PQresStatus</code>
-       <a id="id-1.7.3.10.3.9.7.2.1.2" class="indexterm"></a>
-      </span></dt><dd><p>
+        to the notice processor (see <a class="xref" href="libpq-notice-processing.html" title="34.13. Notice Processing">Section 34.13</a>).
+       </p></dd><dt id="LIBPQ-PQRESSTATUS"><span class="term"><code class="function">PQresStatus</code><a id="id-1.7.3.10.3.9.7.2.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQRESSTATUS" class="id_link">#</a></dt><dd><p>
         Converts the enumerated type returned by
-        <code class="function">PQresultStatus</code> into a string constant describing the
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQRESULTSTATUS"><code class="function">PQresultStatus</code></a> into a string constant describing the
         status code. The caller should not free the result.
 
 </p><pre class="synopsis">
 char *PQresStatus(ExecStatusType status);
 </pre><p>
-       </p></dd><dt id="LIBPQ-PQRESULTERRORMESSAGE"><span class="term">
-       <code class="function">PQresultErrorMessage</code>
-       <a id="id-1.7.3.10.3.9.7.3.1.2" class="indexterm"></a>
-      </span></dt><dd><p>
+       </p></dd><dt id="LIBPQ-PQRESULTERRORMESSAGE"><span class="term"><code class="function">PQresultErrorMessage</code><a id="id-1.7.3.10.3.9.7.3.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQRESULTERRORMESSAGE" class="id_link">#</a></dt><dd><p>
         Returns the error message associated with the command, or an empty string
         if there was no error.
 </p><pre class="synopsis">
@@ -370,24 +347,21 @@ char *PQresultErrorMessage(const PGresult *res);
         If there was an error, the returned string will include a trailing
         newline.  The caller should not free the result directly. It will
         be freed when the associated <code class="structname">PGresult</code> handle is
-        passed to <code class="function">PQclear</code>.
+        passed to <a class="xref" href="libpq-exec.html#LIBPQ-PQCLEAR"><code class="function">PQclear</code></a>.
        </p><p>
-        Immediately following a <code class="function">PQexec</code> or
-        <code class="function">PQgetResult</code> call,
-        <code class="function">PQerrorMessage</code> (on the connection) will return
-        the same string as <code class="function">PQresultErrorMessage</code> (on
+        Immediately following a <a class="xref" href="libpq-exec.html#LIBPQ-PQEXEC"><code class="function">PQexec</code></a> or
+        <a class="xref" href="libpq-async.html#LIBPQ-PQGETRESULT"><code class="function">PQgetResult</code></a> call,
+        <a class="xref" href="libpq-status.html#LIBPQ-PQERRORMESSAGE"><code class="function">PQerrorMessage</code></a> (on the connection) will return
+        the same string as <a class="xref" href="libpq-exec.html#LIBPQ-PQRESULTERRORMESSAGE"><code class="function">PQresultErrorMessage</code></a> (on
         the result).  However, a <code class="structname">PGresult</code> will
         retain its error message until destroyed, whereas the connection's
         error message will change when subsequent operations are done.
-        Use <code class="function">PQresultErrorMessage</code> when you want to
+        Use <a class="xref" href="libpq-exec.html#LIBPQ-PQRESULTERRORMESSAGE"><code class="function">PQresultErrorMessage</code></a> when you want to
         know the status associated with a particular
         <code class="structname">PGresult</code>; use
-        <code class="function">PQerrorMessage</code> when you want to know the
+        <a class="xref" href="libpq-status.html#LIBPQ-PQERRORMESSAGE"><code class="function">PQerrorMessage</code></a> when you want to know the
         status from the latest operation on the connection.
-       </p></dd><dt id="LIBPQ-PQRESULTVERBOSEERRORMESSAGE"><span class="term">
-       <code class="function">PQresultVerboseErrorMessage</code>
-       <a id="id-1.7.3.10.3.9.7.4.1.2" class="indexterm"></a>
-      </span></dt><dd><p>
+       </p></dd><dt id="LIBPQ-PQRESULTVERBOSEERRORMESSAGE"><span class="term"><code class="function">PQresultVerboseErrorMessage</code><a id="id-1.7.3.10.3.9.7.4.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQRESULTVERBOSEERRORMESSAGE" class="id_link">#</a></dt><dd><p>
         Returns a reformatted version of the error message associated with
         a <code class="structname">PGresult</code> object.
 </p><pre class="synopsis">
@@ -397,9 +371,9 @@ char *PQresultVerboseErrorMessage(const PGresult *res,
 </pre><p>
         In some situations a client might wish to obtain a more detailed
         version of a previously-reported error.
-        <code class="function">PQresultVerboseErrorMessage</code> addresses this need
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQRESULTVERBOSEERRORMESSAGE"><code class="function">PQresultVerboseErrorMessage</code></a> addresses this need
         by computing the message that would have been produced
-        by <code class="function">PQresultErrorMessage</code> if the specified
+        by <a class="xref" href="libpq-exec.html#LIBPQ-PQRESULTERRORMESSAGE"><code class="function">PQresultErrorMessage</code></a> if the specified
         verbosity settings had been in effect for the connection when the
         given <code class="structname">PGresult</code> was generated.  If
         the <code class="structname">PGresult</code> is not an error result,
@@ -412,7 +386,7 @@ char *PQresultVerboseErrorMessage(const PGresult *res,
         using <code class="function">PQfreemem()</code> when the string is no longer needed.
        </p><p>
         A NULL return is possible if there is insufficient memory.
-       </p></dd><dt id="LIBPQ-PQRESULTERRORFIELD"><span class="term"><code class="function">PQresultErrorField</code><a id="id-1.7.3.10.3.9.7.5.1.2" class="indexterm"></a></span></dt><dd><p>
+       </p></dd><dt id="LIBPQ-PQRESULTERRORFIELD"><span class="term"><code class="function">PQresultErrorField</code><a id="id-1.7.3.10.3.9.7.5.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQRESULTERRORFIELD" class="id_link">#</a></dt><dd><p>
         Returns an individual field of an error report.
 </p><pre class="synopsis">
 char *PQresultErrorField(const PGresult *res, int fieldcode);
@@ -424,16 +398,16 @@ char *PQresultErrorField(const PGresult *res, int fieldcode);
         not include a trailing newline. The caller should not free the
         result directly. It will be freed when the
         associated <code class="structname">PGresult</code> handle is passed to
-        <code class="function">PQclear</code>.
+        <a class="xref" href="libpq-exec.html#LIBPQ-PQCLEAR"><code class="function">PQclear</code></a>.
        </p><p>
         The following field codes are available:
-        </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PG-DIAG-SEVERITY"><span class="term"><code class="symbol">PG_DIAG_SEVERITY</code></span></dt><dd><p>
+        </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PG-DIAG-SEVERITY"><span class="term"><code class="symbol">PG_DIAG_SEVERITY</code></span> <a href="#LIBPQ-PG-DIAG-SEVERITY" class="id_link">#</a></dt><dd><p>
             The severity; the field contents are <code class="literal">ERROR</code>,
             <code class="literal">FATAL</code>, or <code class="literal">PANIC</code> (in an error message),
             or <code class="literal">WARNING</code>, <code class="literal">NOTICE</code>, <code class="literal">DEBUG</code>,
             <code class="literal">INFO</code>, or <code class="literal">LOG</code> (in a notice message), or
             a localized translation of one of these.  Always present.
-           </p></dd><dt id="LIBPQ-PG-DIAG-SEVERITY-NONLOCALIZED"><span class="term"><code class="symbol">PG_DIAG_SEVERITY_NONLOCALIZED</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-SEVERITY-NONLOCALIZED"><span class="term"><code class="symbol">PG_DIAG_SEVERITY_NONLOCALIZED</code></span> <a href="#LIBPQ-PG-DIAG-SEVERITY-NONLOCALIZED" class="id_link">#</a></dt><dd><p>
             The severity; the field contents are <code class="literal">ERROR</code>,
             <code class="literal">FATAL</code>, or <code class="literal">PANIC</code> (in an error message),
             or <code class="literal">WARNING</code>, <code class="literal">NOTICE</code>, <code class="literal">DEBUG</code>,
@@ -442,75 +416,72 @@ char *PQresultErrorField(const PGresult *res, int fieldcode);
             that the contents are never localized.  This is present only in
             reports generated by <span class="productname">PostgreSQL</span> versions 9.6
             and later.
-           </p></dd><dt id="LIBPQ-PG-DIAG-SQLSTATE"><span class="term">
-           <code class="symbol">PG_DIAG_SQLSTATE</code>
-          <a id="id-1.7.3.10.3.9.7.5.2.2.1.3.1.2" class="indexterm"></a>
-          </span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-SQLSTATE"><span class="term"><code class="symbol">PG_DIAG_SQLSTATE</code><a id="id-1.7.3.10.3.9.7.5.2.2.1.3.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PG-DIAG-SQLSTATE" class="id_link">#</a></dt><dd><p>
             The SQLSTATE code for the error. The SQLSTATE code identifies
             the type of error that has occurred; it can be used by
             front-end applications to perform specific operations (such
             as error handling) in response to a particular database error.
             For a list of the possible SQLSTATE codes, see <a class="xref" href="errcodes-appendix.html" title="Appendix A. PostgreSQL Error Codes">Appendix A</a>. This field is not localizable,
             and is always present.
-           </p></dd><dt id="LIBPQ-PG-DIAG-MESSAGE-PRIMARY"><span class="term"><code class="symbol">PG_DIAG_MESSAGE_PRIMARY</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-MESSAGE-PRIMARY"><span class="term"><code class="symbol">PG_DIAG_MESSAGE_PRIMARY</code></span> <a href="#LIBPQ-PG-DIAG-MESSAGE-PRIMARY" class="id_link">#</a></dt><dd><p>
             The primary human-readable error message (typically one line).
             Always present.
-           </p></dd><dt id="LIBPQ-PG-DIAG-MESSAGE-DETAIL"><span class="term"><code class="symbol">PG_DIAG_MESSAGE_DETAIL</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-MESSAGE-DETAIL"><span class="term"><code class="symbol">PG_DIAG_MESSAGE_DETAIL</code></span> <a href="#LIBPQ-PG-DIAG-MESSAGE-DETAIL" class="id_link">#</a></dt><dd><p>
             Detail: an optional secondary error message carrying more
             detail about the problem.  Might run to multiple lines.
-           </p></dd><dt id="LIBPQ-PG-DIAG-MESSAGE-HINT"><span class="term"><code class="symbol">PG_DIAG_MESSAGE_HINT</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-MESSAGE-HINT"><span class="term"><code class="symbol">PG_DIAG_MESSAGE_HINT</code></span> <a href="#LIBPQ-PG-DIAG-MESSAGE-HINT" class="id_link">#</a></dt><dd><p>
             Hint: an optional suggestion what to do about the problem.
             This is intended to differ from detail in that it offers advice
             (potentially inappropriate) rather than hard facts.  Might
             run to multiple lines.
-           </p></dd><dt id="LIBPQ-PG-DIAG-STATEMENT-POSITION"><span class="term"><code class="symbol">PG_DIAG_STATEMENT_POSITION</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-STATEMENT-POSITION"><span class="term"><code class="symbol">PG_DIAG_STATEMENT_POSITION</code></span> <a href="#LIBPQ-PG-DIAG-STATEMENT-POSITION" class="id_link">#</a></dt><dd><p>
             A string containing a decimal integer indicating an error cursor
             position as an index into the original statement string.  The
             first character has index 1, and positions are measured in
             characters not bytes.
-           </p></dd><dt id="LIBPQ-PG-DIAG-INTERNAL-POSITION"><span class="term"><code class="symbol">PG_DIAG_INTERNAL_POSITION</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-INTERNAL-POSITION"><span class="term"><code class="symbol">PG_DIAG_INTERNAL_POSITION</code></span> <a href="#LIBPQ-PG-DIAG-INTERNAL-POSITION" class="id_link">#</a></dt><dd><p>
             This is defined the same as the
             <code class="symbol">PG_DIAG_STATEMENT_POSITION</code> field, but it is used
             when the cursor position refers to an internally generated
             command rather than the one submitted by the client.  The
             <code class="symbol">PG_DIAG_INTERNAL_QUERY</code> field will always appear when
             this field appears.
-           </p></dd><dt id="LIBPQ-PG-DIAG-INTERNAL-QUERY"><span class="term"><code class="symbol">PG_DIAG_INTERNAL_QUERY</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-INTERNAL-QUERY"><span class="term"><code class="symbol">PG_DIAG_INTERNAL_QUERY</code></span> <a href="#LIBPQ-PG-DIAG-INTERNAL-QUERY" class="id_link">#</a></dt><dd><p>
             The text of a failed internally-generated command.  This could
-            be, for example, a SQL query issued by a PL/pgSQL function.
-           </p></dd><dt id="LIBPQ-PG-DIAG-CONTEXT"><span class="term"><code class="symbol">PG_DIAG_CONTEXT</code></span></dt><dd><p>
+            be, for example, an SQL query issued by a PL/pgSQL function.
+           </p></dd><dt id="LIBPQ-PG-DIAG-CONTEXT"><span class="term"><code class="symbol">PG_DIAG_CONTEXT</code></span> <a href="#LIBPQ-PG-DIAG-CONTEXT" class="id_link">#</a></dt><dd><p>
             An indication of the context in which the error occurred.
             Presently this includes a call stack traceback of active
             procedural language functions and internally-generated queries.
             The trace is one entry per line, most recent first.
-           </p></dd><dt id="LIBPQ-PG-DIAG-SCHEMA-NAME"><span class="term"><code class="symbol">PG_DIAG_SCHEMA_NAME</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-SCHEMA-NAME"><span class="term"><code class="symbol">PG_DIAG_SCHEMA_NAME</code></span> <a href="#LIBPQ-PG-DIAG-SCHEMA-NAME" class="id_link">#</a></dt><dd><p>
             If the error was associated with a specific database object,
             the name of the schema containing that object, if any.
-           </p></dd><dt id="LIBPQ-PG-DIAG-TABLE-NAME"><span class="term"><code class="symbol">PG_DIAG_TABLE_NAME</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-TABLE-NAME"><span class="term"><code class="symbol">PG_DIAG_TABLE_NAME</code></span> <a href="#LIBPQ-PG-DIAG-TABLE-NAME" class="id_link">#</a></dt><dd><p>
             If the error was associated with a specific table, the name of the
             table.  (Refer to the schema name field for the name of the
             table's schema.)
-           </p></dd><dt id="LIBPQ-PG-DIAG-COLUMN-NAME"><span class="term"><code class="symbol">PG_DIAG_COLUMN_NAME</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-COLUMN-NAME"><span class="term"><code class="symbol">PG_DIAG_COLUMN_NAME</code></span> <a href="#LIBPQ-PG-DIAG-COLUMN-NAME" class="id_link">#</a></dt><dd><p>
             If the error was associated with a specific table column, the name
             of the column.  (Refer to the schema and table name fields to
             identify the table.)
-           </p></dd><dt id="LIBPQ-PG-DIAG-DATATYPE-NAME"><span class="term"><code class="symbol">PG_DIAG_DATATYPE_NAME</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-DATATYPE-NAME"><span class="term"><code class="symbol">PG_DIAG_DATATYPE_NAME</code></span> <a href="#LIBPQ-PG-DIAG-DATATYPE-NAME" class="id_link">#</a></dt><dd><p>
             If the error was associated with a specific data type, the name of
             the data type.  (Refer to the schema name field for the name of
             the data type's schema.)
-           </p></dd><dt id="LIBPQ-PG-DIAG-CONSTRAINT-NAME"><span class="term"><code class="symbol">PG_DIAG_CONSTRAINT_NAME</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-CONSTRAINT-NAME"><span class="term"><code class="symbol">PG_DIAG_CONSTRAINT_NAME</code></span> <a href="#LIBPQ-PG-DIAG-CONSTRAINT-NAME" class="id_link">#</a></dt><dd><p>
             If the error was associated with a specific constraint, the name
             of the constraint.  Refer to fields listed above for the
             associated table or domain.  (For this purpose, indexes are
             treated as constraints, even if they weren't created with
             constraint syntax.)
-           </p></dd><dt id="LIBPQ-PG-DIAG-SOURCE-FILE"><span class="term"><code class="symbol">PG_DIAG_SOURCE_FILE</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-SOURCE-FILE"><span class="term"><code class="symbol">PG_DIAG_SOURCE_FILE</code></span> <a href="#LIBPQ-PG-DIAG-SOURCE-FILE" class="id_link">#</a></dt><dd><p>
             The file name of the source-code location where the error was
             reported.
-           </p></dd><dt id="LIBPQ-PG-DIAG-SOURCE-LINE"><span class="term"><code class="symbol">PG_DIAG_SOURCE_LINE</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-SOURCE-LINE"><span class="term"><code class="symbol">PG_DIAG_SOURCE_LINE</code></span> <a href="#LIBPQ-PG-DIAG-SOURCE-LINE" class="id_link">#</a></dt><dd><p>
             The line number of the source-code location where the error
             was reported.
-           </p></dd><dt id="LIBPQ-PG-DIAG-SOURCE-FUNCTION"><span class="term"><code class="symbol">PG_DIAG_SOURCE_FUNCTION</code></span></dt><dd><p>
+           </p></dd><dt id="LIBPQ-PG-DIAG-SOURCE-FUNCTION"><span class="term"><code class="symbol">PG_DIAG_SOURCE_FUNCTION</code></span> <a href="#LIBPQ-PG-DIAG-SOURCE-FUNCTION" class="id_link">#</a></dt><dd><p>
             The name of the source-code function reporting the error.
            </p></dd></dl></div><p>
        </p><div class="note"><h3 class="title">Note</h3><p>
@@ -530,30 +501,31 @@ char *PQresultErrorField(const PGresult *res, int fieldcode);
        </p><p>
         Errors generated internally by <span class="application">libpq</span> will
         have severity and primary message, but typically no other fields.
-        Errors returned by a pre-3.0-protocol server will include severity and
-        primary message, and sometimes a detail message, but no other fields.
        </p><p>
         Note that error fields are only available from
         <code class="structname">PGresult</code> objects, not
         <code class="structname">PGconn</code> objects; there is no
         <code class="function">PQerrorField</code> function.
-       </p></dd><dt id="LIBPQ-PQCLEAR"><span class="term"><code class="function">PQclear</code><a id="id-1.7.3.10.3.9.7.6.1.2" class="indexterm"></a></span></dt><dd><p>
+       </p></dd><dt id="LIBPQ-PQCLEAR"><span class="term"><code class="function">PQclear</code><a id="id-1.7.3.10.3.9.7.6.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQCLEAR" class="id_link">#</a></dt><dd><p>
         Frees  the  storage  associated with a
         <code class="structname">PGresult</code>.  Every command result should be
-        freed via <code class="function">PQclear</code> when it  is  no  longer
+        freed via <a class="xref" href="libpq-exec.html#LIBPQ-PQCLEAR"><code class="function">PQclear</code></a> when it  is  no  longer
         needed.
 
 </p><pre class="synopsis">
 void PQclear(PGresult *res);
 </pre><p>
+
+        If the argument is a <code class="symbol">NULL</code> pointer, no operation is
+        performed.
        </p><p>
         You can keep a <code class="structname">PGresult</code> object around for
         as long as you need it; it does not go away when you issue a new
         command, nor even if you close the connection.  To get rid of it,
-        you must call <code class="function">PQclear</code>.  Failure to do this
+        you must call <a class="xref" href="libpq-exec.html#LIBPQ-PQCLEAR"><code class="function">PQclear</code></a>.  Failure to do this
         will result in memory leaks in your application.
        </p></dd></dl></div><p>
-   </p></div><div class="sect2" id="LIBPQ-EXEC-SELECT-INFO"><div class="titlepage"><div><div><h3 class="title">34.3.2. Retrieving Query Result Information</h3></div></div></div><p>
+   </p></div><div class="sect2" id="LIBPQ-EXEC-SELECT-INFO"><div class="titlepage"><div><div><h3 class="title">34.3.2. Retrieving Query Result Information <a href="#LIBPQ-EXEC-SELECT-INFO" class="id_link">#</a></h3></div></div></div><p>
     These functions are used to extract information from a
     <code class="structname">PGresult</code> object that represents a successful
     query result (that is, one that has status
@@ -563,10 +535,7 @@ void PQclear(PGresult *res);
     has all the same column information that actual execution of the query
     would provide, but it has zero rows.  For objects with other status values,
     these functions will act as though the result has zero rows and zero columns.
-   </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQNTUPLES"><span class="term">
-      <code class="function">PQntuples</code>
-      <a id="id-1.7.3.10.4.3.1.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+   </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQNTUPLES"><span class="term"><code class="function">PQntuples</code><a id="id-1.7.3.10.4.3.1.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQNTUPLES" class="id_link">#</a></dt><dd><p>
        Returns the number of rows (tuples) in the query result.
        (Note that <code class="structname">PGresult</code> objects are limited to no more
        than <code class="literal">INT_MAX</code> rows, so an <code class="type">int</code> result is
@@ -576,35 +545,26 @@ void PQclear(PGresult *res);
 int PQntuples(const PGresult *res);
 </pre><p>
 
-      </p></dd><dt id="LIBPQ-PQNFIELDS"><span class="term">
-      <code class="function">PQnfields</code>
-      <a id="id-1.7.3.10.4.3.2.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQNFIELDS"><span class="term"><code class="function">PQnfields</code><a id="id-1.7.3.10.4.3.2.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQNFIELDS" class="id_link">#</a></dt><dd><p>
        Returns the number of columns (fields) in each row of the query
        result.
 
 </p><pre class="synopsis">
 int PQnfields(const PGresult *res);
 </pre><p>
-      </p></dd><dt id="LIBPQ-PQFNAME"><span class="term">
-      <code class="function">PQfname</code>
-      <a id="id-1.7.3.10.4.3.3.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQFNAME"><span class="term"><code class="function">PQfname</code><a id="id-1.7.3.10.4.3.3.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQFNAME" class="id_link">#</a></dt><dd><p>
        Returns the column name associated with the given column number.
        Column numbers start at 0. The caller should not free the result
        directly. It will be freed when the associated
        <code class="structname">PGresult</code> handle is passed to
-       <code class="function">PQclear</code>.
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQCLEAR"><code class="function">PQclear</code></a>.
 </p><pre class="synopsis">
 char *PQfname(const PGresult *res,
               int column_number);
 </pre><p>
       </p><p>
        <code class="symbol">NULL</code> is returned if the column number is out of range.
-      </p></dd><dt id="LIBPQ-PQFNUMBER"><span class="term">
-      <code class="function">PQfnumber</code>
-      <a id="id-1.7.3.10.4.3.4.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQFNUMBER"><span class="term"><code class="function">PQfnumber</code><a id="id-1.7.3.10.4.3.4.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQFNUMBER" class="id_link">#</a></dt><dd><p>
        Returns the column number associated with the given column name.
 </p><pre class="synopsis">
 int PQfnumber(const PGresult *res,
@@ -628,10 +588,7 @@ PQfnumber(res, "foo")        <em class="lineannotation"><span class="lineannotat
 PQfnumber(res, "BAR")        <em class="lineannotation"><span class="lineannotation">-1</span></em>
 PQfnumber(res, "\"BAR\"")    <em class="lineannotation"><span class="lineannotation">1</span></em>
 </pre><p>
-      </p></dd><dt id="LIBPQ-PQFTABLE"><span class="term">
-      <code class="function">PQftable</code>
-      <a id="id-1.7.3.10.4.3.5.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQFTABLE"><span class="term"><code class="function">PQftable</code><a id="id-1.7.3.10.4.3.5.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQFTABLE" class="id_link">#</a></dt><dd><p>
        Returns the OID of the table from which the given column was
        fetched.  Column numbers start at 0.
 </p><pre class="synopsis">
@@ -640,8 +597,7 @@ Oid PQftable(const PGresult *res,
 </pre><p>
       </p><p>
        <code class="literal">InvalidOid</code> is returned if the column number is out of range,
-       or if the specified column is not a simple reference to a table column,
-       or when using pre-3.0 protocol.
+       or if the specified column is not a simple reference to a table column.
        You can query the system table <code class="literal">pg_class</code> to determine
        exactly which table is referenced.
       </p><p>
@@ -649,10 +605,7 @@ Oid PQftable(const PGresult *res,
        <code class="literal">InvalidOid</code> will be defined when you include
        the <span class="application">libpq</span> header file. They will both
        be some integer type.
-      </p></dd><dt id="LIBPQ-PQFTABLECOL"><span class="term">
-      <code class="function">PQftablecol</code>
-      <a id="id-1.7.3.10.4.3.6.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQFTABLECOL"><span class="term"><code class="function">PQftablecol</code><a id="id-1.7.3.10.4.3.6.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQFTABLECOL" class="id_link">#</a></dt><dd><p>
        Returns the column number (within its table) of the column making
        up the specified query result column.  Query-result column numbers
        start at 0, but table columns have nonzero numbers.
@@ -662,12 +615,8 @@ int PQftablecol(const PGresult *res,
 </pre><p>
       </p><p>
        Zero is returned if the column number is out of range, or if the
-       specified column is not a simple reference to a table column, or
-       when using pre-3.0 protocol.
-      </p></dd><dt id="LIBPQ-PQFFORMAT"><span class="term">
-      <code class="function">PQfformat</code>
-      <a id="id-1.7.3.10.4.3.7.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+       specified column is not a simple reference to a table column.
+      </p></dd><dt id="LIBPQ-PQFFORMAT"><span class="term"><code class="function">PQfformat</code><a id="id-1.7.3.10.4.3.7.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQFFORMAT" class="id_link">#</a></dt><dd><p>
        Returns the format code indicating the format of the given
        column.  Column numbers start at 0.
 </p><pre class="synopsis">
@@ -678,10 +627,7 @@ int PQfformat(const PGresult *res,
        Format code zero indicates textual data representation, while format
        code one indicates binary representation.  (Other codes are reserved
        for future definition.)
-      </p></dd><dt id="LIBPQ-PQFTYPE"><span class="term">
-      <code class="function">PQftype</code>
-      <a id="id-1.7.3.10.4.3.8.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQFTYPE"><span class="term"><code class="function">PQftype</code><a id="id-1.7.3.10.4.3.8.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQFTYPE" class="id_link">#</a></dt><dd><p>
        Returns the data type associated with the given  column number.
        The  integer  returned is the internal OID number of the type.
        Column numbers start at 0.
@@ -693,12 +639,10 @@ Oid PQftype(const PGresult *res,
        You can query the system table <code class="literal">pg_type</code> to
        obtain the names and properties of the various data types. The
        <acronym class="acronym">OID</acronym>s of the built-in data types are defined
-       in the file <code class="filename">src/include/catalog/pg_type_d.h</code>
-       in the source tree.
-      </p></dd><dt id="LIBPQ-PQFMOD"><span class="term">
-      <code class="function">PQfmod</code>
-      <a id="id-1.7.3.10.4.3.9.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+       in the file <code class="filename">catalog/pg_type_d.h</code>
+       in the <span class="productname">PostgreSQL</span>
+       installation's <code class="filename">include</code> directory.
+      </p></dd><dt id="LIBPQ-PQFMOD"><span class="term"><code class="function">PQfmod</code><a id="id-1.7.3.10.4.3.9.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQFMOD" class="id_link">#</a></dt><dd><p>
        Returns  the type modifier of the column associated with the
        given column number.  Column numbers start at 0.
 </p><pre class="synopsis">
@@ -711,10 +655,7 @@ int PQfmod(const PGresult *res,
        used to indicate <span class="quote">“<span class="quote">no information available</span>”</span>.  Most data
        types do not use modifiers, in which case the value is always
        -1.
-      </p></dd><dt id="LIBPQ-PQFSIZE"><span class="term">
-      <code class="function">PQfsize</code>
-      <a id="id-1.7.3.10.4.3.10.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQFSIZE"><span class="term"><code class="function">PQfsize</code><a id="id-1.7.3.10.4.3.10.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQFSIZE" class="id_link">#</a></dt><dd><p>
        Returns  the  size  in bytes of the column associated with the
        given column number.  Column numbers start at 0.
 </p><pre class="synopsis">
@@ -722,15 +663,12 @@ int PQfsize(const PGresult *res,
             int column_number);
 </pre><p>
       </p><p>
-       <code class="function">PQfsize</code> returns the space allocated for this column
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQFSIZE"><code class="function">PQfsize</code></a> returns the space allocated for this column
        in a database row, in other words the size of the server's
        internal representation of the data type.  (Accordingly, it is
        not really very useful to clients.) A negative value indicates
        the data type is variable-length.
-      </p></dd><dt id="LIBPQ-PQBINARYTUPLES"><span class="term">
-      <code class="function">PQbinaryTuples</code>
-      <a id="id-1.7.3.10.4.3.11.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQBINARYTUPLES"><span class="term"><code class="function">PQbinaryTuples</code><a id="id-1.7.3.10.4.3.11.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQBINARYTUPLES" class="id_link">#</a></dt><dd><p>
        Returns 1 if the <code class="structname">PGresult</code> contains binary data
        and 0 if it contains text data.
 </p><pre class="synopsis">
@@ -740,18 +678,15 @@ int PQbinaryTuples(const PGresult *res);
        This function is deprecated (except for its use in connection with
        <code class="command">COPY</code>), because it is possible for a single
        <code class="structname">PGresult</code> to contain text data in some columns and
-       binary data in others.  <code class="function">PQfformat</code> is preferred.
-       <code class="function">PQbinaryTuples</code> returns 1 only if all columns of the
+       binary data in others.  <a class="xref" href="libpq-exec.html#LIBPQ-PQFFORMAT"><code class="function">PQfformat</code></a> is preferred.
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQBINARYTUPLES"><code class="function">PQbinaryTuples</code></a> returns 1 only if all columns of the
        result are binary (format 1).
-      </p></dd><dt id="LIBPQ-PQGETVALUE"><span class="term">
-      <code class="function">PQgetvalue</code>
-       <a id="id-1.7.3.10.4.3.12.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQGETVALUE"><span class="term"><code class="function">PQgetvalue</code><a id="id-1.7.3.10.4.3.12.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQGETVALUE" class="id_link">#</a></dt><dd><p>
        Returns a single field value of one row of a
        <code class="structname">PGresult</code>.  Row and column numbers start
        at 0.  The caller should not free the result directly.  It will
        be freed when the associated <code class="structname">PGresult</code> handle is
-       passed to <code class="function">PQclear</code>.
+       passed to <a class="xref" href="libpq-exec.html#LIBPQ-PQCLEAR"><code class="function">PQclear</code></a>.
 </p><pre class="synopsis">
 char *PQgetvalue(const PGresult *res,
                  int row_number,
@@ -759,7 +694,7 @@ char *PQgetvalue(const PGresult *res,
 </pre><p>
       </p><p>
        For data in text format, the value returned by
-       <code class="function">PQgetvalue</code> is a null-terminated character
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQGETVALUE"><code class="function">PQgetvalue</code></a> is a null-terminated character
        string  representation of the field value.  For data in binary
        format, the value is in the binary representation determined by
        the data type's <code class="function">typsend</code> and <code class="function">typreceive</code>
@@ -768,20 +703,16 @@ char *PQgetvalue(const PGresult *res,
        value is likely to contain embedded nulls.)
       </p><p>
        An empty string is returned if the field value is null.  See
-       <code class="function">PQgetisnull</code> to distinguish null values from
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQGETISNULL"><code class="function">PQgetisnull</code></a> to distinguish null values from
        empty-string values.
       </p><p>
-       The pointer returned  by  <code class="function">PQgetvalue</code> points
+       The pointer returned  by  <a class="xref" href="libpq-exec.html#LIBPQ-PQGETVALUE"><code class="function">PQgetvalue</code></a> points
        to storage that is part of the <code class="structname">PGresult</code>
        structure.  One should not modify the data it points to, and one
        must explicitly copy the data into other storage if it is to be
        used past the lifetime of the  <code class="structname">PGresult</code>
        structure itself.
-      </p></dd><dt id="LIBPQ-PQGETISNULL"><span class="term">
-      <code class="function">PQgetisnull</code>
-      <a id="id-1.7.3.10.4.3.13.1.2" class="indexterm"></a>
-      <a id="id-1.7.3.10.4.3.13.1.3" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQGETISNULL"><span class="term"><code class="function">PQgetisnull</code><a id="id-1.7.3.10.4.3.13.1.2" class="indexterm"></a><a id="id-1.7.3.10.4.3.13.1.3" class="indexterm"></a></span> <a href="#LIBPQ-PQGETISNULL" class="id_link">#</a></dt><dd><p>
        Tests a field for a null value.  Row and column numbers start
        at 0.
 </p><pre class="synopsis">
@@ -792,11 +723,9 @@ int PQgetisnull(const PGresult *res,
       </p><p>
        This function returns  1 if the field is null and 0 if it
        contains a non-null value.  (Note that
-       <code class="function">PQgetvalue</code> will return an empty string,
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQGETVALUE"><code class="function">PQgetvalue</code></a> will return an empty string,
        not a null pointer, for a null field.)
-      </p></dd><dt id="LIBPQ-PQGETLENGTH"><span class="term">
-     <code class="function">PQgetlength</code>
-     <a id="id-1.7.3.10.4.3.14.1.2" class="indexterm"></a></span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQGETLENGTH"><span class="term"><code class="function">PQgetlength</code><a id="id-1.7.3.10.4.3.14.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQGETLENGTH" class="id_link">#</a></dt><dd><p>
        Returns the actual length of a field value in bytes.  Row and
        column numbers start at 0.
 </p><pre class="synopsis">
@@ -807,27 +736,21 @@ int PQgetlength(const PGresult *res,
       </p><p>
        This is the actual data length for the particular data value,
        that is, the size of the object pointed to by
-       <code class="function">PQgetvalue</code>.  For text data format this is
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQGETVALUE"><code class="function">PQgetvalue</code></a>.  For text data format this is
        the same as <code class="function">strlen()</code>.  For binary format this is
        essential information.  Note that one should <span class="emphasis"><em>not</em></span>
-       rely on <code class="function">PQfsize</code> to obtain the actual data
+       rely on <a class="xref" href="libpq-exec.html#LIBPQ-PQFSIZE"><code class="function">PQfsize</code></a> to obtain the actual data
        length.
-      </p></dd><dt id="LIBPQ-PQNPARAMS"><span class="term">
-      <code class="function">PQnparams</code>
-      <a id="id-1.7.3.10.4.3.15.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQNPARAMS"><span class="term"><code class="function">PQnparams</code><a id="id-1.7.3.10.4.3.15.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQNPARAMS" class="id_link">#</a></dt><dd><p>
        Returns the number of parameters of a prepared statement.
 </p><pre class="synopsis">
 int PQnparams(const PGresult *res);
 </pre><p>
       </p><p>
        This function is only useful when inspecting the result of
-       <code class="function">PQdescribePrepared</code>.  For other types of queries it
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQDESCRIBEPREPARED"><code class="function">PQdescribePrepared</code></a>.  For other types of results it
        will return zero.
-      </p></dd><dt id="LIBPQ-PQPARAMTYPE"><span class="term">
-      <code class="function">PQparamtype</code>
-      <a id="id-1.7.3.10.4.3.16.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQPARAMTYPE"><span class="term"><code class="function">PQparamtype</code><a id="id-1.7.3.10.4.3.16.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQPARAMTYPE" class="id_link">#</a></dt><dd><p>
        Returns the data type of the indicated statement parameter.
        Parameter numbers start at 0.
 </p><pre class="synopsis">
@@ -835,12 +758,9 @@ Oid PQparamtype(const PGresult *res, int param_number);
 </pre><p>
       </p><p>
        This function is only useful when inspecting the result of
-       <code class="function">PQdescribePrepared</code>.  For other types of queries it
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQDESCRIBEPREPARED"><code class="function">PQdescribePrepared</code></a>.  For other types of results it
        will return zero.
-      </p></dd><dt id="LIBPQ-PQPRINT"><span class="term">
-      <code class="function">PQprint</code>
-      <a id="id-1.7.3.10.4.3.17.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQPRINT"><span class="term"><code class="function">PQprint</code><a id="id-1.7.3.10.4.3.17.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQPRINT" class="id_link">#</a></dt><dd><p>
        Prints out all the rows and,  optionally,  the column names  to
        the specified output stream.
 </p><pre class="synopsis">
@@ -865,13 +785,10 @@ typedef struct
        This function was formerly used by <span class="application">psql</span>
        to print query results, but this is no longer the case.  Note
        that it assumes all the data is in text format.
-      </p></dd></dl></div></div><div class="sect2" id="LIBPQ-EXEC-NONSELECT"><div class="titlepage"><div><div><h3 class="title">34.3.3. Retrieving Other Result Information</h3></div></div></div><p>
+      </p></dd></dl></div></div><div class="sect2" id="LIBPQ-EXEC-NONSELECT"><div class="titlepage"><div><div><h3 class="title">34.3.3. Retrieving Other Result Information <a href="#LIBPQ-EXEC-NONSELECT" class="id_link">#</a></h3></div></div></div><p>
     These functions are used to extract other information from
     <code class="structname">PGresult</code> objects.
-   </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQCMDSTATUS"><span class="term">
-      <code class="function">PQcmdStatus</code>
-      <a id="id-1.7.3.10.5.3.1.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+   </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQCMDSTATUS"><span class="term"><code class="function">PQcmdStatus</code><a id="id-1.7.3.10.5.3.1.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQCMDSTATUS" class="id_link">#</a></dt><dd><p>
        Returns the command status tag from the SQL command that generated
        the <code class="structname">PGresult</code>.
 </p><pre class="synopsis">
@@ -882,11 +799,8 @@ char *PQcmdStatus(PGresult *res);
        additional data such as the number of rows processed. The caller
        should not free the result directly. It will be freed when the
        associated <code class="structname">PGresult</code> handle is passed to
-       <code class="function">PQclear</code>.
-      </p></dd><dt id="LIBPQ-PQCMDTUPLES"><span class="term">
-      <code class="function">PQcmdTuples</code>
-      <a id="id-1.7.3.10.5.3.2.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQCLEAR"><code class="function">PQclear</code></a>.
+      </p></dd><dt id="LIBPQ-PQCMDTUPLES"><span class="term"><code class="function">PQcmdTuples</code><a id="id-1.7.3.10.5.3.2.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQCMDTUPLES" class="id_link">#</a></dt><dd><p>
        Returns the number of rows affected by the SQL command.
 </p><pre class="synopsis">
 char *PQcmdTuples(PGresult *res);
@@ -897,18 +811,17 @@ char *PQcmdTuples(PGresult *res);
        <code class="structname">PGresult</code>. This function can only be used following
        the execution of a <code class="command">SELECT</code>, <code class="command">CREATE TABLE AS</code>,
        <code class="command">INSERT</code>, <code class="command">UPDATE</code>, <code class="command">DELETE</code>,
-       <code class="command">MOVE</code>, <code class="command">FETCH</code>, or <code class="command">COPY</code> statement,
-       or an <code class="command">EXECUTE</code> of a prepared query that contains an
-       <code class="command">INSERT</code>, <code class="command">UPDATE</code>, or <code class="command">DELETE</code> statement.
+       <code class="command">MERGE</code>, <code class="command">MOVE</code>, <code class="command">FETCH</code>,
+       or <code class="command">COPY</code> statement, or an <code class="command">EXECUTE</code> of a
+       prepared query that contains an <code class="command">INSERT</code>,
+       <code class="command">UPDATE</code>, <code class="command">DELETE</code>,
+       or <code class="command">MERGE</code> statement.
        If the command that generated the <code class="structname">PGresult</code> was anything
-       else, <code class="function">PQcmdTuples</code> returns an empty string. The caller
+       else, <a class="xref" href="libpq-exec.html#LIBPQ-PQCMDTUPLES"><code class="function">PQcmdTuples</code></a> returns an empty string. The caller
        should not free the return value directly. It will be freed when
        the associated <code class="structname">PGresult</code> handle is passed to
-       <code class="function">PQclear</code>.
-      </p></dd><dt id="LIBPQ-PQOIDVALUE"><span class="term">
-      <code class="function">PQoidValue</code>
-      <a id="id-1.7.3.10.5.3.3.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQCLEAR"><code class="function">PQclear</code></a>.
+      </p></dd><dt id="LIBPQ-PQOIDVALUE"><span class="term"><code class="function">PQoidValue</code><a id="id-1.7.3.10.5.3.3.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQOIDVALUE" class="id_link">#</a></dt><dd><p>
        Returns the OID<a id="id-1.7.3.10.5.3.3.2.1.1" class="indexterm"></a>
        of the inserted row, if the <acronym class="acronym">SQL</acronym> command was an
        <code class="command">INSERT</code> that inserted exactly one row into a table that
@@ -920,40 +833,34 @@ char *PQcmdTuples(PGresult *res);
 </p><pre class="synopsis">
 Oid PQoidValue(const PGresult *res);
 </pre><p>
-      </p></dd><dt id="LIBPQ-PQOIDSTATUS"><span class="term">
-      <code class="function">PQoidStatus</code>
-      <a id="id-1.7.3.10.5.3.4.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd><dt id="LIBPQ-PQOIDSTATUS"><span class="term"><code class="function">PQoidStatus</code><a id="id-1.7.3.10.5.3.4.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQOIDSTATUS" class="id_link">#</a></dt><dd><p>
        This function is deprecated in favor of
-       <code class="function">PQoidValue</code> and is not thread-safe.
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQOIDVALUE"><code class="function">PQoidValue</code></a> and is not thread-safe.
        It returns a string with the OID of the inserted row, while
-       <code class="function">PQoidValue</code> returns the OID value.
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQOIDVALUE"><code class="function">PQoidValue</code></a> returns the OID value.
 </p><pre class="synopsis">
 char *PQoidStatus(const PGresult *res);
 </pre><p>
-      </p></dd></dl></div></div><div class="sect2" id="LIBPQ-EXEC-ESCAPE-STRING"><div class="titlepage"><div><div><h3 class="title">34.3.4. Escaping Strings for Inclusion in SQL Commands</h3></div></div></div><a id="id-1.7.3.10.6.2" class="indexterm"></a><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQESCAPELITERAL"><span class="term">
-      <code class="function">PQescapeLiteral</code>
-      <a id="id-1.7.3.10.6.3.1.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></dd></dl></div></div><div class="sect2" id="LIBPQ-EXEC-ESCAPE-STRING"><div class="titlepage"><div><div><h3 class="title">34.3.4. Escaping Strings for Inclusion in SQL Commands <a href="#LIBPQ-EXEC-ESCAPE-STRING" class="id_link">#</a></h3></div></div></div><a id="id-1.7.3.10.6.2" class="indexterm"></a><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQESCAPELITERAL"><span class="term"><code class="function">PQescapeLiteral</code><a id="id-1.7.3.10.6.3.1.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQESCAPELITERAL" class="id_link">#</a></dt><dd><p>
 </p><pre class="synopsis">
 char *PQescapeLiteral(PGconn *conn, const char *str, size_t length);
 </pre><p>
      </p><p>
-      <code class="function">PQescapeLiteral</code> escapes a string for
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPELITERAL"><code class="function">PQescapeLiteral</code></a> escapes a string for
       use within an SQL command.  This is useful when inserting data
       values as literal constants in SQL commands.  Certain characters
       (such as quotes and backslashes) must be escaped to prevent them
       from being interpreted specially by the SQL parser.
-      <code class="function">PQescapeLiteral</code> performs this operation.
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPELITERAL"><code class="function">PQescapeLiteral</code></a> performs this operation.
      </p><p>
-      <code class="function">PQescapeLiteral</code> returns an escaped version of the
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPELITERAL"><code class="function">PQescapeLiteral</code></a> returns an escaped version of the
       <em class="parameter"><code>str</code></em> parameter in memory allocated with
       <code class="function">malloc()</code>.  This memory should be freed using
       <code class="function">PQfreemem()</code> when the result is no longer needed.
       A terminating zero byte is not required, and should not be
       counted in <em class="parameter"><code>length</code></em>.  (If a terminating zero byte is found
       before <em class="parameter"><code>length</code></em> bytes are processed,
-      <code class="function">PQescapeLiteral</code> stops at the zero; the behavior is
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPELITERAL"><code class="function">PQescapeLiteral</code></a> stops at the zero; the behavior is
       thus rather like <code class="function">strncpy</code>.) The
       return string has all special characters replaced so that they can
       be properly processed by the <span class="productname">PostgreSQL</span>
@@ -961,7 +868,7 @@ char *PQescapeLiteral(PGconn *conn, const char *str, size_t length);
       single quotes that must surround <span class="productname">PostgreSQL</span>
       string literals are included in the result string.
      </p><p>
-      On error, <code class="function">PQescapeLiteral</code> returns <code class="symbol">NULL</code> and a suitable
+      On error, <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPELITERAL"><code class="function">PQescapeLiteral</code></a> returns <code class="symbol">NULL</code> and a suitable
       message is stored in the <em class="parameter"><code>conn</code></em> object.
      </p><div class="tip"><h3 class="title">Tip</h3><p>
        It is especially important to do proper escaping when handling
@@ -971,57 +878,51 @@ char *PQescapeLiteral(PGconn *conn, const char *str, size_t length);
        fed to your database.
       </p></div><p>
       Note that it is neither necessary nor correct to do escaping when a data
-      value is passed as a separate parameter in <code class="function">PQexecParams</code> or
+      value is passed as a separate parameter in <a class="xref" href="libpq-exec.html#LIBPQ-PQEXECPARAMS"><code class="function">PQexecParams</code></a> or
       its sibling routines.
-     </p></dd><dt id="LIBPQ-PQESCAPEIDENTIFIER"><span class="term">
-      <code class="function">PQescapeIdentifier</code>
-      <a id="id-1.7.3.10.6.3.2.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+     </p></dd><dt id="LIBPQ-PQESCAPEIDENTIFIER"><span class="term"><code class="function">PQescapeIdentifier</code><a id="id-1.7.3.10.6.3.2.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQESCAPEIDENTIFIER" class="id_link">#</a></dt><dd><p>
 </p><pre class="synopsis">
 char *PQescapeIdentifier(PGconn *conn, const char *str, size_t length);
 </pre><p>
      </p><p>
-      <code class="function">PQescapeIdentifier</code> escapes a string for
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEIDENTIFIER"><code class="function">PQescapeIdentifier</code></a> escapes a string for
       use as an SQL identifier, such as a table, column, or function name.
       This is useful when a user-supplied identifier might contain
       special characters that would otherwise not be interpreted as part
       of the identifier by the SQL parser, or when the identifier might
       contain upper case characters whose case should be preserved.
      </p><p>
-      <code class="function">PQescapeIdentifier</code> returns a version of the
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEIDENTIFIER"><code class="function">PQescapeIdentifier</code></a> returns a version of the
       <em class="parameter"><code>str</code></em> parameter escaped as an SQL identifier
       in memory allocated with <code class="function">malloc()</code>.  This memory must be
       freed using <code class="function">PQfreemem()</code> when the result is no longer
       needed.  A terminating zero byte is not required, and should not be
       counted in <em class="parameter"><code>length</code></em>.  (If a terminating zero byte is found
       before <em class="parameter"><code>length</code></em> bytes are processed,
-      <code class="function">PQescapeIdentifier</code> stops at the zero; the behavior is
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEIDENTIFIER"><code class="function">PQescapeIdentifier</code></a> stops at the zero; the behavior is
       thus rather like <code class="function">strncpy</code>.) The
       return string has all special characters replaced so that it
       will be properly processed as an SQL identifier.  A terminating zero byte
       is also added.  The return string will also be surrounded by double
       quotes.
      </p><p>
-      On error, <code class="function">PQescapeIdentifier</code> returns <code class="symbol">NULL</code> and a suitable
+      On error, <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEIDENTIFIER"><code class="function">PQescapeIdentifier</code></a> returns <code class="symbol">NULL</code> and a suitable
       message is stored in the <em class="parameter"><code>conn</code></em> object.
      </p><div class="tip"><h3 class="title">Tip</h3><p>
        As with string literals, to prevent SQL injection attacks,
        SQL identifiers must be escaped when they are received from an
        untrustworthy source.
-      </p></div></dd><dt id="LIBPQ-PQESCAPESTRINGCONN"><span class="term">
-      <code class="function">PQescapeStringConn</code>
-      <a id="id-1.7.3.10.6.3.3.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      </p></div></dd><dt id="LIBPQ-PQESCAPESTRINGCONN"><span class="term"><code class="function">PQescapeStringConn</code><a id="id-1.7.3.10.6.3.3.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQESCAPESTRINGCONN" class="id_link">#</a></dt><dd><p>
 </p><pre class="synopsis">
 size_t PQescapeStringConn(PGconn *conn,
                           char *to, const char *from, size_t length,
                           int *error);
 </pre><p>
      </p><p>
-      <code class="function">PQescapeStringConn</code> escapes string literals, much like
-      <code class="function">PQescapeLiteral</code>.  Unlike <code class="function">PQescapeLiteral</code>,
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPESTRINGCONN"><code class="function">PQescapeStringConn</code></a> escapes string literals, much like
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPELITERAL"><code class="function">PQescapeLiteral</code></a>.  Unlike <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPELITERAL"><code class="function">PQescapeLiteral</code></a>,
       the caller is responsible for providing an appropriately sized buffer.
-      Furthermore, <code class="function">PQescapeStringConn</code> does not generate the
+      Furthermore, <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPESTRINGCONN"><code class="function">PQescapeStringConn</code></a> does not generate the
       single quotes that must surround <span class="productname">PostgreSQL</span> string
       literals; they should be provided in the SQL command that the
       result is inserted into.  The parameter <em class="parameter"><code>from</code></em> points to
@@ -1030,7 +931,7 @@ size_t PQescapeStringConn(PGconn *conn,
       string.  A terminating zero byte is not required, and should not be
       counted in <em class="parameter"><code>length</code></em>.  (If a terminating zero byte is found
       before <em class="parameter"><code>length</code></em> bytes are processed,
-      <code class="function">PQescapeStringConn</code> stops at the zero; the behavior is
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPESTRINGCONN"><code class="function">PQescapeStringConn</code></a> stops at the zero; the behavior is
       thus rather like <code class="function">strncpy</code>.) <em class="parameter"><code>to</code></em> shall point
       to a buffer that is able to hold at least one more byte than twice
       the value of <em class="parameter"><code>length</code></em>, otherwise the behavior is undefined.
@@ -1045,38 +946,32 @@ size_t PQescapeStringConn(PGconn *conn,
       malformed.  On error, a suitable message is stored in the
       <em class="parameter"><code>conn</code></em> object, whether or not <em class="parameter"><code>error</code></em> is <code class="symbol">NULL</code>.
      </p><p>
-      <code class="function">PQescapeStringConn</code> returns the number of bytes written
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPESTRINGCONN"><code class="function">PQescapeStringConn</code></a> returns the number of bytes written
       to <em class="parameter"><code>to</code></em>, not including the terminating zero byte.
-     </p></dd><dt id="LIBPQ-PQESCAPESTRING"><span class="term">
-      <code class="function">PQescapeString</code>
-      <a id="id-1.7.3.10.6.3.4.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
-       <code class="function">PQescapeString</code> is an older, deprecated version of
-       <code class="function">PQescapeStringConn</code>.
+     </p></dd><dt id="LIBPQ-PQESCAPESTRING"><span class="term"><code class="function">PQescapeString</code><a id="id-1.7.3.10.6.3.4.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQESCAPESTRING" class="id_link">#</a></dt><dd><p>
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPESTRING"><code class="function">PQescapeString</code></a> is an older, deprecated version of
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPESTRINGCONN"><code class="function">PQescapeStringConn</code></a>.
 </p><pre class="synopsis">
 size_t PQescapeString (char *to, const char *from, size_t length);
 </pre><p>
      </p><p>
-      The only difference from <code class="function">PQescapeStringConn</code> is that
-      <code class="function">PQescapeString</code> does not take <code class="structname">PGconn</code>
+      The only difference from <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPESTRINGCONN"><code class="function">PQescapeStringConn</code></a> is that
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPESTRING"><code class="function">PQescapeString</code></a> does not take <code class="structname">PGconn</code>
       or <em class="parameter"><code>error</code></em> parameters.
       Because of this, it cannot adjust its behavior depending on the
       connection properties (such as character encoding) and therefore
       <span class="emphasis"><em>it might give the wrong results</em></span>.  Also, it has no way
       to report error conditions.
      </p><p>
-      <code class="function">PQescapeString</code> can be used safely in
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPESTRING"><code class="function">PQescapeString</code></a> can be used safely in
       client programs that work with only one <span class="productname">PostgreSQL</span>
       connection at a time (in this case it can find out what it needs to
       know <span class="quote">“<span class="quote">behind the scenes</span>”</span>).  In other contexts it is a security
       hazard and should be avoided in favor of
-      <code class="function">PQescapeStringConn</code>.
-     </p></dd><dt id="LIBPQ-PQESCAPEBYTEACONN"><span class="term">
-      <code class="function">PQescapeByteaConn</code>
-      <a id="id-1.7.3.10.6.3.5.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPESTRINGCONN"><code class="function">PQescapeStringConn</code></a>.
+     </p></dd><dt id="LIBPQ-PQESCAPEBYTEACONN"><span class="term"><code class="function">PQescapeByteaConn</code><a id="id-1.7.3.10.6.3.5.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQESCAPEBYTEACONN" class="id_link">#</a></dt><dd><p>
        Escapes binary data for use within an SQL command with the type
-       <code class="type">bytea</code>.  As with <code class="function">PQescapeStringConn</code>,
+       <code class="type">bytea</code>.  As with <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPESTRINGCONN"><code class="function">PQescapeStringConn</code></a>,
        this is only used when inserting data directly into an SQL command string.
 </p><pre class="synopsis">
 unsigned char *PQescapeByteaConn(PGconn *conn,
@@ -1087,7 +982,7 @@ unsigned char *PQescapeByteaConn(PGconn *conn,
       </p><p>
        Certain byte values must be escaped when used as part of a
        <code class="type">bytea</code> literal in an <acronym class="acronym">SQL</acronym> statement.
-       <code class="function">PQescapeByteaConn</code> escapes bytes using
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEBYTEACONN"><code class="function">PQescapeByteaConn</code></a> escapes bytes using
        either hex encoding or backslash escaping.  See <a class="xref" href="datatype-binary.html" title="8.4. Binary Data Types">Section 8.4</a> for more information.
       </p><p>
        The <em class="parameter"><code>from</code></em> parameter points to the first
@@ -1099,7 +994,7 @@ unsigned char *PQescapeByteaConn(PGconn *conn,
        escaped string length. This result string length includes the terminating
        zero byte of the result.
       </p><p>
-       <code class="function">PQescapeByteaConn</code> returns an escaped version of the
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEBYTEACONN"><code class="function">PQescapeByteaConn</code></a> returns an escaped version of the
        <em class="parameter"><code>from</code></em> parameter binary string in memory
        allocated with <code class="function">malloc()</code>.  This memory should be freed using
        <code class="function">PQfreemem()</code> when the result is no longer needed.  The
@@ -1113,33 +1008,27 @@ unsigned char *PQescapeByteaConn(PGconn *conn,
        On error, a null pointer is returned, and a suitable error message
        is stored in the <em class="parameter"><code>conn</code></em> object.  Currently, the only
        possible error is insufficient memory for the result string.
-      </p></dd><dt id="LIBPQ-PQESCAPEBYTEA"><span class="term">
-      <code class="function">PQescapeBytea</code>
-      <a id="id-1.7.3.10.6.3.6.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
-       <code class="function">PQescapeBytea</code> is an older, deprecated version of
-       <code class="function">PQescapeByteaConn</code>.
+      </p></dd><dt id="LIBPQ-PQESCAPEBYTEA"><span class="term"><code class="function">PQescapeBytea</code><a id="id-1.7.3.10.6.3.6.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQESCAPEBYTEA" class="id_link">#</a></dt><dd><p>
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEBYTEA"><code class="function">PQescapeBytea</code></a> is an older, deprecated version of
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEBYTEACONN"><code class="function">PQescapeByteaConn</code></a>.
 </p><pre class="synopsis">
 unsigned char *PQescapeBytea(const unsigned char *from,
                              size_t from_length,
                              size_t *to_length);
 </pre><p>
       </p><p>
-       The only difference from <code class="function">PQescapeByteaConn</code> is that
-       <code class="function">PQescapeBytea</code> does not take a <code class="structname">PGconn</code>
-       parameter.  Because of this, <code class="function">PQescapeBytea</code> can
+       The only difference from <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEBYTEACONN"><code class="function">PQescapeByteaConn</code></a> is that
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEBYTEA"><code class="function">PQescapeBytea</code></a> does not take a <code class="structname">PGconn</code>
+       parameter.  Because of this, <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEBYTEA"><code class="function">PQescapeBytea</code></a> can
        only be used safely in client programs that use a single
        <span class="productname">PostgreSQL</span> connection at a time (in this case
        it can find out what it needs to know <span class="quote">“<span class="quote">behind the
        scenes</span>”</span>).  It <span class="emphasis"><em>might give the wrong results</em></span> if
        used in programs that use multiple database connections (use
-       <code class="function">PQescapeByteaConn</code> in such cases).
-      </p></dd><dt id="LIBPQ-PQUNESCAPEBYTEA"><span class="term">
-      <code class="function">PQunescapeBytea</code>
-      <a id="id-1.7.3.10.6.3.7.1.2" class="indexterm"></a>
-     </span></dt><dd><p>
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEBYTEACONN"><code class="function">PQescapeByteaConn</code></a> in such cases).
+      </p></dd><dt id="LIBPQ-PQUNESCAPEBYTEA"><span class="term"><code class="function">PQunescapeBytea</code><a id="id-1.7.3.10.6.3.7.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQUNESCAPEBYTEA" class="id_link">#</a></dt><dd><p>
        Converts a string representation of binary data into binary data
-       — the reverse of <code class="function">PQescapeBytea</code>.  This
+       — the reverse of <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEBYTEA"><code class="function">PQescapeBytea</code></a>.  This
        is needed when retrieving <code class="type">bytea</code> data in text format,
        but not when retrieving it in binary format.
 
@@ -1148,17 +1037,17 @@ unsigned char *PQunescapeBytea(const unsigned char *from, size_t *to_length);
 </pre><p>
       </p><p>
        The <em class="parameter"><code>from</code></em> parameter points to a string
-       such as might be returned by <code class="function">PQgetvalue</code> when applied
-       to a <code class="type">bytea</code> column. <code class="function">PQunescapeBytea</code>
+       such as might be returned by <a class="xref" href="libpq-exec.html#LIBPQ-PQGETVALUE"><code class="function">PQgetvalue</code></a> when applied
+       to a <code class="type">bytea</code> column. <a class="xref" href="libpq-exec.html#LIBPQ-PQUNESCAPEBYTEA"><code class="function">PQunescapeBytea</code></a>
        converts this string representation into its binary representation.
        It returns a pointer to a buffer allocated with
        <code class="function">malloc()</code>, or <code class="symbol">NULL</code> on error, and puts the size of
        the buffer in <em class="parameter"><code>to_length</code></em>. The result must be
-       freed using <code class="function">PQfreemem</code> when it is no longer needed.
+       freed using <a class="xref" href="libpq-misc.html#LIBPQ-PQFREEMEM"><code class="function">PQfreemem</code></a> when it is no longer needed.
       </p><p>
        This conversion is not exactly the inverse of
-       <code class="function">PQescapeBytea</code>, because the string is not expected
-       to be <span class="quote">“<span class="quote">escaped</span>”</span> when received from <code class="function">PQgetvalue</code>.
+       <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEBYTEA"><code class="function">PQescapeBytea</code></a>, because the string is not expected
+       to be <span class="quote">“<span class="quote">escaped</span>”</span> when received from <a class="xref" href="libpq-exec.html#LIBPQ-PQGETVALUE"><code class="function">PQgetvalue</code></a>.
        In particular this means there is no need for string quoting considerations,
        and so no need for a <code class="structname">PGconn</code> parameter.
-      </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="libpq-status.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="libpq.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="libpq-async.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">34.2. Connection Status Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 34.4. Asynchronous Command Processing</td></tr></table></div></body></html>
+      </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="libpq-status.html" title="34.2. Connection Status Functions">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="libpq.html" title="Chapter 34. libpq — C Library">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="libpq-async.html" title="34.4. Asynchronous Command Processing">Next</a></td></tr><tr><td width="40%" align="left" valign="top">34.2. Connection Status Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 34.4. Asynchronous Command Processing</td></tr></table></div></body></html>

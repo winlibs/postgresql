@@ -25,7 +25,7 @@ ALTER FOREIGN DATA WRAPPER <replaceable class="parameter">name</replaceable>
     [ HANDLER <replaceable class="parameter">handler_function</replaceable> | NO HANDLER ]
     [ VALIDATOR <replaceable class="parameter">validator_function</replaceable> | NO VALIDATOR ]
     [ OPTIONS ( [ ADD | SET | DROP ] <replaceable class="parameter">option</replaceable> ['<replaceable class="parameter">value</replaceable>'] [, ... ]) ]
-ALTER FOREIGN DATA WRAPPER <replaceable class="parameter">name</replaceable> OWNER TO { <replaceable>new_owner</replaceable> | CURRENT_USER | SESSION_USER }
+ALTER FOREIGN DATA WRAPPER <replaceable class="parameter">name</replaceable> OWNER TO { <replaceable>new_owner</replaceable> | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 ALTER FOREIGN DATA WRAPPER <replaceable class="parameter">name</replaceable> RENAME TO <replaceable>new_name</replaceable>
 </synopsis>
  </refsynopsisdiv>
@@ -153,7 +153,7 @@ ALTER FOREIGN DATA WRAPPER <replaceable class="parameter">name</replaceable> REN
    Change a foreign-data wrapper <literal>dbi</literal>, add
    option <literal>foo</literal>, drop <literal>bar</literal>:
 <programlisting>
-ALTER FOREIGN DATA WRAPPER dbi OPTIONS (ADD foo '1', DROP 'bar');
+ALTER FOREIGN DATA WRAPPER dbi OPTIONS (ADD foo '1', DROP bar);
 </programlisting>
   </para>
 

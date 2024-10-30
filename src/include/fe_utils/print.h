@@ -3,7 +3,7 @@
  * Query-result printing support for frontend code
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/fe_utils/print.h
@@ -12,6 +12,8 @@
  */
 #ifndef PRINT_H
 #define PRINT_H
+
+#include <signal.h>
 
 #include "libpq-fe.h"
 
@@ -26,14 +28,15 @@
 enum printFormat
 {
 	PRINT_NOTHING = 0,			/* to make sure someone initializes this */
-	PRINT_UNALIGNED,
 	PRINT_ALIGNED,
-	PRINT_WRAPPED,
-	PRINT_HTML,
 	PRINT_ASCIIDOC,
+	PRINT_CSV,
+	PRINT_HTML,
 	PRINT_LATEX,
 	PRINT_LATEX_LONGTABLE,
-	PRINT_TROFF_MS
+	PRINT_TROFF_MS,
+	PRINT_UNALIGNED,
+	PRINT_WRAPPED
 	/* add your favourite output format here ... */
 };
 
@@ -62,6 +65,18 @@ typedef enum printTextLineWrap
 	PRINT_LINE_WRAP_WRAP,		/* Wraparound due to overlength line */
 	PRINT_LINE_WRAP_NEWLINE		/* Newline in data */
 } printTextLineWrap;
+
+typedef enum printXheaderWidthType
+{
+	/* Expanded header line width variants */
+	PRINT_XHEADER_FULL,			/* do not truncate header line (this is the
+								 * default) */
+	PRINT_XHEADER_COLUMN,		/* only print header line above the first
+								 * column */
+	PRINT_XHEADER_PAGE,			/* header line must not be longer than
+								 * terminal width */
+	PRINT_XHEADER_EXACT_WIDTH,	/* explicitly specified width */
+} printXheaderWidthType;
 
 typedef struct printTextFormat
 {
@@ -98,6 +113,10 @@ typedef struct printTableOpt
 	enum printFormat format;	/* see enum above */
 	unsigned short int expanded;	/* expanded/vertical output (if supported
 									 * by output format); 0=no, 1=yes, 2=auto */
+	printXheaderWidthType expanded_header_width_type;	/* width type for header
+														 * line in expanded mode */
+	int			expanded_header_exact_width;	/* explicit width for header
+												 * line in expanded mode */
 	unsigned short int border;	/* Print a border around the table. 0=none,
 								 * 1=dividing lines, 2=full */
 	unsigned short int pager;	/* use pager for output (if to stdout and
@@ -112,6 +131,7 @@ typedef struct printTableOpt
 	const printTextFormat *line_style;	/* line style (NULL for default) */
 	struct separator fieldSep;	/* field separator for unaligned text mode */
 	struct separator recordSep; /* record separator for unaligned text mode */
+	char		csvFieldSep[2]; /* field separator for csv format */
 	bool		numericLocale;	/* locale-aware numeric units separator and
 								 * decimal marker */
 	char	   *tableAttr;		/* attributes for HTML <table ...> */
@@ -173,11 +193,12 @@ typedef struct printQueryOpt
 } printQueryOpt;
 
 
-extern volatile bool cancel_pressed;
+extern PGDLLIMPORT volatile sig_atomic_t cancel_pressed;
 
-extern const printTextFormat pg_asciiformat;
-extern const printTextFormat pg_asciiformat_old;
-extern printTextFormat pg_utf8format;	/* ideally would be const, but... */
+extern PGDLLIMPORT const printTextFormat pg_asciiformat;
+extern PGDLLIMPORT const printTextFormat pg_asciiformat_old;
+extern PGDLLIMPORT printTextFormat pg_utf8format;	/* ideally would be const,
+													 * but... */
 
 
 extern void disable_sigpipe_trap(void);
@@ -190,21 +211,21 @@ extern void ClosePager(FILE *pagerpipe);
 extern void html_escaped_print(const char *in, FILE *fout);
 
 extern void printTableInit(printTableContent *const content,
-			   const printTableOpt *opt, const char *title,
-			   const int ncolumns, const int nrows);
+						   const printTableOpt *opt, const char *title,
+						   const int ncolumns, const int nrows);
 extern void printTableAddHeader(printTableContent *const content,
-					char *header, const bool translate, const char align);
+								char *header, const bool translate, const char align);
 extern void printTableAddCell(printTableContent *const content,
-				  char *cell, const bool translate, const bool mustfree);
+							  char *cell, const bool translate, const bool mustfree);
 extern void printTableAddFooter(printTableContent *const content,
-					const char *footer);
+								const char *footer);
 extern void printTableSetFooter(printTableContent *const content,
-					const char *footer);
+								const char *footer);
 extern void printTableCleanup(printTableContent *const content);
 extern void printTable(const printTableContent *cont,
-		   FILE *fout, bool is_pager, FILE *flog);
+					   FILE *fout, bool is_pager, FILE *flog);
 extern void printQuery(const PGresult *result, const printQueryOpt *opt,
-		   FILE *fout, bool is_pager, FILE *flog);
+					   FILE *fout, bool is_pager, FILE *flog);
 
 extern char column_type_alignment(Oid);
 

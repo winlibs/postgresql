@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>22.6. Tablespaces</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="manage-ag-dropdb.html" title="22.5. Destroying a Database" /><link rel="next" href="charset.html" title="Chapter 23. Localization" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">22.6. Tablespaces</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="manage-ag-dropdb.html" title="22.5. Destroying a Database">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="managing-databases.html" title="Chapter 22. Managing Databases">Up</a></td><th width="60%" align="center">Chapter 22. Managing Databases</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="charset.html" title="Chapter 23. Localization">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="MANAGE-AG-TABLESPACES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">22.6. Tablespaces</h2></div></div></div><a id="id-1.6.9.9.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>23.6. Tablespaces</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="manage-ag-dropdb.html" title="23.5. Destroying a Database" /><link rel="next" href="charset.html" title="Chapter 24. Localization" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">23.6. Tablespaces</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="manage-ag-dropdb.html" title="23.5. Destroying a Database">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="managing-databases.html" title="Chapter 23. Managing Databases">Up</a></td><th width="60%" align="center">Chapter 23. Managing Databases</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="charset.html" title="Chapter 24. Localization">Next</a></td></tr></table><hr /></div><div class="sect1" id="MANAGE-AG-TABLESPACES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">23.6. Tablespaces <a href="#MANAGE-AG-TABLESPACES" class="id_link">#</a></h2></div></div></div><a id="id-1.6.10.9.2" class="indexterm"></a><p>
    Tablespaces in <span class="productname">PostgreSQL</span> allow database administrators to
    define locations in the file system where the files representing
    database objects can be stored. Once created, a tablespace can be referred
@@ -26,13 +26,13 @@
      of data files. They are dependent on metadata contained in the main
      data directory, and therefore cannot be attached to a different
      database cluster or backed up individually.  Similarly, if you lose
-     a tablespace (file deletion, disk failure, etc), the database cluster
+     a tablespace (file deletion, disk failure, etc.), the database cluster
      might become unreadable or unable to start.  Placing a tablespace
      on a temporary file system like a RAM disk risks the reliability of
      the entire cluster.
    </p></div><p>
    To define a tablespace, use the <a class="xref" href="sql-createtablespace.html" title="CREATE TABLESPACE"><span class="refentrytitle">CREATE TABLESPACE</span></a>
-   command, for example:<a id="id-1.6.9.9.7.2" class="indexterm"></a>:
+   command, for example:<a id="id-1.6.10.9.7.2" class="indexterm"></a>:
 </p><pre class="programlisting">
 CREATE TABLESPACE fastspace LOCATION '/ssd1/postgresql/data';
 </pre><p>
@@ -108,18 +108,13 @@ CREATE TABLE foo(i int);
    command.
   </p><p>
    To determine the set of existing tablespaces, examine the
-   <a class="link" href="catalog-pg-tablespace.html" title="52.54. pg_tablespace"><code class="structname">pg_tablespace</code>
+   <a class="link" href="catalog-pg-tablespace.html" title="53.56. pg_tablespace"><code class="structname">pg_tablespace</code>
    </a> system catalog, for example
 </p><pre class="synopsis">
 SELECT spcname FROM pg_tablespace;
 </pre><p>
    The <a class="xref" href="app-psql.html" title="psql"><span class="refentrytitle"><span class="application">psql</span></span></a> program's <code class="literal">\db</code> meta-command
    is also useful for listing the existing tablespaces.
-  </p><p>
-   <span class="productname">PostgreSQL</span> makes use of symbolic links
-   to simplify the implementation of tablespaces. This
-   means that tablespaces can be used <span class="emphasis"><em>only</em></span> on systems
-   that support symbolic links.
   </p><p>
    The directory <code class="filename">$PGDATA/pg_tblspc</code> contains symbolic links that
    point to each of the non-built-in tablespaces defined in the cluster.
@@ -129,4 +124,4 @@ SELECT spcname FROM pg_tablespace;
    and earlier you will also need to update the <code class="structname">pg_tablespace</code>
    catalog with the new locations. (If you do not, <code class="literal">pg_dump</code> will
    continue to output the old tablespace locations.)
-  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="manage-ag-dropdb.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="managing-databases.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="charset.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">22.5. Destroying a Database </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 23. Localization</td></tr></table></div></body></html>
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="manage-ag-dropdb.html" title="23.5. Destroying a Database">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="managing-databases.html" title="Chapter 23. Managing Databases">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="charset.html" title="Chapter 24. Localization">Next</a></td></tr><tr><td width="40%" align="left" valign="top">23.5. Destroying a Database </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> Chapter 24. Localization</td></tr></table></div></body></html>

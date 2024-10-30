@@ -3,7 +3,7 @@
  * pgtz.c
  *	  Timezone Library Integration Functions
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/timezone/pgtz.c
@@ -14,9 +14,9 @@
 
 #include <ctype.h>
 #include <fcntl.h>
-#include <sys/stat.h>
 #include <time.h>
 
+#include "common/file_utils.h"
 #include "datatype/timestamp.h"
 #include "miscadmin.h"
 #include "pgtz.h"
@@ -32,8 +32,8 @@ pg_tz	   *log_timezone = NULL;
 
 
 static bool scan_directory_ci(const char *dirname,
-				  const char *fname, int fnamelen,
-				  char *canonname, int canonnamelen);
+							  const char *fname, int fnamelen,
+							  char *canonname, int canonnamelen);
 
 
 /*
@@ -203,15 +203,13 @@ init_timezone_hashtable(void)
 {
 	HASHCTL		hash_ctl;
 
-	MemSet(&hash_ctl, 0, sizeof(hash_ctl));
-
 	hash_ctl.keysize = TZ_STRLEN_MAX + 1;
 	hash_ctl.entrysize = sizeof(pg_tz_cache);
 
 	timezone_cache = hash_create("Timezones",
 								 4,
 								 &hash_ctl,
-								 HASH_ELEM);
+								 HASH_ELEM | HASH_STRINGS);
 	if (!timezone_cache)
 		return false;
 
@@ -233,7 +231,7 @@ init_timezone_hashtable(void)
  * default timezone setting is later overridden from postgresql.conf.
  */
 pg_tz *
-pg_tzset(const char *name)
+pg_tzset(const char *tzname)
 {
 	pg_tz_cache *tzp;
 	struct state tzstate;
@@ -241,7 +239,7 @@ pg_tzset(const char *name)
 	char		canonname[TZ_STRLEN_MAX + 1];
 	char	   *p;
 
-	if (strlen(name) > TZ_STRLEN_MAX)
+	if (strlen(tzname) > TZ_STRLEN_MAX)
 		return NULL;			/* not going to fit */
 
 	if (!timezone_cache)
@@ -255,8 +253,8 @@ pg_tzset(const char *name)
 	 * a POSIX-style timezone spec.)
 	 */
 	p = uppername;
-	while (*name)
-		*p++ = pg_toupper((unsigned char) *name++);
+	while (*tzname)
+		*p++ = pg_toupper((unsigned char) *tzname++);
 	*p = '\0';
 
 	tzp = (pg_tz_cache *) hash_search(timezone_cache,
@@ -357,7 +355,7 @@ pg_tzset_offset(long gmtoffset)
  * is to ensure that log_timezone has a valid value before any logging GUC
  * variables could become set to values that require elog.c to provide
  * timestamps (e.g., log_line_prefix).  We may as well initialize
- * session_timestamp to something valid, too.
+ * session_timezone to something valid, too.
  */
 void
 pg_timezone_initialize(void)
@@ -366,7 +364,7 @@ pg_timezone_initialize(void)
 	 * We may not yet know where PGSHAREDIR is (in particular this is true in
 	 * an EXEC_BACKEND subprocess).  So use "GMT", which pg_tzset forces to be
 	 * interpreted without reference to the filesystem.  This corresponds to
-	 * the bootstrap default for these variables in guc.c, although in
+	 * the bootstrap default for these variables in guc_tables.c, although in
 	 * principle it could be different.
 	 */
 	session_timezone = pg_tzset("GMT");
@@ -431,7 +429,6 @@ pg_tzenumerate_next(pg_tzenum *dir)
 	{
 		struct dirent *direntry;
 		char		fullname[MAXPGPATH * 2];
-		struct stat statbuf;
 
 		direntry = ReadDir(dir->dirdesc[dir->depth], dir->dirname[dir->depth]);
 
@@ -449,12 +446,8 @@ pg_tzenumerate_next(pg_tzenum *dir)
 
 		snprintf(fullname, sizeof(fullname), "%s/%s",
 				 dir->dirname[dir->depth], direntry->d_name);
-		if (stat(fullname, &statbuf) != 0)
-			ereport(ERROR,
-					(errcode_for_file_access(),
-					 errmsg("could not stat \"%s\": %m", fullname)));
 
-		if (S_ISDIR(statbuf.st_mode))
+		if (get_dirent_type(fullname, direntry, true, ERROR) == PGFILETYPE_DIR)
 		{
 			/* Step into the subdirectory */
 			if (dir->depth >= MAX_TZDIR_DEPTH - 1)

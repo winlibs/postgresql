@@ -9,7 +9,7 @@
  * storage management for portals (but doesn't run any queries in them).
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -27,6 +27,7 @@
 #include "commands/portalcmds.h"
 #include "executor/executor.h"
 #include "executor/tstoreReceiver.h"
+#include "miscadmin.h"
 #include "rewrite/rewriteHandler.h"
 #include "tcop/pquery.h"
 #include "tcop/tcopprot.h"
@@ -39,14 +40,15 @@
  *		Execute SQL DECLARE CURSOR command.
  */
 void
-PerformCursorOpen(DeclareCursorStmt *cstmt, ParamListInfo params,
-				  const char *queryString, bool isTopLevel)
+PerformCursorOpen(ParseState *pstate, DeclareCursorStmt *cstmt, ParamListInfo params,
+				  bool isTopLevel)
 {
 	Query	   *query = castNode(Query, cstmt->query);
 	List	   *rewritten;
 	PlannedStmt *plan;
 	Portal		portal;
 	MemoryContext oldContext;
+	char	   *queryString;
 
 	/*
 	 * Disallow empty-string cursor name (conflicts with protocol-level
@@ -64,20 +66,18 @@ PerformCursorOpen(DeclareCursorStmt *cstmt, ParamListInfo params,
 	 */
 	if (!(cstmt->options & CURSOR_OPT_HOLD))
 		RequireTransactionBlock(isTopLevel, "DECLARE CURSOR");
+	else if (InSecurityRestrictedOperation())
+		ereport(ERROR,
+				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+				 errmsg("cannot create a cursor WITH HOLD within security-restricted operation")));
 
 	/*
 	 * Parse analysis was done already, but we still have to run the rule
 	 * rewriter.  We do not do AcquireRewriteLocks: we assume the query either
 	 * came straight from the parser, or suitable locks were acquired by
 	 * plancache.c.
-	 *
-	 * Because the rewriter and planner tend to scribble on the input, we make
-	 * a preliminary copy of the source querytree.  This prevents problems in
-	 * the case that the DECLARE CURSOR is in a portal or plpgsql function and
-	 * is executed repeatedly.  (See also the same hack in EXPLAIN and
-	 * PREPARE.)  XXX FIXME someday.
 	 */
-	rewritten = QueryRewrite((Query *) copyObject(query));
+	rewritten = QueryRewrite(query);
 
 	/* SELECT should never rewrite to more or less than one query */
 	if (list_length(rewritten) != 1)
@@ -89,10 +89,10 @@ PerformCursorOpen(DeclareCursorStmt *cstmt, ParamListInfo params,
 		elog(ERROR, "non-SELECT statement in DECLARE CURSOR");
 
 	/* Plan the query, applying the specified options */
-	plan = pg_plan_query(query, cstmt->options, params);
+	plan = pg_plan_query(query, pstate->p_sourcetext, cstmt->options, params);
 
 	/*
-	 * Create a portal and copy the plan and queryString into its memory.
+	 * Create a portal and copy the plan and query string into its memory.
 	 */
 	portal = CreatePortal(cstmt->portalname, false, false);
 
@@ -100,12 +100,12 @@ PerformCursorOpen(DeclareCursorStmt *cstmt, ParamListInfo params,
 
 	plan = copyObject(plan);
 
-	queryString = pstrdup(queryString);
+	queryString = pstrdup(pstate->p_sourcetext);
 
 	PortalDefineQuery(portal,
 					  NULL,
 					  queryString,
-					  "SELECT", /* cursor's query is always a SELECT */
+					  CMDTAG_SELECT,	/* cursor's query is always a SELECT */
 					  list_make1(plan),
 					  NULL);
 
@@ -159,15 +159,14 @@ PerformCursorOpen(DeclareCursorStmt *cstmt, ParamListInfo params,
  *
  *	stmt: parsetree node for command
  *	dest: where to send results
- *	completionTag: points to a buffer of size COMPLETION_TAG_BUFSIZE
- *		in which to store a command completion status string.
+ *	qc: where to store a command completion status data.
  *
- * completionTag may be NULL if caller doesn't want a status string.
+ * qc may be NULL if caller doesn't want status data.
  */
 void
 PerformPortalFetch(FetchStmt *stmt,
 				   DestReceiver *dest,
-				   char *completionTag)
+				   QueryCompletion *qc)
 {
 	Portal		portal;
 	uint64		nprocessed;
@@ -202,10 +201,9 @@ PerformPortalFetch(FetchStmt *stmt,
 								dest);
 
 	/* Return command status if wanted */
-	if (completionTag)
-		snprintf(completionTag, COMPLETION_TAG_BUFSIZE, "%s " UINT64_FORMAT,
-				 stmt->ismove ? "MOVE" : "FETCH",
-				 nprocessed);
+	if (qc)
+		SetQueryCompletion(qc, stmt->ismove ? CMDTAG_MOVE : CMDTAG_FETCH,
+						   nprocessed);
 }
 
 /*
@@ -269,8 +267,8 @@ PortalCleanup(Portal portal)
 	/*
 	 * sanity checks
 	 */
-	AssertArg(PortalIsValid(portal));
-	AssertArg(portal->cleanup == PortalCleanup);
+	Assert(PortalIsValid(portal));
+	Assert(portal->cleanup == PortalCleanup);
 
 	/*
 	 * Shut down executor, if still running.  We skip this during error abort,
@@ -360,6 +358,8 @@ PersistHoldablePortal(Portal portal)
 	savePortalContext = PortalContext;
 	PG_TRY();
 	{
+		ScanDirection direction = ForwardScanDirection;
+
 		ActivePortal = portal;
 		if (portal->resowner)
 			CurrentResourceOwner = portal->resowner;
@@ -370,10 +370,38 @@ PersistHoldablePortal(Portal portal)
 		PushActiveSnapshot(queryDesc->snapshot);
 
 		/*
-		 * Rewind the executor: we need to store the entire result set in the
-		 * tuplestore, so that subsequent backward FETCHs can be processed.
+		 * If the portal is marked scrollable, we need to store the entire
+		 * result set in the tuplestore, so that subsequent backward FETCHs
+		 * can be processed.  Otherwise, store only the not-yet-fetched rows.
+		 * (The latter is not only more efficient, but avoids semantic
+		 * problems if the query's output isn't stable.)
+		 *
+		 * In the no-scroll case, tuple indexes in the tuplestore will not
+		 * match the cursor's nominal position (portalPos).  Currently this
+		 * causes no difficulty because we only navigate in the tuplestore by
+		 * relative position, except for the tuplestore_skiptuples call below
+		 * and the tuplestore_rescan call in DoPortalRewind, both of which are
+		 * disabled for no-scroll cursors.  But someday we might need to track
+		 * the offset between the holdStore and the cursor's nominal position
+		 * explicitly.
 		 */
-		ExecutorRewind(queryDesc);
+		if (portal->cursorOptions & CURSOR_OPT_SCROLL)
+		{
+			ExecutorRewind(queryDesc);
+		}
+		else
+		{
+			/*
+			 * If we already reached end-of-query, set the direction to
+			 * NoMovement to avoid trying to fetch any tuples.  (This check
+			 * exists because not all plan node types are robust about being
+			 * called again if they've already returned NULL once.)  We'll
+			 * still set up an empty tuplestore, though, to keep this from
+			 * being a special case later.
+			 */
+			if (portal->atEnd)
+				direction = NoMovementScanDirection;
+		}
 
 		/*
 		 * Change the destination to output to the tuplestore.  Note we tell
@@ -384,10 +412,12 @@ PersistHoldablePortal(Portal portal)
 		SetTuplestoreDestReceiverParams(queryDesc->dest,
 										portal->holdStore,
 										portal->holdContext,
-										true);
+										true,
+										NULL,
+										NULL);
 
 		/* Fetch the result set into the tuplestore */
-		ExecutorRun(queryDesc, ForwardScanDirection, 0L, false);
+		ExecutorRun(queryDesc, direction, 0, false);
 
 		queryDesc->dest->rDestroy(queryDesc->dest);
 		queryDesc->dest = NULL;
@@ -418,10 +448,17 @@ PersistHoldablePortal(Portal portal)
 		{
 			tuplestore_rescan(portal->holdStore);
 
-			if (!tuplestore_skiptuples(portal->holdStore,
-									   portal->portalPos,
-									   true))
-				elog(ERROR, "unexpected end of tuple stream");
+			/*
+			 * In the no-scroll case, the start of the tuplestore is exactly
+			 * where we want to be, so no repositioning is wanted.
+			 */
+			if (portal->cursorOptions & CURSOR_OPT_SCROLL)
+			{
+				if (!tuplestore_skiptuples(portal->holdStore,
+										   portal->portalPos,
+										   true))
+					elog(ERROR, "unexpected end of tuple stream");
+			}
 		}
 	}
 	PG_CATCH();

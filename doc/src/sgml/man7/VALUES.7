@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: VALUES
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "VALUES" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "VALUES" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -90,25 +90,37 @@ An expression or integer constant indicating how to sort the result rows\&. This
 result as
 column1,
 column2, etc\&. For more details see
-ORDER BY Clause\&.
+ORDER BY Clause
+in the
+\fBSELECT\fR(7)
+documentation\&.
 .RE
 .PP
 \fIoperator\fR
 .RS 4
 A sorting operator\&. For details see
-ORDER BY Clause\&.
+ORDER BY Clause
+in the
+\fBSELECT\fR(7)
+documentation\&.
 .RE
 .PP
 \fIcount\fR
 .RS 4
 The maximum number of rows to return\&. For details see
-LIMIT Clause\&.
+LIMIT Clause
+in the
+\fBSELECT\fR(7)
+documentation\&.
 .RE
 .PP
 \fIstart\fR
 .RS 4
 The number of rows to skip before starting to return rows\&. For details see
-LIMIT Clause\&.
+LIMIT Clause
+in the
+\fBSELECT\fR(7)
+documentation\&.
 .RE
 .SH "NOTES"
 .PP
@@ -223,7 +235,7 @@ clause specify names for all the columns, but it\*(Aqs good practice to do so\&.
 \fBVALUES\fR
 are
 column1,
-column2, etc in
+column2, etc\&. in
 PostgreSQL, but these names might be different in other database systems\&.)
 .PP
 When

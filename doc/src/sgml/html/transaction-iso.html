@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>13.2. Transaction Isolation</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="mvcc-intro.html" title="13.1. Introduction" /><link rel="next" href="explicit-locking.html" title="13.3. Explicit Locking" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">13.2. Transaction Isolation</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="mvcc-intro.html" title="13.1. Introduction">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="mvcc.html" title="Chapter 13. Concurrency Control">Up</a></td><th width="60%" align="center">Chapter 13. Concurrency Control</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="explicit-locking.html" title="13.3. Explicit Locking">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TRANSACTION-ISO"><div class="titlepage"><div><div><h2 class="title" style="clear: both">13.2. Transaction Isolation</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="transaction-iso.html#XACT-READ-COMMITTED">13.2.1. Read Committed Isolation Level</a></span></dt><dt><span class="sect2"><a href="transaction-iso.html#XACT-REPEATABLE-READ">13.2.2. Repeatable Read Isolation Level</a></span></dt><dt><span class="sect2"><a href="transaction-iso.html#XACT-SERIALIZABLE">13.2.3. Serializable Isolation Level</a></span></dt></dl></div><a id="id-1.5.12.5.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>13.2. Transaction Isolation</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="mvcc-intro.html" title="13.1. Introduction" /><link rel="next" href="explicit-locking.html" title="13.3. Explicit Locking" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">13.2. Transaction Isolation</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="mvcc-intro.html" title="13.1. Introduction">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="mvcc.html" title="Chapter 13. Concurrency Control">Up</a></td><th width="60%" align="center">Chapter 13. Concurrency Control</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="explicit-locking.html" title="13.3. Explicit Locking">Next</a></td></tr></table><hr /></div><div class="sect1" id="TRANSACTION-ISO"><div class="titlepage"><div><div><h2 class="title" style="clear: both">13.2. Transaction Isolation <a href="#TRANSACTION-ISO" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="transaction-iso.html#XACT-READ-COMMITTED">13.2.1. Read Committed Isolation Level</a></span></dt><dt><span class="sect2"><a href="transaction-iso.html#XACT-REPEATABLE-READ">13.2.2. Repeatable Read Isolation Level</a></span></dt><dt><span class="sect2"><a href="transaction-iso.html#XACT-SERIALIZABLE">13.2.3. Serializable Isolation Level</a></span></dt></dl></div><a id="id-1.5.12.5.2" class="indexterm"></a><p>
     The <acronym class="acronym">SQL</acronym> standard defines four levels of
     transaction isolation.  The most strict is Serializable,
     which is defined by the standard in a paragraph which says that any
@@ -99,15 +99,16 @@
         </td></tr></tbody></table></div></div><br class="table-break" /><p>
     In <span class="productname">PostgreSQL</span>, you can request any of
     the four standard transaction isolation levels, but internally only
-    three distinct isolation levels are implemented, i.e. PostgreSQL's
+    three distinct isolation levels are implemented, i.e., PostgreSQL's
     Read Uncommitted mode behaves like Read Committed.  This is because
     it is the only sensible way to map the standard isolation levels to
     PostgreSQL's multiversion concurrency control architecture.
    </p><p>
     The table also shows that PostgreSQL's Repeatable Read implementation
-    does not allow phantom reads.  Stricter behavior is permitted by the
-    SQL standard: the four isolation levels only define which phenomena
-    must not happen, not which phenomena <span class="emphasis"><em>must</em></span> happen.
+    does not allow phantom reads.  This is acceptable under the SQL
+    standard because the standard specifies which anomalies must
+    <span class="emphasis"><em>not</em></span> occur at certain isolation levels;  higher
+    guarantees are acceptable.
     The behavior of the available isolation levels is detailed in the
     following subsections.
    </p><p>
@@ -119,16 +120,16 @@
        made to a sequence (and therefore the counter of a
        column declared using <code class="type">serial</code>) are immediately visible
        to all other transactions and are not rolled back if the transaction
-       that made the changes aborts.  See <a class="xref" href="functions-sequence.html" title="9.16. Sequence Manipulation Functions">Section 9.16</a>
+       that made the changes aborts.  See <a class="xref" href="functions-sequence.html" title="9.17. Sequence Manipulation Functions">Section 9.17</a>
        and <a class="xref" href="datatype-numeric.html#DATATYPE-SERIAL" title="8.1.4. Serial Types">Section 8.1.4</a>.
-     </p></div><div class="sect2" id="XACT-READ-COMMITTED"><div class="titlepage"><div><div><h3 class="title">13.2.1. Read Committed Isolation Level</h3></div></div></div><a id="id-1.5.12.5.11.2" class="indexterm"></a><a id="id-1.5.12.5.11.3" class="indexterm"></a><p>
+     </p></div><div class="sect2" id="XACT-READ-COMMITTED"><div class="titlepage"><div><div><h3 class="title">13.2.1. Read Committed Isolation Level <a href="#XACT-READ-COMMITTED" class="id_link">#</a></h3></div></div></div><a id="id-1.5.12.5.11.2" class="indexterm"></a><a id="id-1.5.12.5.11.3" class="indexterm"></a><p>
     <em class="firstterm">Read Committed</em> is the default isolation
     level in <span class="productname">PostgreSQL</span>.  When a transaction
     uses this isolation level, a <code class="command">SELECT</code> query
     (without a <code class="literal">FOR UPDATE/SHARE</code> clause) sees only data
     committed before the query began; it never sees either uncommitted
-    data or changes committed during query execution by concurrent
-    transactions.  In effect, a <code class="command">SELECT</code> query sees
+    data or changes committed by concurrent transactions during the query's
+    execution.  In effect, a <code class="command">SELECT</code> query sees
     a snapshot of the database as of the instant the query begins to
     run.   However, <code class="command">SELECT</code> does see the effects
     of previous updates executed within its own transaction, even
@@ -163,8 +164,8 @@
     behaves similarly. In Read Committed mode, each row proposed for insertion
     will either insert or update. Unless there are unrelated errors, one of
     those two outcomes is guaranteed.  If a conflict originates in another
-    transaction whose effects are not yet visible to the <code class="command">INSERT
-    </code>, the <code class="command">UPDATE</code> clause will affect that row,
+    transaction whose effects are not yet visible to the <code class="command">INSERT</code>,
+    the <code class="command">UPDATE</code> clause will affect that row,
     even though possibly <span class="emphasis"><em>no</em></span> version of that row is
     conventionally visible to the command.
    </p><p>
@@ -173,6 +174,36 @@
     the outcome of another transaction whose effects are not visible
     to the <code class="command">INSERT</code> snapshot.  Again, this is only
     the case in Read Committed mode.
+   </p><p>
+    <code class="command">MERGE</code> allows the user to specify various
+    combinations of <code class="command">INSERT</code>, <code class="command">UPDATE</code>
+    and <code class="command">DELETE</code> subcommands. A <code class="command">MERGE</code>
+    command with both <code class="command">INSERT</code> and <code class="command">UPDATE</code>
+    subcommands looks similar to <code class="command">INSERT</code> with an
+    <code class="literal">ON CONFLICT DO UPDATE</code> clause but does not
+    guarantee that either <code class="command">INSERT</code> or
+    <code class="command">UPDATE</code> will occur.
+    If <code class="command">MERGE</code> attempts an <code class="command">UPDATE</code> or
+    <code class="command">DELETE</code> and the row is concurrently updated but
+    the join condition still passes for the current target and the
+    current source tuple, then <code class="command">MERGE</code> will behave
+    the same as the <code class="command">UPDATE</code> or
+    <code class="command">DELETE</code> commands and perform its action on the
+    updated version of the row.  However, because <code class="command">MERGE</code>
+    can specify several actions and they can be conditional, the
+    conditions for each action are re-evaluated on the updated version of
+    the row, starting from the first action, even if the action that had
+    originally matched appears later in the list of actions.
+    On the other hand, if the row is concurrently updated or deleted so
+    that the join condition fails, then <code class="command">MERGE</code> will
+    evaluate the condition's <code class="literal">NOT MATCHED</code> actions next,
+    and execute the first one that succeeds.
+    If <code class="command">MERGE</code> attempts an <code class="command">INSERT</code>
+    and a unique index is present and a duplicate row is concurrently
+    inserted, then a uniqueness violation error is raised;
+    <code class="command">MERGE</code> does not attempt to avoid such
+    errors by restarting evaluation of <code class="literal">MATCHED</code>
+    conditions.
    </p><p>
     Because of the above rules, it is possible for an updating command to see
     an inconsistent snapshot: it can see the effects of concurrent updating
@@ -231,11 +262,11 @@ COMMIT;
     to use;  however, it is not sufficient for all cases.  Applications
     that do complex queries and updates might require a more rigorously
     consistent view of the database than Read Committed mode provides.
-   </p></div><div class="sect2" id="XACT-REPEATABLE-READ"><div class="titlepage"><div><div><h3 class="title">13.2.2. Repeatable Read Isolation Level</h3></div></div></div><a id="id-1.5.12.5.12.2" class="indexterm"></a><a id="id-1.5.12.5.12.3" class="indexterm"></a><p>
+   </p></div><div class="sect2" id="XACT-REPEATABLE-READ"><div class="titlepage"><div><div><h3 class="title">13.2.2. Repeatable Read Isolation Level <a href="#XACT-REPEATABLE-READ" class="id_link">#</a></h3></div></div></div><a id="id-1.5.12.5.12.2" class="indexterm"></a><a id="id-1.5.12.5.12.3" class="indexterm"></a><p>
     The <em class="firstterm">Repeatable Read</em> isolation level only sees
     data committed before the transaction began; it never sees either
-    uncommitted data or changes committed during transaction execution
-    by concurrent transactions.  (However, the query does see the
+    uncommitted data or changes committed by concurrent transactions during
+    the transaction's execution.  (However, each query does see the
     effects of previous updates executed within its own transaction,
     even though they are not yet committed.)  This is a stronger
     guarantee than is required by the <acronym class="acronym">SQL</acronym> standard
@@ -258,8 +289,9 @@ COMMIT;
     Applications using this level must be prepared to retry transactions
     due to serialization failures.
    </p><p>
-    <code class="command">UPDATE</code>, <code class="command">DELETE</code>, <code class="command">SELECT
-    FOR UPDATE</code>, and <code class="command">SELECT FOR SHARE</code> commands
+    <code class="command">UPDATE</code>, <code class="command">DELETE</code>,
+    <code class="command">MERGE</code>, <code class="command">SELECT FOR UPDATE</code>,
+    and <code class="command">SELECT FOR SHARE</code> commands
     behave the same as <code class="command">SELECT</code>
     in terms of searching for target rows: they will only find target rows
     that were committed as of the transaction start time.  However, such a
@@ -293,19 +325,31 @@ ERROR:  could not serialize access due to concurrent update
     transaction sees a completely stable view of the database.  However,
     this view will not necessarily always be consistent with some serial
     (one at a time) execution of concurrent transactions of the same level.
-    For example, even a read only transaction at this level may see a
+    For example, even a read-only transaction at this level may see a
     control record updated to show that a batch has been completed but
     <span class="emphasis"><em>not</em></span> see one of the detail records which is logically
     part of the batch because it read an earlier revision of the control
     record.  Attempts to enforce business rules by transactions running at
     this isolation level are not likely to work correctly without careful use
     of explicit locks to block conflicting transactions.
+   </p><p>
+    The Repeatable Read isolation level is implemented using a technique
+    known in academic database literature and in some other database products
+    as <em class="firstterm">Snapshot Isolation</em>.  Differences in behavior
+    and performance may be observed when compared with systems that use a
+    traditional locking technique that reduces concurrency.  Some other
+    systems may even offer Repeatable Read and Snapshot Isolation as distinct
+    isolation levels with different behavior.  The permitted phenomena that
+    distinguish the two techniques were not formalized by database researchers
+    until after the SQL standard was developed, and are outside the scope of
+    this manual.  For a full treatment, please see
+    <a class="xref" href="biblio.html#BERENSON95">[berenson95]</a>.
    </p><div class="note"><h3 class="title">Note</h3><p>
      Prior to <span class="productname">PostgreSQL</span> version 9.1, a request
      for the Serializable transaction isolation level provided exactly the
      same behavior described here.  To retain the legacy Serializable
      behavior, Repeatable Read should now be requested.
-    </p></div></div><div class="sect2" id="XACT-SERIALIZABLE"><div class="titlepage"><div><div><h3 class="title">13.2.3. Serializable Isolation Level</h3></div></div></div><a id="id-1.5.12.5.13.2" class="indexterm"></a><a id="id-1.5.12.5.13.3" class="indexterm"></a><a id="id-1.5.12.5.13.4" class="indexterm"></a><a id="id-1.5.12.5.13.5" class="indexterm"></a><p>
+    </p></div></div><div class="sect2" id="XACT-SERIALIZABLE"><div class="titlepage"><div><div><h3 class="title">13.2.3. Serializable Isolation Level <a href="#XACT-SERIALIZABLE" class="id_link">#</a></h3></div></div></div><a id="id-1.5.12.5.13.2" class="indexterm"></a><a id="id-1.5.12.5.13.3" class="indexterm"></a><a id="id-1.5.12.5.13.4" class="indexterm"></a><a id="id-1.5.12.5.13.5" class="indexterm"></a><p>
     The <em class="firstterm">Serializable</em> isolation level provides
     the strictest transaction isolation.  This level emulates serial
     transaction execution for all committed transactions;
@@ -314,7 +358,7 @@ ERROR:  could not serialize access due to concurrent update
     applications using this level must
     be prepared to retry transactions due to serialization failures.
     In fact, this isolation level works exactly the same as Repeatable
-    Read except that it monitors for conditions which could make
+    Read except that it also monitors for conditions which could make
     execution of a concurrent set of serializable transactions behave
     in a manner inconsistent with all possible serial (one at a time)
     executions of those transactions.  This monitoring does not
@@ -390,7 +434,7 @@ ERROR:  could not serialize access due to read/write dependencies among transact
     Predicate locks in <span class="productname">PostgreSQL</span>, like in most
     other database systems, are based on data actually accessed by a
     transaction.  These will show up in the
-    <a class="link" href="view-pg-locks.html" title="52.73. pg_locks"><code class="structname">pg_locks</code></a>
+    <a class="link" href="view-pg-locks.html" title="54.12. pg_locks"><code class="structname">pg_locks</code></a>
     system view with a <code class="literal">mode</code> of <code class="literal">SIReadLock</code>.  The
     particular locks
     acquired during execution of a query will depend on the plan used by
@@ -419,7 +463,7 @@ ERROR:  could not serialize access due to read/write dependencies among transact
     transactions might do, or it will not successfully commit.  It is
     important that an environment which uses this technique have a
     generalized way of handling serialization failures (which always return
-    with a SQLSTATE value of '40001'), because it will be very hard to
+    with an SQLSTATE value of '40001'), because it will be very hard to
     predict exactly which transactions might contribute to the read/write
     dependencies and need to be rolled back to prevent serialization
     anomalies.  The monitoring of read/write dependencies has a cost, as does
@@ -486,4 +530,11 @@ ERROR:  could not serialize access due to read/write dependencies among transact
        in transaction rollbacks and restarts against any overall change in
        query execution time.
       </p></li></ul></div><p>
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="mvcc-intro.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="mvcc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="explicit-locking.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">13.1. Introduction </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 13.3. Explicit Locking</td></tr></table></div></body></html>
+   </p><p>
+    The Serializable isolation level is implemented using a technique known
+    in academic database literature as Serializable Snapshot Isolation, which
+    builds on Snapshot Isolation by adding checks for serialization anomalies.
+    Some differences in behavior and performance may be observed when compared
+    with other systems that use a traditional locking technique.  Please see
+    <a class="xref" href="biblio.html#PORTS12">[ports12]</a> for detailed information.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="mvcc-intro.html" title="13.1. Introduction">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="mvcc.html" title="Chapter 13. Concurrency Control">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="explicit-locking.html" title="13.3. Explicit Locking">Next</a></td></tr><tr><td width="40%" align="left" valign="top">13.1. Introduction </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 13.3. Explicit Locking</td></tr></table></div></body></html>

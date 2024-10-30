@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: COPY
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "COPY" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "COPY" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -35,6 +35,7 @@ COPY \- copy data between a file and a table
 COPY \fItable_name\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ]
     FROM { \*(Aq\fIfilename\fR\*(Aq | PROGRAM \*(Aq\fIcommand\fR\*(Aq | STDIN }
     [ [ WITH ] ( \fIoption\fR [, \&.\&.\&.] ) ]
+    [ WHERE \fIcondition\fR ]
 
 COPY { \fItable_name\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ] | ( \fIquery\fR ) }
     TO { \*(Aq\fIfilename\fR\*(Aq | PROGRAM \*(Aq\fIcommand\fR\*(Aq | STDOUT }
@@ -43,11 +44,11 @@ COPY { \fItable_name\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ] | ( \fIquery\fR 
 where \fIoption\fR can be one of:
 
     FORMAT \fIformat_name\fR
-    OIDS [ \fIboolean\fR ]
     FREEZE [ \fIboolean\fR ]
     DELIMITER \*(Aq\fIdelimiter_character\fR\*(Aq
     NULL \*(Aq\fInull_string\fR\*(Aq
-    HEADER [ \fIboolean\fR ]
+    DEFAULT \*(Aq\fIdefault_string\fR\*(Aq
+    HEADER [ \fIboolean\fR | MATCH ]
     QUOTE \*(Aq\fIquote_character\fR\*(Aq
     ESCAPE \*(Aq\fIescape_character\fR\*(Aq
     FORCE_QUOTE { ( \fIcolumn_name\fR [, \&.\&.\&.] ) | * }
@@ -74,11 +75,12 @@ can also copy the results of a
 \fBSELECT\fR
 query\&.
 .PP
-If a list of columns is specified,
-\fBCOPY\fR
-will only copy the data in the specified columns to or from the file\&. If there are any columns in the table that are not in the column list,
+If a column list is specified,
+\fBCOPY TO\fR
+copies only the data in the specified columns to the file\&. For
+\fBCOPY FROM\fR, each field in the file is inserted, in order, into the specified column\&. Table columns not specified in the
 \fBCOPY FROM\fR
-will insert the default values for those columns\&.
+column list will receive their default values\&.
 .PP
 \fBCOPY\fR
 with a file name instructs the
@@ -94,6 +96,14 @@ STDIN
 or
 STDOUT
 is specified, data is transmitted via the connection between the client and the server\&.
+.PP
+Each backend running
+\fBCOPY\fR
+will report its progress in the
+pg_stat_progress_copy
+view\&. See
+Section\ \&28.4.3
+for details\&.
 .SH "PARAMETERS"
 .PP
 \fItable_name\fR
@@ -103,18 +113,17 @@ The name (optionally schema\-qualified) of an existing table\&.
 .PP
 \fIcolumn_name\fR
 .RS 4
-An optional list of columns to be copied\&. If no column list is specified, all columns of the table will be copied\&.
+An optional list of columns to be copied\&. If no column list is specified, all columns of the table except generated columns will be copied\&.
 .RE
 .PP
 \fIquery\fR
 .RS 4
 A
-\fBSELECT\fR(7),
-\fBVALUES\fR(7),
-\fBINSERT\fR(7),
-\fBUPDATE\fR(7)
-or
-\fBDELETE\fR(7)
+\fBSELECT\fR,
+\fBVALUES\fR,
+\fBINSERT\fR,
+\fBUPDATE\fR, or
+\fBDELETE\fR
 command whose results are to be copied\&. Note that parentheses are required around the query\&.
 .sp
 For
@@ -122,7 +131,9 @@ For
 \fBUPDATE\fR
 and
 \fBDELETE\fR
-queries a RETURNING clause must be provided, and the target relation must not have a conditional rule, nor an
+queries a
+RETURNING
+clause must be provided, and the target relation must not have a conditional rule, nor an
 ALSO
 rule, nor an
 INSTEAD
@@ -142,7 +153,7 @@ A command to execute\&. In
 \fBCOPY FROM\fR, the input is read from standard output of the command, and in
 \fBCOPY TO\fR, the output is written to the standard input of the command\&.
 .sp
-Note that the command is invoked by the shell, so if you need to pass any arguments to shell command that come from an untrusted source, you must be careful to strip or escape any special characters that might have a special meaning for the shell\&. For security reasons, it is best to use a fixed command string, or at least avoid passing any user input in it\&.
+Note that the command is invoked by the shell, so if you need to pass any arguments that come from an untrusted source, you must be careful to strip or escape any special characters that might have a special meaning for the shell\&. For security reasons, it is best to use a fixed command string, or at least avoid including any user input in it\&.
 .RE
 .PP
 STDIN
@@ -182,14 +193,6 @@ binary\&. The default is
 text\&.
 .RE
 .PP
-OIDS
-.RS 4
-Specifies copying the OID for each row\&. (An error is raised if
-OIDS
-is specified for a table that does not have OIDs, or in the case of copying a
-\fIquery\fR\&.)
-.RE
-.PP
 FREEZE
 .RS 4
 Requests copying the data with rows already frozen, just as they would be after running the
@@ -198,7 +201,7 @@ command\&. This is intended as a performance option for initial data loading\&. 
 \fBCOPY FREEZE\fR
 on a partitioned table\&.
 .sp
-Note that all other sessions will immediately be able to see the data once it has been successfully loaded\&. This violates the normal rules of MVCC visibility and users specifying should be aware of the potential problems this might cause\&.
+Note that all other sessions will immediately be able to see the data once it has been successfully loaded\&. This violates the normal rules of MVCC visibility and users should be aware of the potential problems this might cause\&.
 .RE
 .PP
 DELIMITER
@@ -238,11 +241,26 @@ When using
 .RE
 .RE
 .PP
+DEFAULT
+.RS 4
+Specifies the string that represents a default value\&. Each time the string is found in the input file, the default value of the corresponding column will be used\&. This option is allowed only in
+\fBCOPY FROM\fR, and only when not using
+binary
+format\&.
+.RE
+.PP
 HEADER
 .RS 4
-Specifies that the file contains a header line with the names of each column in the file\&. On output, the first line contains the column names from the table, and on input, the first line is ignored\&. This option is allowed only when using
-CSV
-format\&.
+Specifies that the file contains a header line with the names of each column in the file\&. On output, the first line contains the column names from the table\&. On input, the first line is discarded when this option is set to
+true
+(or equivalent Boolean value)\&. If this option is set to
+MATCH, the number and names of the columns in the header line must match the actual column names of the table, in order; otherwise an error is raised\&. This option is not allowed when using
+binary
+format\&. The
+MATCH
+option is only valid for
+\fBCOPY FROM\fR
+commands\&.
 .RE
 .PP
 QUOTE
@@ -299,6 +317,36 @@ ENCODING
 Specifies that the file is encoded in the
 \fIencoding_name\fR\&. If this option is omitted, the current client encoding is used\&. See the Notes below for more details\&.
 .RE
+.PP
+WHERE
+.RS 4
+The optional
+WHERE
+clause has the general form
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+WHERE \fIcondition\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+where
+\fIcondition\fR
+is any expression that evaluates to a result of type
+boolean\&. Any row that does not satisfy this condition will not be inserted to the table\&. A row satisfies the condition if it returns true when the actual row values are substituted for any variable references\&.
+.sp
+Currently, subqueries are not allowed in
+WHERE
+expressions, and the evaluation does not see any changes made by the
+\fBCOPY\fR
+itself (this matters when the expression contains calls to
+VOLATILE
+functions)\&.
+.RE
 .SH "OUTPUTS"
 .PP
 On successful completion, a
@@ -342,22 +390,17 @@ meta\-command
 .SH "NOTES"
 .PP
 \fBCOPY TO\fR
-can only be used with plain tables, not with views\&. However, you can write
-COPY (SELECT * FROM \fIviewname\fR) TO \&.\&.\&.
-to copy the current contents of a view\&.
+can be used only with plain tables, not views, and does not copy rows from child tables or child partitions\&. For example,
+COPY \fItable\fR TO
+copies the same rows as
+SELECT * FROM ONLY \fItable\fR\&. The syntax
+COPY (SELECT * FROM \fItable\fR) TO \&.\&.\&.
+can be used to dump all of the rows in an inheritance hierarchy, partitioned table, or view\&.
 .PP
 \fBCOPY FROM\fR
 can be used with plain, foreign, or partitioned tables or with views that have
 INSTEAD OF INSERT
 triggers\&.
-.PP
-\fBCOPY\fR
-only deals with the specific table named; it does not copy data to or from child tables\&. Thus for example
-COPY \fItable\fR TO
-shows the same data as
-SELECT * FROM ONLY \fItable\fR\&. But
-COPY (SELECT * FROM \fItable\fR) TO \&.\&.\&.
-can be used to dump all of the data in an inheritance hierarchy\&.
 .PP
 You must have select privilege on the table whose values are read by
 \fBCOPY TO\fR, and insert privilege on the table into which values are inserted by
@@ -383,7 +426,7 @@ is executed directly by the server, not by the client application, must be execu
 PostgreSQL
 user\&.
 \fBCOPY\fR
-naming a file or command is only allowed to database superusers or users who are granted one of the default roles
+naming a file or command is only allowed to database superusers or users who are granted one of the roles
 pg_read_server_files,
 pg_write_server_files, or
 pg_execute_server_program, since it allows reading or writing any file or running a program that the server has privileges to access\&.
@@ -466,9 +509,7 @@ When the
 text
 format is used, the data read or written is a text file with one line per table row\&. Columns in a row are separated by the delimiter character\&. The column values themselves are strings generated by the output function, or acceptable to the input function, of each attribute\*(Aqs data type\&. The specified null string is used in place of columns that are null\&.
 \fBCOPY FROM\fR
-will raise an error if any line of the input file contains more or fewer columns than are expected\&. If
-OIDS
-is specified, the OID is read or written as the first column, preceding the user data columns\&.
+will raise an error if any line of the input file contains more or fewer columns than are expected\&.
 .PP
 End of data can be represented by a single line containing just backslash\-period (\e\&.)\&. An end\-of\-data marker is not necessary when reading from a file, since the end of file serves perfectly well; it is needed only when copying data to or from client applications using pre\-3\&.0 client protocol\&.
 .PP
@@ -542,13 +583,13 @@ T{
 \e\fIdigits\fR
 T}:T{
 Backslash followed by one to three octal digits specifies
-       the character with that numeric code
+       the byte with that numeric code
 T}
 T{
 \ex\fIdigits\fR
 T}:T{
 Backslash x followed by one or two hex digits specifies
-       the character with that numeric code
+       the byte with that numeric code
 T}
 .TE
 .sp 1
@@ -569,6 +610,8 @@ sequences respectively\&. At present it is possible to represent a data carriage
 \fBCOPY\fR
 file is transferred across different machines (for example, from Unix to Windows or vice versa)\&.
 .PP
+All backslash sequences are interpreted after encoding conversion\&. The bytes specified with the octal and hex\-digit backslash sequences must form valid characters in the database encoding\&.
+.PP
 \fBCOPY TO\fR
 will terminate each row with a Unix\-style newline (\(lq\en\(rq)\&. Servers running on Microsoft Windows instead output carriage return/newline (\(lq\er\en\(rq), but only for
 \fBCOPY\fR
@@ -584,7 +627,9 @@ will complain if the line endings in the input are not all alike\&.
 .SS "CSV Format"
 .PP
 This format option is used for importing and exporting the Comma Separated Value (CSV) file format used by many other programs, such as spreadsheets\&. Instead of the escaping rules used by
-PostgreSQL\*(Aqs standard text format, it produces and recognizes the common CSV escaping mechanism\&.
+PostgreSQL\*(Aqs standard text format, it produces and recognizes the common
+CSV
+escaping mechanism\&.
 .PP
 The values in each record are separated by the
 DELIMITER
@@ -672,7 +717,10 @@ PostgreSQL\&.
 .ps -1
 .br
 .PP
-CSV format will both recognize and produce CSV files with quoted values containing embedded carriage returns and line feeds\&. Thus the files are not strictly one line per table row like text\-format files\&.
+CSV
+format will both recognize and produce
+CSV
+files with quoted values containing embedded carriage returns and line feeds\&. Thus the files are not strictly one line per table row like text\-format files\&.
 .sp .5v
 .RE
 .if n \{\
@@ -688,7 +736,9 @@ CSV format will both recognize and produce CSV files with quoted values containi
 .ps -1
 .br
 .PP
-Many programs produce strange and occasionally perverse CSV files, so the file format is more a convention than a standard\&. Thus you might encounter some files that cannot be imported using this mechanism, and
+Many programs produce strange and occasionally perverse
+CSV
+files, so the file format is more a convention than a standard\&. Thus you might encounter some files that cannot be imported using this mechanism, and
 \fBCOPY\fR
 might produce files that other programs cannot process\&.
 .sp .5v
@@ -747,11 +797,13 @@ PGCOPY\en\e377\er\en\e0
 .PP
 Flags field
 .RS 4
-32\-bit integer bit mask to denote important aspects of the file format\&. Bits are numbered from 0 (LSB) to 31 (MSB)\&. Note that this field is stored in network byte order (most significant byte first), as are all the integer fields used in the file format\&. Bits 16\-31 are reserved to denote critical file format issues; a reader should abort if it finds an unexpected bit set in this range\&. Bits 0\-15 are reserved to signal backwards\-compatible format issues; a reader should simply ignore any unexpected bits set in this range\&. Currently only one flag bit is defined, and the rest must be zero:
+32\-bit integer bit mask to denote important aspects of the file format\&. Bits are numbered from 0 (LSB) to 31 (MSB)\&. Note that this field is stored in network byte order (most significant byte first), as are all the integer fields used in the file format\&. Bits 16\(en31 are reserved to denote critical file format issues; a reader should abort if it finds an unexpected bit set in this range\&. Bits 0\(en15 are reserved to signal backwards\-compatible format issues; a reader should simply ignore any unexpected bits set in this range\&. Currently only one flag bit is defined, and the rest must be zero:
 .PP
 Bit 16
 .RS 4
-if 1, OIDs are included in the data; if 0, not
+If 1, OIDs are included in the data; if 0, not\&. Oid system columns are not supported in
+PostgreSQL
+anymore, but the format still contains the indicator\&.
 .RE
 .RE
 .PP
@@ -789,7 +841,8 @@ functions for each column\*(Aqs data type (typically these functions are found i
 src/backend/utils/adt/
 directory of the source distribution)\&.
 .PP
-If OIDs are included in the file, the OID field immediately follows the field\-count word\&. It is a normal field except that it\*(Aqs not included in the field\-count\&. In particular it has a length word \(em this will allow handling of 4\-byte vs\&. 8\-byte OIDs without too much pain, and will allow OIDs to be shown as null if that ever proves desirable\&.
+If OIDs are included in the file, the OID field immediately follows the field\-count word\&. It is a normal field except that it\*(Aqs not included in the field\-count\&. Note that oid system columns are not supported in current versions of
+PostgreSQL\&.
 .RE
 .sp
 .it 1 an-trap
@@ -916,24 +969,22 @@ COPY \fItable_name\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ]
     FROM { \*(Aq\fIfilename\fR\*(Aq | STDIN }
     [ [ WITH ]
           [ BINARY ]
-          [ OIDS ]
-          [ DELIMITER [ AS ] \*(Aq\fIdelimiter\fR\*(Aq ]
-          [ NULL [ AS ] \*(Aq\fInull string\fR\*(Aq ]
+          [ DELIMITER [ AS ] \*(Aq\fIdelimiter_character\fR\*(Aq ]
+          [ NULL [ AS ] \*(Aq\fInull_string\fR\*(Aq ]
           [ CSV [ HEADER ]
-                [ QUOTE [ AS ] \*(Aq\fIquote\fR\*(Aq ]
-                [ ESCAPE [ AS ] \*(Aq\fIescape\fR\*(Aq ]
+                [ QUOTE [ AS ] \*(Aq\fIquote_character\fR\*(Aq ]
+                [ ESCAPE [ AS ] \*(Aq\fIescape_character\fR\*(Aq ]
                 [ FORCE NOT NULL \fIcolumn_name\fR [, \&.\&.\&.] ] ] ]
 
 COPY { \fItable_name\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ] | ( \fIquery\fR ) }
     TO { \*(Aq\fIfilename\fR\*(Aq | STDOUT }
     [ [ WITH ]
           [ BINARY ]
-          [ OIDS ]
-          [ DELIMITER [ AS ] \*(Aq\fIdelimiter\fR\*(Aq ]
-          [ NULL [ AS ] \*(Aq\fInull string\fR\*(Aq ]
+          [ DELIMITER [ AS ] \*(Aq\fIdelimiter_character\fR\*(Aq ]
+          [ NULL [ AS ] \*(Aq\fInull_string\fR\*(Aq ]
           [ CSV [ HEADER ]
-                [ QUOTE [ AS ] \*(Aq\fIquote\fR\*(Aq ]
-                [ ESCAPE [ AS ] \*(Aq\fIescape\fR\*(Aq ]
+                [ QUOTE [ AS ] \*(Aq\fIquote_character\fR\*(Aq ]
+                [ ESCAPE [ AS ] \*(Aq\fIescape_character\fR\*(Aq ]
                 [ FORCE QUOTE { \fIcolumn_name\fR [, \&.\&.\&.] | * } ] ] ]
 .fi
 .if n \{\
@@ -956,17 +1007,18 @@ version 7\&.3 and is still supported:
 .RS 4
 .\}
 .nf
-COPY [ BINARY ] \fItable_name\fR [ WITH OIDS ]
+COPY [ BINARY ] \fItable_name\fR
     FROM { \*(Aq\fIfilename\fR\*(Aq | STDIN }
-    [ [USING] DELIMITERS \*(Aq\fIdelimiter\fR\*(Aq ]
-    [ WITH NULL AS \*(Aq\fInull string\fR\*(Aq ]
+    [ [USING] DELIMITERS \*(Aq\fIdelimiter_character\fR\*(Aq ]
+    [ WITH NULL AS \*(Aq\fInull_string\fR\*(Aq ]
 
-COPY [ BINARY ] \fItable_name\fR [ WITH OIDS ]
+COPY [ BINARY ] \fItable_name\fR
     TO { \*(Aq\fIfilename\fR\*(Aq | STDOUT }
-    [ [USING] DELIMITERS \*(Aq\fIdelimiter\fR\*(Aq ]
-    [ WITH NULL AS \*(Aq\fInull string\fR\*(Aq ]
+    [ [USING] DELIMITERS \*(Aq\fIdelimiter_character\fR\*(Aq ]
+    [ WITH NULL AS \*(Aq\fInull_string\fR\*(Aq ]
 .fi
 .if n \{\
 .RE
 .\}
-
+.SH "SEE ALSO"
+Section\ \&28.4.3

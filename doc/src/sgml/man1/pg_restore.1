@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_restore
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "PG_RESTORE" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "PG_RESTORE" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -84,9 +84,11 @@ This option is similar to, but for historical reasons not identical to, specifyi
 .br
 \fB\-\-clean\fR
 .RS 4
-Clean (drop) database objects before recreating them\&. (Unless
+Before restoring database objects, issue commands to
+\fBDROP\fR
+all the objects that will be restored\&. This option is useful for overwriting an existing database\&. If any of the objects do not exist in the destination database, ignorable error messages will be reported, unless
 \fB\-\-if\-exists\fR
-is used, this might generate some harmless error messages, if any objects were not present in the destination database\&.)
+is also specified\&.
 .RE
 .PP
 \fB\-C\fR
@@ -123,7 +125,10 @@ commands\&. All data is restored into the database name that appears in the arch
 .RS 4
 Connect to database
 \fIdbname\fR
-and restore directly into the database\&.
+and restore directly into the database\&. The
+\fIdbname\fR
+can be a
+connection string\&. If so, connection string parameters will override any conflicting command line options\&.
 .RE
 .PP
 \fB\-e\fR
@@ -138,7 +143,10 @@ Exit if an error is encountered while sending SQL commands to the database\&. Th
 \fB\-\-file=\fR\fB\fIfilename\fR\fR
 .RS 4
 Specify output file for generated script, or for the listing when used with
-\fB\-l\fR\&. Default is the standard output\&.
+\fB\-l\fR\&. Use
+\-
+for
+stdout\&.
 .RE
 .PP
 \fB\-F \fR\fB\fIformat\fR\fR
@@ -187,15 +195,17 @@ switches\&.
 .br
 \fB\-\-jobs=\fR\fB\fInumber\-of\-jobs\fR\fR
 .RS 4
-Run the most time\-consuming parts of
+Run the most time\-consuming steps of
 pg_restore
-\(em those which load data, create indexes, or create constraints \(em using multiple concurrent jobs\&. This option can dramatically reduce the time to restore a large database to a server running on a multiprocessor machine\&.
+\(em those that load data, create indexes, or create constraints \(em concurrently, using up to
+\fInumber\-of\-jobs\fR
+concurrent sessions\&. This option can dramatically reduce the time to restore a large database to a server running on a multiprocessor machine\&. This option is ignored when emitting a script rather than connecting directly to a database server\&.
 .sp
 Each job is one process or one thread, depending on the operating system, and uses a separate connection to the server\&.
 .sp
 The optimal value for this option depends on the hardware setup of the server, of the client, and of the network\&. Factors include the number of CPU cores and the disk setup\&. A good place to start is the number of CPU cores on the server, but values larger than that can also lead to faster restore times in many cases\&. Of course, values that are too high will lead to decreased performance because of thrashing\&.
 .sp
-Only the custom and directory archive formats are supported with this option\&. The input must be a regular file or directory (not, for example, a pipe)\&. This option is ignored when emitting a script rather than connecting directly to a database server\&. Also, multiple jobs cannot be used together with the option
+Only the custom and directory archive formats are supported with this option\&. The input must be a regular file or directory (not, for example, a pipe or standard input)\&. Also, multiple jobs cannot be used together with the option
 \fB\-\-single\-transaction\fR\&.
 .RE
 .PP
@@ -403,7 +413,9 @@ switches\&.
 .br
 \fB\-\-verbose\fR
 .RS 4
-Specifies verbose mode\&.
+Specifies verbose mode\&. This will cause
+pg_restore
+to output detailed object comments and start/stop times to the output file, and progress messages to standard error\&. Repeating the option causes additional debug\-level messages to appear on standard error\&.
 .RE
 .PP
 \fB\-V\fR
@@ -437,7 +449,7 @@ Execute the restore as a single transaction (that is, wrap the emitted commands 
 .RS 4
 This option is relevant only when performing a data\-only restore\&. It instructs
 pg_restore
-to execute commands to temporarily disable triggers on the target tables while the data is reloaded\&. Use this if you have referential integrity checks or other triggers on the tables that you do not want to invoke during data reload\&.
+to execute commands to temporarily disable triggers on the target tables while the data is restored\&. Use this if you have referential integrity checks or other triggers on the tables that you do not want to invoke during data restore\&.
 .sp
 Presently, the commands emitted for
 \fB\-\-disable\-triggers\fR
@@ -471,9 +483,13 @@ does not support row security\&.
 .PP
 \fB\-\-if\-exists\fR
 .RS 4
-Use conditional commands (i\&.e\&. add an
-IF EXISTS
-clause) to drop database objects\&. This option is not valid unless
+Use
+DROP \&.\&.\&. IF EXISTS
+commands to drop objects in
+\fB\-\-clean\fR
+mode\&. This suppresses
+\(lqdoes not exist\(rq
+errors that might otherwise be reported\&. This option is not valid unless
 \fB\-\-clean\fR
 is also specified\&.
 .RE
@@ -507,6 +523,11 @@ Do not output commands to restore security labels, even if the archive contains 
 \fB\-\-no\-subscriptions\fR
 .RS 4
 Do not output commands to restore subscriptions, even if the archive contains them\&.
+.RE
+.PP
+\fB\-\-no\-table\-access\-method\fR
+.RS 4
+Do not output commands to select table access methods\&. With this option, all objects will be created with whichever access method is the default during restore\&.
 .RE
 .PP
 \fB\-\-no\-tablespaces\fR
@@ -625,12 +646,21 @@ pg_restore, but can switch to a role with the required rights\&. Some installati
 Default connection parameters
 .RE
 .PP
+\fBPG_COLOR\fR
+.RS 4
+Specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.RE
+.PP
 This utility, like most other
 PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section\ \&34.14)\&. However, it does not read
+Section\ \&34.15)\&. However, it does not read
 \fBPGDATABASE\fR
 when a database name is not supplied\&.
 .SH "DIAGNOSTICS"
@@ -708,9 +738,9 @@ pg_dump\&.
 Once restored, it is wise to run
 \fBANALYZE\fR
 on each restored table so the optimizer has useful statistics; see
-Section\ \&24.1.3
+Section\ \&25.1.3
 and
-Section\ \&24.1.6
+Section\ \&25.1.6
 for more information\&.
 .SH "EXAMPLES"
 .PP
@@ -751,7 +781,7 @@ command for
 mydb\&. With
 \fB\-C\fR, data is always restored into the database name that appears in the dump file\&.
 .PP
-To reload the dump into a new database called
+To restore the dump into a new database called
 newdb:
 .sp
 .if n \{\

@@ -4,7 +4,7 @@
  *
  * Declarations for ISpell dictionary
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  *
  * src/include/tsearch/dicts/spell.h
  *
@@ -37,7 +37,7 @@ typedef struct
 
 /*
  * Names of FF_ are correlated with Hunspell options in affix file
- * http://hunspell.sourceforge.net/
+ * https://hunspell.github.io/
  */
 #define FF_COMPOUNDONLY		0x01
 #define FF_COMPOUNDBEGIN	0x02
@@ -97,7 +97,12 @@ typedef struct aff_struct
 	char	   *repl;
 	union
 	{
-		regex_t		regex;
+		/*
+		 * Arrays of AFFIX are moved and sorted.  We'll use a pointer to
+		 * regex_t to keep this struct small, and avoid assuming that regex_t
+		 * is movable.
+		 */
+		regex_t    *pregex;
 		Regis		regis;
 	}			reg;
 } AFFIX;

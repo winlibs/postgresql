@@ -9,9 +9,9 @@
  * for an external function is found - not guaranteed! - the index will then
  * be used to judge their instruction count / inline worthiness. After doing
  * so for all external functions, all the referenced functions (and
- * prerequisites) will be imorted.
+ * prerequisites) will be imported.
  *
- * Copyright (c) 2016-2018, PostgreSQL Global Development Group
+ * Copyright (c) 2016-2023, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/backend/lib/llvmjit/llvmjit_inline.cpp
@@ -42,6 +42,9 @@ extern "C"
 #include <llvm-c/Core.h>
 #include <llvm-c/BitReader.h>
 
+/* Avoid macro clash with LLVM's C++ headers */
+#undef Min
+
 #include <llvm/ADT/SetVector.h>
 #include <llvm/ADT/StringSet.h>
 #include <llvm/ADT/StringMap.h>
@@ -53,13 +56,13 @@ extern "C"
 #include <llvm/Support/Error.h>
 #endif
 #include <llvm/IR/Attributes.h>
-#include <llvm/IR/CallSite.h>
 #include <llvm/IR/DebugInfo.h>
 #include <llvm/IR/IntrinsicInst.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/ModuleSummaryIndex.h>
 #include <llvm/Linker/IRMover.h>
 #include <llvm/Support/ManagedStatic.h>
+#include <llvm/Support/MemoryBuffer.h>
 
 
 /*
@@ -111,12 +114,12 @@ typedef llvm::StringMap<std::unique_ptr<llvm::ModuleSummaryIndex> > SummaryCache
 llvm::ManagedStatic<SummaryCache> summary_cache;
 
 
-static std::unique_ptr<ImportMapTy> llvm_build_inline_plan(llvm::Module *mod);
+static std::unique_ptr<ImportMapTy> llvm_build_inline_plan(LLVMContextRef lc, llvm::Module *mod);
 static void llvm_execute_inline_plan(llvm::Module *mod,
 									 ImportMapTy *globalsToInline);
 
-static llvm::Module* load_module_cached(llvm::StringRef modPath);
-static std::unique_ptr<llvm::Module> load_module(llvm::StringRef Identifier);
+static llvm::Module* load_module_cached(LLVMContextRef c, llvm::StringRef modPath);
+static std::unique_ptr<llvm::Module> load_module(LLVMContextRef c, llvm::StringRef Identifier);
 static std::unique_ptr<llvm::ModuleSummaryIndex> llvm_load_summary(llvm::StringRef path);
 
 
@@ -150,15 +153,28 @@ summaries_for_guid(const InlineSearchPath& path, llvm::GlobalValue::GUID guid);
 #endif
 
 /*
+ * Reset inlining related state. This needs to be called before the currently
+ * used LLVMContextRef is disposed (and a new one create), otherwise we would
+ * have dangling references to deleted modules.
+ */
+void
+llvm_inline_reset_caches(void)
+{
+	module_cache->clear();
+	summary_cache->clear();
+}
+
+/*
  * Perform inlining of external function references in M based on a simple
  * cost based analysis.
  */
 void
 llvm_inline(LLVMModuleRef M)
 {
+	LLVMContextRef lc = LLVMGetModuleContext(M);
 	llvm::Module *mod = llvm::unwrap(M);
 
-	std::unique_ptr<ImportMapTy> globalsToInline = llvm_build_inline_plan(mod);
+	std::unique_ptr<ImportMapTy> globalsToInline = llvm_build_inline_plan(lc, mod);
 	if (!globalsToInline)
 		return;
 	llvm_execute_inline_plan(mod, globalsToInline.get());
@@ -169,9 +185,9 @@ llvm_inline(LLVMModuleRef M)
  * mod.
  */
 static std::unique_ptr<ImportMapTy>
-llvm_build_inline_plan(llvm::Module *mod)
+llvm_build_inline_plan(LLVMContextRef lc, llvm::Module *mod)
 {
-	std::unique_ptr<ImportMapTy> globalsToInline = llvm::make_unique<ImportMapTy>();
+	std::unique_ptr<ImportMapTy> globalsToInline(new ImportMapTy());
 	FunctionInlineStates functionStates;
 	InlineWorkList worklist;
 
@@ -268,7 +284,7 @@ llvm_build_inline_plan(llvm::Module *mod)
 				continue;
 			}
 
-			defMod = load_module_cached(modPath);
+			defMod = load_module_cached(lc, modPath);
 			if (defMod->materializeMetadata())
 				elog(FATAL, "failed to materialize metadata");
 
@@ -308,7 +324,7 @@ llvm_build_inline_plan(llvm::Module *mod)
 				 * Check whether function and all its dependencies are too
 				 * big. Dependencies already counted for other functions that
 				 * will get inlined are not counted again. While this make
-				 * things somewhat order dependant, I can't quite see a point
+				 * things somewhat order dependent, I can't quite see a point
 				 * in a different behaviour.
 				 */
 				if (running_instcount > inlineState.costLimit)
@@ -463,20 +479,20 @@ llvm_execute_inline_plan(llvm::Module *mod, ImportMapTy *globalsToInline)
  * the cache state would get corrupted.
  */
 static llvm::Module*
-load_module_cached(llvm::StringRef modPath)
+load_module_cached(LLVMContextRef lc, llvm::StringRef modPath)
 {
 	auto it = module_cache->find(modPath);
 	if (it == module_cache->end())
 	{
 		it = module_cache->insert(
-			std::make_pair(modPath, load_module(modPath))).first;
+			std::make_pair(modPath, load_module(lc, modPath))).first;
 	}
 
 	return it->second.get();
 }
 
 static std::unique_ptr<llvm::Module>
-load_module(llvm::StringRef Identifier)
+load_module(LLVMContextRef lc, llvm::StringRef Identifier)
 {
 	LLVMMemoryBufferRef buf;
 	LLVMModuleRef mod;
@@ -488,7 +504,7 @@ load_module(llvm::StringRef Identifier)
 	if (LLVMCreateMemoryBufferWithContentsOfFile(path, &buf, &msg))
 		elog(FATAL, "failed to open bitcode file \"%s\": %s",
 			 path, msg);
-	if (LLVMGetBitcodeModuleInContext2(LLVMGetGlobalContext(), buf, &mod))
+	if (LLVMGetBitcodeModuleInContext2(lc, buf, &mod))
 		elog(FATAL, "failed to parse bitcode in file \"%s\"", path);
 
 	/*
@@ -592,7 +608,11 @@ function_inlinable(llvm::Function &F,
 	if (F.materialize())
 		elog(FATAL, "failed to materialize metadata");
 
-	if (F.getAttributes().hasFnAttribute(llvm::Attribute::NoInline))
+#if LLVM_VERSION_MAJOR < 14
+#define hasFnAttr hasFnAttribute
+#endif
+
+	if (F.getAttributes().hasFnAttr(llvm::Attribute::NoInline))
 	{
 		ilog(DEBUG1, "ineligibile to import %s due to noinline",
 			 F.getName().data());
@@ -605,6 +625,17 @@ function_inlinable(llvm::Function &F,
 	{
 		if (rv->materialize())
 			elog(FATAL, "failed to materialize metadata");
+
+		/*
+		 * Don't inline functions that access thread local variables.  That
+		 * doesn't work on current LLVM releases (but might in future).
+		 */
+		if (rv->isThreadLocal())
+		{
+			ilog(DEBUG1, "cannot inline %s due to thread-local variable %s",
+				 F.getName().data(), rv->getName().data());
+			return false;
+		}
 
 		/*
 		 * Never want to inline externally visible vars, cheap enough to
@@ -735,7 +766,7 @@ function_inlinable(llvm::Function &F,
 		/* import referenced function itself */
 		importVars.insert(referencedFunction->getName());
 
-		/* import referenced function and its dependants */
+		/* import referenced function and its dependents */
 		for (auto& recImportVar : recImportVars)
 			importVars.insert(recImportVar.first());
 	}
@@ -790,7 +821,10 @@ static void
 add_module_to_inline_search_path(InlineSearchPath& searchpath, llvm::StringRef modpath)
 {
 	/* only extension in libdir are candidates for inlining for now */
-	if (!modpath.startswith("$libdir/"))
+#if LLVM_VERSION_MAJOR < 16
+#define starts_with startswith
+#endif
+	if (!modpath.starts_with("$libdir/"))
 		return;
 
 	/* if there's no match, attempt to load */
@@ -858,7 +892,9 @@ create_redirection_function(std::unique_ptr<llvm::Module> &importMod,
 	llvm::Function *AF;
 	llvm::BasicBlock *BB;
 	llvm::CallInst *fwdcall;
+#if LLVM_VERSION_MAJOR < 14
 	llvm::Attribute inlineAttribute;
+#endif
 
 	AF = llvm::Function::Create(F->getFunctionType(),
 								LinkageTypes::AvailableExternallyLinkage,
@@ -867,9 +903,13 @@ create_redirection_function(std::unique_ptr<llvm::Module> &importMod,
 
 	Builder.SetInsertPoint(BB);
 	fwdcall = Builder.CreateCall(F, &*AF->arg_begin());
+#if LLVM_VERSION_MAJOR < 14
 	inlineAttribute = llvm::Attribute::get(Context,
 										   llvm::Attribute::AlwaysInline);
 	fwdcall->addAttribute(~0U, inlineAttribute);
+#else
+	fwdcall->addFnAttr(llvm::Attribute::AlwaysInline);
+#endif
 	Builder.CreateRet(fwdcall);
 
 	return AF;

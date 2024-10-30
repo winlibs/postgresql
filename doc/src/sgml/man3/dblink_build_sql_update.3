@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dblink_build_sql_update
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DBLINK_BUILD_SQL_UPDATE" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DBLINK_BUILD_SQL_UPDATE" "3" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -41,7 +41,7 @@ dblink_build_sql_update(text relname,
 .SH "DESCRIPTION"
 .PP
 \fBdblink_build_sql_update\fR
-can be useful in doing selective replication of a local table to a remote database\&. It selects a row from the local table based on primary key, and then builds a SQL
+can be useful in doing selective replication of a local table to a remote database\&. It selects a row from the local table based on primary key, and then builds an SQL
 \fBUPDATE\fR
 command that will duplicate that row, but with the primary key values replaced by the values in the last argument\&. (To make an exact copy of the row, just specify the same values for the last two arguments\&.) The
 \fBUPDATE\fR

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: LISTEN
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "LISTEN" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "LISTEN" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -65,12 +65,6 @@ the application programmer should not even issue
 or
 \fBUNLISTEN\fR
 directly\&. See the documentation for the interface you are using for more details\&.
-.PP
-\fBNOTIFY\fR(7)
-contains a more extensive discussion of the use of
-\fBLISTEN\fR
-and
-\fBNOTIFY\fR\&.
 .SH "PARAMETERS"
 .PP
 \fIchannel\fR
@@ -89,6 +83,15 @@ is executed within a transaction that later rolls back, the set of notification 
 A transaction that has executed
 \fBLISTEN\fR
 cannot be prepared for two\-phase commit\&.
+.PP
+There is a race condition when first setting up a listening session: if concurrently\-committing transactions are sending notify events, exactly which of those will the newly listening session receive? The answer is that the session will receive all events committed after an instant during the transaction\*(Aqs commit step\&. But that is slightly later than any database state that the transaction could have observed in queries\&. This leads to the following rule for using
+\fBLISTEN\fR: first execute (and commit!) that command, then in a new transaction inspect the database state as needed by the application logic, then rely on notifications to find out about subsequent changes to the database state\&. The first few received notifications might refer to updates already observed in the initial database inspection, but this is usually harmless\&.
+.PP
+\fBNOTIFY\fR(7)
+contains a more extensive discussion of the use of
+\fBLISTEN\fR
+and
+\fBNOTIFY\fR\&.
 .SH "EXAMPLES"
 .PP
 Configure and execute a listen/notify sequence from

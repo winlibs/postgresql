@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DECLARE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DECLARE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DECLARE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,14 +32,14 @@ DECLARE \- define a cursor
 .SH "SYNOPSIS"
 .sp
 .nf
-DECLARE \fIname\fR [ BINARY ] [ INSENSITIVE ] [ [ NO ] SCROLL ]
+DECLARE \fIname\fR [ BINARY ] [ ASENSITIVE | INSENSITIVE ] [ [ NO ] SCROLL ]
     CURSOR [ { WITH | WITHOUT } HOLD ] FOR \fIquery\fR
 .fi
 .SH "DESCRIPTION"
 .PP
 \fBDECLARE\fR
 allows a user to create cursors, which can be used to retrieve a small number of rows at a time out of a larger query\&. After the cursor is created, rows are fetched from it using
-\fBFETCH\fR(7)\&.
+\fBFETCH\fR\&.
 .if n \{\
 .sp
 .\}
@@ -63,7 +63,7 @@ Section\ \&43.7\&.
 .PP
 \fIname\fR
 .RS 4
-The name of the cursor to be created\&.
+The name of the cursor to be created\&. This must be different from any other active cursor name in the session\&.
 .RE
 .PP
 BINARY
@@ -71,10 +71,26 @@ BINARY
 Causes the cursor to return data in binary rather than in text format\&.
 .RE
 .PP
+ASENSITIVE
+.br
 INSENSITIVE
 .RS 4
-Indicates that data retrieved from the cursor should be unaffected by updates to the table(s) underlying the cursor that occur after the cursor is created\&. In
-PostgreSQL, this is the default behavior; so this key word has no effect and is only accepted for compatibility with the SQL standard\&.
+Cursor sensitivity determines whether changes to the data underlying the cursor, done in the same transaction, after the cursor has been declared, are visible in the cursor\&.
+INSENSITIVE
+means they are not visible,
+ASENSITIVE
+means the behavior is implementation\-dependent\&. A third behavior,
+SENSITIVE, meaning that such changes are visible in the cursor, is not available in
+PostgreSQL\&. In
+PostgreSQL, all cursors are insensitive; so these key words have no effect and are only accepted for compatibility with the SQL standard\&.
+.sp
+Specifying
+INSENSITIVE
+together with
+FOR UPDATE
+or
+FOR SHARE
+is an error\&.
 .RE
 .PP
 SCROLL
@@ -88,8 +104,8 @@ might impose a performance penalty on the query\*(Aqs execution time\&.
 NO SCROLL
 specifies that the cursor cannot be used to retrieve rows in a nonsequential fashion\&. The default is to allow scrolling in some cases; this is not the same as specifying
 SCROLL\&. See
-NOTES
-for details\&.
+Notes
+below for details\&.
 .RE
 .PP
 WITH HOLD
@@ -111,13 +127,14 @@ is the default\&.
 \fIquery\fR
 .RS 4
 A
-\fBSELECT\fR(7)
+\fBSELECT\fR
 or
-\fBVALUES\fR(7)
+\fBVALUES\fR
 command which will provide the rows to be returned by the cursor\&.
 .RE
 .PP
 The key words
+ASENSITIVE,
 BINARY,
 INSENSITIVE, and
 SCROLL
@@ -164,11 +181,11 @@ WITH HOLD
 is useless outside a transaction block: the cursor would survive only to the completion of the statement\&. Therefore
 PostgreSQL
 reports an error if such a command is used outside a transaction block\&. Use
-\fBBEGIN\fR(7)
+\fBBEGIN\fR
 and
-\fBCOMMIT\fR(7)
+\fBCOMMIT\fR
 (or
-\fBROLLBACK\fR(7)) to define a transaction block\&.
+\fBROLLBACK\fR) to define a transaction block\&.
 .PP
 If
 WITH HOLD
@@ -213,11 +230,11 @@ may not be specified in this case\&.
 .ps -1
 .br
 .PP
-Scrollable and
-WITH HOLD
-cursors may give unexpected results if they invoke any volatile functions (see
-Section\ \&38.7)\&. When a previously fetched row is re\-fetched, the functions might be re\-executed, perhaps leading to results different from the first time\&. One workaround for such cases is to declare the cursor
-WITH HOLD
+Scrollable cursors may give unexpected results if they invoke any volatile functions (see
+Section\ \&38.7)\&. When a previously fetched row is re\-fetched, the functions might be re\-executed, perhaps leading to results different from the first time\&. It\*(Aqs best to specify
+NO SCROLL
+for a query involving volatile functions\&. If that is not practical, one workaround is to declare the cursor
+SCROLL WITH HOLD
 and commit the transaction before reading any rows from it\&. This will force the entire output of the cursor to be materialized in temporary storage, so that volatile functions are executed exactly once for each row\&.
 .sp .5v
 .RE
@@ -226,15 +243,8 @@ If the cursor\*(Aqs query includes
 FOR UPDATE
 or
 FOR SHARE, then returned rows are locked at the time they are first fetched, in the same way as for a regular
-\fBSELECT\fR(7)
-command with these options\&. In addition, the returned rows will be the most up\-to\-date versions; therefore these options provide the equivalent of what the SQL standard calls a
-\(lqsensitive cursor\(rq\&. (Specifying
-INSENSITIVE
-together with
-FOR UPDATE
-or
-FOR SHARE
-is an error\&.)
+\fBSELECT\fR
+command with these options\&. In addition, the returned rows will be the most up\-to\-date versions\&.
 .if n \{\
 .sp
 .\}
@@ -275,7 +285,7 @@ The main reason not to use
 FOR UPDATE
 with
 WHERE CURRENT OF
-is if you need the cursor to be scrollable, or to be insensitive to the subsequent updates (that is, continue to show the old data)\&. If this is a requirement, pay close heed to the caveats shown above\&.
+is if you need the cursor to be scrollable, or to be isolated from concurrent updates (that is, continue to show the old data)\&. If this is a requirement, pay close heed to the caveats shown above\&.
 .sp .5v
 .RE
 .PP
@@ -291,6 +301,10 @@ PostgreSQL, supports the standard SQL cursor conventions, including those involv
 and
 \fBOPEN\fR
 statements\&.
+.PP
+The server data structure underlying an open cursor is called a
+portal\&. Portal names are exposed in the client protocol: a client can fetch rows directly from an open portal, if it knows the portal name\&. When creating a cursor with
+\fBDECLARE\fR, the portal name is the same as the cursor name\&.
 .PP
 You can see all available cursors by querying the
 pg_cursors
@@ -314,15 +328,19 @@ See
 for more examples of cursor usage\&.
 .SH "COMPATIBILITY"
 .PP
-The SQL standard says that it is implementation\-dependent whether cursors are sensitive to concurrent updates of the underlying data by default\&. In
-PostgreSQL, cursors are insensitive by default, and can be made sensitive by specifying
-FOR UPDATE\&. Other products may work differently\&.
-.PP
 The SQL standard allows cursors only in embedded
 SQL
 and in modules\&.
 PostgreSQL
 permits cursors to be used interactively\&.
+.PP
+According to the SQL standard, changes made to insensitive cursors by
+UPDATE \&.\&.\&. WHERE CURRENT OF
+and
+DELETE \&.\&.\&. WHERE CURRENT OF
+statements are visible in that same cursor\&.
+PostgreSQL
+treats these statements like all other data changing statements in that they are not visible in insensitive cursors\&.
 .PP
 Binary cursors are a
 PostgreSQL

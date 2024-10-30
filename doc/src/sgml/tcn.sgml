@@ -1,7 +1,7 @@
 <!-- doc/src/sgml/tcn.sgml -->
 
 <sect1 id="tcn" xreflabel="tcn">
- <title>tcn</title>
+  <title>tcn &mdash; a trigger function to notify listeners of changes to table content</title>
 
  <indexterm zone="tcn">
   <primary>tcn</primary>
@@ -15,6 +15,12 @@
   The <filename>tcn</filename> module provides a trigger function that notifies
   listeners of changes to any table on which it is attached.  It must be
   used as an <literal>AFTER</literal> trigger <literal>FOR EACH ROW</literal>.
+ </para>
+
+ <para>
+  This module is considered <quote>trusted</quote>, that is, it can be
+  installed by non-superusers who have <literal>CREATE</literal> privilege
+  on the current database.
  </para>
 
  <para>

@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>41.2. Views and the Rule System</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="querytree.html" title="41.1. The Query Tree" /><link rel="next" href="rules-materializedviews.html" title="41.3. Materialized Views" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">41.2. Views and the Rule System</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="querytree.html" title="41.1. The Query Tree">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="rules.html" title="Chapter 41. The Rule System">Up</a></td><th width="60%" align="center">Chapter 41. The Rule System</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="rules-materializedviews.html" title="41.3. Materialized Views">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="RULES-VIEWS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">41.2. Views and the Rule System</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="rules-views.html#RULES-SELECT">41.2.1. How <code class="command">SELECT</code> Rules Work</a></span></dt><dt><span class="sect2"><a href="rules-views.html#id-1.8.6.7.6">41.2.2. View Rules in Non-<code class="command">SELECT</code> Statements</a></span></dt><dt><span class="sect2"><a href="rules-views.html#id-1.8.6.7.7">41.2.3. The Power of Views in <span class="productname">PostgreSQL</span></a></span></dt><dt><span class="sect2"><a href="rules-views.html#RULES-VIEWS-UPDATE">41.2.4. Updating a View</a></span></dt></dl></div><a id="id-1.8.6.7.2" class="indexterm"></a><a id="id-1.8.6.7.3" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>41.2. Views and the Rule System</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="querytree.html" title="41.1. The Query Tree" /><link rel="next" href="rules-materializedviews.html" title="41.3. Materialized Views" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">41.2. Views and the Rule System</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="querytree.html" title="41.1. The Query Tree">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="rules.html" title="Chapter 41. The Rule System">Up</a></td><th width="60%" align="center">Chapter 41. The Rule System</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="rules-materializedviews.html" title="41.3. Materialized Views">Next</a></td></tr></table><hr /></div><div class="sect1" id="RULES-VIEWS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">41.2. Views and the Rule System <a href="#RULES-VIEWS" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="rules-views.html#RULES-SELECT">41.2.1. How <code class="command">SELECT</code> Rules Work</a></span></dt><dt><span class="sect2"><a href="rules-views.html#RULES-VIEWS-NON-SELECT">41.2.2. View Rules in Non-<code class="command">SELECT</code> Statements</a></span></dt><dt><span class="sect2"><a href="rules-views.html#RULES-VIEWS-POWER">41.2.3. The Power of Views in <span class="productname">PostgreSQL</span></a></span></dt><dt><span class="sect2"><a href="rules-views.html#RULES-VIEWS-UPDATE">41.2.4. Updating a View</a></span></dt></dl></div><a id="id-1.8.6.7.2" class="indexterm"></a><a id="id-1.8.6.7.3" class="indexterm"></a><p>
     Views in <span class="productname">PostgreSQL</span> are implemented
-    using the rule system. In fact, there is essentially no difference
-    between:
+    using the rule system.  A view is basically an empty table (having no
+    actual storage) with an <code class="literal">ON SELECT DO INSTEAD</code> rule.
+    Conventionally, that rule is named <code class="literal">_RETURN</code>.
+    So a view like
 
 </p><pre class="programlisting">
 CREATE VIEW myview AS SELECT * FROM mytab;
 </pre><p>
 
-    compared against the two commands:
+    is very nearly the same thing as
 
 </p><pre class="programlisting">
 CREATE TABLE myview (<em class="replaceable"><code>same column list as mytab</code></em>);
@@ -16,14 +18,16 @@ CREATE RULE "_RETURN" AS ON SELECT TO myview DO INSTEAD
     SELECT * FROM mytab;
 </pre><p>
 
-    because this is exactly what the <code class="command">CREATE VIEW</code>
-    command does internally.  This has some side effects. One of them
-    is that the information about a view in the
-    <span class="productname">PostgreSQL</span> system catalogs is exactly
-    the same as it is for a table. So for the parser, there is
-    absolutely no difference between a table and a view. They are the
-    same thing: relations.
-</p><div class="sect2" id="RULES-SELECT"><div class="titlepage"><div><div><h3 class="title">41.2.1. How <code class="command">SELECT</code> Rules Work</h3></div></div></div><a id="id-1.8.6.7.5.2" class="indexterm"></a><p>
+    although you can't actually write that, because tables are not
+    allowed to have <code class="literal">ON SELECT</code> rules.
+</p><p>
+    A view can also have other kinds of <code class="literal">DO INSTEAD</code>
+    rules, allowing <code class="command">INSERT</code>, <code class="command">UPDATE</code>,
+    or <code class="command">DELETE</code> commands to be performed on the view
+    despite its lack of underlying storage.
+    This is discussed further below, in
+    <a class="xref" href="rules-views.html#RULES-VIEWS-UPDATE" title="41.2.4. Updating a View">Section 41.2.4</a>.
+</p><div class="sect2" id="RULES-SELECT"><div class="titlepage"><div><div><h3 class="title">41.2.1. How <code class="command">SELECT</code> Rules Work <a href="#RULES-SELECT" class="id_link">#</a></h3></div></div></div><a id="id-1.8.6.7.6.2" class="indexterm"></a><p>
     Rules <code class="literal">ON SELECT</code> are applied to all queries as the last step, even
     if the command given is an <code class="command">INSERT</code>,
     <code class="command">UPDATE</code> or <code class="command">DELETE</code>. And they
@@ -46,15 +50,6 @@ CREATE RULE "_RETURN" AS ON SELECT TO myview DO INSTEAD
     this makes things harder to get into. But it's better to have one
     example that covers all the points discussed step by step rather
     than having many different ones that might mix up in mind.
-</p><p>
-For the example, we need a little <code class="literal">min</code> function that
-returns the lower of 2 integer values. We create that as:
-
-</p><pre class="programlisting">
-CREATE FUNCTION min(integer, integer) RETURNS integer AS $$
-    SELECT CASE WHEN $1 &lt; $2 THEN $1 ELSE $2 END
-$$ LANGUAGE SQL STRICT;
-</pre><p>
 </p><p>
     The real tables we need in the first two rule system descriptions
     are these:
@@ -115,7 +110,7 @@ CREATE VIEW shoe_ready AS
            rsh.sh_avail,
            rsl.sl_name,
            rsl.sl_avail,
-           min(rsh.sh_avail, rsl.sl_avail) AS total_avail
+           least(rsh.sh_avail, rsl.sl_avail) AS total_avail
       FROM shoe rsh, shoelace rsl
      WHERE rsl.sl_color = rsh.slcolor
        AND rsl.sl_len_cm &gt;= rsh.slminlen_cm
@@ -244,7 +239,7 @@ SELECT shoelace.sl_name, shoelace.sl_avail,
 </p><p>
     Now we want to write a query that finds out for which shoes currently in the store
     we have the matching shoelaces (color and length) and where the
-    total number of exactly matching pairs is greater or equal to two.
+    total number of exactly matching pairs is greater than or equal to two.
 
 </p><pre class="programlisting">
 SELECT * FROM shoe_ready WHERE total_avail &gt;= 2;
@@ -278,7 +273,7 @@ SELECT shoe_ready.shoename, shoe_ready.sh_avail,
                rsh.sh_avail,
                rsl.sl_name,
                rsl.sl_avail,
-               min(rsh.sh_avail, rsl.sl_avail) AS total_avail
+               least(rsh.sh_avail, rsl.sl_avail) AS total_avail
           FROM shoe rsh, shoelace rsl
          WHERE rsl.sl_color = rsh.slcolor
            AND rsl.sl_len_cm &gt;= rsh.slminlen_cm
@@ -298,7 +293,7 @@ SELECT shoe_ready.shoename, shoe_ready.sh_avail,
                rsh.sh_avail,
                rsl.sl_name,
                rsl.sl_avail,
-               min(rsh.sh_avail, rsl.sl_avail) AS total_avail
+               least(rsh.sh_avail, rsl.sl_avail) AS total_avail
           FROM (SELECT sh.shoename,
                        sh.sh_avail,
                        sh.slcolor,
@@ -323,17 +318,12 @@ SELECT shoe_ready.shoename, shoe_ready.sh_avail,
  WHERE shoe_ready.total_avail &gt; 2;
 </pre><p>
    </p><p>
-    It turns out that the planner will collapse this tree into a
-    two-level query tree: the bottommost <code class="command">SELECT</code>
-    commands will be <span class="quote">“<span class="quote">pulled up</span>”</span> into the middle
-    <code class="command">SELECT</code> since there's no need to process them
-    separately.  But the middle <code class="command">SELECT</code> will remain
-    separate from the top, because it contains aggregate functions.
-    If we pulled those up it would change the behavior of the topmost
-    <code class="command">SELECT</code>, which we don't want.  However,
-    collapsing the query tree is an optimization that the rewrite
-    system doesn't have to concern itself with.
-   </p></div><div class="sect2" id="id-1.8.6.7.6"><div class="titlepage"><div><div><h3 class="title">41.2.2. View Rules in Non-<code class="command">SELECT</code> Statements</h3></div></div></div><p>
+    This might look inefficient, but the planner will collapse this into a
+    single-level query tree by <span class="quote">“<span class="quote">pulling up</span>”</span> the subqueries,
+    and then it will plan the joins just as if we'd written them out
+    manually.  So collapsing the query tree is an optimization that the
+    rewrite system doesn't have to concern itself with.
+   </p></div><div class="sect2" id="RULES-VIEWS-NON-SELECT"><div class="titlepage"><div><div><h3 class="title">41.2.2. View Rules in Non-<code class="command">SELECT</code> Statements <a href="#RULES-VIEWS-NON-SELECT" class="id_link">#</a></h3></div></div></div><p>
     Two details of the query tree aren't touched in the description of
     view rules above. These are the command type and the result relation.
     In fact, the command type is not needed by view rules, but the result
@@ -399,7 +389,7 @@ SELECT t1.a, t2.b FROM t1, t2 WHERE t1.a = t2.a;
     To resolve this problem, another entry is added to the target list
     in <code class="command">UPDATE</code> (and also in
     <code class="command">DELETE</code>) statements: the current tuple ID
-    (<acronym class="acronym">CTID</acronym>).<a id="id-1.8.6.7.6.5.4" class="indexterm"></a>
+    (<acronym class="acronym">CTID</acronym>).<a id="id-1.8.6.7.7.5.4" class="indexterm"></a>
     This is a system column containing the
     file block number and position in the block for the row. Knowing
     the table, the <acronym class="acronym">CTID</acronym> can be used to retrieve the
@@ -423,14 +413,14 @@ SELECT t1.a, t2.b, t1.ctid FROM t1, t2 WHERE t1.a = t2.a;
 </p><p>
     Knowing all that, we can simply apply view rules in absolutely
     the same way to any command. There is no difference.
-</p></div><div class="sect2" id="id-1.8.6.7.7"><div class="titlepage"><div><div><h3 class="title">41.2.3. The Power of Views in <span class="productname">PostgreSQL</span></h3></div></div></div><p>
+</p></div><div class="sect2" id="RULES-VIEWS-POWER"><div class="titlepage"><div><div><h3 class="title">41.2.3. The Power of Views in <span class="productname">PostgreSQL</span> <a href="#RULES-VIEWS-POWER" class="id_link">#</a></h3></div></div></div><p>
     The above demonstrates how the rule system incorporates view
     definitions into the original query tree. In the second example, a
     simple <code class="command">SELECT</code> from one view created a final
     query tree that is a join of 4 tables (<code class="literal">unit</code> was used twice with
     different names).
 </p><p>
-    The benefit of implementing views with the rule system is,
+    The benefit of implementing views with the rule system is
     that the planner has all
     the information about which tables have to be scanned plus the
     relationships between these tables plus the restrictive
@@ -442,9 +432,9 @@ SELECT t1.a, t2.b, t1.ctid FROM t1, t2 WHERE t1.a = t2.a;
     the best path to execute the query, and the more information
     the planner has, the better this decision can be. And
     the rule system as implemented in <span class="productname">PostgreSQL</span>
-    ensures, that this is all information available about the query
+    ensures that this is all information available about the query
     up to that point.
-</p></div><div class="sect2" id="RULES-VIEWS-UPDATE"><div class="titlepage"><div><div><h3 class="title">41.2.4. Updating a View</h3></div></div></div><p>
+</p></div><div class="sect2" id="RULES-VIEWS-UPDATE"><div class="titlepage"><div><div><h3 class="title">41.2.4. Updating a View <a href="#RULES-VIEWS-UPDATE" class="id_link">#</a></h3></div></div></div><p>
     What happens if a view is named as the target relation for an
     <code class="command">INSERT</code>, <code class="command">UPDATE</code>, or
     <code class="command">DELETE</code>?  Doing the substitutions
@@ -452,6 +442,10 @@ SELECT t1.a, t2.b, t1.ctid FROM t1, t2 WHERE t1.a = t2.a;
     relation points at a subquery range-table entry, which will not
     work.  There are several ways in which <span class="productname">PostgreSQL</span>
     can support the appearance of updating a view, however.
+    In order of user-experienced complexity those are: automatically substitute
+    in the underlying table for the view, execute a user-defined trigger,
+    or rewrite the query per a user-defined rule.
+    These options are discussed below.
 </p><p>
     If the subquery selects from a single base relation and is simple
     enough, the rewriter can automatically replace the subquery with the
@@ -463,7 +457,8 @@ SELECT t1.a, t2.b, t1.ctid FROM t1, t2 WHERE t1.a = t2.a;
     be automatically updated, see <a class="xref" href="sql-createview.html" title="CREATE VIEW"><span class="refentrytitle">CREATE VIEW</span></a>.
 </p><p>
     Alternatively, the operation may be handled by a user-provided
-    <code class="literal">INSTEAD OF</code> trigger on the view.
+    <code class="literal">INSTEAD OF</code> trigger on the view
+    (see <a class="xref" href="sql-createtrigger.html" title="CREATE TRIGGER"><span class="refentrytitle">CREATE TRIGGER</span></a>).
     Rewriting works slightly differently
     in this case.  For <code class="command">INSERT</code>, the rewriter does
     nothing at all with the view, leaving it as the result relation
@@ -512,4 +507,4 @@ SELECT t1.a, t2.b, t1.ctid FROM t1, t2 WHERE t1.a = t2.a;
     triggers for the view, and the rewriter cannot automatically rewrite
     the query as an update on the underlying base relation, an error will
     be thrown because the executor cannot update a view as such.
-</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="querytree.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="rules.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rules-materializedviews.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">41.1. The Query Tree </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 41.3. Materialized Views</td></tr></table></div></body></html>
+</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="querytree.html" title="41.1. The Query Tree">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="rules.html" title="Chapter 41. The Rule System">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rules-materializedviews.html" title="41.3. Materialized Views">Next</a></td></tr><tr><td width="40%" align="left" valign="top">41.1. The Query Tree </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 41.3. Materialized Views</td></tr></table></div></body></html>

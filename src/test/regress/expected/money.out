@@ -1,6 +1,8 @@
 --
 -- MONEY
 --
+-- Note that we assume lc_monetary has been set to C.
+--
 CREATE TABLE money_data (m money);
 INSERT INTO money_data VALUES ('123');
 SELECT * FROM money_data;
@@ -329,6 +331,31 @@ SELECT '($123,456.78)'::money;
  -$123,456.78
 (1 row)
 
+-- test non-error-throwing API
+SELECT pg_input_is_valid('\x0001', 'money');
+ pg_input_is_valid 
+-------------------
+ f
+(1 row)
+
+SELECT * FROM pg_input_error_info('\x0001', 'money');
+                    message                    | detail | hint | sql_error_code 
+-----------------------------------------------+--------+------+----------------
+ invalid input syntax for type money: "\x0001" |        |      | 22P02
+(1 row)
+
+SELECT pg_input_is_valid('192233720368547758.07', 'money');
+ pg_input_is_valid 
+-------------------
+ f
+(1 row)
+
+SELECT * FROM pg_input_error_info('192233720368547758.07', 'money');
+                           message                            | detail | hint | sql_error_code 
+--------------------------------------------------------------+--------+------+----------------
+ value "192233720368547758.07" is out of range for type money |        |      | 22003
+(1 row)
+
 -- documented minimums and maximums
 SELECT '-92233720368547758.08'::money;
             money            
@@ -476,7 +503,7 @@ SELECT (-12345678901234567)::numeric::money;
  -$12,345,678,901,234,567.00
 (1 row)
 
--- Cast from money
+-- Cast from money to numeric
 SELECT '12345678901234567'::money::numeric;
        numeric        
 ----------------------
@@ -489,3 +516,34 @@ SELECT '-12345678901234567'::money::numeric;
  -12345678901234567.00
 (1 row)
 
+SELECT '92233720368547758.07'::money::numeric;
+       numeric        
+----------------------
+ 92233720368547758.07
+(1 row)
+
+SELECT '-92233720368547758.08'::money::numeric;
+        numeric        
+-----------------------
+ -92233720368547758.08
+(1 row)
+
+-- overflow checks
+SELECT '92233720368547758.07'::money + '0.01'::money;
+ERROR:  money out of range
+SELECT '-92233720368547758.08'::money - '0.01'::money;
+ERROR:  money out of range
+SELECT '92233720368547758.07'::money * 2::float8;
+ERROR:  money out of range
+SELECT '-1'::money / 1.175494e-38::float4;
+ERROR:  money out of range
+SELECT '92233720368547758.07'::money * 2::int4;
+ERROR:  money out of range
+SELECT '1'::money / 0::int2;
+ERROR:  division by zero
+SELECT '42'::money * 'inf'::float8;
+ERROR:  money out of range
+SELECT '42'::money * '-inf'::float8;
+ERROR:  money out of range
+SELECT '42'::money * 'nan'::float4;
+ERROR:  money out of range

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>7.2. Table Expressions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="queries-overview.html" title="7.1. Overview" /><link rel="next" href="queries-select-lists.html" title="7.3. Select Lists" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">7.2. Table Expressions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="queries-overview.html" title="7.1. Overview">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="queries.html" title="Chapter 7. Queries">Up</a></td><th width="60%" align="center">Chapter 7. Queries</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="queries-select-lists.html" title="7.3. Select Lists">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="QUERIES-TABLE-EXPRESSIONS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">7.2. Table Expressions</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-FROM">7.2.1. The <code class="literal">FROM</code> Clause</a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-WHERE">7.2.2. The <code class="literal">WHERE</code> Clause</a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-GROUP">7.2.3. The <code class="literal">GROUP BY</code> and <code class="literal">HAVING</code> Clauses</a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-GROUPING-SETS">7.2.4. <code class="literal">GROUPING SETS</code>, <code class="literal">CUBE</code>, and <code class="literal">ROLLUP</code></a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-WINDOW">7.2.5. Window Function Processing</a></span></dt></dl></div><a id="id-1.5.6.6.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>7.2. Table Expressions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="queries-overview.html" title="7.1. Overview" /><link rel="next" href="queries-select-lists.html" title="7.3. Select Lists" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">7.2. Table Expressions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="queries-overview.html" title="7.1. Overview">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="queries.html" title="Chapter 7. Queries">Up</a></td><th width="60%" align="center">Chapter 7. Queries</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="queries-select-lists.html" title="7.3. Select Lists">Next</a></td></tr></table><hr /></div><div class="sect1" id="QUERIES-TABLE-EXPRESSIONS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">7.2. Table Expressions <a href="#QUERIES-TABLE-EXPRESSIONS" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-FROM">7.2.1. The <code class="literal">FROM</code> Clause</a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-WHERE">7.2.2. The <code class="literal">WHERE</code> Clause</a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-GROUP">7.2.3. The <code class="literal">GROUP BY</code> and <code class="literal">HAVING</code> Clauses</a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-GROUPING-SETS">7.2.4. <code class="literal">GROUPING SETS</code>, <code class="literal">CUBE</code>, and <code class="literal">ROLLUP</code></a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-WINDOW">7.2.5. Window Function Processing</a></span></dt></dl></div><a id="id-1.5.6.6.2" class="indexterm"></a><p>
    A <em class="firstterm">table expression</em> computes a table.  The
    table expression contains a <code class="literal">FROM</code> clause that is
    optionally followed by <code class="literal">WHERE</code>, <code class="literal">GROUP BY</code>, and
@@ -14,8 +14,8 @@
    derived in the <code class="literal">FROM</code> clause.  All these transformations
    produce a virtual table that provides the rows that are passed to
    the select list to compute the output rows of the query.
-  </p><div class="sect2" id="QUERIES-FROM"><div class="titlepage"><div><div><h3 class="title">7.2.1. The <code class="literal">FROM</code> Clause</h3></div></div></div><p>
-    The <a class="xref" href="sql-select.html#SQL-FROM" title="FROM Clause"><code class="literal">FROM</code> Clause</a> derives a
+  </p><div class="sect2" id="QUERIES-FROM"><div class="titlepage"><div><div><h3 class="title">7.2.1. The <code class="literal">FROM</code> Clause <a href="#QUERIES-FROM" class="id_link">#</a></h3></div></div></div><p>
+    The <a class="link" href="sql-select.html#SQL-FROM" title="FROM Clause"><code class="literal">FROM</code></a> clause derives a
     table from one or more other tables given in a comma-separated
     table reference list.
 </p><pre class="synopsis">
@@ -45,7 +45,7 @@ FROM <em class="replaceable"><code>table_reference</code></em> [<span class="opt
     tables are included.  There is no real reason to use this syntax any more,
     because searching descendant tables is now always the default behavior.
     However, it is supported for compatibility with older releases.
-   </p><div class="sect3" id="QUERIES-JOIN"><div class="titlepage"><div><div><h4 class="title">7.2.1.1. Joined Tables</h4></div></div></div><a id="id-1.5.6.6.5.6.2" class="indexterm"></a><p>
+   </p><div class="sect3" id="QUERIES-JOIN"><div class="titlepage"><div><div><h4 class="title">7.2.1.1. Joined Tables <a href="#QUERIES-JOIN" class="id_link">#</a></h4></div></div></div><a id="id-1.5.6.6.5.6.2" class="indexterm"></a><p>
      A joined table is a table derived from two other (real or
      derived) tables according to the rules of the particular join
      type.  Inner, outer, and cross-joins are available.
@@ -310,7 +310,7 @@ FROM <em class="replaceable"><code>table_reference</code></em> [<span class="opt
      <span class="emphasis"><em>after</em></span> the join.
      That does not matter with inner joins, but it matters a lot with outer
      joins.
-    </p></div><div class="sect3" id="QUERIES-TABLE-ALIASES"><div class="titlepage"><div><div><h4 class="title">7.2.1.2. Table and Column Aliases</h4></div></div></div><a id="id-1.5.6.6.5.7.2" class="indexterm"></a><a id="id-1.5.6.6.5.7.3" class="indexterm"></a><p>
+    </p></div><div class="sect3" id="QUERIES-TABLE-ALIASES"><div class="titlepage"><div><div><h4 class="title">7.2.1.2. Table and Column Aliases <a href="#QUERIES-TABLE-ALIASES" class="id_link">#</a></h4></div></div></div><a id="id-1.5.6.6.5.7.2" class="indexterm"></a><a id="id-1.5.6.6.5.7.3" class="indexterm"></a><p>
      A temporary name can be given to tables and complex table
      references to be used for references to the derived table in
      the rest of the query.  This is called a <em class="firstterm">table
@@ -347,8 +347,6 @@ SELECT * FROM my_table AS m WHERE my_table.a &gt; 5;    -- wrong
 </p><pre class="programlisting">
 SELECT * FROM people AS mother JOIN people AS child ON mother.id = child.mother_id;
 </pre><p>
-     Additionally, an alias is required if the table reference is a
-     subquery (see <a class="xref" href="queries-table-expressions.html#QUERIES-SUBQUERIES" title="7.2.1.3. Subqueries">Section 7.2.1.3</a>).
     </p><p>
      Parentheses are used to resolve ambiguities.  In the following example,
      the first statement assigns the alias <code class="literal">b</code> to the second
@@ -380,11 +378,11 @@ SELECT a.* FROM (my_table AS a JOIN your_table AS b ON ...) AS c
 </pre><p>
      is not valid; the table alias <code class="literal">a</code> is not visible
      outside the alias <code class="literal">c</code>.
-    </p></div><div class="sect3" id="QUERIES-SUBQUERIES"><div class="titlepage"><div><div><h4 class="title">7.2.1.3. Subqueries</h4></div></div></div><a id="id-1.5.6.6.5.8.2" class="indexterm"></a><p>
+    </p></div><div class="sect3" id="QUERIES-SUBQUERIES"><div class="titlepage"><div><div><h4 class="title">7.2.1.3. Subqueries <a href="#QUERIES-SUBQUERIES" class="id_link">#</a></h4></div></div></div><a id="id-1.5.6.6.5.8.2" class="indexterm"></a><p>
      Subqueries specifying a derived table must be enclosed in
-     parentheses and <span class="emphasis"><em>must</em></span> be assigned a table
-     alias name (as in <a class="xref" href="queries-table-expressions.html#QUERIES-TABLE-ALIASES" title="7.2.1.2. Table and Column Aliases">Section 7.2.1.2</a>).  For
-     example:
+     parentheses.  They may be assigned a table alias name, and optionally
+     column alias names (as in <a class="xref" href="queries-table-expressions.html#QUERIES-TABLE-ALIASES" title="7.2.1.2. Table and Column Aliases">Section 7.2.1.2</a>).
+     For example:
 </p><pre class="programlisting">
 FROM (SELECT * FROM table1) AS alias_name
 </pre><p>
@@ -399,10 +397,16 @@ FROM (SELECT * FROM table1) AS alias_name
 FROM (VALUES ('anne', 'smith'), ('bob', 'jones'), ('joe', 'blow'))
      AS names(first, last)
 </pre><p>
-     Again, a table alias is required.  Assigning alias names to the columns
+     Again, a table alias is optional.  Assigning alias names to the columns
      of the <code class="command">VALUES</code> list is optional, but is good practice.
      For more information see <a class="xref" href="queries-values.html" title="7.7. VALUES Lists">Section 7.7</a>.
-    </p></div><div class="sect3" id="QUERIES-TABLEFUNCTIONS"><div class="titlepage"><div><div><h4 class="title">7.2.1.4. Table Functions</h4></div></div></div><a id="id-1.5.6.6.5.9.2" class="indexterm"></a><a id="id-1.5.6.6.5.9.3" class="indexterm"></a><p>
+    </p><p>
+     According to the SQL standard, a table alias name must be supplied
+     for a subquery.  <span class="productname">PostgreSQL</span>
+     allows <code class="literal">AS</code> and the alias to be omitted, but
+     writing one is good practice in SQL code that might be ported to
+     another system.
+    </p></div><div class="sect3" id="QUERIES-TABLEFUNCTIONS"><div class="titlepage"><div><div><h4 class="title">7.2.1.4. Table Functions <a href="#QUERIES-TABLEFUNCTIONS" class="id_link">#</a></h4></div></div></div><a id="id-1.5.6.6.5.9.2" class="indexterm"></a><a id="id-1.5.6.6.5.9.3" class="indexterm"></a><p>
      Table functions are functions that produce a set of rows, made up
      of either base data types (scalar types) or composite data types
      (table rows).  They are used like a table, view, or subquery in
@@ -431,7 +435,7 @@ ROWS FROM( <em class="replaceable"><code>function_call</code></em> [<span class=
      The special table function <code class="literal">UNNEST</code> may be called with
      any number of array parameters, and it returns a corresponding number of
      columns, as if <code class="literal">UNNEST</code>
-     (<a class="xref" href="functions-array.html" title="9.18. Array Functions and Operators">Section 9.18</a>) had been called on each parameter
+     (<a class="xref" href="functions-array.html" title="9.19. Array Functions and Operators">Section 9.19</a>) had been called on each parameter
      separately and combined using the <code class="literal">ROWS FROM</code> construct.
     </p><pre class="synopsis">
 UNNEST( <em class="replaceable"><code>array_expression</code></em> [<span class="optional">, ... </span>] ) [<span class="optional">WITH ORDINALITY</span>] [<span class="optional">[<span class="optional">AS</span>] <em class="replaceable"><code>table_alias</code></em> [<span class="optional">(<em class="replaceable"><code>column_alias</code></em> [<span class="optional">, ... </span>])</span>]</span>]
@@ -470,7 +474,8 @@ SELECT * FROM vw_getfoo;
      In some cases it is useful to define table functions that can
      return different column sets depending on how they are invoked.
      To support this, the table function can be declared as returning
-     the pseudo-type <code class="type">record</code>.  When such a function is used in
+     the pseudo-type <code class="type">record</code> with no <code class="literal">OUT</code>
+     parameters.  When such a function is used in
      a query, the expected row structure must be specified in the
      query itself, so that the system can know how to parse and plan
      the query.  This syntax looks like:
@@ -498,13 +503,38 @@ SELECT *
     WHERE proname LIKE 'bytea%';
 </pre><p>
      The <a class="xref" href="contrib-dblink-function.html" title="dblink"><span class="refentrytitle">dblink</span></a> function
-     (part of the <a class="xref" href="dblink.html" title="F.10. dblink">dblink</a> module) executes
+     (part of the <a class="xref" href="dblink.html" title="F.12. dblink — connect to other PostgreSQL databases">dblink</a> module) executes
      a remote query.  It is declared to return
      <code class="type">record</code> since it might be used for any kind of query.
      The actual column set must be specified in the calling query so
      that the parser knows, for example, what <code class="literal">*</code> should
      expand to.
-    </p></div><div class="sect3" id="QUERIES-LATERAL"><div class="titlepage"><div><div><h4 class="title">7.2.1.5. <code class="literal">LATERAL</code> Subqueries</h4></div></div></div><a id="id-1.5.6.6.5.10.2" class="indexterm"></a><p>
+    </p><p>
+     This example uses <code class="literal">ROWS FROM</code>:
+</p><pre class="programlisting">
+SELECT *
+FROM ROWS FROM
+    (
+        json_to_recordset('[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]')
+            AS (a INTEGER, b TEXT),
+        generate_series(1, 3)
+    ) AS x (p, q, s)
+ORDER BY p;
+
+  p  |  q  | s
+-----+-----+---
+  40 | foo | 1
+ 100 | bar | 2
+     |     | 3
+</pre><p>
+     It joins two functions into a single <code class="literal">FROM</code>
+     target.  <code class="function">json_to_recordset()</code> is instructed
+     to return two columns, the first <code class="type">integer</code>
+     and the second <code class="type">text</code>.  The result of
+     <code class="function">generate_series()</code> is used directly.
+     The <code class="literal">ORDER BY</code> clause sorts the column values
+     as integers.
+    </p></div><div class="sect3" id="QUERIES-LATERAL"><div class="titlepage"><div><div><h4 class="title">7.2.1.5. <code class="literal">LATERAL</code> Subqueries <a href="#QUERIES-LATERAL" class="id_link">#</a></h4></div></div></div><a id="id-1.5.6.6.5.10.2" class="indexterm"></a><p>
      Subqueries appearing in <code class="literal">FROM</code> can be
      preceded by the key word <code class="literal">LATERAL</code>.  This allows them to
      reference columns provided by preceding <code class="literal">FROM</code> items.
@@ -517,7 +547,7 @@ SELECT *
      key word is optional; the function's arguments can contain references
      to columns provided by preceding <code class="literal">FROM</code> items in any case.
     </p><p>
-     A <code class="literal">LATERAL</code> item can appear at top level in the
+     A <code class="literal">LATERAL</code> item can appear at the top level in the
      <code class="literal">FROM</code> list, or within a <code class="literal">JOIN</code> tree.  In the latter
      case it can also refer to any items that are on the left-hand side of a
      <code class="literal">JOIN</code> that it is on the right-hand side of.
@@ -576,8 +606,9 @@ SELECT m.name
 FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true
 WHERE pname IS NULL;
 </pre><p>
-    </p></div></div><div class="sect2" id="QUERIES-WHERE"><div class="titlepage"><div><div><h3 class="title">7.2.2. The <code class="literal">WHERE</code> Clause</h3></div></div></div><a id="id-1.5.6.6.6.2" class="indexterm"></a><p>
-    The syntax of the <a class="xref" href="sql-select.html#SQL-WHERE" title="WHERE Clause"><code class="literal">WHERE</code> Clause</a> is
+    </p></div></div><div class="sect2" id="QUERIES-WHERE"><div class="titlepage"><div><div><h3 class="title">7.2.2. The <code class="literal">WHERE</code> Clause <a href="#QUERIES-WHERE" class="id_link">#</a></h3></div></div></div><a id="id-1.5.6.6.6.2" class="indexterm"></a><p>
+    The syntax of the <a class="link" href="sql-select.html#SQL-WHERE" title="WHERE Clause"><code class="literal">WHERE</code></a>
+    clause is
 </p><pre class="synopsis">
 WHERE <em class="replaceable"><code>search_condition</code></em>
 </pre><p>
@@ -645,7 +676,7 @@ SELECT ... FROM fdt WHERE EXISTS (SELECT c1 FROM t2 WHERE c2 &gt; fdt.c1)
     input table of the subquery.  But qualifying the column name adds
     clarity even when it is not needed.  This example shows how the column
     naming scope of an outer query extends into its inner queries.
-   </p></div><div class="sect2" id="QUERIES-GROUP"><div class="titlepage"><div><div><h3 class="title">7.2.3. The <code class="literal">GROUP BY</code> and <code class="literal">HAVING</code> Clauses</h3></div></div></div><a id="id-1.5.6.6.7.2" class="indexterm"></a><a id="id-1.5.6.6.7.3" class="indexterm"></a><p>
+   </p></div><div class="sect2" id="QUERIES-GROUP"><div class="titlepage"><div><div><h3 class="title">7.2.3. The <code class="literal">GROUP BY</code> and <code class="literal">HAVING</code> Clauses <a href="#QUERIES-GROUP" class="id_link">#</a></h3></div></div></div><a id="id-1.5.6.6.7.2" class="indexterm"></a><a id="id-1.5.6.6.7.3" class="indexterm"></a><p>
     After passing the <code class="literal">WHERE</code> filter, the derived input
     table might be subject to grouping, using the <code class="literal">GROUP BY</code>
     clause, and elimination of group rows using the <code class="literal">HAVING</code>
@@ -656,7 +687,7 @@ SELECT <em class="replaceable"><code>select_list</code></em>
     [<span class="optional">WHERE ...</span>]
     GROUP BY <em class="replaceable"><code>grouping_column_reference</code></em> [<span class="optional">, <em class="replaceable"><code>grouping_column_reference</code></em></span>]...
 </pre><p>
-    The <a class="xref" href="sql-select.html#SQL-GROUPBY" title="GROUP BY Clause"><code class="literal">GROUP BY</code> Clause</a> is
+    The <a class="link" href="sql-select.html#SQL-GROUPBY" title="GROUP BY Clause"><code class="literal">GROUP BY</code></a> clause is
     used to group together those rows in a table that have the same
     values in all the columns listed. The order in which the columns
     are listed does not matter.  The effect is to combine each set
@@ -703,7 +734,7 @@ SELECT <em class="replaceable"><code>select_list</code></em>
 </pre><p>
     Here <code class="literal">sum</code> is an aggregate function that
     computes a single value over the entire group.  More information
-    about the available aggregate functions can be found in <a class="xref" href="functions-aggregate.html" title="9.20. Aggregate Functions">Section 9.20</a>.
+    about the available aggregate functions can be found in <a class="xref" href="functions-aggregate.html" title="9.21. Aggregate Functions">Section 9.21</a>.
    </p><div class="tip"><h3 class="title">Tip</h3><p>
      Grouping without aggregate expressions effectively calculates the
      set of distinct values in a column.  This can also be achieved
@@ -790,7 +821,7 @@ SELECT product_id, p.name, (sum(s.units) * (p.price - p.cost)) AS profit
     <code class="literal">HAVING</code>).
     The same is true if it contains a <code class="literal">HAVING</code> clause, even
     without any aggregate function calls or <code class="literal">GROUP BY</code> clause.
-   </p></div><div class="sect2" id="QUERIES-GROUPING-SETS"><div class="titlepage"><div><div><h3 class="title">7.2.4. <code class="literal">GROUPING SETS</code>, <code class="literal">CUBE</code>, and <code class="literal">ROLLUP</code></h3></div></div></div><a id="id-1.5.6.6.8.2" class="indexterm"></a><a id="id-1.5.6.6.8.3" class="indexterm"></a><a id="id-1.5.6.6.8.4" class="indexterm"></a><p>
+   </p></div><div class="sect2" id="QUERIES-GROUPING-SETS"><div class="titlepage"><div><div><h3 class="title">7.2.4. <code class="literal">GROUPING SETS</code>, <code class="literal">CUBE</code>, and <code class="literal">ROLLUP</code> <a href="#QUERIES-GROUPING-SETS" class="id_link">#</a></h3></div></div></div><a id="id-1.5.6.6.8.2" class="indexterm"></a><a id="id-1.5.6.6.8.3" class="indexterm"></a><a id="id-1.5.6.6.8.4" class="indexterm"></a><p>
     More complex grouping operations than those described above are possible
     using the concept of <em class="firstterm">grouping sets</em>.  The data selected by
     the <code class="literal">FROM</code> and <code class="literal">WHERE</code> clauses is grouped separately
@@ -828,7 +859,7 @@ SELECT product_id, p.name, (sum(s.units) * (p.price - p.cost)) AS profit
     References to the grouping columns or expressions are replaced
     by null values in result rows for grouping sets in which those
     columns do not appear.  To distinguish which grouping a particular output
-    row resulted from, see <a class="xref" href="functions-aggregate.html#FUNCTIONS-GROUPING-TABLE" title="Table 9.56. Grouping Operations">Table 9.56</a>.
+    row resulted from, see <a class="xref" href="functions-aggregate.html#FUNCTIONS-GROUPING-TABLE" title="Table 9.63. Grouping Operations">Table 9.63</a>.
    </p><p>
     A shorthand notation is provided for specifying two common types of grouping set.
     A clause of the form
@@ -846,14 +877,14 @@ GROUPING SETS (
     ( )
 )
 </pre><p>
-    This is commonly used for analysis over hierarchical data; e.g. total
+    This is commonly used for analysis over hierarchical data; e.g., total
     salary by department, division, and company-wide total.
    </p><p>
     A clause of the form
 </p><pre class="programlisting">
 CUBE ( <em class="replaceable"><code>e1</code></em>, <em class="replaceable"><code>e2</code></em>, ... )
 </pre><p>
-    represents the given list and all of its possible subsets (i.e. the power
+    represents the given list and all of its possible subsets (i.e., the power
     set).  Thus
 </p><pre class="programlisting">
 CUBE ( a, b, c )
@@ -924,6 +955,47 @@ GROUP BY GROUPING SETS (
     (a, d),       (a, e)
 )
 </pre><p>
+   </p><p>
+    <a id="id-1.5.6.6.8.13.1" class="indexterm"></a>
+    <a id="id-1.5.6.6.8.13.2" class="indexterm"></a>
+    When specifying multiple grouping items together, the final set of grouping
+    sets might contain duplicates. For example:
+</p><pre class="programlisting">
+GROUP BY ROLLUP (a, b), ROLLUP (a, c)
+</pre><p>
+    is equivalent to
+</p><pre class="programlisting">
+GROUP BY GROUPING SETS (
+    (a, b, c),
+    (a, b),
+    (a, b),
+    (a, c),
+    (a),
+    (a),
+    (a, c),
+    (a),
+    ()
+)
+</pre><p>
+    If these duplicates are undesirable, they can be removed using the
+    <code class="literal">DISTINCT</code> clause directly on the <code class="literal">GROUP BY</code>.
+    Therefore:
+</p><pre class="programlisting">
+GROUP BY <span class="emphasis"><strong>DISTINCT</strong></span> ROLLUP (a, b), ROLLUP (a, c)
+</pre><p>
+    is equivalent to
+</p><pre class="programlisting">
+GROUP BY GROUPING SETS (
+    (a, b, c),
+    (a, b),
+    (a, c),
+    (a),
+    ()
+)
+</pre><p>
+    This is not the same as using <code class="literal">SELECT DISTINCT</code> because the output
+    rows may still contain duplicates.  If any of the ungrouped columns contains NULL,
+    it will be indistinguishable from the NULL used when that same column is grouped.
    </p><div class="note"><h3 class="title">Note</h3><p>
     The construct <code class="literal">(a, b)</code> is normally recognized in expressions as
     a <a class="link" href="sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS" title="4.2.13. Row Constructors">row constructor</a>.
@@ -931,10 +1003,10 @@ GROUP BY GROUPING SETS (
     levels of expressions, and <code class="literal">(a, b)</code> is parsed as a list of
     expressions as described above.  If for some reason you <span class="emphasis"><em>need</em></span>
     a row constructor in a grouping expression, use <code class="literal">ROW(a, b)</code>.
-   </p></div></div><div class="sect2" id="QUERIES-WINDOW"><div class="titlepage"><div><div><h3 class="title">7.2.5. Window Function Processing</h3></div></div></div><a id="id-1.5.6.6.9.2" class="indexterm"></a><p>
+   </p></div></div><div class="sect2" id="QUERIES-WINDOW"><div class="titlepage"><div><div><h3 class="title">7.2.5. Window Function Processing <a href="#QUERIES-WINDOW" class="id_link">#</a></h3></div></div></div><a id="id-1.5.6.6.9.2" class="indexterm"></a><p>
     If the query contains any window functions (see
     <a class="xref" href="tutorial-window.html" title="3.5. Window Functions">Section 3.5</a>,
-    <a class="xref" href="functions-window.html" title="9.21. Window Functions">Section 9.21</a> and
+    <a class="xref" href="functions-window.html" title="9.22. Window Functions">Section 9.22</a> and
     <a class="xref" href="sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS" title="4.2.8. Window Function Calls">Section 4.2.8</a>), these functions are evaluated
     after any grouping, aggregation, and <code class="literal">HAVING</code> filtering is
     performed.  That is, if the query uses any aggregates, <code class="literal">GROUP
@@ -959,4 +1031,4 @@ GROUP BY GROUPING SETS (
     It is not recommended to rely on this, however.  Use an explicit
     top-level <code class="literal">ORDER BY</code> clause if you want to be sure the
     results are sorted in a particular way.
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="queries-overview.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="queries.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="queries-select-lists.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">7.1. Overview </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 7.3. Select Lists</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="queries-overview.html" title="7.1. Overview">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="queries.html" title="Chapter 7. Queries">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="queries-select-lists.html" title="7.3. Select Lists">Next</a></td></tr><tr><td width="40%" align="left" valign="top">7.1. Overview </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 7.3. Select Lists</td></tr></table></div></body></html>

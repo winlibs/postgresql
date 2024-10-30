@@ -1,7 +1,7 @@
 <!-- doc/src/sgml/unaccent.sgml -->
 
 <sect1 id="unaccent" xreflabel="unaccent">
- <title>unaccent</title>
+ <title>unaccent &mdash; a text search dictionary which removes diacritics</title>
 
  <indexterm zone="unaccent">
   <primary>unaccent</primary>
@@ -21,7 +21,13 @@
   normalizing dictionary for the <filename>thesaurus</filename> dictionary.
  </para>
 
- <sect2>
+ <para>
+  This module is considered <quote>trusted</quote>, that is, it can be
+  installed by non-superusers who have <literal>CREATE</literal> privilege
+  on the current database.
+ </para>
+
+ <sect2 id="unaccent-configuration">
   <title>Configuration</title>
 
   <para>
@@ -101,7 +107,7 @@
   </para>
  </sect2>
 
- <sect2>
+ <sect2 id="unaccent-usage">
   <title>Usage</title>
 
   <para>
@@ -159,7 +165,7 @@ mydb=# select ts_headline('fr','H&ocirc;tel de la Mer',to_tsquery('fr','Hotels')
   </para>
  </sect2>
 
- <sect2>
+ <sect2 id="unaccent-functions">
  <title>Functions</title>
 
  <para>

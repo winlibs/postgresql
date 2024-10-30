@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE SEQUENCE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-createschema.html" title="CREATE SCHEMA" /><link rel="next" href="sql-createserver.html" title="CREATE SERVER" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE SEQUENCE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createschema.html" title="CREATE SCHEMA">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createserver.html" title="CREATE SERVER">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-CREATESEQUENCE"><div class="titlepage"></div><a id="id-1.9.3.81.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE SEQUENCE</span></h2><p>CREATE SEQUENCE — define a new sequence generator</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
-CREATE [ TEMPORARY | TEMP ] SEQUENCE [ IF NOT EXISTS ] <em class="replaceable"><code>name</code></em>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE SEQUENCE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-createschema.html" title="CREATE SCHEMA" /><link rel="next" href="sql-createserver.html" title="CREATE SERVER" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE SEQUENCE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createschema.html" title="CREATE SCHEMA">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createserver.html" title="CREATE SERVER">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-CREATESEQUENCE"><div class="titlepage"></div><a id="id-1.9.3.81.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE SEQUENCE</span></h2><p>CREATE SEQUENCE — define a new sequence generator</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+CREATE [ { TEMPORARY | TEMP } | UNLOGGED ] SEQUENCE [ IF NOT EXISTS ] <em class="replaceable"><code>name</code></em>
     [ AS <em class="replaceable"><code>data_type</code></em> ]
     [ INCREMENT [ BY ] <em class="replaceable"><code>increment</code></em> ]
     [ MINVALUE <em class="replaceable"><code>minvalue</code></em> | NO MINVALUE ] [ MAXVALUE <em class="replaceable"><code>maxvalue</code></em> | NO MAXVALUE ]
@@ -16,15 +16,16 @@ CREATE [ TEMPORARY | TEMP ] SEQUENCE [ IF NOT EXISTS ] <em class="replaceable"><
    specified schema.  Otherwise it is created in the current schema.
    Temporary sequences exist in a special schema, so a schema name cannot be
    given when creating a temporary sequence.
-   The sequence name must be distinct from the name of any other sequence,
-   table, index, view, or foreign table in the same schema.
+   The sequence name must be distinct from the name of any other relation
+   (table, sequence, index, view, materialized view, or foreign table) in
+   the same schema.
   </p><p>
    After a sequence is created, you use the functions
    <code class="function">nextval</code>,
    <code class="function">currval</code>, and
    <code class="function">setval</code>
    to operate on the sequence.  These functions are documented in
-   <a class="xref" href="functions-sequence.html" title="9.16. Sequence Manipulation Functions">Section 9.16</a>.
+   <a class="xref" href="functions-sequence.html" title="9.17. Sequence Manipulation Functions">Section 9.17</a>.
   </p><p>
    Although you cannot update a sequence directly, you can use a query like:
 
@@ -43,11 +44,23 @@ SELECT * FROM <em class="replaceable"><code>name</code></em>;
       permanent sequences with the same name are not visible (in this
       session) while the temporary sequence exists, unless they are
       referenced with schema-qualified names.
+     </p></dd><dt><span class="term"><code class="literal">UNLOGGED</code></span></dt><dd><p>
+      If specified, the sequence is created as an unlogged sequence.  Changes
+      to unlogged sequences are not written to the write-ahead log.  They are
+      not crash-safe: an unlogged sequence is automatically reset to its
+      initial state after a crash or unclean shutdown.  Unlogged sequences are
+      also not replicated to standby servers.
+     </p><p>
+      Unlike unlogged tables, unlogged sequences do not offer a significant
+      performance advantage.  This option is mainly intended for sequences
+      associated with unlogged tables via identity columns or serial columns.
+      In those cases, it usually wouldn't make sense to have the sequence
+      WAL-logged and replicated but not its associated table.
      </p></dd><dt><span class="term"><code class="literal">IF NOT EXISTS</code></span></dt><dd><p>
       Do not throw an error if a relation with the same name already exists.
       A notice is issued in this case. Note that there is no guarantee that
       the existing relation is anything like the sequence that would have
-      been created - it might not even be a sequence.
+      been created — it might not even be a sequence.
      </p></dd><dt><span class="term"><em class="replaceable"><code>name</code></em></span></dt><dd><p>
       The name (optionally schema-qualified) of the sequence to be created.
      </p></dd><dt><span class="term"><em class="replaceable"><code>data_type</code></em></span></dt><dd><p>
@@ -140,7 +153,7 @@ SELECT * FROM <em class="replaceable"><code>name</code></em>;
    session A might reserve values 1..10 and return
    <code class="function">nextval</code>=1, then session B might reserve values
    11..20 and return <code class="function">nextval</code>=11 before session A
-   has generated <code class="literal">nextval</code>=2.  Thus, with a
+   has generated <code class="function">nextval</code>=2.  Thus, with a
    <em class="replaceable"><code>cache</code></em> setting of one
    it is safe to assume that <code class="function">nextval</code> values are generated
    sequentially; with a <em class="replaceable"><code>cache</code></em> setting greater than one you
@@ -198,4 +211,4 @@ END;
      </p></li><li class="listitem"><p>
       The <code class="literal">OWNED BY</code> clause is a <span class="productname">PostgreSQL</span>
       extension.
-     </p></li></ul></div></div><div class="refsect1" id="id-1.9.3.81.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-altersequence.html" title="ALTER SEQUENCE"><span class="refentrytitle">ALTER SEQUENCE</span></a>, <a class="xref" href="sql-dropsequence.html" title="DROP SEQUENCE"><span class="refentrytitle">DROP SEQUENCE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createschema.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createserver.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE SCHEMA </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> CREATE SERVER</td></tr></table></div></body></html>
+     </p></li></ul></div></div><div class="refsect1" id="id-1.9.3.81.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-altersequence.html" title="ALTER SEQUENCE"><span class="refentrytitle">ALTER SEQUENCE</span></a>, <a class="xref" href="sql-dropsequence.html" title="DROP SEQUENCE"><span class="refentrytitle">DROP SEQUENCE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createschema.html" title="CREATE SCHEMA">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createserver.html" title="CREATE SERVER">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE SCHEMA </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> CREATE SERVER</td></tr></table></div></body></html>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ALTER DATABASE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-alterconversion.html" title="ALTER CONVERSION" /><link rel="next" href="sql-alterdefaultprivileges.html" title="ALTER DEFAULT PRIVILEGES" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">ALTER DATABASE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-alterconversion.html" title="ALTER CONVERSION">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-alterdefaultprivileges.html" title="ALTER DEFAULT PRIVILEGES">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-ALTERDATABASE"><div class="titlepage"></div><a id="id-1.9.3.7.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">ALTER DATABASE</span></h2><p>ALTER DATABASE — change a database</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ALTER DATABASE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-alterconversion.html" title="ALTER CONVERSION" /><link rel="next" href="sql-alterdefaultprivileges.html" title="ALTER DEFAULT PRIVILEGES" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">ALTER DATABASE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-alterconversion.html" title="ALTER CONVERSION">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-alterdefaultprivileges.html" title="ALTER DEFAULT PRIVILEGES">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-ALTERDATABASE"><div class="titlepage"></div><a id="id-1.9.3.7.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">ALTER DATABASE</span></h2><p>ALTER DATABASE — change a database</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 ALTER DATABASE <em class="replaceable"><code>name</code></em> [ [ WITH ] <em class="replaceable"><code>option</code></em> [ ... ] ]
 
 <span class="phrase">where <em class="replaceable"><code>option</code></em> can be:</span>
@@ -10,9 +10,11 @@ ALTER DATABASE <em class="replaceable"><code>name</code></em> [ [ WITH ] <em cla
 
 ALTER DATABASE <em class="replaceable"><code>name</code></em> RENAME TO <em class="replaceable"><code>new_name</code></em>
 
-ALTER DATABASE <em class="replaceable"><code>name</code></em> OWNER TO { <em class="replaceable"><code>new_owner</code></em> | CURRENT_USER | SESSION_USER }
+ALTER DATABASE <em class="replaceable"><code>name</code></em> OWNER TO { <em class="replaceable"><code>new_owner</code></em> | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 
 ALTER DATABASE <em class="replaceable"><code>name</code></em> SET TABLESPACE <em class="replaceable"><code>new_tablespace</code></em>
+
+ALTER DATABASE <em class="replaceable"><code>name</code></em> REFRESH COLLATION VERSION
 
 ALTER DATABASE <em class="replaceable"><code>name</code></em> SET <em class="replaceable"><code>configuration_parameter</code></em> { TO | = } { <em class="replaceable"><code>value</code></em> | DEFAULT }
 ALTER DATABASE <em class="replaceable"><code>name</code></em> SET <em class="replaceable"><code>configuration_parameter</code></em> FROM CURRENT
@@ -33,8 +35,8 @@ ALTER DATABASE <em class="replaceable"><code>name</code></em> RESET ALL
    that.)
   </p><p>
    The third form changes the owner of the database.
-   To alter the owner, you must own the database and also be a direct or
-   indirect member of the new owning role, and you must have the
+   To alter the owner, you must be able to <code class="literal">SET ROLE</code> to the
+   new owning role, and you must have the
    <code class="literal">CREATEDB</code> privilege.
    (Note that superusers have all these privileges automatically.)
   </p><p>
@@ -76,6 +78,8 @@ ALTER DATABASE <em class="replaceable"><code>name</code></em> RESET ALL
       The new default tablespace of the database.
      </p><p>
       This form of the command cannot be executed inside a transaction block.
+     </p></dd><dt><span class="term"><code class="literal">REFRESH COLLATION VERSION</code></span></dt><dd><p>
+      Update the database collation version.  See <a class="xref" href="sql-altercollation.html#SQL-ALTERCOLLATION-NOTES" title="Notes">Notes</a> for background.
      </p></dd><dt><span class="term"><em class="replaceable"><code>configuration_parameter</code></em><br /></span><span class="term"><em class="replaceable"><code>value</code></em></span></dt><dd><p>
         Set this database's session default for the specified configuration
         parameter to the given value.  If
@@ -87,7 +91,7 @@ ALTER DATABASE <em class="replaceable"><code>name</code></em> RESET ALL
         <code class="literal">SET FROM CURRENT</code> saves the session's current value of
         the parameter as the database-specific value.
        </p><p>
-        See <a class="xref" href="sql-set.html" title="SET"><span class="refentrytitle">SET</span></a> and <a class="xref" href="runtime-config.html" title="Chapter 19. Server Configuration">Chapter 19</a>
+        See <a class="xref" href="sql-set.html" title="SET"><span class="refentrytitle">SET</span></a> and <a class="xref" href="runtime-config.html" title="Chapter 20. Server Configuration">Chapter 20</a>
         for more information about allowed parameter names
         and values.
        </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.7.7"><h2>Notes</h2><p>
@@ -105,4 +109,4 @@ ALTER DATABASE test SET enable_indexscan TO off;
 </pre></div><div class="refsect1" id="id-1.9.3.7.9"><h2>Compatibility</h2><p>
    The <code class="command">ALTER DATABASE</code> statement is a
    <span class="productname">PostgreSQL</span> extension.
-  </p></div><div class="refsect1" id="id-1.9.3.7.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-createdatabase.html" title="CREATE DATABASE"><span class="refentrytitle">CREATE DATABASE</span></a>, <a class="xref" href="sql-dropdatabase.html" title="DROP DATABASE"><span class="refentrytitle">DROP DATABASE</span></a>, <a class="xref" href="sql-set.html" title="SET"><span class="refentrytitle">SET</span></a>, <a class="xref" href="sql-createtablespace.html" title="CREATE TABLESPACE"><span class="refentrytitle">CREATE TABLESPACE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-alterconversion.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-alterdefaultprivileges.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ALTER CONVERSION </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> ALTER DEFAULT PRIVILEGES</td></tr></table></div></body></html>
+  </p></div><div class="refsect1" id="id-1.9.3.7.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-createdatabase.html" title="CREATE DATABASE"><span class="refentrytitle">CREATE DATABASE</span></a>, <a class="xref" href="sql-dropdatabase.html" title="DROP DATABASE"><span class="refentrytitle">DROP DATABASE</span></a>, <a class="xref" href="sql-set.html" title="SET"><span class="refentrytitle">SET</span></a>, <a class="xref" href="sql-createtablespace.html" title="CREATE TABLESPACE"><span class="refentrytitle">CREATE TABLESPACE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-alterconversion.html" title="ALTER CONVERSION">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-alterdefaultprivileges.html" title="ALTER DEFAULT PRIVILEGES">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ALTER CONVERSION </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> ALTER DEFAULT PRIVILEGES</td></tr></table></div></body></html>

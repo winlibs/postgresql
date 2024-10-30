@@ -9,7 +9,7 @@
  * See utils/resowner/README for more info.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -20,8 +20,12 @@
  */
 #include "postgres.h"
 
-#include "access/hash.h"
+#include "common/cryptohash.h"
+#include "common/hashfn.h"
+#include "common/hmac.h"
 #include "jit/jit.h"
+#include "storage/bufmgr.h"
+#include "storage/ipc.h"
 #include "storage/predicate.h"
 #include "storage/proc.h"
 #include "utils/memutils.h"
@@ -117,6 +121,7 @@ typedef struct ResourceOwnerData
 
 	/* We have built-in support for remembering: */
 	ResourceArray bufferarr;	/* owned buffers */
+	ResourceArray bufferioarr;	/* in-progress buffer IO */
 	ResourceArray catrefarr;	/* catcache references */
 	ResourceArray catlistrefarr;	/* catcache-list pins */
 	ResourceArray relrefarr;	/* relcache references */
@@ -126,6 +131,8 @@ typedef struct ResourceOwnerData
 	ResourceArray filearr;		/* open temporary files */
 	ResourceArray dsmarr;		/* dynamic shmem segments */
 	ResourceArray jitarr;		/* JIT contexts */
+	ResourceArray cryptohasharr;	/* cryptohash contexts */
+	ResourceArray hmacarr;		/* HMAC contexts */
 
 	/* We can remember up to MAX_RESOWNER_LOCKS references to local locks. */
 	int			nlocks;			/* number of owned locks */
@@ -140,6 +147,7 @@ typedef struct ResourceOwnerData
 ResourceOwner CurrentResourceOwner = NULL;
 ResourceOwner CurTransactionResourceOwner = NULL;
 ResourceOwner TopTransactionResourceOwner = NULL;
+ResourceOwner AuxProcessResourceOwner = NULL;
 
 /*
  * List of add-on callbacks for resource releasing
@@ -162,15 +170,18 @@ static bool ResourceArrayRemove(ResourceArray *resarr, Datum value);
 static bool ResourceArrayGetAny(ResourceArray *resarr, Datum *value);
 static void ResourceArrayFree(ResourceArray *resarr);
 static void ResourceOwnerReleaseInternal(ResourceOwner owner,
-							 ResourceReleasePhase phase,
-							 bool isCommit,
-							 bool isTopLevel);
+										 ResourceReleasePhase phase,
+										 bool isCommit,
+										 bool isTopLevel);
+static void ReleaseAuxProcessResourcesCallback(int code, Datum arg);
 static void PrintRelCacheLeakWarning(Relation rel);
 static void PrintPlanCacheLeakWarning(CachedPlan *plan);
 static void PrintTupleDescLeakWarning(TupleDesc tupdesc);
 static void PrintSnapshotLeakWarning(Snapshot snapshot);
 static void PrintFileLeakWarning(File file);
 static void PrintDSMLeakWarning(dsm_segment *seg);
+static void PrintCryptoHashLeakWarning(Datum handle);
+static void PrintHMACLeakWarning(Datum handle);
 
 
 /*****************************************************************************
@@ -431,6 +442,7 @@ ResourceOwnerCreate(ResourceOwner parent, const char *name)
 	}
 
 	ResourceArrayInit(&(owner->bufferarr), BufferGetDatum(InvalidBuffer));
+	ResourceArrayInit(&(owner->bufferioarr), BufferGetDatum(InvalidBuffer));
 	ResourceArrayInit(&(owner->catrefarr), PointerGetDatum(NULL));
 	ResourceArrayInit(&(owner->catlistrefarr), PointerGetDatum(NULL));
 	ResourceArrayInit(&(owner->relrefarr), PointerGetDatum(NULL));
@@ -440,6 +452,8 @@ ResourceOwnerCreate(ResourceOwner parent, const char *name)
 	ResourceArrayInit(&(owner->filearr), FileGetDatum(-1));
 	ResourceArrayInit(&(owner->dsmarr), PointerGetDatum(NULL));
 	ResourceArrayInit(&(owner->jitarr), PointerGetDatum(NULL));
+	ResourceArrayInit(&(owner->cryptohasharr), PointerGetDatum(NULL));
+	ResourceArrayInit(&(owner->hmacarr), PointerGetDatum(NULL));
 
 	return owner;
 }
@@ -489,6 +503,7 @@ ResourceOwnerReleaseInternal(ResourceOwner owner,
 	ResourceOwner child;
 	ResourceOwner save;
 	ResourceReleaseCallbackItem *item;
+	ResourceReleaseCallbackItem *next;
 	Datum		foundres;
 
 	/* Recurse to handle descendants */
@@ -504,6 +519,24 @@ ResourceOwnerReleaseInternal(ResourceOwner owner,
 
 	if (phase == RESOURCE_RELEASE_BEFORE_LOCKS)
 	{
+		/*
+		 * Abort failed buffer IO. AbortBufferIO()->TerminateBufferIO() calls
+		 * ResourceOwnerForgetBufferIO(), so we just have to iterate till
+		 * there are none.
+		 *
+		 * Needs to be before we release buffer pins.
+		 *
+		 * During a commit, there shouldn't be any in-progress IO.
+		 */
+		while (ResourceArrayGetAny(&(owner->bufferioarr), &foundres))
+		{
+			Buffer		res = DatumGetBuffer(foundres);
+
+			if (isCommit)
+				elog(PANIC, "lost track of buffer IO on buffer %d", res);
+			AbortBufferIO(res);
+		}
+
 		/*
 		 * Release buffer pins.  Note that ReleaseBuffer will remove the
 		 * buffer entry from our array, so we just have to iterate till there
@@ -545,9 +578,30 @@ ResourceOwnerReleaseInternal(ResourceOwner owner,
 		/* Ditto for JIT contexts */
 		while (ResourceArrayGetAny(&(owner->jitarr), &foundres))
 		{
-			JitContext *context = (JitContext *) PointerGetDatum(foundres);
+			JitContext *context = (JitContext *) DatumGetPointer(foundres);
 
 			jit_release_context(context);
+		}
+
+		/* Ditto for cryptohash contexts */
+		while (ResourceArrayGetAny(&(owner->cryptohasharr), &foundres))
+		{
+			pg_cryptohash_ctx *context =
+				(pg_cryptohash_ctx *) DatumGetPointer(foundres);
+
+			if (isCommit)
+				PrintCryptoHashLeakWarning(foundres);
+			pg_cryptohash_free(context);
+		}
+
+		/* Ditto for HMAC contexts */
+		while (ResourceArrayGetAny(&(owner->hmacarr), &foundres))
+		{
+			pg_hmac_ctx *context = (pg_hmac_ctx *) DatumGetPointer(foundres);
+
+			if (isCommit)
+				PrintHMACLeakWarning(foundres);
+			pg_hmac_free(context);
 		}
 	}
 	else if (phase == RESOURCE_RELEASE_LOCKS)
@@ -562,7 +616,7 @@ ResourceOwnerReleaseInternal(ResourceOwner owner,
 			if (owner == TopTransactionResourceOwner)
 			{
 				ProcReleaseLocks(isCommit);
-				ReleasePredicateLocks(isCommit);
+				ReleasePredicateLocks(isCommit, false);
 			}
 		}
 		else
@@ -633,7 +687,7 @@ ResourceOwnerReleaseInternal(ResourceOwner owner,
 
 			if (isCommit)
 				PrintPlanCacheLeakWarning(res);
-			ReleaseCachedPlan(res, true);
+			ReleaseCachedPlan(res, owner);
 		}
 
 		/* Ditto for tupdesc references */
@@ -668,10 +722,34 @@ ResourceOwnerReleaseInternal(ResourceOwner owner,
 	}
 
 	/* Let add-on modules get a chance too */
-	for (item = ResourceRelease_callbacks; item; item = item->next)
+	for (item = ResourceRelease_callbacks; item; item = next)
+	{
+		/* allow callbacks to unregister themselves when called */
+		next = item->next;
 		item->callback(phase, isCommit, isTopLevel, item->arg);
+	}
 
 	CurrentResourceOwner = save;
+}
+
+/*
+ * ResourceOwnerReleaseAllPlanCacheRefs
+ *		Release the plancache references (only) held by this owner.
+ *
+ * We might eventually add similar functions for other resource types,
+ * but for now, only this is needed.
+ */
+void
+ResourceOwnerReleaseAllPlanCacheRefs(ResourceOwner owner)
+{
+	Datum		foundres;
+
+	while (ResourceArrayGetAny(&(owner->planrefarr), &foundres))
+	{
+		CachedPlan *res = (CachedPlan *) DatumGetPointer(foundres);
+
+		ReleaseCachedPlan(res, owner);
+	}
 }
 
 /*
@@ -688,6 +766,7 @@ ResourceOwnerDelete(ResourceOwner owner)
 
 	/* And it better not own any resources, either */
 	Assert(owner->bufferarr.nitems == 0);
+	Assert(owner->bufferioarr.nitems == 0);
 	Assert(owner->catrefarr.nitems == 0);
 	Assert(owner->catlistrefarr.nitems == 0);
 	Assert(owner->relrefarr.nitems == 0);
@@ -697,6 +776,8 @@ ResourceOwnerDelete(ResourceOwner owner)
 	Assert(owner->filearr.nitems == 0);
 	Assert(owner->dsmarr.nitems == 0);
 	Assert(owner->jitarr.nitems == 0);
+	Assert(owner->cryptohasharr.nitems == 0);
+	Assert(owner->hmacarr.nitems == 0);
 	Assert(owner->nlocks == 0 || owner->nlocks == MAX_RESOWNER_LOCKS + 1);
 
 	/*
@@ -715,6 +796,7 @@ ResourceOwnerDelete(ResourceOwner owner)
 
 	/* And free the object. */
 	ResourceArrayFree(&(owner->bufferarr));
+	ResourceArrayFree(&(owner->bufferioarr));
 	ResourceArrayFree(&(owner->catrefarr));
 	ResourceArrayFree(&(owner->catlistrefarr));
 	ResourceArrayFree(&(owner->relrefarr));
@@ -724,6 +806,8 @@ ResourceOwnerDelete(ResourceOwner owner)
 	ResourceArrayFree(&(owner->filearr));
 	ResourceArrayFree(&(owner->dsmarr));
 	ResourceArrayFree(&(owner->jitarr));
+	ResourceArrayFree(&(owner->cryptohasharr));
+	ResourceArrayFree(&(owner->hmacarr));
 
 	pfree(owner);
 }
@@ -823,6 +907,59 @@ UnregisterResourceReleaseCallback(ResourceReleaseCallback callback, void *arg)
 	}
 }
 
+/*
+ * Establish an AuxProcessResourceOwner for the current process.
+ */
+void
+CreateAuxProcessResourceOwner(void)
+{
+	Assert(AuxProcessResourceOwner == NULL);
+	Assert(CurrentResourceOwner == NULL);
+	AuxProcessResourceOwner = ResourceOwnerCreate(NULL, "AuxiliaryProcess");
+	CurrentResourceOwner = AuxProcessResourceOwner;
+
+	/*
+	 * Register a shmem-exit callback for cleanup of aux-process resource
+	 * owner.  (This needs to run after, e.g., ShutdownXLOG.)
+	 */
+	on_shmem_exit(ReleaseAuxProcessResourcesCallback, 0);
+}
+
+/*
+ * Convenience routine to release all resources tracked in
+ * AuxProcessResourceOwner (but that resowner is not destroyed here).
+ * Warn about leaked resources if isCommit is true.
+ */
+void
+ReleaseAuxProcessResources(bool isCommit)
+{
+	/*
+	 * At this writing, the only thing that could actually get released is
+	 * buffer pins; but we may as well do the full release protocol.
+	 */
+	ResourceOwnerRelease(AuxProcessResourceOwner,
+						 RESOURCE_RELEASE_BEFORE_LOCKS,
+						 isCommit, true);
+	ResourceOwnerRelease(AuxProcessResourceOwner,
+						 RESOURCE_RELEASE_LOCKS,
+						 isCommit, true);
+	ResourceOwnerRelease(AuxProcessResourceOwner,
+						 RESOURCE_RELEASE_AFTER_LOCKS,
+						 isCommit, true);
+}
+
+/*
+ * Shmem-exit callback for the same.
+ * Warn about leaked resources if process exit code is zero (ie normal).
+ */
+static void
+ReleaseAuxProcessResourcesCallback(int code, Datum arg)
+{
+	bool		isCommit = (code == 0);
+
+	ReleaseAuxProcessResources(isCommit);
+}
+
 
 /*
  * Make sure there is room for at least one more entry in a ResourceOwner's
@@ -830,15 +967,12 @@ UnregisterResourceReleaseCallback(ResourceReleaseCallback callback, void *arg)
  *
  * This is separate from actually inserting an entry because if we run out
  * of memory, it's critical to do so *before* acquiring the resource.
- *
- * We allow the case owner == NULL because the bufmgr is sometimes invoked
- * outside any transaction (for example, during WAL recovery).
  */
 void
 ResourceOwnerEnlargeBuffers(ResourceOwner owner)
 {
-	if (owner == NULL)
-		return;
+	/* We used to allow pinning buffers without a resowner, but no more */
+	Assert(owner != NULL);
 	ResourceArrayEnlarge(&(owner->bufferarr));
 }
 
@@ -846,31 +980,59 @@ ResourceOwnerEnlargeBuffers(ResourceOwner owner)
  * Remember that a buffer pin is owned by a ResourceOwner
  *
  * Caller must have previously done ResourceOwnerEnlargeBuffers()
- *
- * We allow the case owner == NULL because the bufmgr is sometimes invoked
- * outside any transaction (for example, during WAL recovery).
  */
 void
 ResourceOwnerRememberBuffer(ResourceOwner owner, Buffer buffer)
 {
-	if (owner == NULL)
-		return;
 	ResourceArrayAdd(&(owner->bufferarr), BufferGetDatum(buffer));
 }
 
 /*
  * Forget that a buffer pin is owned by a ResourceOwner
- *
- * We allow the case owner == NULL because the bufmgr is sometimes invoked
- * outside any transaction (for example, during WAL recovery).
  */
 void
 ResourceOwnerForgetBuffer(ResourceOwner owner, Buffer buffer)
 {
-	if (owner == NULL)
-		return;
 	if (!ResourceArrayRemove(&(owner->bufferarr), BufferGetDatum(buffer)))
 		elog(ERROR, "buffer %d is not owned by resource owner %s",
+			 buffer, owner->name);
+}
+
+
+/*
+ * Make sure there is room for at least one more entry in a ResourceOwner's
+ * buffer array.
+ *
+ * This is separate from actually inserting an entry because if we run out
+ * of memory, it's critical to do so *before* acquiring the resource.
+ */
+void
+ResourceOwnerEnlargeBufferIOs(ResourceOwner owner)
+{
+	/* We used to allow pinning buffers without a resowner, but no more */
+	Assert(owner != NULL);
+	ResourceArrayEnlarge(&(owner->bufferioarr));
+}
+
+/*
+ * Remember that a buffer IO is owned by a ResourceOwner
+ *
+ * Caller must have previously done ResourceOwnerEnlargeBufferIOs()
+ */
+void
+ResourceOwnerRememberBufferIO(ResourceOwner owner, Buffer buffer)
+{
+	ResourceArrayAdd(&(owner->bufferioarr), BufferGetDatum(buffer));
+}
+
+/*
+ * Forget that a buffer IO is owned by a ResourceOwner
+ */
+void
+ResourceOwnerForgetBufferIO(ResourceOwner owner, Buffer buffer)
+{
+	if (!ResourceArrayRemove(&(owner->bufferioarr), BufferGetDatum(buffer)))
+		elog(PANIC, "buffer IO %d is not owned by resource owner %s",
 			 buffer, owner->name);
 }
 
@@ -1300,4 +1462,94 @@ ResourceOwnerForgetJIT(ResourceOwner owner, Datum handle)
 	if (!ResourceArrayRemove(&(owner->jitarr), handle))
 		elog(ERROR, "JIT context %p is not owned by resource owner %s",
 			 DatumGetPointer(handle), owner->name);
+}
+
+/*
+ * Make sure there is room for at least one more entry in a ResourceOwner's
+ * cryptohash context reference array.
+ *
+ * This is separate from actually inserting an entry because if we run out of
+ * memory, it's critical to do so *before* acquiring the resource.
+ */
+void
+ResourceOwnerEnlargeCryptoHash(ResourceOwner owner)
+{
+	ResourceArrayEnlarge(&(owner->cryptohasharr));
+}
+
+/*
+ * Remember that a cryptohash context is owned by a ResourceOwner
+ *
+ * Caller must have previously done ResourceOwnerEnlargeCryptoHash()
+ */
+void
+ResourceOwnerRememberCryptoHash(ResourceOwner owner, Datum handle)
+{
+	ResourceArrayAdd(&(owner->cryptohasharr), handle);
+}
+
+/*
+ * Forget that a cryptohash context is owned by a ResourceOwner
+ */
+void
+ResourceOwnerForgetCryptoHash(ResourceOwner owner, Datum handle)
+{
+	if (!ResourceArrayRemove(&(owner->cryptohasharr), handle))
+		elog(ERROR, "cryptohash context %p is not owned by resource owner %s",
+			 DatumGetPointer(handle), owner->name);
+}
+
+/*
+ * Debugging subroutine
+ */
+static void
+PrintCryptoHashLeakWarning(Datum handle)
+{
+	elog(WARNING, "cryptohash context reference leak: context %p still referenced",
+		 DatumGetPointer(handle));
+}
+
+/*
+ * Make sure there is room for at least one more entry in a ResourceOwner's
+ * hmac context reference array.
+ *
+ * This is separate from actually inserting an entry because if we run out of
+ * memory, it's critical to do so *before* acquiring the resource.
+ */
+void
+ResourceOwnerEnlargeHMAC(ResourceOwner owner)
+{
+	ResourceArrayEnlarge(&(owner->hmacarr));
+}
+
+/*
+ * Remember that a HMAC context is owned by a ResourceOwner
+ *
+ * Caller must have previously done ResourceOwnerEnlargeHMAC()
+ */
+void
+ResourceOwnerRememberHMAC(ResourceOwner owner, Datum handle)
+{
+	ResourceArrayAdd(&(owner->hmacarr), handle);
+}
+
+/*
+ * Forget that a HMAC context is owned by a ResourceOwner
+ */
+void
+ResourceOwnerForgetHMAC(ResourceOwner owner, Datum handle)
+{
+	if (!ResourceArrayRemove(&(owner->hmacarr), handle))
+		elog(ERROR, "HMAC context %p is not owned by resource owner %s",
+			 DatumGetPointer(handle), owner->name);
+}
+
+/*
+ * Debugging subroutine
+ */
+static void
+PrintHMACLeakWarning(Datum handle)
+{
+	elog(WARNING, "HMAC context reference leak: context %p still referenced",
+		 DatumGetPointer(handle));
 }

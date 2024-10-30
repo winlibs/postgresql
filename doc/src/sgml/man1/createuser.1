@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: createuser
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATEUSER" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATEUSER" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -45,15 +45,22 @@ must be invoked by someone who can connect as a superuser or a user with
 CREATEROLE
 privilege\&.
 .PP
-If you wish to create a new superuser, you must connect as a superuser, not merely with
+If you wish to create a role with the
+SUPERUSER,
+REPLICATION, or
+BYPASSRLS
+privilege, you must connect as a superuser, not merely with
 CREATEROLE
-privilege\&. Being a superuser implies the ability to bypass all access permission checks within the database, so superuserdom should not be granted lightly\&.
+privilege\&. Being a superuser implies the ability to bypass all access permission checks within the database, so superuser access should not be granted lightly\&.
+CREATEROLE
+also conveys
+very extensive privileges\&.
 .PP
 createuser
 is a wrapper around the
 SQL
 command
-CREATE ROLE (\fBCREATE_ROLE\fR(7))\&. There is no effective difference between creating users via this utility and via other methods for accessing the server\&.
+\fBCREATE ROLE\fR\&. There is no effective difference between creating users via this utility and via other methods for accessing the server\&.
 .SH "OPTIONS"
 .PP
 createuser
@@ -66,6 +73,15 @@ PostgreSQL
 user to be created\&. This name must be different from all existing roles in this
 PostgreSQL
 installation\&.
+.RE
+.PP
+\fB\-a \fR\fB\fIrole\fR\fR
+.br
+\fB\-\-with\-admin=\fR\fB\fIrole\fR\fR
+.RS 4
+Specifies an existing role that will be automatically added as a member of the new role with admin option, giving it the right to grant membership in the new role to others\&. Multiple existing roles can be specified by writing multiple
+\fB\-a\fR
+switches\&.
 .RE
 .PP
 \fB\-c \fR\fB\fInumber\fR\fR
@@ -107,9 +123,11 @@ This option is obsolete but still accepted for backward compatibility\&.
 .PP
 \fB\-g \fR\fB\fIrole\fR\fR
 .br
-\fB\-\-role=\fR\fB\fIrole\fR\fR
+\fB\-\-member\-of=\fR\fB\fIrole\fR\fR
+.br
+\fB\-\-role=\fR\fB\fIrole\fR\fR (deprecated)
 .RS 4
-Indicates role to which this role will be added immediately as a new member\&. Multiple roles to which this role will be added as a member can be specified by writing multiple
+Specifies the new role should be automatically added as a member of the specified existing role\&. Multiple existing roles can be specified by writing multiple
 \fB\-g\fR
 switches\&.
 .RE
@@ -151,6 +169,15 @@ The new user will be allowed to log in (that is, the user name can be used as th
 The new user will not be allowed to log in\&. (A role without login privilege is still useful as a means of managing database permissions\&.)
 .RE
 .PP
+\fB\-m \fR\fB\fIrole\fR\fR
+.br
+\fB\-\-with\-member=\fR\fB\fIrole\fR\fR
+.RS 4
+Specifies an existing role that will be automatically added as a member of the new role\&. Multiple existing roles can be specified by writing multiple
+\fB\-m\fR
+switches\&.
+.RE
+.PP
 \fB\-P\fR
 .br
 \fB\-\-pwprompt\fR
@@ -164,9 +191,11 @@ will issue a prompt for the password of the new user\&. This is not necessary if
 .br
 \fB\-\-createrole\fR
 .RS 4
-The new user will be allowed to create new roles (that is, this user will have
+The new user will be allowed to create, alter, drop, comment on, change the security label for other roles; that is, this user will have
 CREATEROLE
-privilege)\&.
+privilege\&. See
+role creation
+for more details about what capabilities are conferred by this privilege\&.
 .RE
 .PP
 \fB\-R\fR
@@ -190,6 +219,13 @@ The new user will be a superuser\&.
 The new user will not be a superuser\&. This is the default\&.
 .RE
 .PP
+\fB\-v \fR\fB\fItimestamp\fR\fR
+.br
+\fB\-\-valid\-until=\fR\fB\fItimestamp\fR\fR
+.RS 4
+Set a date and time after which the role\*(Aqs password is no longer valid\&. The default is to set no password expiry date\&.
+.RE
+.PP
 \fB\-V\fR
 .br
 \fB\-\-version\fR
@@ -197,6 +233,16 @@ The new user will not be a superuser\&. This is the default\&.
 Print the
 createuser
 version and exit\&.
+.RE
+.PP
+\fB\-\-bypassrls\fR
+.RS 4
+The new user will bypass every row\-level security (RLS) policy\&.
+.RE
+.PP
+\fB\-\-no\-bypassrls\fR
+.RS 4
+The new user will not bypass row\-level security (RLS) policies\&. This is the default\&.
 .RE
 .PP
 \fB\-\-replication\fR
@@ -212,7 +258,7 @@ CREATE ROLE (\fBCREATE_ROLE\fR(7))\&.
 The new user will not have the
 REPLICATION
 privilege, which is described more fully in the documentation for
-CREATE ROLE (\fBCREATE_ROLE\fR(7))\&.
+CREATE ROLE (\fBCREATE_ROLE\fR(7))\&. This is the default\&.
 .RE
 .PP
 \fB\-?\fR
@@ -284,12 +330,21 @@ to avoid the extra connection attempt\&.
 Default connection parameters
 .RE
 .PP
+\fBPG_COLOR\fR
+.RS 4
+Specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.RE
+.PP
 This utility, like most other
 PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section\ \&34.14)\&.
+Section\ \&34.15)\&.
 .SH "DIAGNOSTICS"
 .PP
 In case of difficulty, see
@@ -367,4 +422,4 @@ CREATE ROLE joe PASSWORD \*(Aqmd5b5f5ba1a423792b526f799ae4eb3d59e\*(Aq SUPERUSER
 .sp
 In the above example, the new password isn\*(Aqt actually echoed when typed, but we show what was typed for clarity\&. As you see, the password is encrypted before it is sent to the client\&.
 .SH "SEE ALSO"
-\fBdropuser\fR(1), CREATE ROLE (\fBCREATE_ROLE\fR(7))
+\fBdropuser\fR(1), CREATE ROLE (\fBCREATE_ROLE\fR(7)), createrole_self_grant

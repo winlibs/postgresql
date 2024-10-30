@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: PREPARE TRANSACTION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "PREPARE TRANSACTION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "PREPARE TRANSACTION" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -40,9 +40,9 @@ PREPARE TRANSACTION \fItransaction_id\fR
 prepares the current transaction for two\-phase commit\&. After this command, the transaction is no longer associated with the current session; instead, its state is fully stored on disk, and there is a very high probability that it can be committed successfully, even if a database crash occurs before the commit is requested\&.
 .PP
 Once prepared, a transaction can later be committed or rolled back with
-COMMIT PREPARED (\fBCOMMIT_PREPARED\fR(7))
+\fBCOMMIT PREPARED\fR
 or
-ROLLBACK PREPARED (\fBROLLBACK_PREPARED\fR(7)), respectively\&. Those commands can be issued from any session, not only the one that executed the original transaction\&.
+\fBROLLBACK PREPARED\fR, respectively\&. Those commands can be issued from any session, not only the one that executed the original transaction\&.
 .PP
 From the point of view of the issuing session,
 \fBPREPARE TRANSACTION\fR
@@ -70,7 +70,7 @@ is not intended for use in applications or interactive sessions\&. Its purpose i
 \fBPREPARE TRANSACTION\fR\&.
 .PP
 This command must be used inside a transaction block\&. Use
-\fBBEGIN\fR(7)
+\fBBEGIN\fR
 to start one\&.
 .PP
 It is not currently allowed to
@@ -115,7 +115,7 @@ system view\&.
 It is unwise to leave transactions in the prepared state for a long time\&. This will interfere with the ability of
 \fBVACUUM\fR
 to reclaim storage, and in extreme cases could cause the database to shut down to prevent transaction ID wraparound (see
-Section\ \&24.1.5)\&. Keep in mind also that the transaction continues to hold whatever locks it held\&. The intended usage of the feature is that a prepared transaction will normally be committed or rolled back as soon as an external transaction manager has verified that other databases are also prepared to commit\&.
+Section\ \&25.1.5)\&. Keep in mind also that the transaction continues to hold whatever locks it held\&. The intended usage of the feature is that a prepared transaction will normally be committed or rolled back as soon as an external transaction manager has verified that other databases are also prepared to commit\&.
 .PP
 If you have not set up an external transaction manager to track prepared transactions and ensure they get closed out promptly, it is best to keep the prepared\-transaction feature disabled by setting
 max_prepared_transactions

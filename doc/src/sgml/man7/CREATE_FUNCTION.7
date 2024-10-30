@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE FUNCTION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATE FUNCTION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE FUNCTION" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -39,15 +39,18 @@ CREATE [ OR REPLACE ] FUNCTION
   { LANGUAGE \fIlang_name\fR
     | TRANSFORM { FOR TYPE \fItype_name\fR } [, \&.\&.\&. ]
     | WINDOW
-    | IMMUTABLE | STABLE | VOLATILE | [ NOT ] LEAKPROOF
-    | CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT
-    | [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER
+    | { IMMUTABLE | STABLE | VOLATILE }
+    | [ NOT ] LEAKPROOF
+    | { CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT }
+    | { [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER }
     | PARALLEL { UNSAFE | RESTRICTED | SAFE }
     | COST \fIexecution_cost\fR
     | ROWS \fIresult_rows\fR
+    | SUPPORT \fIsupport_function\fR
     | SET \fIconfiguration_parameter\fR { TO \fIvalue\fR | = \fIvalue\fR | FROM CURRENT }
     | AS \*(Aq\fIdefinition\fR\*(Aq
     | AS \*(Aq\fIobj_file\fR\*(Aq, \*(Aq\fIlink_symbol\fR\*(Aq
+    | \fIsql_body\fR
   } \&.\&.\&.
 .fi
 .SH "DESCRIPTION"
@@ -86,6 +89,10 @@ The user that creates the function becomes the owner of the function\&.
 To be able to create a function, you must have
 USAGE
 privilege on the argument types and the return type\&.
+.PP
+Refer to
+Section\ \&38.3
+for further information on writing functions\&.
 .SH "PARAMETERS"
 .PP
 \fIname\fR
@@ -189,8 +196,12 @@ syntax\&.
 The name of the language that the function is implemented in\&. It can be
 sql,
 c,
-internal, or the name of a user\-defined procedural language, e\&.g\&.
-plpgsql\&. Enclosing the name in single quotes is deprecated and requires matching case\&.
+internal, or the name of a user\-defined procedural language, e\&.g\&.,
+plpgsql\&. The default is
+sql
+if
+\fIsql_body\fR
+is specified\&. Enclosing the name in single quotes is deprecated and requires matching case\&.
 .RE
 .PP
 TRANSFORM { FOR TYPE \fItype_name\fR } [, \&.\&.\&. ] }
@@ -273,7 +284,10 @@ indicates that the function always returns null whenever any of its arguments ar
 SECURITY INVOKER
 indicates that the function is to be executed with the privileges of the user that calls it\&. That is the default\&.
 SECURITY DEFINER
-specifies that the function is to be executed with the privileges of the user that owns it\&.
+specifies that the function is to be executed with the privileges of the user that owns it\&. For information on how to write
+SECURITY DEFINER
+functions safely,
+see below\&.
 .sp
 The key word
 EXTERNAL
@@ -289,8 +303,8 @@ indicates that the function can be executed in parallel mode, but the execution 
 PARALLEL SAFE
 indicates that the function is safe to run in parallel mode without restriction\&.
 .sp
-Functions should be labeled parallel unsafe if they modify any database state, or if they make changes to the transaction such as using sub\-transactions, or if they access sequences or attempt to make persistent changes to settings (e\&.g\&.
-setval)\&. They should be labeled as parallel restricted if they access temporary tables, client connection state, cursors, prepared statements, or miscellaneous backend\-local state which the system cannot synchronize in parallel mode (e\&.g\&.
+Functions should be labeled parallel unsafe if they modify any database state, or if they make changes to the transaction such as using sub\-transactions, or if they access sequences or attempt to make persistent changes to settings (e\&.g\&.,
+setval)\&. They should be labeled as parallel restricted if they access temporary tables, client connection state, cursors, prepared statements, or miscellaneous backend\-local state which the system cannot synchronize in parallel mode (e\&.g\&.,
 setseed
 cannot be executed other than by the group leader because a change made by another process would not be reflected in the leader)\&. In general, if a function is labeled as being safe when it is restricted or unsafe, or if it is labeled as being restricted when it is in fact unsafe, it may throw errors or produce wrong answers when used in a parallel query\&. C\-language functions could in theory exhibit totally undefined behavior if mislabeled, since there is no way for the system to protect itself against arbitrary C code, but in most likely cases the result will be no worse than for any other function\&. If in doubt, functions should be labeled as
 UNSAFE, which is the default\&.
@@ -305,6 +319,15 @@ cpu_operator_cost\&. If the function returns a set, this is the cost per returne
 ROWS \fIresult_rows\fR
 .RS 4
 A positive number giving the estimated number of rows that the planner should expect the function to return\&. This is only allowed when the function is declared to return a set\&. The default assumption is 1000 rows\&.
+.RE
+.PP
+SUPPORT \fIsupport_function\fR
+.RS 4
+The name (optionally schema\-qualified) of a
+planner support function
+to use for this function\&. See
+Section\ \&38.11
+for details\&. You must be superuser to use this option\&.
 .RE
 .PP
 \fIconfiguration_parameter\fR
@@ -335,7 +358,7 @@ command: the effects of such a command will persist after function exit, unless 
 See
 \fBSET\fR(7)
 and
-Chapter\ \&19
+Chapter\ \&20
 for more information about allowed parameter names and values\&.
 .RE
 .PP
@@ -354,7 +377,7 @@ AS
 clause is used for dynamically loadable C language functions when the function name in the C language source code is not the same as the name of the SQL function\&. The string
 \fIobj_file\fR
 is the name of the shared library file containing the compiled C function, and is interpreted as for the
-\fBLOAD\fR(7)
+\fBLOAD\fR
 command\&. The string
 \fIlink_symbol\fR
 is the function\*(Aqs link symbol, that is, the name of the function in the C language source code\&. If the link symbol is omitted, it is assumed to be the same as the name of the SQL function being defined\&. The C names of all functions must be different, so you must give overloaded C functions different C names (for example, use the argument types as part of the C names)\&.
@@ -364,9 +387,46 @@ When repeated
 calls refer to the same object file, the file is only loaded once per session\&. To unload and reload the file (perhaps during development), start a new session\&.
 .RE
 .PP
-Refer to
-Section\ \&38.3
-for further information on writing functions\&.
+\fIsql_body\fR
+.RS 4
+The body of a
+LANGUAGE SQL
+function\&. This can either be a single statement
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+RETURN \fIexpression\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+or a block
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+BEGIN ATOMIC
+  \fIstatement\fR;
+  \fIstatement\fR;
+  \&.\&.\&.
+  \fIstatement\fR;
+END
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+This is similar to writing the text of the function body as a string constant (see
+\fIdefinition\fR
+above), but there are some differences: This form only works for
+LANGUAGE SQL, the string constant form works for all languages\&. This form is parsed at function definition time, the string constant form is parsed at execution time; therefore this form cannot support polymorphic argument types and other constructs that are not resolvable at function definition time\&. This form tracks dependencies between the function and objects used in the function body, so
+DROP \&.\&.\&. CASCADE
+will work correctly, whereas the form using string literals may leave dangling functions\&. Finally, this form is more compatible with the SQL standard and other SQL implementations\&.
+.RE
 .SH "OVERLOADING"
 .PP
 PostgreSQL
@@ -430,8 +490,7 @@ argument, the strictness check tests that the variadic array
 is non\-null\&. The function will still be called if the array has null elements\&.
 .SH "EXAMPLES"
 .PP
-Here are some trivial examples to help you get started\&. For more information and examples, see
-Section\ \&38.3\&.
+Add two integers using an SQL function:
 .sp
 .if n \{\
 .RS 4
@@ -442,6 +501,22 @@ CREATE FUNCTION add(integer, integer) RETURNS integer
     LANGUAGE SQL
     IMMUTABLE
     RETURNS NULL ON NULL INPUT;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The same function written in a more SQL\-conforming style, using argument names and an unquoted body:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE FUNCTION add(a integer, b integer) RETURNS integer
+    LANGUAGE SQL
+    IMMUTABLE
+    RETURNS NULL ON NULL INPUT
+    RETURN a + b;
 .fi
 .if n \{\
 .RE
@@ -564,19 +639,16 @@ clause mentioning only
 admin, the function could be subverted by creating a temporary table named
 pwds\&.
 .PP
-Before
-PostgreSQL
-version 8\&.3, the
+If the security definer function intends to create roles, and if it is running as a non\-superuser,
+\fIcreaterole_self_grant\fR
+should also be set to a known value using the
 SET
-clause was not available, and so older functions may contain rather complicated logic to save, set, and restore
-\fIsearch_path\fR\&. The
-SET
-clause is far easier to use for this purpose\&.
+clause\&.
 .PP
 Another point to keep in mind is that by default, execute privilege is granted to
 PUBLIC
 for newly created functions (see
-\fBGRANT\fR(7)
+Section\ \&5.7
 for more information)\&. Frequently you will wish to restrict use of a security definer function to only some users\&. To do that, you must revoke the default
 PUBLIC
 privileges and then grant execute privilege selectively\&. To avoid having a window where the new function is accessible to all, create it and set the privileges within a single transaction\&. For example:
@@ -600,17 +672,110 @@ A
 \fBCREATE FUNCTION\fR
 command is defined in the SQL standard\&. The
 PostgreSQL
-version is similar but not fully compatible\&. The attributes are not portable, neither are the different available languages\&.
+implementation can be used in a compatible way but has many extensions\&. Conversely, the SQL standard specifies a number of optional features that are not implemented in
+PostgreSQL\&.
 .PP
+The following are important compatibility issues:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+OR REPLACE
+is a PostgreSQL extension\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
 For compatibility with some other database systems,
 \fIargmode\fR
 can be written either before or after
 \fIargname\fR\&. But only the first way is standard\-compliant\&.
-.PP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
 For parameter defaults, the SQL standard specifies only the syntax with the
 DEFAULT
 key word\&. The syntax with
 =
 is used in T\-SQL and Firebird\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The
+SETOF
+modifier is a PostgreSQL extension\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Only
+SQL
+is standardized as a language\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+All other attributes except
+CALLED ON NULL INPUT
+and
+RETURNS NULL ON NULL INPUT
+are not standardized\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+For the body of
+LANGUAGE SQL
+functions, the SQL standard only specifies the
+\fIsql_body\fR
+form\&.
+.RE
+.PP
+Simple
+LANGUAGE SQL
+functions can be written in a way that is both standard\-conforming and portable to other implementations\&. More complex functions using advanced features, optimization attributes, or other languages will necessarily be specific to PostgreSQL in a significant way\&.
 .SH "SEE ALSO"
 ALTER FUNCTION (\fBALTER_FUNCTION\fR(7)), DROP FUNCTION (\fBDROP_FUNCTION\fR(7)), \fBGRANT\fR(7), \fBLOAD\fR(7), \fBREVOKE\fR(7)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>28.5. Dynamic Tracing</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="progress-reporting.html" title="28.4. Progress Reporting" /><link rel="next" href="diskusage.html" title="Chapter 29. Monitoring Disk Usage" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">28.5. Dynamic Tracing</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="progress-reporting.html" title="28.4. Progress Reporting">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="monitoring.html" title="Chapter 28. Monitoring Database Activity">Up</a></td><th width="60%" align="center">Chapter 28. Monitoring Database Activity</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="diskusage.html" title="Chapter 29. Monitoring Disk Usage">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="DYNAMIC-TRACE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">28.5. Dynamic Tracing</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="dynamic-trace.html#COMPILING-FOR-TRACE">28.5.1. Compiling for Dynamic Tracing</a></span></dt><dt><span class="sect2"><a href="dynamic-trace.html#TRACE-POINTS">28.5.2. Built-in Probes</a></span></dt><dt><span class="sect2"><a href="dynamic-trace.html#USING-TRACE-POINTS">28.5.3. Using Probes</a></span></dt><dt><span class="sect2"><a href="dynamic-trace.html#DEFINING-TRACE-POINTS">28.5.4. Defining New Probes</a></span></dt></dl></div><a id="id-1.6.15.10.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>28.5. Dynamic Tracing</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="progress-reporting.html" title="28.4. Progress Reporting" /><link rel="next" href="diskusage.html" title="Chapter 29. Monitoring Disk Usage" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">28.5. Dynamic Tracing</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="progress-reporting.html" title="28.4. Progress Reporting">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="monitoring.html" title="Chapter 28. Monitoring Database Activity">Up</a></td><th width="60%" align="center">Chapter 28. Monitoring Database Activity</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="diskusage.html" title="Chapter 29. Monitoring Disk Usage">Next</a></td></tr></table><hr /></div><div class="sect1" id="DYNAMIC-TRACE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">28.5. Dynamic Tracing <a href="#DYNAMIC-TRACE" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="dynamic-trace.html#COMPILING-FOR-TRACE">28.5.1. Compiling for Dynamic Tracing</a></span></dt><dt><span class="sect2"><a href="dynamic-trace.html#TRACE-POINTS">28.5.2. Built-in Probes</a></span></dt><dt><span class="sect2"><a href="dynamic-trace.html#USING-TRACE-POINTS">28.5.3. Using Probes</a></span></dt><dt><span class="sect2"><a href="dynamic-trace.html#DEFINING-TRACE-POINTS">28.5.4. Defining New Probes</a></span></dt></dl></div><a id="id-1.6.15.10.2" class="indexterm"></a><p>
    <span class="productname">PostgreSQL</span> provides facilities to support
    dynamic tracing of the database server. This allows an external
    utility to be called at specific points in the code and thereby trace
@@ -15,22 +15,22 @@
    <a class="ulink" href="https://en.wikipedia.org/wiki/DTrace" target="_top">DTrace</a>
    utility is supported, which, at the time of this writing, is available
    on Solaris, macOS, FreeBSD, NetBSD, and Oracle Linux.  The
-   <a class="ulink" href="http://sourceware.org/systemtap/" target="_top">SystemTap</a> project
+   <a class="ulink" href="https://sourceware.org/systemtap/" target="_top">SystemTap</a> project
    for Linux provides a DTrace equivalent and can also be used.  Supporting other dynamic
    tracing utilities is theoretically possible by changing the definitions for
    the macros in <code class="filename">src/include/utils/probes.h</code>.
-  </p><div class="sect2" id="COMPILING-FOR-TRACE"><div class="titlepage"><div><div><h3 class="title">28.5.1. Compiling for Dynamic Tracing</h3></div></div></div><p>
+  </p><div class="sect2" id="COMPILING-FOR-TRACE"><div class="titlepage"><div><div><h3 class="title">28.5.1. Compiling for Dynamic Tracing <a href="#COMPILING-FOR-TRACE" class="id_link">#</a></h3></div></div></div><p>
    By default, probes are not available, so you will need to
    explicitly tell the configure script to make the probes available
    in <span class="productname">PostgreSQL</span>. To include DTrace support
-   specify <code class="option">--enable-dtrace</code> to configure.  See <a class="xref" href="install-procedure.html" title="16.4. Installation Procedure">Section 16.4</a> for further information.
-  </p></div><div class="sect2" id="TRACE-POINTS"><div class="titlepage"><div><div><h3 class="title">28.5.2. Built-in Probes</h3></div></div></div><p>
+   specify <code class="option">--enable-dtrace</code> to configure.  See <a class="xref" href="install-make.html#CONFIGURE-OPTIONS-DEVEL" title="17.3.3.6. Developer Options">Section 17.3.3.6</a> for further information.
+  </p></div><div class="sect2" id="TRACE-POINTS"><div class="titlepage"><div><div><h3 class="title">28.5.2. Built-in Probes <a href="#TRACE-POINTS" class="id_link">#</a></h3></div></div></div><p>
    A number of standard probes are provided in the source code,
-   as shown in <a class="xref" href="dynamic-trace.html#DTRACE-PROBE-POINT-TABLE" title="Table 28.23. Built-in DTrace Probes">Table 28.23</a>;
-   <a class="xref" href="dynamic-trace.html#TYPEDEFS-TABLE" title="Table 28.24. Defined Types Used in Probe Parameters">Table 28.24</a>
+   as shown in <a class="xref" href="dynamic-trace.html#DTRACE-PROBE-POINT-TABLE" title="Table 28.48. Built-in DTrace Probes">Table 28.48</a>;
+   <a class="xref" href="dynamic-trace.html#TYPEDEFS-TABLE" title="Table 28.49. Defined Types Used in Probe Parameters">Table 28.49</a>
    shows the types used in the probes.  More probes can certainly be
    added to enhance <span class="productname">PostgreSQL</span>'s observability.
-  </p><div class="table" id="DTRACE-PROBE-POINT-TABLE"><p class="title"><strong>Table 28.23. Built-in DTrace Probes</strong></p><div class="table-contents"><table class="table" summary="Built-in DTrace Probes" border="1"><colgroup><col /><col /><col /></colgroup><thead><tr><th>Name</th><th>Parameters</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">transaction-start</code></td><td><code class="literal">(LocalTransactionId)</code></td><td>Probe that fires at the start of a new transaction.
+  </p><div class="table" id="DTRACE-PROBE-POINT-TABLE"><p class="title"><strong>Table 28.48. Built-in DTrace Probes</strong></p><div class="table-contents"><table class="table" summary="Built-in DTrace Probes" border="1"><colgroup><col class="col1" /><col class="col2" /><col class="col3" /></colgroup><thead><tr><th>Name</th><th>Parameters</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">transaction-start</code></td><td><code class="literal">(LocalTransactionId)</code></td><td>Probe that fires at the start of a new transaction.
       arg0 is the transaction ID.</td></tr><tr><td><code class="literal">transaction-commit</code></td><td><code class="literal">(LocalTransactionId)</code></td><td>Probe that fires when a transaction completes successfully.
       arg0 is the transaction ID.</td></tr><tr><td><code class="literal">transaction-abort</code></td><td><code class="literal">(LocalTransactionId)</code></td><td>Probe that fires when a transaction completes unsuccessfully.
       arg0 is the transaction ID.</td></tr><tr><td><code class="literal">query-start</code></td><td><code class="literal">(const char *)</code></td><td>Probe that fires when the processing of a query is started.
@@ -76,39 +76,41 @@
       kernel, and before starting to issue fsync requests.</td></tr><tr><td><code class="literal">buffer-checkpoint-done</code></td><td><code class="literal">()</code></td><td>Probe that fires when syncing of buffers to disk is
       complete.</td></tr><tr><td><code class="literal">twophase-checkpoint-start</code></td><td><code class="literal">()</code></td><td>Probe that fires when the two-phase portion of a checkpoint is
       started.</td></tr><tr><td><code class="literal">twophase-checkpoint-done</code></td><td><code class="literal">()</code></td><td>Probe that fires when the two-phase portion of a checkpoint is
-      complete.</td></tr><tr><td><code class="literal">buffer-read-start</code></td><td><code class="literal">(ForkNumber, BlockNumber, Oid, Oid, Oid, int, bool)</code></td><td>Probe that fires when a buffer read is started.
-      arg0 and arg1 contain the fork and block numbers of the page (but
-      arg1 will be -1 if this is a relation extension request).
+      complete.</td></tr><tr><td><code class="literal">buffer-extend-start</code></td><td><code class="literal">(ForkNumber, BlockNumber, Oid, Oid, Oid, int, unsigned int)</code></td><td>Probe that fires when a relation extension starts.
+       arg0 contains the fork to be extended. arg1, arg2, and arg3 contain the
+       tablespace, database, and relation OIDs identifying the relation.  arg4
+       is the ID of the backend which created the temporary relation for a
+       local buffer, or <code class="symbol">InvalidBackendId</code> (-1) for a shared
+       buffer. arg5 is the number of blocks the caller would like to extend
+       by.</td></tr><tr><td><code class="literal">buffer-extend-done</code></td><td><code class="literal">(ForkNumber, BlockNumber, Oid, Oid, Oid, int, unsigned int, BlockNumber)</code></td><td>Probe that fires when a relation extension is complete.
+       arg0 contains the fork to be extended. arg1, arg2, and arg3 contain the
+       tablespace, database, and relation OIDs identifying the relation.  arg4
+       is the ID of the backend which created the temporary relation for a
+       local buffer, or <code class="symbol">InvalidBackendId</code> (-1) for a shared
+       buffer. arg5 is the number of blocks the relation was extended by, this
+       can be less than the number in the
+       <code class="literal">buffer-extend-start</code> due to resource
+       constraints. arg6 contains the BlockNumber of the first new
+       block.</td></tr><tr><td><code class="literal">buffer-read-start</code></td><td><code class="literal">(ForkNumber, BlockNumber, Oid, Oid, Oid, int)</code></td><td>Probe that fires when a buffer read is started.
+      arg0 and arg1 contain the fork and block numbers of the page.
       arg2, arg3, and arg4 contain the tablespace, database, and relation OIDs
       identifying the relation.
       arg5 is the ID of the backend which created the temporary relation for a
       local buffer, or <code class="symbol">InvalidBackendId</code> (-1) for a shared buffer.
-      arg6 is true for a relation extension request, false for normal
-      read.</td></tr><tr><td><code class="literal">buffer-read-done</code></td><td><code class="literal">(ForkNumber, BlockNumber, Oid, Oid, Oid, int, bool, bool)</code></td><td>Probe that fires when a buffer read is complete.
-      arg0 and arg1 contain the fork and block numbers of the page (if this
-      is a relation extension request, arg1 now contains the block number
-      of the newly added block).
+      </td></tr><tr><td><code class="literal">buffer-read-done</code></td><td><code class="literal">(ForkNumber, BlockNumber, Oid, Oid, Oid, int, bool)</code></td><td>Probe that fires when a buffer read is complete.
+      arg0 and arg1 contain the fork and block numbers of the page.
       arg2, arg3, and arg4 contain the tablespace, database, and relation OIDs
       identifying the relation.
       arg5 is the ID of the backend which created the temporary relation for a
       local buffer, or <code class="symbol">InvalidBackendId</code> (-1) for a shared buffer.
-      arg6 is true for a relation extension request, false for normal
-      read.
-      arg7 is true if the buffer was found in the pool, false if not.</td></tr><tr><td><code class="literal">buffer-flush-start</code></td><td><code class="literal">(ForkNumber, BlockNumber, Oid, Oid, Oid)</code></td><td>Probe that fires before issuing any write request for a shared
+      arg6 is true if the buffer was found in the pool, false if not.</td></tr><tr><td><code class="literal">buffer-flush-start</code></td><td><code class="literal">(ForkNumber, BlockNumber, Oid, Oid, Oid)</code></td><td>Probe that fires before issuing any write request for a shared
       buffer.
       arg0 and arg1 contain the fork and block numbers of the page.
       arg2, arg3, and arg4 contain the tablespace, database, and relation OIDs
       identifying the relation.</td></tr><tr><td><code class="literal">buffer-flush-done</code></td><td><code class="literal">(ForkNumber, BlockNumber, Oid, Oid, Oid)</code></td><td>Probe that fires when a write request is complete.  (Note
       that this just reflects the time to pass the data to the kernel;
       it's typically not actually been written to disk yet.)
-      The arguments are the same as for <code class="literal">buffer-flush-start</code>.</td></tr><tr><td><code class="literal">buffer-write-dirty-start</code></td><td><code class="literal">(ForkNumber, BlockNumber, Oid, Oid, Oid)</code></td><td>Probe that fires when a server process begins to write a dirty
-      buffer.  (If this happens often, it implies that
-      <a class="xref" href="runtime-config-resource.html#GUC-SHARED-BUFFERS">shared_buffers</a> is too
-      small or the background writer control parameters need adjustment.)
-      arg0 and arg1 contain the fork and block numbers of the page.
-      arg2, arg3, and arg4 contain the tablespace, database, and relation OIDs
-      identifying the relation.</td></tr><tr><td><code class="literal">buffer-write-dirty-done</code></td><td><code class="literal">(ForkNumber, BlockNumber, Oid, Oid, Oid)</code></td><td>Probe that fires when a dirty-buffer write is complete.
-      The arguments are the same as for <code class="literal">buffer-write-dirty-start</code>.</td></tr><tr><td><code class="literal">wal-buffer-write-dirty-start</code></td><td><code class="literal">()</code></td><td>Probe that fires when a server process begins to write a
+      The arguments are the same as for <code class="literal">buffer-flush-start</code>.</td></tr><tr><td><code class="literal">wal-buffer-write-dirty-start</code></td><td><code class="literal">()</code></td><td>Probe that fires when a server process begins to write a
       dirty WAL buffer because no more WAL buffer space is available.
       (If this happens often, it implies that
       <a class="xref" href="runtime-config-wal.html#GUC-WAL-BUFFERS">wal_buffers</a> is too small.)</td></tr><tr><td><code class="literal">wal-buffer-write-dirty-done</code></td><td><code class="literal">()</code></td><td>Probe that fires when a dirty WAL buffer write is complete.</td></tr><tr><td><code class="literal">wal-insert</code></td><td><code class="literal">(unsigned char, unsigned char)</code></td><td>Probe that fires when a WAL record is inserted.
@@ -170,7 +172,7 @@
       arg5 indicates the lock type being requested.</td></tr><tr><td><code class="literal">lock-wait-done</code></td><td><code class="literal">(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, LOCKMODE)</code></td><td>Probe that fires when a request for a heavyweight lock (lmgr lock)
       has finished waiting (i.e., has acquired the lock).
       The arguments are the same as for <code class="literal">lock-wait-start</code>.</td></tr><tr><td><code class="literal">deadlock-found</code></td><td><code class="literal">()</code></td><td>Probe that fires when a deadlock is found by the deadlock
-      detector.</td></tr></tbody></table></div></div><br class="table-break" /><div class="table" id="TYPEDEFS-TABLE"><p class="title"><strong>Table 28.24. Defined Types Used in Probe Parameters</strong></p><div class="table-contents"><table class="table" summary="Defined Types Used in Probe Parameters" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Type</th><th>Definition</th></tr></thead><tbody><tr><td><code class="type">LocalTransactionId</code></td><td><code class="type">unsigned int</code></td></tr><tr><td><code class="type">LWLockMode</code></td><td><code class="type">int</code></td></tr><tr><td><code class="type">LOCKMODE</code></td><td><code class="type">int</code></td></tr><tr><td><code class="type">BlockNumber</code></td><td><code class="type">unsigned int</code></td></tr><tr><td><code class="type">Oid</code></td><td><code class="type">unsigned int</code></td></tr><tr><td><code class="type">ForkNumber</code></td><td><code class="type">int</code></td></tr><tr><td><code class="type">bool</code></td><td><code class="type">char</code></td></tr></tbody></table></div></div><br class="table-break" /></div><div class="sect2" id="USING-TRACE-POINTS"><div class="titlepage"><div><div><h3 class="title">28.5.3. Using Probes</h3></div></div></div><p>
+      detector.</td></tr></tbody></table></div></div><br class="table-break" /><div class="table" id="TYPEDEFS-TABLE"><p class="title"><strong>Table 28.49. Defined Types Used in Probe Parameters</strong></p><div class="table-contents"><table class="table" summary="Defined Types Used in Probe Parameters" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Type</th><th>Definition</th></tr></thead><tbody><tr><td><code class="type">LocalTransactionId</code></td><td><code class="type">unsigned int</code></td></tr><tr><td><code class="type">LWLockMode</code></td><td><code class="type">int</code></td></tr><tr><td><code class="type">LOCKMODE</code></td><td><code class="type">int</code></td></tr><tr><td><code class="type">BlockNumber</code></td><td><code class="type">unsigned int</code></td></tr><tr><td><code class="type">Oid</code></td><td><code class="type">unsigned int</code></td></tr><tr><td><code class="type">ForkNumber</code></td><td><code class="type">int</code></td></tr><tr><td><code class="type">bool</code></td><td><code class="type">unsigned char</code></td></tr></tbody></table></div></div><br class="table-break" /></div><div class="sect2" id="USING-TRACE-POINTS"><div class="titlepage"><div><div><h3 class="title">28.5.3. Using Probes <a href="#USING-TRACE-POINTS" class="id_link">#</a></h3></div></div></div><p>
    The example below shows a DTrace script for analyzing transaction
    counts in the system, as an alternative to snapshotting
    <code class="structname">pg_stat_database</code> before and after a performance test:
@@ -218,7 +220,7 @@ Total time (ns)                        2312105013
    instrumentation that is at fault, not the underlying system. When
    discussing information found using dynamic tracing, be sure to enclose
    the script used to allow that too to be checked and discussed.
-  </p></div><div class="sect2" id="DEFINING-TRACE-POINTS"><div class="titlepage"><div><div><h3 class="title">28.5.4. Defining New Probes</h3></div></div></div><p>
+  </p></div><div class="sect2" id="DEFINING-TRACE-POINTS"><div class="titlepage"><div><div><h3 class="title">28.5.4. Defining New Probes <a href="#DEFINING-TRACE-POINTS" class="id_link">#</a></h3></div></div></div><p>
    New probes can be defined within the code wherever the developer
    desires, though this will require a recompilation. Below are the steps
    for inserting new probes:
@@ -298,4 +300,4 @@ if (TRACE_POSTGRESQL_TRANSACTION_START_ENABLED())
       Each trace macro has a corresponding <code class="literal">ENABLED</code> macro.
      </p></li></ul></div><p>
 
-  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="progress-reporting.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="monitoring.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="diskusage.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">28.4. Progress Reporting </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 29. Monitoring Disk Usage</td></tr></table></div></body></html>
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="progress-reporting.html" title="28.4. Progress Reporting">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="monitoring.html" title="Chapter 28. Monitoring Database Activity">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="diskusage.html" title="Chapter 29. Monitoring Disk Usage">Next</a></td></tr><tr><td width="40%" align="left" valign="top">28.4. Progress Reporting </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> Chapter 29. Monitoring Disk Usage</td></tr></table></div></body></html>

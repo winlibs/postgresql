@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>8.15. Arrays</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="datatype-json.html" title="8.14. JSON Types" /><link rel="next" href="rowtypes.html" title="8.16. Composite Types" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">8.15. Arrays</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="datatype-json.html" title="8.14. JSON Types">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="datatype.html" title="Chapter 8. Data Types">Up</a></td><th width="60%" align="center">Chapter 8. Data Types</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="rowtypes.html" title="8.16. Composite Types">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="ARRAYS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">8.15. Arrays</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="arrays.html#ARRAYS-DECLARATION">8.15.1. Declaration of Array Types</a></span></dt><dt><span class="sect2"><a href="arrays.html#ARRAYS-INPUT">8.15.2. Array Value Input</a></span></dt><dt><span class="sect2"><a href="arrays.html#ARRAYS-ACCESSING">8.15.3. Accessing Arrays</a></span></dt><dt><span class="sect2"><a href="arrays.html#ARRAYS-MODIFYING">8.15.4. Modifying Arrays</a></span></dt><dt><span class="sect2"><a href="arrays.html#ARRAYS-SEARCHING">8.15.5. Searching in Arrays</a></span></dt><dt><span class="sect2"><a href="arrays.html#ARRAYS-IO">8.15.6. Array Input and Output Syntax</a></span></dt></dl></div><a id="id-1.5.7.23.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>8.15. Arrays</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="datatype-json.html" title="8.14. JSON Types" /><link rel="next" href="rowtypes.html" title="8.16. Composite Types" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">8.15. Arrays</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="datatype-json.html" title="8.14. JSON Types">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="datatype.html" title="Chapter 8. Data Types">Up</a></td><th width="60%" align="center">Chapter 8. Data Types</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="rowtypes.html" title="8.16. Composite Types">Next</a></td></tr></table><hr /></div><div class="sect1" id="ARRAYS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">8.15. Arrays <a href="#ARRAYS" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="arrays.html#ARRAYS-DECLARATION">8.15.1. Declaration of Array Types</a></span></dt><dt><span class="sect2"><a href="arrays.html#ARRAYS-INPUT">8.15.2. Array Value Input</a></span></dt><dt><span class="sect2"><a href="arrays.html#ARRAYS-ACCESSING">8.15.3. Accessing Arrays</a></span></dt><dt><span class="sect2"><a href="arrays.html#ARRAYS-MODIFYING">8.15.4. Modifying Arrays</a></span></dt><dt><span class="sect2"><a href="arrays.html#ARRAYS-SEARCHING">8.15.5. Searching in Arrays</a></span></dt><dt><span class="sect2"><a href="arrays.html#ARRAYS-IO">8.15.6. Array Input and Output Syntax</a></span></dt></dl></div><a id="id-1.5.7.23.2" class="indexterm"></a><p>
   <span class="productname">PostgreSQL</span> allows columns of a table to be
   defined as variable-length multidimensional arrays. Arrays of any
   built-in or user-defined base type, enum type, composite type, range type,
   or domain can be created.
- </p><div class="sect2" id="ARRAYS-DECLARATION"><div class="titlepage"><div><div><h3 class="title">8.15.1. Declaration of Array Types</h3></div></div></div><a id="id-1.5.7.23.4.2" class="indexterm"></a><p>
+ </p><div class="sect2" id="ARRAYS-DECLARATION"><div class="titlepage"><div><div><h3 class="title">8.15.1. Declaration of Array Types <a href="#ARRAYS-DECLARATION" class="id_link">#</a></h3></div></div></div><a id="id-1.5.7.23.4.2" class="indexterm"></a><p>
   To illustrate the use of array types, we create this table:
 </p><pre class="programlisting">
 CREATE TABLE sal_emp (
@@ -57,7 +57,7 @@ CREATE TABLE tictactoe (
 </pre><p>
   As before, however, <span class="productname">PostgreSQL</span> does not enforce the
   size restriction in any case.
- </p></div><div class="sect2" id="ARRAYS-INPUT"><div class="titlepage"><div><div><h3 class="title">8.15.2. Array Value Input</h3></div></div></div><a id="id-1.5.7.23.5.2" class="indexterm"></a><p>
+ </p></div><div class="sect2" id="ARRAYS-INPUT"><div class="titlepage"><div><div><h3 class="title">8.15.2. Array Value Input <a href="#ARRAYS-INPUT" class="id_link">#</a></h3></div></div></div><a id="id-1.5.7.23.5.2" class="indexterm"></a><p>
    To write an array value as a literal constant, enclose the element
    values within curly braces and separate them by commas.  (If you
    know C, this is not unlike the C syntax for initializing
@@ -145,7 +145,7 @@ INSERT INTO sal_emp
   double quoted as they would be in an array literal.  The <code class="literal">ARRAY</code>
   constructor syntax is discussed in more detail in
   <a class="xref" href="sql-expressions.html#SQL-SYNTAX-ARRAY-CONSTRUCTORS" title="4.2.12. Array Constructors">Section 4.2.12</a>.
- </p></div><div class="sect2" id="ARRAYS-ACCESSING"><div class="titlepage"><div><div><h3 class="title">8.15.3. Accessing Arrays</h3></div></div></div><a id="id-1.5.7.23.6.2" class="indexterm"></a><p>
+ </p></div><div class="sect2" id="ARRAYS-ACCESSING"><div class="titlepage"><div><div><h3 class="title">8.15.3. Accessing Arrays <a href="#ARRAYS-ACCESSING" class="id_link">#</a></h3></div></div></div><a id="id-1.5.7.23.6.2" class="indexterm"></a><p>
   Now, we can run some queries on the table.
   First, we show how to access a single element of an array.
   This query retrieves the names of the employees whose pay changed in
@@ -302,7 +302,7 @@ SELECT cardinality(schedule) FROM sal_emp WHERE name = 'Carol';
            4
 (1 row)
 </pre><p>
- </p></div><div class="sect2" id="ARRAYS-MODIFYING"><div class="titlepage"><div><div><h3 class="title">8.15.4. Modifying Arrays</h3></div></div></div><a id="id-1.5.7.23.7.2" class="indexterm"></a><p>
+ </p></div><div class="sect2" id="ARRAYS-MODIFYING"><div class="titlepage"><div><div><h3 class="title">8.15.4. Modifying Arrays <a href="#ARRAYS-MODIFYING" class="id_link">#</a></h3></div></div></div><a id="id-1.5.7.23.7.2" class="indexterm"></a><p>
   An array value can be replaced completely:
 
 </p><pre class="programlisting">
@@ -491,7 +491,7 @@ SELECT array_append(ARRAY[1, 2], NULL);    -- this might have been meant
   that's the wrong choice, it could be fixed by casting the constant to the
   array's element type; but explicit use of <code class="function">array_append</code> might
   be a preferable solution.
- </p></div><div class="sect2" id="ARRAYS-SEARCHING"><div class="titlepage"><div><div><h3 class="title">8.15.5. Searching in Arrays</h3></div></div></div><a id="id-1.5.7.23.8.2" class="indexterm"></a><p>
+ </p></div><div class="sect2" id="ARRAYS-SEARCHING"><div class="titlepage"><div><div><h3 class="title">8.15.5. Searching in Arrays <a href="#ARRAYS-SEARCHING" class="id_link">#</a></h3></div></div></div><a id="id-1.5.7.23.8.2" class="indexterm"></a><p>
   To search for a value in an array, each value must be checked.
   This can be done manually, if you know the size of the array.
   For example:
@@ -505,7 +505,7 @@ SELECT * FROM sal_emp WHERE pay_by_quarter[1] = 10000 OR
 
   However, this quickly becomes tedious for large arrays, and is not
   helpful if the size of the array is unknown. An alternative method is
-  described in <a class="xref" href="functions-comparisons.html" title="9.23. Row and Array Comparisons">Section 9.23</a>. The above
+  described in <a class="xref" href="functions-comparisons.html" title="9.24. Row and Array Comparisons">Section 9.24</a>. The above
   query could be replaced by:
 
 </p><pre class="programlisting">
@@ -531,7 +531,7 @@ SELECT * FROM
  WHERE pay_by_quarter[s] = 10000;
 </pre><p>
 
-  This function is described in <a class="xref" href="functions-srf.html#FUNCTIONS-SRF-SUBSCRIPTS" title="Table 9.59. Subscript Generating Functions">Table 9.59</a>.
+  This function is described in <a class="xref" href="functions-srf.html#FUNCTIONS-SRF-SUBSCRIPTS" title="Table 9.66. Subscript Generating Functions">Table 9.66</a>.
  </p><p>
   You can also search an array using the <code class="literal">&amp;&amp;</code> operator,
   which checks whether the left operand overlaps with the right operand.
@@ -542,7 +542,7 @@ SELECT * FROM sal_emp WHERE pay_by_quarter &amp;&amp; ARRAY[10000];
 </pre><p>
 
   This and other array operators are further described in
-  <a class="xref" href="functions-array.html" title="9.18. Array Functions and Operators">Section 9.18</a>.  It can be accelerated by an appropriate
+  <a class="xref" href="functions-array.html" title="9.19. Array Functions and Operators">Section 9.19</a>.  It can be accelerated by an appropriate
   index, as described in <a class="xref" href="indexes-types.html" title="11.2. Index Types">Section 11.2</a>.
  </p><p>
   You can also search for specific values in an array using the <code class="function">array_position</code>
@@ -552,14 +552,16 @@ SELECT * FROM sal_emp WHERE pay_by_quarter &amp;&amp; ARRAY[10000];
 
 </p><pre class="programlisting">
 SELECT array_position(ARRAY['sun','mon','tue','wed','thu','fri','sat'], 'mon');
- array_positions
------------------
- 2
+ array_position
+----------------
+              2
+(1 row)
 
 SELECT array_positions(ARRAY[1, 4, 3, 1, 3, 4, 2, 1], 1);
  array_positions
 -----------------
  {1,4,8}
+(1 row)
 </pre><p>
  </p><div class="tip"><h3 class="title">Tip</h3><p>
    Arrays are not sets; searching for specific array elements
@@ -567,7 +569,7 @@ SELECT array_positions(ARRAY[1, 4, 3, 1, 3, 4, 2, 1], 1);
    using a separate table with a row for each item that would be an
    array element.  This will be easier to search, and is likely to
    scale better for a large number of elements.
-  </p></div></div><div class="sect2" id="ARRAYS-IO"><div class="titlepage"><div><div><h3 class="title">8.15.6. Array Input and Output Syntax</h3></div></div></div><a id="id-1.5.7.23.9.2" class="indexterm"></a><p>
+  </p></div></div><div class="sect2" id="ARRAYS-IO"><div class="titlepage"><div><div><h3 class="title">8.15.6. Array Input and Output Syntax <a href="#ARRAYS-IO" class="id_link">#</a></h3></div></div></div><a id="id-1.5.7.23.9.2" class="indexterm"></a><p>
    The external text representation of an array value consists of items that
    are interpreted according to the I/O conversion rules for the array's
    element type, plus decoration that indicates the array structure.
@@ -642,4 +644,4 @@ SELECT f1[1][-2][3] AS e1, f1[1][-1][5] AS e2
    with than the array-literal syntax when writing array values in SQL
    commands. In <code class="literal">ARRAY</code>, individual element values are written the
    same way they would be written when not members of an array.
-  </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="datatype-json.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="datatype.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rowtypes.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">8.14. <acronym class="acronym">JSON</acronym> Types </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 8.16. Composite Types</td></tr></table></div></body></html>
+  </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="datatype-json.html" title="8.14. JSON Types">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="datatype.html" title="Chapter 8. Data Types">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rowtypes.html" title="8.16. Composite Types">Next</a></td></tr><tr><td width="40%" align="left" valign="top">8.14. <acronym class="acronym">JSON</acronym> Types </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 8.16. Composite Types</td></tr></table></div></body></html>

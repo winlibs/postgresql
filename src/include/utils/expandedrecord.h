@@ -3,7 +3,7 @@
  * expandedrecord.h
  *	  Declarations for composite expanded objects.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/expandedrecord.h
@@ -138,10 +138,20 @@ typedef struct ExpandedRecordHeader
 	MemoryContextCallback er_mcb;
 } ExpandedRecordHeader;
 
-/* fmgr macros for expanded record objects */
+/* fmgr functions and macros for expanded record objects */
+static inline Datum
+ExpandedRecordGetDatum(const ExpandedRecordHeader *erh)
+{
+	return EOHPGetRWDatum(&erh->hdr);
+}
+
+static inline Datum
+ExpandedRecordGetRODatum(const ExpandedRecordHeader *erh)
+{
+	return EOHPGetRODatum(&erh->hdr);
+}
+
 #define PG_GETARG_EXPANDED_RECORD(n)  DatumGetExpandedRecord(PG_GETARG_DATUM(n))
-#define ExpandedRecordGetDatum(erh)   EOHPGetRWDatum(&(erh)->hdr)
-#define ExpandedRecordGetRODatum(erh) EOHPGetRODatum(&(erh)->hdr)
 #define PG_RETURN_EXPANDED_RECORD(x)  PG_RETURN_DATUM(ExpandedRecordGetDatum(x))
 
 /* assorted other macros */
@@ -167,32 +177,32 @@ typedef struct ExpandedRecordFieldInfo
  * prototypes for functions defined in expandedrecord.c
  */
 extern ExpandedRecordHeader *make_expanded_record_from_typeid(Oid type_id, int32 typmod,
-								 MemoryContext parentcontext);
+															  MemoryContext parentcontext);
 extern ExpandedRecordHeader *make_expanded_record_from_tupdesc(TupleDesc tupdesc,
-								  MemoryContext parentcontext);
+															   MemoryContext parentcontext);
 extern ExpandedRecordHeader *make_expanded_record_from_exprecord(ExpandedRecordHeader *olderh,
-									MemoryContext parentcontext);
+																 MemoryContext parentcontext);
 extern void expanded_record_set_tuple(ExpandedRecordHeader *erh,
-						  HeapTuple tuple, bool copy, bool expand_external);
+									  HeapTuple tuple, bool copy, bool expand_external);
 extern Datum make_expanded_record_from_datum(Datum recorddatum,
-								MemoryContext parentcontext);
+											 MemoryContext parentcontext);
 extern TupleDesc expanded_record_fetch_tupdesc(ExpandedRecordHeader *erh);
 extern HeapTuple expanded_record_get_tuple(ExpandedRecordHeader *erh);
 extern ExpandedRecordHeader *DatumGetExpandedRecord(Datum d);
 extern void deconstruct_expanded_record(ExpandedRecordHeader *erh);
 extern bool expanded_record_lookup_field(ExpandedRecordHeader *erh,
-							 const char *fieldname,
-							 ExpandedRecordFieldInfo *finfo);
+										 const char *fieldname,
+										 ExpandedRecordFieldInfo *finfo);
 extern Datum expanded_record_fetch_field(ExpandedRecordHeader *erh, int fnumber,
-							bool *isnull);
+										 bool *isnull);
 extern void expanded_record_set_field_internal(ExpandedRecordHeader *erh,
-								   int fnumber,
-								   Datum newValue, bool isnull,
-								   bool expand_external,
-								   bool check_constraints);
+											   int fnumber,
+											   Datum newValue, bool isnull,
+											   bool expand_external,
+											   bool check_constraints);
 extern void expanded_record_set_fields(ExpandedRecordHeader *erh,
-						   const Datum *newValues, const bool *isnulls,
-						   bool expand_external);
+									   const Datum *newValues, const bool *isnulls,
+									   bool expand_external);
 
 /* outside code should never call expanded_record_set_field_internal as such */
 #define expanded_record_set_field(erh, fnumber, newValue, isnull, expand_external) \

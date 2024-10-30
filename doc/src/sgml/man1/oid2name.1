@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: oid2name
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "OID2NAME" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "OID2NAME" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,7 +36,7 @@ oid2name \- resolve OIDs and file nodes in a PostgreSQL data directory
 .PP
 oid2name
 is a utility program that helps administrators to examine the file structure used by PostgreSQL\&. To make use of it, you need to be familiar with the database file structure, which is described in
-Chapter\ \&68\&.
+Chapter\ \&73\&.
 .if n \{\
 .sp
 .\}
@@ -63,47 +63,61 @@ connects to a target database and extracts OID, filenode, and/or table name info
 oid2name
 accepts the following command\-line arguments:
 .PP
-\fB\-f\fR \fIfilenode\fR
+\fB\-f \fR\fB\fIfilenode\fR\fR
+.br
+\fB\-\-filenode=\fR\fB\fIfilenode\fR\fR
 .RS 4
 show info for table with filenode
-\fIfilenode\fR
+\fIfilenode\fR\&.
 .RE
 .PP
 \fB\-i\fR
+.br
+\fB\-\-indexes\fR
 .RS 4
-include indexes and sequences in the listing
+include indexes and sequences in the listing\&.
 .RE
 .PP
-\fB\-o\fR \fIoid\fR
+\fB\-o \fR\fB\fIoid\fR\fR
+.br
+\fB\-\-oid=\fR\fB\fIoid\fR\fR
 .RS 4
 show info for table with OID
-\fIoid\fR
+\fIoid\fR\&.
 .RE
 .PP
 \fB\-q\fR
+.br
+\fB\-\-quiet\fR
 .RS 4
-omit headers (useful for scripting)
+omit headers (useful for scripting)\&.
 .RE
 .PP
 \fB\-s\fR
+.br
+\fB\-\-tablespaces\fR
 .RS 4
-show tablespace OIDs
+show tablespace OIDs\&.
 .RE
 .PP
 \fB\-S\fR
+.br
+\fB\-\-system\-objects\fR
 .RS 4
 include system objects (those in
 \fBinformation_schema\fR,
 \fBpg_toast\fR
 and
 \fBpg_catalog\fR
-schemas)
+schemas)\&.
 .RE
 .PP
-\fB\-t\fR \fItablename_pattern\fR
+\fB\-t \fR\fB\fItablename_pattern\fR\fR
+.br
+\fB\-\-table=\fR\fB\fItablename_pattern\fR\fR
 .RS 4
 show info for table(s) matching
-\fItablename_pattern\fR
+\fItablename_pattern\fR\&.
 .RE
 .PP
 \fB\-V\fR
@@ -116,8 +130,10 @@ version and exit\&.
 .RE
 .PP
 \fB\-x\fR
+.br
+\fB\-\-extended\fR
 .RS 4
-display more information about each object shown: tablespace name, schema name, and OID
+display more information about each object shown: tablespace name, schema name, and OID\&.
 .RE
 .PP
 \fB\-?\fR
@@ -132,29 +148,41 @@ command line arguments, and exit\&.
 oid2name
 also accepts the following command\-line arguments for connection parameters:
 .PP
-\fB\-d\fR \fIdatabase\fR
+\fB\-d \fR\fB\fIdatabase\fR\fR
+.br
+\fB\-\-dbname=\fR\fB\fIdatabase\fR\fR
 .RS 4
-database to connect to
+database to connect to\&.
 .RE
 .PP
-\fB\-H\fR \fIhost\fR
+\fB\-h \fR\fB\fIhost\fR\fR
+.br
+\fB\-\-host=\fR\fB\fIhost\fR\fR
 .RS 4
-database server\*(Aqs host
+database server\*(Aqs host\&.
 .RE
 .PP
-\fB\-p\fR \fIport\fR
+\fB\-H \fR\fB\fIhost\fR\fR
 .RS 4
-database server\*(Aqs port
+database server\*(Aqs host\&. Use of this parameter is
+\fIdeprecated\fR
+as of
+PostgreSQL
+12\&.
 .RE
 .PP
-\fB\-U\fR \fIusername\fR
+\fB\-p \fR\fB\fIport\fR\fR
+.br
+\fB\-\-port=\fR\fB\fIport\fR\fR
 .RS 4
-user name to connect as
+database server\*(Aqs port\&.
 .RE
 .PP
-\fB\-P\fR \fIpassword\fR
+\fB\-U \fR\fB\fIusername\fR\fR
+.br
+\fB\-\-username=\fR\fB\fIusername\fR\fR
 .RS 4
-password (deprecated \(em putting this on the command line is a security hazard)
+user name to connect as\&.
 .RE
 .PP
 To display specific tables, select which tables to show by using
@@ -190,6 +218,31 @@ If you don\*(Aqt give
 either, it will show a listing of database OIDs\&. Alternatively you can give
 \fB\-s\fR
 to get a tablespace listing\&.
+.SH "ENVIRONMENT"
+.PP
+\fBPGHOST\fR
+.br
+\fBPGPORT\fR
+.br
+\fBPGUSER\fR
+.RS 4
+Default connection parameters\&.
+.RE
+.PP
+This utility, like most other
+PostgreSQL
+utilities, also uses the environment variables supported by
+libpq
+(see
+Section\ \&34.15)\&.
+.PP
+The environment variable
+\fBPG_COLOR\fR
+specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
 .SH "NOTES"
 .PP
 oid2name

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE DOMAIN
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATE DOMAIN" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE DOMAIN" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -69,7 +69,7 @@ The underlying data type of the domain\&. This can include array specifiers\&.
 .PP
 \fIcollation\fR
 .RS 4
-An optional collation for the domain\&. If no collation is specified, the underlying data type\*(Aqs default collation is used\&. The underlying type must be collatable if
+An optional collation for the domain\&. If no collation is specified, the domain has the same collation behavior as its underlying data type\&. The underlying type must be collatable if
 COLLATE
 is specified\&.
 .RE
@@ -139,6 +139,29 @@ The empty scalar sub\-SELECT will produce a null value that is considered to be 
 It is very difficult to avoid such problems, because of SQL\*(Aqs general assumption that a null value is a valid value of every data type\&. Best practice therefore is to design a domain\*(Aqs constraints so that a null value is allowed, and then to apply column
 NOT NULL
 constraints to columns of the domain type as needed, rather than directly to the domain type\&.
+.PP
+PostgreSQL
+assumes that
+CHECK
+constraints\*(Aq conditions are immutable, that is, they will always give the same result for the same input value\&. This assumption is what justifies examining
+CHECK
+constraints only when a value is first converted to be of a domain type, and not at other times\&. (This is essentially the same as the treatment of table
+CHECK
+constraints, as described in
+Section\ \&5.4.1\&.)
+.PP
+An example of a common way to break this assumption is to reference a user\-defined function in a
+CHECK
+expression, and then change the behavior of that function\&.
+PostgreSQL
+does not disallow that, but it will not notice if there are stored values of the domain type that now violate the
+CHECK
+constraint\&. That would cause a subsequent database dump and restore to fail\&. The recommended way to handle such a change is to drop the constraint (using
+\fBALTER DOMAIN\fR), adjust the function definition, and re\-add the constraint, thereby rechecking it against stored data\&.
+.PP
+It\*(Aqs also good practice to ensure that domain
+CHECK
+expressions will not throw errors\&.
 .SH "EXAMPLES"
 .PP
 This example creates the

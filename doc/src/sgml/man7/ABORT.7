@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ABORT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ABORT" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ABORT" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ ABORT \- abort the current transaction
 .SH "SYNOPSIS"
 .sp
 .nf
-ABORT [ WORK | TRANSACTION ]
+ABORT [ WORK | TRANSACTION ] [ AND [ NO ] CHAIN ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -40,7 +40,7 @@ ABORT [ WORK | TRANSACTION ]
 rolls back the current transaction and causes all the updates made by the transaction to be discarded\&. This command is identical in behavior to the standard
 SQL
 command
-\fBROLLBACK\fR(7), and is present only for historical reasons\&.
+\fBROLLBACK\fR, and is present only for historical reasons\&.
 .SH "PARAMETERS"
 .PP
 WORK
@@ -49,10 +49,18 @@ TRANSACTION
 .RS 4
 Optional key words\&. They have no effect\&.
 .RE
+.PP
+AND CHAIN
+.RS 4
+If
+AND CHAIN
+is specified, a new transaction is immediately started with the same transaction characteristics (see
+\fBSET TRANSACTION\fR) as the just finished one\&. Otherwise, no new transaction is started\&.
+.RE
 .SH "NOTES"
 .PP
 Use
-\fBCOMMIT\fR(7)
+\fBCOMMIT\fR
 to successfully terminate a transaction\&.
 .PP
 Issuing

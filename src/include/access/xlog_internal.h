@@ -11,7 +11,7 @@
  * Note: This file must be includable in both frontend and backend contexts,
  * to allow stand-alone tools like pg_receivewal to deal with WAL files.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/xlog_internal.h
@@ -25,13 +25,13 @@
 #include "lib/stringinfo.h"
 #include "pgtime.h"
 #include "storage/block.h"
-#include "storage/relfilenode.h"
+#include "storage/relfilelocator.h"
 
 
 /*
  * Each page of XLOG file has a header like this:
  */
-#define XLOG_PAGE_MAGIC 0xD098	/* can be used as WAL version indicator */
+#define XLOG_PAGE_MAGIC 0xD113	/* can be used as WAL version indicator */
 
 typedef struct XLogPageHeaderData
 {
@@ -43,11 +43,8 @@ typedef struct XLogPageHeaderData
 	/*
 	 * When there is not enough space on current page for whole record, we
 	 * continue on the next page.  xlp_rem_len is the number of bytes
-	 * remaining from a previous page.
-	 *
-	 * Note that xl_rem_len includes backup-block data; that is, it tracks
-	 * xl_tot_len not xl_len in the initial header.  Also note that the
-	 * continuation data isn't necessarily aligned.
+	 * remaining from a previous page; it tracks xl_tot_len in the initial
+	 * header.  Note that the continuation data isn't necessarily aligned.
 	 */
 	uint32		xlp_rem_len;	/* total len of remaining data for record */
 } XLogPageHeaderData;
@@ -79,8 +76,10 @@ typedef XLogLongPageHeaderData *XLogLongPageHeader;
 #define XLP_LONG_HEADER				0x0002
 /* This flag indicates backup blocks starting in this page are optional */
 #define XLP_BKP_REMOVABLE			0x0004
+/* Replaces a missing contrecord; see CreateOverwriteContrecordRecord */
+#define XLP_FIRST_IS_OVERWRITE_CONTRECORD 0x0008
 /* All defined flag bits in xlp_info (used for validity checking of header) */
-#define XLP_ALL_FLAGS				0x0007
+#define XLP_ALL_FLAGS				0x000F
 
 #define XLogPageHeaderSize(hdr)		\
 	(((hdr)->xlp_info & XLP_LONG_HEADER) ? SizeOfXLogLongPHD : SizeOfXLogShortPHD)
@@ -122,6 +121,13 @@ typedef XLogLongPageHeaderData *XLogLongPageHeader;
 	logSegNo = ((xlrp) - 1) / (wal_segsz_bytes)
 
 /*
+ * Convert values of GUCs measured in megabytes to equiv. segment count.
+ * Rounds down.
+ */
+#define XLogMBVarToSegs(mbvar, wal_segsz_bytes) \
+	((mbvar) / ((wal_segsz_bytes) / (1024 * 1024)))
+
+/*
  * Is an XLogRecPtr within a particular XLOG segment?
  *
  * For XLByteInSeg, do the computation at face value.  For XLByteInPrevSeg,
@@ -152,71 +158,113 @@ typedef XLogLongPageHeaderData *XLogLongPageHeader;
 /* Length of XLog file name */
 #define XLOG_FNAME_LEN	   24
 
-#define XLogFileName(fname, tli, logSegNo, wal_segsz_bytes)	\
-	snprintf(fname, MAXFNAMELEN, "%08X%08X%08X", tli,		\
-			 (uint32) ((logSegNo) / XLogSegmentsPerXLogId(wal_segsz_bytes)), \
-			 (uint32) ((logSegNo) % XLogSegmentsPerXLogId(wal_segsz_bytes)))
+/*
+ * Generate a WAL segment file name.  Do not use this function in a helper
+ * function allocating the result generated.
+ */
+static inline void
+XLogFileName(char *fname, TimeLineID tli, XLogSegNo logSegNo, int wal_segsz_bytes)
+{
+	snprintf(fname, MAXFNAMELEN, "%08X%08X%08X", tli,
+			 (uint32) (logSegNo / XLogSegmentsPerXLogId(wal_segsz_bytes)),
+			 (uint32) (logSegNo % XLogSegmentsPerXLogId(wal_segsz_bytes)));
+}
 
-#define XLogFileNameById(fname, tli, log, seg)	\
-	snprintf(fname, MAXFNAMELEN, "%08X%08X%08X", tli, log, seg)
+static inline void
+XLogFileNameById(char *fname, TimeLineID tli, uint32 log, uint32 seg)
+{
+	snprintf(fname, MAXFNAMELEN, "%08X%08X%08X", tli, log, seg);
+}
 
-#define IsXLogFileName(fname) \
-	(strlen(fname) == XLOG_FNAME_LEN && \
-	 strspn(fname, "0123456789ABCDEF") == XLOG_FNAME_LEN)
+static inline bool
+IsXLogFileName(const char *fname)
+{
+	return (strlen(fname) == XLOG_FNAME_LEN && \
+			strspn(fname, "0123456789ABCDEF") == XLOG_FNAME_LEN);
+}
 
 /*
  * XLOG segment with .partial suffix.  Used by pg_receivewal and at end of
  * archive recovery, when we want to archive a WAL segment but it might not
  * be complete yet.
  */
-#define IsPartialXLogFileName(fname)	\
-	(strlen(fname) == XLOG_FNAME_LEN + strlen(".partial") &&	\
-	 strspn(fname, "0123456789ABCDEF") == XLOG_FNAME_LEN &&		\
-	 strcmp((fname) + XLOG_FNAME_LEN, ".partial") == 0)
+static inline bool
+IsPartialXLogFileName(const char *fname)
+{
+	return (strlen(fname) == XLOG_FNAME_LEN + strlen(".partial") &&
+			strspn(fname, "0123456789ABCDEF") == XLOG_FNAME_LEN &&
+			strcmp(fname + XLOG_FNAME_LEN, ".partial") == 0);
+}
 
-#define XLogFromFileName(fname, tli, logSegNo, wal_segsz_bytes)	\
-	do {												\
-		uint32 log;										\
-		uint32 seg;										\
-		sscanf(fname, "%08X%08X%08X", tli, &log, &seg); \
-		*logSegNo = (uint64) log * XLogSegmentsPerXLogId(wal_segsz_bytes) + seg; \
-	} while (0)
+static inline void
+XLogFromFileName(const char *fname, TimeLineID *tli, XLogSegNo *logSegNo, int wal_segsz_bytes)
+{
+	uint32		log;
+	uint32		seg;
 
-#define XLogFilePath(path, tli, logSegNo, wal_segsz_bytes)	\
-	snprintf(path, MAXPGPATH, XLOGDIR "/%08X%08X%08X", tli,	\
-			 (uint32) ((logSegNo) / XLogSegmentsPerXLogId(wal_segsz_bytes)), \
-			 (uint32) ((logSegNo) % XLogSegmentsPerXLogId(wal_segsz_bytes)))
+	sscanf(fname, "%08X%08X%08X", tli, &log, &seg);
+	*logSegNo = (uint64) log * XLogSegmentsPerXLogId(wal_segsz_bytes) + seg;
+}
 
-#define TLHistoryFileName(fname, tli)	\
-	snprintf(fname, MAXFNAMELEN, "%08X.history", tli)
+static inline void
+XLogFilePath(char *path, TimeLineID tli, XLogSegNo logSegNo, int wal_segsz_bytes)
+{
+	snprintf(path, MAXPGPATH, XLOGDIR "/%08X%08X%08X", tli,
+			 (uint32) (logSegNo / XLogSegmentsPerXLogId(wal_segsz_bytes)),
+			 (uint32) (logSegNo % XLogSegmentsPerXLogId(wal_segsz_bytes)));
+}
 
-#define IsTLHistoryFileName(fname)	\
-	(strlen(fname) == 8 + strlen(".history") &&		\
-	 strspn(fname, "0123456789ABCDEF") == 8 &&		\
-	 strcmp((fname) + 8, ".history") == 0)
+static inline void
+TLHistoryFileName(char *fname, TimeLineID tli)
+{
+	snprintf(fname, MAXFNAMELEN, "%08X.history", tli);
+}
 
-#define TLHistoryFilePath(path, tli)	\
-	snprintf(path, MAXPGPATH, XLOGDIR "/%08X.history", tli)
+static inline bool
+IsTLHistoryFileName(const char *fname)
+{
+	return (strlen(fname) == 8 + strlen(".history") &&
+			strspn(fname, "0123456789ABCDEF") == 8 &&
+			strcmp(fname + 8, ".history") == 0);
+}
 
-#define StatusFilePath(path, xlog, suffix)	\
-	snprintf(path, MAXPGPATH, XLOGDIR "/archive_status/%s%s", xlog, suffix)
+static inline void
+TLHistoryFilePath(char *path, TimeLineID tli)
+{
+	snprintf(path, MAXPGPATH, XLOGDIR "/%08X.history", tli);
+}
 
-#define BackupHistoryFileName(fname, tli, logSegNo, startpoint, wal_segsz_bytes) \
-	snprintf(fname, MAXFNAMELEN, "%08X%08X%08X.%08X.backup", tli, \
-			 (uint32) ((logSegNo) / XLogSegmentsPerXLogId(wal_segsz_bytes)), \
-			 (uint32) ((logSegNo) % XLogSegmentsPerXLogId(wal_segsz_bytes)), \
-			 (uint32) (XLogSegmentOffset(startpoint, wal_segsz_bytes)))
+static inline void
+StatusFilePath(char *path, const char *xlog, const char *suffix)
+{
+	snprintf(path, MAXPGPATH, XLOGDIR "/archive_status/%s%s", xlog, suffix);
+}
 
-#define IsBackupHistoryFileName(fname) \
-	(strlen(fname) > XLOG_FNAME_LEN && \
-	 strspn(fname, "0123456789ABCDEF") == XLOG_FNAME_LEN && \
-	 strcmp((fname) + strlen(fname) - strlen(".backup"), ".backup") == 0)
+static inline void
+BackupHistoryFileName(char *fname, TimeLineID tli, XLogSegNo logSegNo, XLogRecPtr startpoint, int wal_segsz_bytes)
+{
+	snprintf(fname, MAXFNAMELEN, "%08X%08X%08X.%08X.backup", tli,
+			 (uint32) (logSegNo / XLogSegmentsPerXLogId(wal_segsz_bytes)),
+			 (uint32) (logSegNo % XLogSegmentsPerXLogId(wal_segsz_bytes)),
+			 (uint32) (XLogSegmentOffset(startpoint, wal_segsz_bytes)));
+}
 
-#define BackupHistoryFilePath(path, tli, logSegNo, startpoint, wal_segsz_bytes)	\
-	snprintf(path, MAXPGPATH, XLOGDIR "/%08X%08X%08X.%08X.backup", tli, \
-			 (uint32) ((logSegNo) / XLogSegmentsPerXLogId(wal_segsz_bytes)), \
-			 (uint32) ((logSegNo) % XLogSegmentsPerXLogId(wal_segsz_bytes)), \
-			 (uint32) (XLogSegmentOffset((startpoint), wal_segsz_bytes)))
+static inline bool
+IsBackupHistoryFileName(const char *fname)
+{
+	return (strlen(fname) > XLOG_FNAME_LEN &&
+			strspn(fname, "0123456789ABCDEF") == XLOG_FNAME_LEN &&
+			strcmp(fname + strlen(fname) - strlen(".backup"), ".backup") == 0);
+}
+
+static inline void
+BackupHistoryFilePath(char *path, TimeLineID tli, XLogSegNo logSegNo, XLogRecPtr startpoint, int wal_segsz_bytes)
+{
+	snprintf(path, MAXPGPATH, XLOGDIR "/%08X%08X%08X.%08X.backup", tli,
+			 (uint32) (logSegNo / XLogSegmentsPerXLogId(wal_segsz_bytes)),
+			 (uint32) (logSegNo % XLogSegmentsPerXLogId(wal_segsz_bytes)),
+			 (uint32) (XLogSegmentOffset((startpoint), wal_segsz_bytes)));
+}
 
 /*
  * Information logged when we detect a change in one of the parameters
@@ -226,6 +274,7 @@ typedef struct xl_parameter_change
 {
 	int			MaxConnections;
 	int			max_worker_processes;
+	int			max_wal_senders;
 	int			max_prepared_xacts;
 	int			max_locks_per_xact;
 	int			wal_level;
@@ -239,6 +288,13 @@ typedef struct xl_restore_point
 	TimestampTz rp_time;
 	char		rp_name[MAXFNAMELEN];
 } xl_restore_point;
+
+/* Overwrite of prior contrecord */
+typedef struct xl_overwrite_contrecord
+{
+	XLogRecPtr	overwritten_lsn;
+	TimestampTz overwrite_time;
+} xl_overwrite_contrecord;
 
 /* End of recovery mark, when we don't do an END_OF_RECOVERY checkpoint */
 typedef struct xl_end_of_recovery
@@ -267,7 +323,10 @@ typedef enum
 	RECOVERY_TARGET_ACTION_PAUSE,
 	RECOVERY_TARGET_ACTION_PROMOTE,
 	RECOVERY_TARGET_ACTION_SHUTDOWN
-} RecoveryTargetAction;
+}			RecoveryTargetAction;
+
+struct LogicalDecodingContext;
+struct XLogRecordBuffer;
 
 /*
  * Method table for resource managers.
@@ -283,7 +342,8 @@ typedef enum
  * rm_mask takes as input a page modified by the resource manager and masks
  * out bits that shouldn't be flagged by wal_consistency_checking.
  *
- * RmgrTable[] is indexed by RmgrId values (see rmgrlist.h).
+ * RmgrTable[] is indexed by RmgrId values (see rmgrlist.h). If rm_name is
+ * NULL, the corresponding RmgrTable entry is considered invalid.
  */
 typedef struct RmgrData
 {
@@ -294,9 +354,31 @@ typedef struct RmgrData
 	void		(*rm_startup) (void);
 	void		(*rm_cleanup) (void);
 	void		(*rm_mask) (char *pagedata, BlockNumber blkno);
+	void		(*rm_decode) (struct LogicalDecodingContext *ctx,
+							  struct XLogRecordBuffer *buf);
 } RmgrData;
 
-extern const RmgrData RmgrTable[];
+extern PGDLLIMPORT RmgrData RmgrTable[];
+extern void RmgrStartup(void);
+extern void RmgrCleanup(void);
+extern void RmgrNotFound(RmgrId rmid);
+extern void RegisterCustomRmgr(RmgrId rmid, const RmgrData *rmgr);
+
+#ifndef FRONTEND
+static inline bool
+RmgrIdExists(RmgrId rmid)
+{
+	return RmgrTable[rmid].rm_name != NULL;
+}
+
+static inline RmgrData
+GetRmgr(RmgrId rmid)
+{
+	if (unlikely(!RmgrIdExists(rmid)))
+		RmgrNotFound(rmid);
+	return RmgrTable[rmid];
+}
+#endif
 
 /*
  * Exported to support xlog switching from checkpointer
@@ -306,31 +388,17 @@ extern XLogRecPtr RequestXLogSwitch(bool mark_unimportant);
 
 extern void GetOldestRestartPoint(XLogRecPtr *oldrecptr, TimeLineID *oldtli);
 
+extern void XLogRecGetBlockRefInfo(XLogReaderState *record, bool pretty,
+								   bool detailed_format, StringInfo buf,
+								   uint32 *fpi_len);
+
 /*
  * Exported for the functions in timeline.c and xlogarchive.c.  Only valid
  * in the startup process.
  */
-extern bool ArchiveRecoveryRequested;
-extern bool InArchiveRecovery;
-extern bool StandbyMode;
-extern char *recoveryRestoreCommand;
-
-/*
- * Prototypes for functions in xlogarchive.c
- */
-extern bool RestoreArchivedFile(char *path, const char *xlogfname,
-					const char *recovername, off_t expectedSize,
-					bool cleanupEnabled);
-extern void ExecuteRecoveryCommand(const char *command, const char *commandName,
-					   bool failOnerror);
-extern void KeepFileRestoredFromArchive(const char *path, const char *xlogfname);
-extern void XLogArchiveNotify(const char *xlog);
-extern void XLogArchiveNotifySeg(XLogSegNo segno);
-extern void XLogArchiveForceDone(const char *xlog);
-extern bool XLogArchiveCheckDone(const char *xlog);
-extern bool XLogArchiveIsBusy(const char *xlog);
-extern bool XLogArchiveIsReady(const char *xlog);
-extern bool XLogArchiveIsReadyOrDone(const char *xlog);
-extern void XLogArchiveCleanup(const char *xlog);
+extern PGDLLIMPORT bool ArchiveRecoveryRequested;
+extern PGDLLIMPORT bool InArchiveRecovery;
+extern PGDLLIMPORT bool StandbyMode;
+extern PGDLLIMPORT char *recoveryRestoreCommand;
 
 #endif							/* XLOG_INTERNAL_H */

@@ -3,7 +3,7 @@
  * win32_shmem.c
  *	  Implement shared memory using win32 facilities
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/backend/port/win32_shmem.c
@@ -16,6 +16,8 @@
 #include "storage/dsm.h"
 #include "storage/ipc.h"
 #include "storage/pg_shmem.h"
+#include "utils/guc_hooks.h"
+
 
 /*
  * Early in a process's life, Windows asynchronously creates threads for the
@@ -141,7 +143,14 @@ EnableLockPagesPrivilege(int elevel)
 	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
 	{
 		ereport(elevel,
-				(errmsg("could not enable Lock Pages in Memory user right: error code %lu", GetLastError()),
+				(errmsg("could not enable user right \"%s\": error code %lu",
+
+		/*
+		 * translator: This is a term from Windows and should be translated to
+		 * match the Windows localization.
+		 */
+						_("Lock pages in memory"),
+						GetLastError()),
 				 errdetail("Failed system call was %s.", "OpenProcessToken")));
 		return FALSE;
 	}
@@ -149,7 +158,7 @@ EnableLockPagesPrivilege(int elevel)
 	if (!LookupPrivilegeValue(NULL, SE_LOCK_MEMORY_NAME, &luid))
 	{
 		ereport(elevel,
-				(errmsg("could not enable Lock Pages in Memory user right: error code %lu", GetLastError()),
+				(errmsg("could not enable user right \"%s\": error code %lu", _("Lock pages in memory"), GetLastError()),
 				 errdetail("Failed system call was %s.", "LookupPrivilegeValue")));
 		CloseHandle(hToken);
 		return FALSE;
@@ -161,7 +170,7 @@ EnableLockPagesPrivilege(int elevel)
 	if (!AdjustTokenPrivileges(hToken, FALSE, &tp, 0, NULL, NULL))
 	{
 		ereport(elevel,
-				(errmsg("could not enable Lock Pages in Memory user right: error code %lu", GetLastError()),
+				(errmsg("could not enable user right \"%s\": error code %lu", _("Lock pages in memory"), GetLastError()),
 				 errdetail("Failed system call was %s.", "AdjustTokenPrivileges")));
 		CloseHandle(hToken);
 		return FALSE;
@@ -172,11 +181,12 @@ EnableLockPagesPrivilege(int elevel)
 		if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
 			ereport(elevel,
 					(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-					 errmsg("could not enable Lock Pages in Memory user right"),
-					 errhint("Assign Lock Pages in Memory user right to the Windows user account which runs PostgreSQL.")));
+					 errmsg("could not enable user right \"%s\"", _("Lock pages in memory")),
+					 errhint("Assign user right \"%s\" to the Windows user account which runs PostgreSQL.",
+							 _("Lock pages in memory"))));
 		else
 			ereport(elevel,
-					(errmsg("could not enable Lock Pages in Memory user right: error code %lu", GetLastError()),
+					(errmsg("could not enable user right \"%s\": error code %lu", _("Lock pages in memory"), GetLastError()),
 					 errdetail("Failed system call was %s.", "AdjustTokenPrivileges")));
 		CloseHandle(hToken);
 		return FALSE;
@@ -194,7 +204,7 @@ EnableLockPagesPrivilege(int elevel)
  * standard header.
  */
 PGShmemHeader *
-PGSharedMemoryCreate(Size size, int port,
+PGSharedMemoryCreate(Size size,
 					 PGShmemHeader **shim)
 {
 	void	   *memAddress;
@@ -208,6 +218,7 @@ PGSharedMemoryCreate(Size size, int port,
 	SIZE_T		largePageSize = 0;
 	Size		orig_size = size;
 	DWORD		flProtect = PAGE_READWRITE;
+	DWORD		desiredAccess;
 
 	ShmemProtectiveRegion = VirtualAlloc(NULL, PROTECTIVE_REGION_SIZE,
 										 MEM_RESERVE, PAGE_NOACCESS);
@@ -232,12 +243,12 @@ PGSharedMemoryCreate(Size size, int port,
 					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 					 errmsg("the processor does not support large pages")));
 			ereport(DEBUG1,
-					(errmsg("disabling huge pages")));
+					(errmsg_internal("disabling huge pages")));
 		}
 		else if (!EnableLockPagesPrivilege(huge_pages == HUGE_PAGES_ON ? FATAL : DEBUG1))
 		{
 			ereport(DEBUG1,
-					(errmsg("disabling huge pages")));
+					(errmsg_internal("disabling huge pages")));
 		}
 		else
 		{
@@ -345,12 +356,19 @@ retry:
 	if (!CloseHandle(hmap))
 		elog(LOG, "could not close handle to shared memory: error code %lu", GetLastError());
 
+	desiredAccess = FILE_MAP_WRITE | FILE_MAP_READ;
+
+#ifdef FILE_MAP_LARGE_PAGES
+	/* Set large pages if wanted. */
+	if ((flProtect & SEC_LARGE_PAGES) != 0)
+		desiredAccess |= FILE_MAP_LARGE_PAGES;
+#endif
 
 	/*
 	 * Get a pointer to the new shared memory segment. Map the whole segment
 	 * at once, and let the system decide on the initial address.
 	 */
-	memAddress = MapViewOfFileEx(hmap2, FILE_MAP_WRITE | FILE_MAP_READ, 0, 0, 0, NULL);
+	memAddress = MapViewOfFileEx(hmap2, desiredAccess, 0, 0, 0, NULL);
 	if (!memAddress)
 		ereport(FATAL,
 				(errmsg("could not create shared memory segment: error code %lu", GetLastError()),
@@ -595,5 +613,33 @@ pgwin32_ReserveSharedMemoryRegion(HANDLE hChild)
 		return false;
 	}
 
+	return true;
+}
+
+/*
+ * This function is provided for consistency with sysv_shmem.c and does not
+ * provide any useful information for Windows.  To obtain the large page size,
+ * use GetLargePageMinimum() instead.
+ */
+void
+GetHugePageSize(Size *hugepagesize, int *mmap_flags)
+{
+	if (hugepagesize)
+		*hugepagesize = 0;
+	if (mmap_flags)
+		*mmap_flags = 0;
+}
+
+/*
+ * GUC check_hook for huge_page_size
+ */
+bool
+check_huge_page_size(int *newval, void **extra, GucSource source)
+{
+	if (*newval != 0)
+	{
+		GUC_check_errdetail("huge_page_size must be 0 on this platform.");
+		return false;
+	}
 	return true;
 }

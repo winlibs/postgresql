@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dblink_get_result
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DBLINK_GET_RESULT" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DBLINK_GET_RESULT" "3" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -54,10 +54,10 @@ If true (the default when omitted) then an error thrown on the remote side of th
 .RE
 .SH "RETURN VALUE"
 .PP
-For an async query (that is, a SQL statement returning rows), the function returns the row(s) produced by the query\&. To use this function, you will need to specify the expected set of columns, as previously discussed for
+For an async query (that is, an SQL statement returning rows), the function returns the row(s) produced by the query\&. To use this function, you will need to specify the expected set of columns, as previously discussed for
 \fBdblink\fR\&.
 .PP
-For an async command (that is, a SQL statement not returning rows), the function returns a single row with a single text column containing the command\*(Aqs status string\&. It is still necessary to specify that the result will have a single text column in the calling
+For an async command (that is, an SQL statement not returning rows), the function returns a single row with a single text column containing the command\*(Aqs status string\&. It is still necessary to specify that the result will have a single text column in the calling
 FROM
 clause\&.
 .SH "NOTES"

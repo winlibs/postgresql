@@ -4,7 +4,7 @@
  *	  Declarations for Postgres range types.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/rangetypes.h
@@ -28,6 +28,8 @@ typedef struct
 	Oid			rangetypid;		/* range type's own OID */
 	/* Following the OID are zero to two bound values, then a flags byte */
 } RangeType;
+
+#define RANGE_EMPTY_LITERAL "empty"
 
 /* Use this macro in preference to fetching rangetypid field directly */
 #define RangeTypeGetOid(r)	((r)->rangetypid)
@@ -66,11 +68,26 @@ typedef struct
 } RangeBound;
 
 /*
- * fmgr macros for range type objects
+ * fmgr functions for range type objects
  */
-#define DatumGetRangeTypeP(X)		((RangeType *) PG_DETOAST_DATUM(X))
-#define DatumGetRangeTypePCopy(X)	((RangeType *) PG_DETOAST_DATUM_COPY(X))
-#define RangeTypePGetDatum(X)		PointerGetDatum(X)
+static inline RangeType *
+DatumGetRangeTypeP(Datum X)
+{
+	return (RangeType *) PG_DETOAST_DATUM(X);
+}
+
+static inline RangeType *
+DatumGetRangeTypePCopy(Datum X)
+{
+	return (RangeType *) PG_DETOAST_DATUM_COPY(X);
+}
+
+static inline Datum
+RangeTypePGetDatum(const RangeType *X)
+{
+	return PointerGetDatum(X);
+}
+
 #define PG_GETARG_RANGE_P(n)		DatumGetRangeTypeP(PG_GETARG_DATUM(n))
 #define PG_GETARG_RANGE_P_COPY(n)	DatumGetRangeTypePCopy(PG_GETARG_DATUM(n))
 #define PG_RETURN_RANGE_P(x)		return RangeTypePGetDatum(x)
@@ -92,48 +109,60 @@ typedef struct
  * prototypes for functions defined in rangetypes.c
  */
 
-extern bool range_contains_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val);
+extern bool range_contains_elem_internal(TypeCacheEntry *typcache, const RangeType *r, Datum val);
 
 /* internal versions of the above */
-extern bool range_eq_internal(TypeCacheEntry *typcache, RangeType *r1,
-				  RangeType *r2);
-extern bool range_ne_internal(TypeCacheEntry *typcache, RangeType *r1,
-				  RangeType *r2);
-extern bool range_contains_internal(TypeCacheEntry *typcache, RangeType *r1,
-						RangeType *r2);
-extern bool range_contained_by_internal(TypeCacheEntry *typcache, RangeType *r1,
-							RangeType *r2);
-extern bool range_before_internal(TypeCacheEntry *typcache, RangeType *r1,
-					  RangeType *r2);
-extern bool range_after_internal(TypeCacheEntry *typcache, RangeType *r1,
-					 RangeType *r2);
-extern bool range_adjacent_internal(TypeCacheEntry *typcache, RangeType *r1,
-						RangeType *r2);
-extern bool range_overlaps_internal(TypeCacheEntry *typcache, RangeType *r1,
-						RangeType *r2);
-extern bool range_overleft_internal(TypeCacheEntry *typcache, RangeType *r1,
-						RangeType *r2);
-extern bool range_overright_internal(TypeCacheEntry *typcache, RangeType *r1,
-						 RangeType *r2);
+extern bool range_eq_internal(TypeCacheEntry *typcache, const RangeType *r1,
+							  const RangeType *r2);
+extern bool range_ne_internal(TypeCacheEntry *typcache, const RangeType *r1,
+							  const RangeType *r2);
+extern bool range_contains_internal(TypeCacheEntry *typcache, const RangeType *r1,
+									const RangeType *r2);
+extern bool range_contained_by_internal(TypeCacheEntry *typcache, const RangeType *r1,
+										const RangeType *r2);
+extern bool range_before_internal(TypeCacheEntry *typcache, const RangeType *r1,
+								  const RangeType *r2);
+extern bool range_after_internal(TypeCacheEntry *typcache, const RangeType *r1,
+								 const RangeType *r2);
+extern bool range_adjacent_internal(TypeCacheEntry *typcache, const RangeType *r1,
+									const RangeType *r2);
+extern bool range_overlaps_internal(TypeCacheEntry *typcache, const RangeType *r1,
+									const RangeType *r2);
+extern bool range_overleft_internal(TypeCacheEntry *typcache, const RangeType *r1,
+									const RangeType *r2);
+extern bool range_overright_internal(TypeCacheEntry *typcache, const RangeType *r1,
+									 const RangeType *r2);
+extern RangeType *range_union_internal(TypeCacheEntry *typcache, RangeType *r1,
+									   RangeType *r2, bool strict);
+extern RangeType *range_minus_internal(TypeCacheEntry *typcache, RangeType *r1,
+									   RangeType *r2);
+extern RangeType *range_intersect_internal(TypeCacheEntry *typcache, const RangeType *r1,
+										   const RangeType *r2);
 
 /* assorted support functions */
 extern TypeCacheEntry *range_get_typcache(FunctionCallInfo fcinfo,
-				   Oid rngtypid);
+										  Oid rngtypid);
 extern RangeType *range_serialize(TypeCacheEntry *typcache, RangeBound *lower,
-				RangeBound *upper, bool empty);
-extern void range_deserialize(TypeCacheEntry *typcache, RangeType *range,
-				  RangeBound *lower, RangeBound *upper,
-				  bool *empty);
-extern char range_get_flags(RangeType *range);
+								  RangeBound *upper, bool empty,
+								  struct Node *escontext);
+extern void range_deserialize(TypeCacheEntry *typcache, const RangeType *range,
+							  RangeBound *lower, RangeBound *upper,
+							  bool *empty);
+extern char range_get_flags(const RangeType *range);
 extern void range_set_contain_empty(RangeType *range);
 extern RangeType *make_range(TypeCacheEntry *typcache, RangeBound *lower,
-		   RangeBound *upper, bool empty);
-extern int range_cmp_bounds(TypeCacheEntry *typcache, RangeBound *b1,
-				 RangeBound *b2);
-extern int range_cmp_bound_values(TypeCacheEntry *typcache, RangeBound *b1,
-					   RangeBound *b2);
-extern bool bounds_adjacent(TypeCacheEntry *typcache, RangeBound bound1,
-				RangeBound bound2);
+							 RangeBound *upper, bool empty,
+							 struct Node *escontext);
+extern int	range_cmp_bounds(TypeCacheEntry *typcache, const RangeBound *b1,
+							 const RangeBound *b2);
+extern int	range_cmp_bound_values(TypeCacheEntry *typcache, const RangeBound *b1,
+								   const RangeBound *b2);
+extern int	range_compare(const void *key1, const void *key2, void *arg);
+extern bool bounds_adjacent(TypeCacheEntry *typcache, RangeBound boundA,
+							RangeBound boundB);
 extern RangeType *make_empty_range(TypeCacheEntry *typcache);
+extern bool range_split_internal(TypeCacheEntry *typcache, const RangeType *r1,
+								 const RangeType *r2, RangeType **output1,
+								 RangeType **output2);
 
 #endif							/* RANGETYPES_H */

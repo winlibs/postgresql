@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>INSERT</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-importforeignschema.html" title="IMPORT FOREIGN SCHEMA" /><link rel="next" href="sql-listen.html" title="LISTEN" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">INSERT</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-importforeignschema.html" title="IMPORT FOREIGN SCHEMA">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-listen.html" title="LISTEN">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-INSERT"><div class="titlepage"></div><a id="id-1.9.3.152.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">INSERT</span></h2><p>INSERT — create new rows in a table</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>INSERT</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-importforeignschema.html" title="IMPORT FOREIGN SCHEMA" /><link rel="next" href="sql-listen.html" title="LISTEN" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">INSERT</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-importforeignschema.html" title="IMPORT FOREIGN SCHEMA">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-listen.html" title="LISTEN">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-INSERT"><div class="titlepage"></div><a id="id-1.9.3.152.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">INSERT</span></h2><p>INSERT — create new rows in a table</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 [ WITH [ RECURSIVE ] <em class="replaceable"><code>with_query</code></em> [, ...] ]
 INSERT INTO <em class="replaceable"><code>table_name</code></em> [ AS <em class="replaceable"><code>alias</code></em> ] [ ( <em class="replaceable"><code>column_name</code></em> [, ...] ) ]
-    [ OVERRIDING { SYSTEM | USER} VALUE ]
+    [ OVERRIDING { SYSTEM | USER } VALUE ]
     { DEFAULT VALUES | VALUES ( { <em class="replaceable"><code>expression</code></em> | DEFAULT } [, ...] ) [, ...] | <em class="replaceable"><code>query</code></em> }
     [ ON CONFLICT [ <em class="replaceable"><code>conflict_target</code></em> ] <em class="replaceable"><code>conflict_action</code></em> ]
-    [ RETURNING * | <em class="replaceable"><code>output_expression</code></em> [ [ AS ] <em class="replaceable"><code>output_name</code></em> ] [, ...] ]
+    [ RETURNING { * | <em class="replaceable"><code>output_expression</code></em> [ [ AS ] <em class="replaceable"><code>output_name</code></em> ] } [, ...] ]
 
 <span class="phrase">where <em class="replaceable"><code>conflict_target</code></em> can be one of:</span>
 
@@ -40,9 +40,14 @@ INSERT INTO <em class="replaceable"><code>table_name</code></em> [ AS <em class=
    If the expression for any column is not of the correct data type,
    automatic type conversion will be attempted.
   </p><p>
+   <code class="command">INSERT</code> into tables that lack unique indexes will
+   not be blocked by concurrent activity.  Tables with unique indexes
+   might block if concurrent sessions perform actions that lock or modify
+   rows matching the unique index values being inserted;  the details
+   are covered in <a class="xref" href="index-unique-checks.html" title="64.5. Index Uniqueness Checks">Section 64.5</a>.
    <code class="literal">ON CONFLICT</code> can be used to specify an alternative
    action to raising a unique constraint or exclusion constraint
-   violation error. (See <a class="xref" href="sql-insert.html#SQL-ON-CONFLICT" title="ON CONFLICT Clause"><code class="literal">ON CONFLICT</code> Clause</a> below.)
+   violation error. (See <a class="xref" href="sql-insert.html#SQL-ON-CONFLICT" title="ON CONFLICT Clause">ON CONFLICT Clause</a> below.)
   </p><p>
    The optional <code class="literal">RETURNING</code> clause causes <code class="command">INSERT</code>
    to compute and return value(s) based on each row actually inserted
@@ -76,7 +81,7 @@ INSERT INTO <em class="replaceable"><code>table_name</code></em> [ AS <em class=
    If you use the <em class="replaceable"><code>query</code></em> clause to insert rows from a
    query, you of course need to have <code class="literal">SELECT</code> privilege on
    any table or column used in the query.
-  </p></div><div class="refsect1" id="id-1.9.3.152.6"><h2>Parameters</h2><div class="refsect2" id="SQL-INSERTING-PARAMS"><h3>Inserting</h3><p>
+  </p></div><div class="refsect1" id="id-1.9.3.152.6"><h2>Parameters</h2><div class="refsect2" id="id-1.9.3.152.6.2"><h3>Inserting</h3><p>
     This section covers parameters that may be used when only
     inserting new rows.  Parameters <span class="emphasis"><em>exclusively</em></span>
     used with the <code class="literal">ON CONFLICT</code> clause are described
@@ -100,7 +105,7 @@ INSERT INTO <em class="replaceable"><code>table_name</code></em> [ AS <em class=
         provided, it completely hides the actual name of the table.
         This is particularly useful when <code class="literal">ON CONFLICT DO UPDATE</code>
         targets a table named <code class="varname">excluded</code>, since that will otherwise
-        be taken as the name of the special table representing rows proposed
+        be taken as the name of the special table representing the row proposed
         for insertion.
        </p></dd><dt><span class="term"><em class="replaceable"><code>column_name</code></em></span></dt><dd><p>
         The name of a column in the table named by <em class="replaceable"><code>table_name</code></em>.  The column name
@@ -113,14 +118,21 @@ INSERT INTO <em class="replaceable"><code>table_name</code></em> [ AS <em class=
         SET table_name.col = 1</code> is invalid (this follows the general
         behavior for <code class="command">UPDATE</code>).
        </p></dd><dt><span class="term"><code class="literal">OVERRIDING SYSTEM VALUE</code></span></dt><dd><p>
-        Without this clause, it is an error to specify an explicit value
-        (other than <code class="literal">DEFAULT</code>) for an identity column defined
-        as <code class="literal">GENERATED ALWAYS</code>.  This clause overrides that
-        restriction.
+        If this clause is specified, then any values supplied for identity
+        columns will override the default sequence-generated values.
+       </p><p>
+        For an identity column defined as <code class="literal">GENERATED ALWAYS</code>,
+        it is an error to insert an explicit value (other than
+        <code class="literal">DEFAULT</code>) without specifying either
+        <code class="literal">OVERRIDING SYSTEM VALUE</code> or <code class="literal">OVERRIDING USER
+        VALUE</code>.  (For an identity column defined as
+        <code class="literal">GENERATED BY DEFAULT</code>, <code class="literal">OVERRIDING SYSTEM
+        VALUE</code> is the normal behavior and specifying it does nothing,
+        but <span class="productname">PostgreSQL</span> allows it as an extension.)
        </p></dd><dt><span class="term"><code class="literal">OVERRIDING USER VALUE</code></span></dt><dd><p>
         If this clause is specified, then any values supplied for identity
-        columns defined as <code class="literal">GENERATED BY DEFAULT</code> are ignored
-        and the default sequence-generated values are applied.
+        columns are ignored and the default sequence-generated values are
+        applied.
        </p><p>
         This clause is useful for example when copying values between tables.
         Writing <code class="literal">INSERT INTO tbl2 OVERRIDING USER VALUE SELECT * FROM
@@ -129,14 +141,18 @@ INSERT INTO <em class="replaceable"><code>table_name</code></em> [ AS <em class=
         the identity columns in <code class="literal">tbl2</code> will be generated by
         the sequences associated with <code class="literal">tbl2</code>.
        </p></dd><dt><span class="term"><code class="literal">DEFAULT VALUES</code></span></dt><dd><p>
-        All columns will be filled with their default values.
+        All columns will be filled with their default values, as if
+        <code class="literal">DEFAULT</code> were explicitly specified for each column.
         (An <code class="literal">OVERRIDING</code> clause is not permitted in this
         form.)
        </p></dd><dt><span class="term"><em class="replaceable"><code>expression</code></em></span></dt><dd><p>
         An expression or value to assign to the corresponding column.
        </p></dd><dt><span class="term"><code class="literal">DEFAULT</code></span></dt><dd><p>
-        The corresponding column will be filled with
-        its default value.
+        The corresponding column will be filled with its default value.  An
+        identity column will be filled with a new value generated by the
+        associated sequence.  For a generated column, specifying this is
+        permitted but merely specifies the normal behavior of computing the
+        column from its generation expression.
        </p></dd><dt><span class="term"><em class="replaceable"><code>query</code></em></span></dt><dd><p>
         A query (<code class="command">SELECT</code> statement) that supplies the
         rows to be inserted.  Refer to the
@@ -206,7 +222,7 @@ INSERT INTO <em class="replaceable"><code>table_name</code></em> [ AS <em class=
         conflict.  The <code class="literal">SET</code> and
         <code class="literal">WHERE</code> clauses in <code class="literal">ON CONFLICT DO
         UPDATE</code> have access to the existing row using the
-        table's name (or an alias), and to rows proposed for insertion
+        table's name (or an alias), and to the row proposed for insertion
         using the special <code class="varname">excluded</code> table.
         <code class="literal">SELECT</code> privilege is required on any column in the
         target table where corresponding <code class="varname">excluded</code>
@@ -297,11 +313,12 @@ INSERT INTO <em class="replaceable"><code>table_name</code></em> [ AS <em class=
 </p><pre class="screen">
 INSERT <em class="replaceable"><code>oid</code></em> <em class="replaceable"><code>count</code></em>
 </pre><p>
-   The <em class="replaceable"><code>count</code></em> is the
-   number of rows inserted or updated.  If <em class="replaceable"><code>count</code></em> is exactly one, and the
-   target table has OIDs, then <em class="replaceable"><code>oid</code></em> is the <acronym class="acronym">OID</acronym>
-   assigned to the inserted row.  The single row must have been
-   inserted rather than updated.  Otherwise <em class="replaceable"><code>oid</code></em> is zero.
+   The <em class="replaceable"><code>count</code></em> is the number of
+   rows inserted or updated.  <em class="replaceable"><code>oid</code></em> is always 0 (it
+   used to be the <acronym class="acronym">OID</acronym> assigned to the inserted row if
+   <em class="replaceable"><code>count</code></em> was exactly one and the target table was
+   declared <code class="literal">WITH OIDS</code> and 0 otherwise, but creating a table
+   <code class="literal">WITH OIDS</code> is not supported anymore).
   </p><p>
    If the <code class="command">INSERT</code> command contains a <code class="literal">RETURNING</code>
    clause, the result will be similar to that of a <code class="command">SELECT</code>
@@ -313,6 +330,11 @@ INSERT <em class="replaceable"><code>oid</code></em> <em class="replaceable"><co
    the appropriate partition and inserted into it.  If the specified table
    is a partition, an error will occur if one of the input rows violates
    the partition constraint.
+  </p><p>
+   You may also wish to consider using <code class="command">MERGE</code>, since that
+   allows mixing <code class="command">INSERT</code>, <code class="command">UPDATE</code>, and
+   <code class="command">DELETE</code> within a single statement.
+   See <a class="xref" href="sql-merge.html" title="MERGE"><span class="refentrytitle">MERGE</span></a>.
   </p></div><div class="refsect1" id="id-1.9.3.152.9"><h2>Examples</h2><p>
    Insert a single row into table <code class="literal">films</code>:
 
@@ -452,7 +474,9 @@ INSERT INTO distributors (did, dname) VALUES (10, 'Conrad International')
    Also, the case in
    which a column name list is omitted, but not all the columns are
    filled from the <code class="literal">VALUES</code> clause or <em class="replaceable"><code>query</code></em>,
-   is disallowed by the standard.
+   is disallowed by the standard. If you prefer a more SQL standard
+   conforming statement than <code class="literal">ON CONFLICT</code>, see
+   <a class="xref" href="sql-merge.html" title="MERGE"><span class="refentrytitle">MERGE</span></a>.
   </p><p>
    The SQL standard specifies that <code class="literal">OVERRIDING SYSTEM VALUE</code>
    can only be specified if an identity column that is generated always
@@ -461,4 +485,4 @@ INSERT INTO distributors (did, dname) VALUES (10, 'Conrad International')
   </p><p>
    Possible limitations of the <em class="replaceable"><code>query</code></em> clause are documented under
    <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a>.
-  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-importforeignschema.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-listen.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">IMPORT FOREIGN SCHEMA </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> LISTEN</td></tr></table></div></body></html>
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-importforeignschema.html" title="IMPORT FOREIGN SCHEMA">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-listen.html" title="LISTEN">Next</a></td></tr><tr><td width="40%" align="left" valign="top">IMPORT FOREIGN SCHEMA </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> LISTEN</td></tr></table></div></body></html>

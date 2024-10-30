@@ -1,1205 +1,1517 @@
 # Swedish message translation file for libpq
 # Peter Eisentraut <peter_e@gmx.net>, 2001, 2010.
-# Dennis Björklund <db@zigo.dhs.org>, 2002, 2003, 2004, 2005, 2006, 2017, 2018.
+# Dennis Björklund <db@zigo.dhs.org>, 2002, 2003, 2004, 2005, 2006, 2017, 2018, 2019, 2020, 2021, 2022, 2023.
 #
 # Use these quotes: "%s"
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PostgreSQL 10\n"
-"Report-Msgid-Bugs-To: pgsql-bugs@postgresql.org\n"
-"POT-Creation-Date: 2018-08-25 18:08+0000\n"
-"PO-Revision-Date: 2018-08-26 07:17+0200\n"
+"Project-Id-Version: PostgreSQL 16\n"
+"Report-Msgid-Bugs-To: pgsql-bugs@lists.postgresql.org\n"
+"POT-Creation-Date: 2023-08-01 14:10+0000\n"
+"PO-Revision-Date: 2023-08-01 22:08+0200\n"
 "Last-Translator: Dennis Björklund <db@zigo.dhs.org>\n"
-"Language-Team: Swedish <sv@li.org>\n"
+"Language-Team: Swedish <pgsql-translators@postgresql.org>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
-#: fe-auth-scram.c:189
-msgid "malformed SCRAM message (empty message)\n"
-msgstr "felaktigt SCRAM-meddelande (tomt meddelande)\n"
-
-#: fe-auth-scram.c:195
-msgid "malformed SCRAM message (length mismatch)\n"
-msgstr "felaktigt SCRAM-meddelande (längden stämmer inte)\n"
-
-#: fe-auth-scram.c:244
-msgid "incorrect server signature\n"
-msgstr "felaktig serversignatur\n"
-
-#: fe-auth-scram.c:253
-msgid "invalid SCRAM exchange state\n"
-msgstr "ogiltig SCRAM-utbytesstatus\n"
-
-#: fe-auth-scram.c:276
+#: ../../port/thread.c:50 ../../port/thread.c:86
 #, c-format
-msgid "malformed SCRAM message (attribute \"%c\" expected)\n"
-msgstr "felaktigt SCRAM-meddelande (förväntade attribut %c)\n"
+msgid "could not look up local user ID %d: %s"
+msgstr "kunde inte slå upp lokalt användar-id %d: %s"
 
-#: fe-auth-scram.c:285
+#: ../../port/thread.c:55 ../../port/thread.c:91
 #, c-format
-msgid "malformed SCRAM message (expected character \"=\" for attribute \"%c\")\n"
-msgstr "felaktigt SCRAM-meddelande (förväntade tecken \"=\" för attribut '%c')\n"
+msgid "local user with ID %d does not exist"
+msgstr "lokal användare med ID %d existerar inte"
+
+#: fe-auth-scram.c:227
+#, c-format
+msgid "malformed SCRAM message (empty message)"
+msgstr "felaktigt SCRAM-meddelande (tomt meddelande)"
+
+#: fe-auth-scram.c:232
+#, c-format
+msgid "malformed SCRAM message (length mismatch)"
+msgstr "felaktigt SCRAM-meddelande (längden stämmer inte)"
+
+#: fe-auth-scram.c:275
+#, c-format
+msgid "could not verify server signature: %s"
+msgstr "kunde inte verifiera serversignaturen: %s"
+
+#: fe-auth-scram.c:281
+#, c-format
+msgid "incorrect server signature"
+msgstr "felaktig serversignatur"
+
+#: fe-auth-scram.c:290
+#, c-format
+msgid "invalid SCRAM exchange state"
+msgstr "ogiltig SCRAM-utbytesstatus"
+
+#: fe-auth-scram.c:317
+#, c-format
+msgid "malformed SCRAM message (attribute \"%c\" expected)"
+msgstr "felaktigt SCRAM-meddelande (förväntade attribut \"%c\")"
 
 #: fe-auth-scram.c:326
-msgid "could not generate nonce\n"
-msgstr "kunde inte skapa engångsnummer\n"
-
-#: fe-auth-scram.c:334 fe-auth-scram.c:401 fe-auth-scram.c:523
-#: fe-auth-scram.c:543 fe-auth-scram.c:569 fe-auth-scram.c:583
-#: fe-auth-scram.c:625 fe-auth.c:227 fe-auth.c:362 fe-auth.c:432 fe-auth.c:467
-#: fe-auth.c:643 fe-auth.c:802 fe-auth.c:1114 fe-auth.c:1262 fe-connect.c:835
-#: fe-connect.c:1264 fe-connect.c:1440 fe-connect.c:1922 fe-connect.c:1945
-#: fe-connect.c:2606 fe-connect.c:4152 fe-connect.c:4404 fe-connect.c:4523
-#: fe-connect.c:4773 fe-connect.c:4853 fe-connect.c:4952 fe-connect.c:5208
-#: fe-connect.c:5237 fe-connect.c:5309 fe-connect.c:5333 fe-connect.c:5351
-#: fe-connect.c:5452 fe-connect.c:5461 fe-connect.c:5817 fe-connect.c:5967
-#: fe-exec.c:2702 fe-exec.c:3449 fe-exec.c:3614 fe-lobj.c:895
-#: fe-protocol2.c:1213 fe-protocol3.c:999 fe-protocol3.c:1685
-#: fe-secure-common.c:110 fe-secure-openssl.c:438 fe-secure-openssl.c:1025
-msgid "out of memory\n"
-msgstr "slut på minne\n"
-
-#: fe-auth-scram.c:561
-msgid "invalid SCRAM response (nonce mismatch)\n"
-msgstr "ogiltigt SCRAM-svar (engångsnummer matchar inte)\n"
-
-#: fe-auth-scram.c:600
-msgid "malformed SCRAM message (invalid iteration count)\n"
-msgstr "felaktigt SCRAM meddelande (ogiltig iterationsräknare)\n"
-
-#: fe-auth-scram.c:606
-msgid "malformed SCRAM message (garbage at end of server-first-message)\n"
-msgstr "felaktigt SCRAM-meddelande (skräp i slutet på server-first-message)\n"
-
-#: fe-auth-scram.c:636
 #, c-format
-msgid "error received from server in SCRAM exchange: %s\n"
-msgstr "fel mottaget från server i SCRAM-utbyte: %s\n"
+msgid "malformed SCRAM message (expected character \"=\" for attribute \"%c\")"
+msgstr "felaktigt SCRAM-meddelande (förväntade tecken \"=\" för attribut \"%c\")"
 
-#: fe-auth-scram.c:652
-msgid "malformed SCRAM message (garbage at end of server-final-message)\n"
-msgstr "felaktigt SCRAM-meddelande (skräp i slutet av server-final-message)\n"
-
-#: fe-auth-scram.c:660
-msgid "malformed SCRAM message (invalid server signature)\n"
-msgstr "felaktigt SCRAM-meddelande (ogiltigt serversignatur)\n"
-
-#: fe-auth.c:122
+#: fe-auth-scram.c:366
 #, c-format
-msgid "out of memory allocating GSSAPI buffer (%d)\n"
-msgstr "slut på minne vid allokering av buffer till GSSAPI (%d)\n"
+msgid "could not generate nonce"
+msgstr "kunde inte skapa engångsnummer"
 
-#: fe-auth.c:177
+#: fe-auth-scram.c:375 fe-auth-scram.c:448 fe-auth-scram.c:600
+#: fe-auth-scram.c:620 fe-auth-scram.c:644 fe-auth-scram.c:658
+#: fe-auth-scram.c:704 fe-auth-scram.c:740 fe-auth-scram.c:914 fe-auth.c:296
+#: fe-auth.c:369 fe-auth.c:403 fe-auth.c:618 fe-auth.c:729 fe-auth.c:1210
+#: fe-auth.c:1375 fe-connect.c:925 fe-connect.c:1759 fe-connect.c:1921
+#: fe-connect.c:3291 fe-connect.c:4496 fe-connect.c:5161 fe-connect.c:5416
+#: fe-connect.c:5534 fe-connect.c:5781 fe-connect.c:5861 fe-connect.c:5959
+#: fe-connect.c:6210 fe-connect.c:6237 fe-connect.c:6313 fe-connect.c:6336
+#: fe-connect.c:6360 fe-connect.c:6395 fe-connect.c:6481 fe-connect.c:6489
+#: fe-connect.c:6846 fe-connect.c:6996 fe-exec.c:527 fe-exec.c:1321
+#: fe-exec.c:3111 fe-exec.c:4071 fe-exec.c:4235 fe-gssapi-common.c:109
+#: fe-lobj.c:870 fe-protocol3.c:204 fe-protocol3.c:228 fe-protocol3.c:256
+#: fe-protocol3.c:273 fe-protocol3.c:353 fe-protocol3.c:720 fe-protocol3.c:959
+#: fe-protocol3.c:1770 fe-protocol3.c:2170 fe-secure-common.c:110
+#: fe-secure-gssapi.c:500 fe-secure-openssl.c:434 fe-secure-openssl.c:1285
+#, c-format
+msgid "out of memory"
+msgstr "slut på minne"
+
+#: fe-auth-scram.c:382
+#, c-format
+msgid "could not encode nonce"
+msgstr "kunde inte koda engångsnummer"
+
+#: fe-auth-scram.c:570
+#, c-format
+msgid "could not calculate client proof: %s"
+msgstr "kunde inte räkna ut klientbevis: %s"
+
+#: fe-auth-scram.c:585
+#, c-format
+msgid "could not encode client proof"
+msgstr "kunde inte koda klientbevis"
+
+#: fe-auth-scram.c:637
+#, c-format
+msgid "invalid SCRAM response (nonce mismatch)"
+msgstr "ogiltigt SCRAM-svar (engångsnummer matchar inte)"
+
+#: fe-auth-scram.c:667
+#, c-format
+msgid "malformed SCRAM message (invalid salt)"
+msgstr "felaktigt SCRAM-meddelande (ogiltigt salt)"
+
+#: fe-auth-scram.c:680
+#, c-format
+msgid "malformed SCRAM message (invalid iteration count)"
+msgstr "felaktigt SCRAM-meddelande (ogiltig iterationsräknare)"
+
+#: fe-auth-scram.c:685
+#, c-format
+msgid "malformed SCRAM message (garbage at end of server-first-message)"
+msgstr "felaktigt SCRAM-meddelande (skräp i slutet på server-first-message)"
+
+#: fe-auth-scram.c:719
+#, c-format
+msgid "error received from server in SCRAM exchange: %s"
+msgstr "fel mottaget från server i SCRAM-utbyte: %s"
+
+#: fe-auth-scram.c:734
+#, c-format
+msgid "malformed SCRAM message (garbage at end of server-final-message)"
+msgstr "felaktigt SCRAM-meddelande (skräp i slutet av server-final-message)"
+
+#: fe-auth-scram.c:751
+#, c-format
+msgid "malformed SCRAM message (invalid server signature)"
+msgstr "felaktigt SCRAM-meddelande (ogiltigt serversignatur)"
+
+#: fe-auth-scram.c:923
+msgid "could not generate random salt"
+msgstr "kunde inte generera slumpat salt"
+
+#: fe-auth.c:77
+#, c-format
+msgid "out of memory allocating GSSAPI buffer (%d)"
+msgstr "slut på minne vid allokering av buffer till GSSAPI (%d)"
+
+#: fe-auth.c:138
 msgid "GSSAPI continuation error"
 msgstr "GSSAPI fortsättningsfel"
 
-#: fe-auth.c:207 fe-auth.c:461 fe-secure-common.c:98
-msgid "host name must be specified\n"
-msgstr "värdnamn måste anges\n"
-
-#: fe-auth.c:214
-msgid "duplicate GSS authentication request\n"
-msgstr "duplicerad autentiseringsbegäran från GSS\n"
-
-#: fe-auth.c:240
-msgid "GSSAPI name import error"
-msgstr "GSSAPI-fel vid import av namn"
-
-#: fe-auth.c:303
+#: fe-auth.c:168 fe-auth.c:397 fe-gssapi-common.c:97 fe-secure-common.c:99
+#: fe-secure-common.c:173
 #, c-format
-msgid "out of memory allocating SSPI buffer (%d)\n"
-msgstr "slut på minne vid allokering av buffer till GSSAPI (%d)\n"
+msgid "host name must be specified"
+msgstr "värdnamn måste anges"
 
-#: fe-auth.c:351
+#: fe-auth.c:174
+#, c-format
+msgid "duplicate GSS authentication request"
+msgstr "duplicerad autentiseringsbegäran från GSS"
+
+#: fe-auth.c:238
+#, c-format
+msgid "out of memory allocating SSPI buffer (%d)"
+msgstr "slut på minne vid allokering av buffer till SSPI (%d)"
+
+#: fe-auth.c:285
 msgid "SSPI continuation error"
 msgstr "SSPI fortsättningsfel"
 
-#: fe-auth.c:422
-msgid "duplicate SSPI authentication request\n"
-msgstr "duplicerad autentiseringsbegäran från SSPI\n"
+#: fe-auth.c:359
+#, c-format
+msgid "duplicate SSPI authentication request"
+msgstr "duplicerad autentiseringsbegäran från SSPI"
 
-#: fe-auth.c:447
+#: fe-auth.c:384
 msgid "could not acquire SSPI credentials"
-msgstr "kunde inte hämta SSPI-referenser"
+msgstr "kunde inte hämta SSPI-autentiseringsuppgifter"
+
+#: fe-auth.c:437
+#, c-format
+msgid "channel binding required, but SSL not in use"
+msgstr "kräver kanalbindning, men SSL används inte"
+
+#: fe-auth.c:443
+#, c-format
+msgid "duplicate SASL authentication request"
+msgstr "duplicerad autentiseringsbegäran från SASL"
 
 #: fe-auth.c:501
-msgid "duplicate SASL authentication request\n"
-msgstr "duplicerad autentiseringsbegäran från SASL\n"
-
-#: fe-auth.c:549
-msgid "server offered SCRAM-SHA-256-PLUS authentication over a non-SSL connection\n"
-msgstr "servern erbjöd SCRAM-SHA-256-PLUS-autentisering över en icke-SSL-anslutning\n"
-
-#: fe-auth.c:561
-msgid "none of the server's SASL authentication mechanisms are supported\n"
-msgstr "ingen av serverns SASL-autentiseringsmekanismer stöds\n"
-
-#: fe-auth.c:667
 #, c-format
-msgid "out of memory allocating SASL buffer (%d)\n"
-msgstr "slut på minne vid allokering av buffer till SASL (%d)\n"
+msgid "channel binding is required, but client does not support it"
+msgstr "kanalbindning krävs men klienten stöder inte det"
 
-#: fe-auth.c:692
-msgid "AuthenticationSASLFinal received from server, but SASL authentication was not completed\n"
-msgstr "mottog AuthenticationSASLFinal från server, men SASL-autentisering slutfördes ej\n"
+#: fe-auth.c:517
+#, c-format
+msgid "server offered SCRAM-SHA-256-PLUS authentication over a non-SSL connection"
+msgstr "servern erbjöd SCRAM-SHA-256-PLUS-autentisering över en icke-SSL-anslutning"
 
-#: fe-auth.c:769
-msgid "SCM_CRED authentication method not supported\n"
-msgstr "autentiseringsmetoden SCM_CRED stöds ej\n"
+#: fe-auth.c:531
+#, c-format
+msgid "none of the server's SASL authentication mechanisms are supported"
+msgstr "ingen av serverns SASL-autentiseringsmekanismer stöds"
 
-#: fe-auth.c:860
-msgid "Kerberos 4 authentication not supported\n"
-msgstr "Kerberos-4-autentisering stöds ej\n"
+#: fe-auth.c:538
+#, c-format
+msgid "channel binding is required, but server did not offer an authentication method that supports channel binding"
+msgstr "kräver kanalbindning, men servern erbjöd ingen autentiseringsmetod som stöder kanalbindning"
 
-#: fe-auth.c:865
-msgid "Kerberos 5 authentication not supported\n"
-msgstr "Kerberos-5-autentisering stöds ej\n"
+#: fe-auth.c:641
+#, c-format
+msgid "out of memory allocating SASL buffer (%d)"
+msgstr "slut på minne vid allokering av buffer till SASL (%d)"
+
+#: fe-auth.c:665
+#, c-format
+msgid "AuthenticationSASLFinal received from server, but SASL authentication was not completed"
+msgstr "mottog AuthenticationSASLFinal från server, men SASL-autentisering slutfördes ej"
+
+#: fe-auth.c:675
+#, c-format
+msgid "no client response found after SASL exchange success"
+msgstr "hittade inget klientsvar efter lyckat SASL-utbyte"
+
+#: fe-auth.c:738 fe-auth.c:745 fe-auth.c:1358 fe-auth.c:1369
+#, c-format
+msgid "could not encrypt password: %s"
+msgstr "kan inte kryptera lösenord: %s"
+
+#: fe-auth.c:773
+msgid "server requested a cleartext password"
+msgstr "servern begärde ett lösenord i klartext"
+
+#: fe-auth.c:775
+msgid "server requested a hashed password"
+msgstr "servern begärde ett hashat lösenord"
+
+#: fe-auth.c:778
+msgid "server requested GSSAPI authentication"
+msgstr "servern begärde GSSAPI-autentisering"
+
+#: fe-auth.c:780
+msgid "server requested SSPI authentication"
+msgstr "servern begärde SSPI-autentisering"
+
+#: fe-auth.c:784
+msgid "server requested SASL authentication"
+msgstr "servern begärde SASL-autentisering"
+
+#: fe-auth.c:787
+msgid "server requested an unknown authentication type"
+msgstr "servern begärde en okänd autentiseringstyp"
+
+#: fe-auth.c:820
+#, c-format
+msgid "server did not request an SSL certificate"
+msgstr "servern begärde inte ett SSL-certifikat"
+
+#: fe-auth.c:825
+#, c-format
+msgid "server accepted connection without a valid SSL certificate"
+msgstr "serven accepterade en anslutning utan giltigt SSL-certifikat"
+
+#: fe-auth.c:879
+msgid "server did not complete authentication"
+msgstr "servern slutförde inte autenticeringen"
+
+#: fe-auth.c:913
+#, c-format
+msgid "authentication method requirement \"%s\" failed: %s"
+msgstr "autentiseringsmetodens krav \"%s\" misslyckades: %s"
 
 #: fe-auth.c:936
-msgid "GSSAPI authentication not supported\n"
-msgstr "GSSAPI-autentisering stöds ej\n"
-
-#: fe-auth.c:968
-msgid "SSPI authentication not supported\n"
-msgstr "SSPI-autentisering stöds ej\n"
-
-#: fe-auth.c:976
-msgid "Crypt authentication not supported\n"
-msgstr "Crypt-autentisering stöds ej\n"
-
-#: fe-auth.c:1042
 #, c-format
-msgid "authentication method %u not supported\n"
-msgstr "autentiseringsmetod %u stöds ej\n"
+msgid "channel binding required, but server authenticated client without channel binding"
+msgstr "kräver kanalbindning, men servern autentiserade klienten utan kanalbindning"
 
-#: fe-auth.c:1089
+#: fe-auth.c:941
 #, c-format
-msgid "user name lookup failure: error code %lu\n"
-msgstr "misslyckad sökning efter användarnamn: felkod %lu\n"
+msgid "channel binding required but not supported by server's authentication request"
+msgstr "kanalbindning krävs men stöds inte av serverns autentiseringsförfrågan"
 
-#: fe-auth.c:1099 fe-connect.c:2533
+#: fe-auth.c:975
 #, c-format
-msgid "could not look up local user ID %d: %s\n"
-msgstr "kunde inte slå upp lokalt användar-id %d: %s\n"
+msgid "Kerberos 4 authentication not supported"
+msgstr "Kerberos-4-autentisering stöds ej"
 
-#: fe-auth.c:1104 fe-connect.c:2538
+#: fe-auth.c:979
 #, c-format
-msgid "local user with ID %d does not exist\n"
-msgstr "lokal användare med ID %d existerar inte\n"
+msgid "Kerberos 5 authentication not supported"
+msgstr "Kerberos-5-autentisering stöds ej"
 
-#: fe-auth.c:1206
-msgid "unexpected shape of result set returned for SHOW\n"
-msgstr "oväntad form på resultatmängden som returnerades för SHOW\n"
-
-#: fe-auth.c:1215
-msgid "password_encryption value too long\n"
-msgstr "password_encryption-värdet är för långt\n"
-
-#: fe-auth.c:1255
+#: fe-auth.c:1049
 #, c-format
-msgid "unrecognized password encryption algorithm \"%s\"\n"
-msgstr "okänd lösenordskrypteringsalgoritm \"%s\"\n"
+msgid "GSSAPI authentication not supported"
+msgstr "GSSAPI-autentisering stöds ej"
 
-#: fe-connect.c:1018
+#: fe-auth.c:1080
 #, c-format
-msgid "could not match %d host names to %d hostaddr values\n"
-msgstr "kunde inte matcha %d värdnamn till %d värdadresser\n"
+msgid "SSPI authentication not supported"
+msgstr "SSPI-autentisering stöds ej"
 
-#: fe-connect.c:1094
+#: fe-auth.c:1087
 #, c-format
-msgid "could not match %d port numbers to %d hosts\n"
-msgstr "kunde inte matcha %d portnummer med %d värdar\n"
+msgid "Crypt authentication not supported"
+msgstr "Crypt-autentisering stöds ej"
 
-#: fe-connect.c:1190
+#: fe-auth.c:1151
 #, c-format
-msgid "invalid sslmode value: \"%s\"\n"
-msgstr "ogiltigt värde för ssl-läge: \"%s\"\n"
+msgid "authentication method %u not supported"
+msgstr "autentiseringsmetod %u stöds ej"
 
-#: fe-connect.c:1211
+#: fe-auth.c:1197
 #, c-format
-msgid "sslmode value \"%s\" invalid when SSL support is not compiled in\n"
-msgstr "värde för ssl-läge, \"%s\", är ogiltigt när SSL-stöd inte kompilerats in\n"
+msgid "user name lookup failure: error code %lu"
+msgstr "misslyckad sökning efter användarnamn: felkod %lu"
 
-#: fe-connect.c:1246
+#: fe-auth.c:1321
 #, c-format
-msgid "invalid target_session_attrs value: \"%s\"\n"
-msgstr "ogiltigt target_session_attrs-värde: \"%s\"\n"
+msgid "unexpected shape of result set returned for SHOW"
+msgstr "oväntad form på resultatmängden som returnerades för SHOW"
 
-#: fe-connect.c:1464
+#: fe-auth.c:1329
 #, c-format
-msgid "could not set socket to TCP no delay mode: %s\n"
-msgstr "kunde inte sätta uttag (socket) till läget TCP-ingen-fördröjning: %s\n"
+msgid "password_encryption value too long"
+msgstr "password_encryption-värdet är för långt"
 
-#: fe-connect.c:1494
+#: fe-auth.c:1379
 #, c-format
-msgid ""
-"could not connect to server: %s\n"
-"\tIs the server running locally and accepting\n"
-"\tconnections on Unix domain socket \"%s\"?\n"
-msgstr ""
-"kan inte ansluta till servern: %s\n"
-"\tKör servern på lokalt och accepterar den\n"
-"\tanslutningar på Unix-uttaget \"%s\"?\n"
+msgid "unrecognized password encryption algorithm \"%s\""
+msgstr "okänd lösenordskrypteringsalgoritm \"%s\""
 
-#: fe-connect.c:1552
+#: fe-connect.c:1132
 #, c-format
-msgid ""
-"could not connect to server: %s\n"
-"\tIs the server running on host \"%s\" (%s) and accepting\n"
-"\tTCP/IP connections on port %s?\n"
-msgstr ""
-"kunde inte ansluta till servern: %s\n"
-"\tKör servern på värden \"%s\" (%s) och accepterar\n"
-"\tden TCP/IP-uppkopplingar på port %s?\n"
+msgid "could not match %d host names to %d hostaddr values"
+msgstr "kunde inte matcha %d värdnamn till %d värdadresser"
 
-#: fe-connect.c:1561
+#: fe-connect.c:1212
 #, c-format
-msgid ""
-"could not connect to server: %s\n"
-"\tIs the server running on host \"%s\" and accepting\n"
-"\tTCP/IP connections on port %s?\n"
-msgstr ""
-"kunde inte ansluta till servern: %s\n"
-"\tKör servern på värden \"%s\" och accepterar\n"
-"\tden TCP/IP-uppkopplingar på porten %s?\n"
+msgid "could not match %d port numbers to %d hosts"
+msgstr "kunde inte matcha %d portnummer med %d värdar"
 
-#: fe-connect.c:1612 fe-connect.c:1644 fe-connect.c:1677 fe-connect.c:2325
+#: fe-connect.c:1337
 #, c-format
-msgid "setsockopt(%s) failed: %s\n"
-msgstr "setsockopt(%s) misslyckades: %s\n"
+msgid "negative require_auth method \"%s\" cannot be mixed with non-negative methods"
+msgstr "negativ require_auth-metod \"%s\" kan inte blandas med icke-negativa metoder"
 
-#: fe-connect.c:1726
+#: fe-connect.c:1350
 #, c-format
-msgid "WSAIoctl(SIO_KEEPALIVE_VALS) failed: %ui\n"
-msgstr "WSAIoctl(SIO_KEEPALIVE_VALS) misslyckades: %ui\n"
+msgid "require_auth method \"%s\" cannot be mixed with negative methods"
+msgstr "require_auth-metod \"%s\" kan inte blandas med negativa metoder"
 
-#: fe-connect.c:2035
-msgid "invalid connection state, probably indicative of memory corruption\n"
-msgstr "ogiltigt förbindelsetillstånd, antagligen korrupt minne\n"
-
-#: fe-connect.c:2101
+#: fe-connect.c:1410 fe-connect.c:1461 fe-connect.c:1503 fe-connect.c:1559
+#: fe-connect.c:1567 fe-connect.c:1598 fe-connect.c:1644 fe-connect.c:1684
+#: fe-connect.c:1705
 #, c-format
-msgid "invalid port number: \"%s\"\n"
-msgstr "ogiltigt portnummer \"%s\"\n"
+msgid "invalid %s value: \"%s\""
+msgstr "ogiltigt %s-värde: \"%s\""
 
-#: fe-connect.c:2117
+#: fe-connect.c:1443
 #, c-format
-msgid "could not translate host name \"%s\" to address: %s\n"
-msgstr "kunde inte översätta värdnamn \"%s\" till adress: %s\n"
+msgid "require_auth method \"%s\" is specified more than once"
+msgstr "require_auth-metod \"%s\" angiven mer än en gång"
 
-#: fe-connect.c:2130
+#: fe-connect.c:1484 fe-connect.c:1523 fe-connect.c:1606
 #, c-format
-msgid "could not parse network address \"%s\": %s\n"
-msgstr "kunde inte parsa nätverksadress \"%s\": %s\n"
+msgid "%s value \"%s\" invalid when SSL support is not compiled in"
+msgstr "%s värde \"%s\", är ogiltigt när SSL-stöd inte kompilerats in"
 
-#: fe-connect.c:2143
+#: fe-connect.c:1546
 #, c-format
-msgid "Unix-domain socket path \"%s\" is too long (maximum %d bytes)\n"
-msgstr "Sökväg till unixdomänuttag \"%s\" är för lång (maximalt %d byte)\n"
+msgid "weak sslmode \"%s\" may not be used with sslrootcert=system (use \"verify-full\")"
+msgstr "svagt ssl-läge \"%s\" kan inte användas med sslrootcert=system (använd \"verify-full\")"
 
-#: fe-connect.c:2158
+#: fe-connect.c:1584
 #, c-format
-msgid "could not translate Unix-domain socket path \"%s\" to address: %s\n"
-msgstr "kunde inte översätta sökväg till unix-uttag (socket) \"%s\" till adress: %s\n"
+msgid "invalid SSL protocol version range"
+msgstr "ogiltigt intervall för SSL-protokollversion"
 
-#: fe-connect.c:2262
+#: fe-connect.c:1621
 #, c-format
-msgid "could not create socket: %s\n"
-msgstr "kan inte skapa uttag: %s\n"
+msgid "%s value \"%s\" is not supported (check OpenSSL version)"
+msgstr "%s-värde \"%s\" stöds inte (kontrollera OpenSSL-versionen)"
+
+#: fe-connect.c:1651
+#, c-format
+msgid "gssencmode value \"%s\" invalid when GSSAPI support is not compiled in"
+msgstr "värde för gssenc-läge, \"%s\", är ogiltigt när GSSAPI-stöd inte kompilerats in"
+
+#: fe-connect.c:1944
+#, c-format
+msgid "could not set socket to TCP no delay mode: %s"
+msgstr "kunde inte sätta socket till läget TCP-ingen-fördröjning: %s"
+
+#: fe-connect.c:2003
+#, c-format
+msgid "connection to server on socket \"%s\" failed: "
+msgstr "anslutning till server på socket \"%s\" misslyckades: "
+
+#: fe-connect.c:2029
+#, c-format
+msgid "connection to server at \"%s\" (%s), port %s failed: "
+msgstr "anslutning til server på \"%s\" (%s), port %s misslyckades: "
+
+#: fe-connect.c:2034
+#, c-format
+msgid "connection to server at \"%s\", port %s failed: "
+msgstr "anslutning till server på \"%s\", port %s misslyckades: "
+
+#: fe-connect.c:2057
+#, c-format
+msgid "\tIs the server running locally and accepting connections on that socket?"
+msgstr "\tKör servern lokalt och accepterar den anslutningar till denna socket?"
+
+#: fe-connect.c:2059
+#, c-format
+msgid "\tIs the server running on that host and accepting TCP/IP connections?"
+msgstr "\tKör servern på den värden och accepterar den TCP/IP-anslutningar?"
+
+#: fe-connect.c:2122
+#, c-format
+msgid "invalid integer value \"%s\" for connection option \"%s\""
+msgstr "ogiltigt heltalsvärde \"%s\" för anslutningsflagga \"%s\""
+
+#: fe-connect.c:2151 fe-connect.c:2185 fe-connect.c:2220 fe-connect.c:2318
+#: fe-connect.c:2973
+#, c-format
+msgid "%s(%s) failed: %s"
+msgstr "%s(%s) misslyckades: %s"
 
 #: fe-connect.c:2284
 #, c-format
-msgid "could not set socket to nonblocking mode: %s\n"
-msgstr "kunde inte sätta uttag (socket) till ickeblockerande läge: %s\n"
+msgid "%s(%s) failed: error code %d"
+msgstr "%s(%s) misslyckades: felkod %d"
 
-#: fe-connect.c:2294
+#: fe-connect.c:2597
 #, c-format
-msgid "could not set socket to close-on-exec mode: %s\n"
-msgstr "kunde inte ställa in uttag (socket) i \"close-on-exec\"-läge: %s\n"
+msgid "invalid connection state, probably indicative of memory corruption"
+msgstr "ogiltigt tillstånd i anslutning, antagligen korrupt minne"
 
-#: fe-connect.c:2312
-msgid "keepalives parameter must be an integer\n"
-msgstr "keepalives-parameter måste vara ett heltal\n"
-
-#: fe-connect.c:2450
+#: fe-connect.c:2676
 #, c-format
-msgid "could not get socket error status: %s\n"
-msgstr "kunde inte hämta felstatus för uttag (socket): %s\n"
+msgid "invalid port number: \"%s\""
+msgstr "ogiltigt portnummer \"%s\""
 
-#: fe-connect.c:2478
+#: fe-connect.c:2690
 #, c-format
-msgid "could not get client address from socket: %s\n"
-msgstr "kunde inte få tag på klientadressen från uttag (socket): %s\n"
+msgid "could not translate host name \"%s\" to address: %s"
+msgstr "kunde inte översätta värdnamn \"%s\" till adress: %s"
 
-#: fe-connect.c:2520
-msgid "requirepeer parameter is not supported on this platform\n"
-msgstr "requirepeer-parameter stöds inte på denna plattform\n"
-
-#: fe-connect.c:2523
+#: fe-connect.c:2702
 #, c-format
-msgid "could not get peer credentials: %s\n"
-msgstr "kunde inte hämta andra sidans referenser: %s\n"
+msgid "could not parse network address \"%s\": %s"
+msgstr "kunde inte parsa nätverksadress \"%s\": %s"
 
-#: fe-connect.c:2546
+#: fe-connect.c:2713
 #, c-format
-msgid "requirepeer specifies \"%s\", but actual peer user name is \"%s\"\n"
-msgstr "requirepeer anger \"%s\", men andra sidans användarnamn är \"%s\"\n"
+msgid "Unix-domain socket path \"%s\" is too long (maximum %d bytes)"
+msgstr "Sökväg till unix-socket \"%s\" är för lång (maximalt %d byte)"
 
-#: fe-connect.c:2580
+#: fe-connect.c:2727
 #, c-format
-msgid "could not send SSL negotiation packet: %s\n"
-msgstr "kunde inte skicka SSL-paket för uppkopplingsförhandling: %s\n"
+msgid "could not translate Unix-domain socket path \"%s\" to address: %s"
+msgstr "kunde inte översätta sökväg till Unix-socket \"%s\" till adress: %s"
 
-#: fe-connect.c:2619
+#: fe-connect.c:2901
 #, c-format
-msgid "could not send startup packet: %s\n"
-msgstr "kan inte skicka startpaketet: %s\n"
+msgid "could not create socket: %s"
+msgstr "kan inte skapa socket: %s"
 
-#: fe-connect.c:2689
-msgid "server does not support SSL, but SSL was required\n"
-msgstr "SSL stöds inte av servern, men SSL krävdes\n"
-
-#: fe-connect.c:2715
+#: fe-connect.c:2932
 #, c-format
-msgid "received invalid response to SSL negotiation: %c\n"
-msgstr "tog emot ogiltigt svar till SSL-uppkopplingsförhandling: %c\n"
+msgid "could not set socket to nonblocking mode: %s"
+msgstr "kunde inte sätta socket till ickeblockerande läge: %s"
 
-#: fe-connect.c:2792 fe-connect.c:2825
+#: fe-connect.c:2943
 #, c-format
-msgid "expected authentication request from server, but received %c\n"
-msgstr "förväntade autentiseringsförfrågan från servern, men fick %c\n"
+msgid "could not set socket to close-on-exec mode: %s"
+msgstr "kunde inte ställa in socket i \"close-on-exec\"-läge: %s"
 
-#: fe-connect.c:3052
-msgid "unexpected message from server during startup\n"
-msgstr "oväntat meddelande från servern under starten\n"
-
-#: fe-connect.c:3282
+#: fe-connect.c:2961
 #, c-format
-msgid "could not make a writable connection to server \"%s:%s\"\n"
-msgstr "kunde inte upprätta en skrivbar anslutning till server \"%s:%s\"\n"
+msgid "keepalives parameter must be an integer"
+msgstr "keepalives-parameter måste vara ett heltal"
 
-#: fe-connect.c:3328
+#: fe-connect.c:3100
 #, c-format
-msgid "test \"SHOW transaction_read_only\" failed on server \"%s:%s\"\n"
-msgstr "test \"SHOW transaction_read_only\" misslyckades på server \"%s:%s\"\n"
+msgid "could not get socket error status: %s"
+msgstr "kunde inte hämta felstatus för socket: %s"
 
-#: fe-connect.c:3343
+#: fe-connect.c:3127
 #, c-format
-msgid "invalid connection state %d, probably indicative of memory corruption\n"
-msgstr "ogiltigt förbindelsetillstånd %d, antagligen korrupt minne\n"
+msgid "could not get client address from socket: %s"
+msgstr "kunde inte få klientadressen från socket: %s"
 
-#: fe-connect.c:3758 fe-connect.c:3818
+#: fe-connect.c:3165
 #, c-format
-msgid "PGEventProc \"%s\" failed during PGEVT_CONNRESET event\n"
-msgstr "PGEventProc \"%s\" misslyckades under PGEVT_CONNRESET-händelse\n"
+msgid "requirepeer parameter is not supported on this platform"
+msgstr "requirepeer-parameter stöds inte på denna plattform"
 
-#: fe-connect.c:4165
+#: fe-connect.c:3167
 #, c-format
-msgid "invalid LDAP URL \"%s\": scheme must be ldap://\n"
-msgstr "ogiltig LDAP URL \"%s\": schemat måste vara ldap://\n"
+msgid "could not get peer credentials: %s"
+msgstr "kunde inte hämta andra sidans autentiseringsuppgifter: %s"
 
-#: fe-connect.c:4180
+#: fe-connect.c:3180
 #, c-format
-msgid "invalid LDAP URL \"%s\": missing distinguished name\n"
-msgstr "ogiltig LDAP URL \"%s\": saknar urskiljbart namn\n"
+msgid "requirepeer specifies \"%s\", but actual peer user name is \"%s\""
+msgstr "requirepeer anger \"%s\", men andra sidans användarnamn är \"%s\""
 
-#: fe-connect.c:4191 fe-connect.c:4244
+#: fe-connect.c:3221
 #, c-format
-msgid "invalid LDAP URL \"%s\": must have exactly one attribute\n"
-msgstr "ogiltig LDAP URL \"%s\": måste finnas exakt ett attribut\n"
+msgid "could not send GSSAPI negotiation packet: %s"
+msgstr "kunde inte skicka GSSAPI-paket för anslutningsförhandling: %s"
 
-#: fe-connect.c:4201 fe-connect.c:4258
+#: fe-connect.c:3233
 #, c-format
-msgid "invalid LDAP URL \"%s\": must have search scope (base/one/sub)\n"
-msgstr "ogiltig LDAP URL \"%s\": måste ha sök-scope (base/one/sub)\n"
+msgid "GSSAPI encryption required but was impossible (possibly no credential cache, no server support, or using a local socket)"
+msgstr "GSSAPI-kryptering krävdes men var omöjligt (kanske ingen credential-cache, inget serverstöd eller använder en lokalt socket)"
 
-#: fe-connect.c:4212
+#: fe-connect.c:3274
 #, c-format
-msgid "invalid LDAP URL \"%s\": no filter\n"
-msgstr "ogiltigt LDAP URL \"%s\": inget filter\n"
+msgid "could not send SSL negotiation packet: %s"
+msgstr "kunde inte skicka SSL-paket för anslutningsförhandling: %s"
 
-#: fe-connect.c:4233
+#: fe-connect.c:3303
 #, c-format
-msgid "invalid LDAP URL \"%s\": invalid port number\n"
-msgstr "ogiltig LDAP URL \"%s\": ogiltigt portnummer\n"
+msgid "could not send startup packet: %s"
+msgstr "kan inte skicka startpaketet: %s"
 
-#: fe-connect.c:4267
-msgid "could not create LDAP structure\n"
-msgstr "kunde inte skapa LDAP-struktur\n"
-
-#: fe-connect.c:4343
+#: fe-connect.c:3378
 #, c-format
-msgid "lookup on LDAP server failed: %s\n"
-msgstr "uppslagning av LDAP-server misslyckades: %s\n"
+msgid "server does not support SSL, but SSL was required"
+msgstr "SSL stöds inte av servern, men SSL krävdes"
 
-#: fe-connect.c:4354
-msgid "more than one entry found on LDAP lookup\n"
-msgstr "mer än en post hittad i LDAP-uppslagning\n"
-
-#: fe-connect.c:4355 fe-connect.c:4367
-msgid "no entry found on LDAP lookup\n"
-msgstr "ingen post hittad i LDAP-uppslagning\n"
-
-#: fe-connect.c:4378 fe-connect.c:4391
-msgid "attribute has no values on LDAP lookup\n"
-msgstr "attributet har inga värden i LDAP-uppslagning\n"
-
-#: fe-connect.c:4443 fe-connect.c:4462 fe-connect.c:4991
+#: fe-connect.c:3404
 #, c-format
-msgid "missing \"=\" after \"%s\" in connection info string\n"
-msgstr "\"=\" efter \"%s\" saknas i förbindelseinfosträng\n"
+msgid "received invalid response to SSL negotiation: %c"
+msgstr "tog emot ogiltigt svar till SSL-anslutningsförhandling: %c"
 
-#: fe-connect.c:4535 fe-connect.c:5176 fe-connect.c:5950
+#: fe-connect.c:3424
 #, c-format
-msgid "invalid connection option \"%s\"\n"
-msgstr "ogiltig förbindelseparameter \"%s\"\n"
+msgid "received unencrypted data after SSL response"
+msgstr "tog emot okrypterad data efter SSL-svar"
 
-#: fe-connect.c:4551 fe-connect.c:5040
-msgid "unterminated quoted string in connection info string\n"
-msgstr "icke terminerad sträng i uppkopplingsinformationen\n"
-
-#: fe-connect.c:4634
+#: fe-connect.c:3504
 #, c-format
-msgid "definition of service \"%s\" not found\n"
-msgstr "definition av service \"%s\" hittades inte\n"
+msgid "server doesn't support GSSAPI encryption, but it was required"
+msgstr "GSSAPI-kryptering stöds inte av servern, men det krävdes"
 
-#: fe-connect.c:4657
+#: fe-connect.c:3515
 #, c-format
-msgid "service file \"%s\" not found\n"
-msgstr "servicefil \"%s\" hittades inte\n"
+msgid "received invalid response to GSSAPI negotiation: %c"
+msgstr "tog emot ogiltigt svar till GSSAPI-anslutningsförhandling: %c"
 
-#: fe-connect.c:4670
+#: fe-connect.c:3533
 #, c-format
-msgid "line %d too long in service file \"%s\"\n"
-msgstr "rad %d för lång i servicefil \"%s\"\n"
+msgid "received unencrypted data after GSSAPI encryption response"
+msgstr "tog emot okrypterad data efter GSSAPI-krypteringssvar"
 
-#: fe-connect.c:4741 fe-connect.c:4785
+#: fe-connect.c:3598
 #, c-format
-msgid "syntax error in service file \"%s\", line %d\n"
-msgstr "syntaxfel i servicefel \"%s\", rad %d\n"
+msgid "expected authentication request from server, but received %c"
+msgstr "förväntade autentiseringsförfrågan från servern, men fick %c"
 
-#: fe-connect.c:4752
+#: fe-connect.c:3625 fe-connect.c:3794
 #, c-format
-msgid "nested service specifications not supported in service file \"%s\", line %d\n"
-msgstr "nästlade servicespecifikationer stöds inte i servicefil \"%s\", rad %d\n"
+msgid "received invalid authentication request"
+msgstr "tog emot ogiltig autentiseringsförfrågan"
 
-#: fe-connect.c:5472
+#: fe-connect.c:3630 fe-connect.c:3779
 #, c-format
-msgid "invalid URI propagated to internal parser routine: \"%s\"\n"
-msgstr "ogiltig URI propagerad till intern parsningsrutin: \"%s\"\n"
+msgid "received invalid protocol negotiation message"
+msgstr "tog emot ogiltigt meddelande för protokollets anslutningsförhandling"
 
-#: fe-connect.c:5549
+#: fe-connect.c:3648 fe-connect.c:3702
 #, c-format
-msgid "end of string reached when looking for matching \"]\" in IPv6 host address in URI: \"%s\"\n"
-msgstr "nådde slutet på strängen när vi letade efter matchande \"]\" i IPv6-värdadress i URI: \"%s\"\n"
+msgid "received invalid error message"
+msgstr "tog emot ogiltigt felmeddelande"
 
-#: fe-connect.c:5556
+#: fe-connect.c:3865
 #, c-format
-msgid "IPv6 host address may not be empty in URI: \"%s\"\n"
-msgstr "IPv6-värdadress får ej vara tom i URI: \"%s\"\n"
+msgid "unexpected message from server during startup"
+msgstr "oväntat meddelande från servern under uppstarten"
 
-#: fe-connect.c:5571
+#: fe-connect.c:3956
 #, c-format
-msgid "unexpected character \"%c\" at position %d in URI (expected \":\" or \"/\"): \"%s\"\n"
-msgstr "oväntat tecken \"%c\" vid position %d i URI (förväntade \":\" eller \"/\"): \"%s\"\n"
+msgid "session is read-only"
+msgstr "sessionen är i readonly-läge"
 
-#: fe-connect.c:5700
+#: fe-connect.c:3958
 #, c-format
-msgid "extra key/value separator \"=\" in URI query parameter: \"%s\"\n"
-msgstr "extra nyckel/värde-separator \"=\" i URI-frågeparameter: \"%s\"\n"
+msgid "session is not read-only"
+msgstr "sessionen är inte i readonly-läge"
 
-#: fe-connect.c:5720
+#: fe-connect.c:4011
 #, c-format
-msgid "missing key/value separator \"=\" in URI query parameter: \"%s\"\n"
-msgstr "saknar nyckel/värde-separator \"=\" i URI-frågeparameter: \"%s\"\n"
+msgid "server is in hot standby mode"
+msgstr "servern är i \"hot standby\"-läge"
 
-#: fe-connect.c:5771
+#: fe-connect.c:4013
 #, c-format
-msgid "invalid URI query parameter: \"%s\"\n"
-msgstr "ogiltig URI-frågeparameter: \"%s\"\n"
+msgid "server is not in hot standby mode"
+msgstr "servern är inte i \"hot standby\"-läge"
 
-#: fe-connect.c:5845
+#: fe-connect.c:4129 fe-connect.c:4179
 #, c-format
-msgid "invalid percent-encoded token: \"%s\"\n"
-msgstr "ogiltigt procent-kodad symbol: \"%s\"\n"
+msgid "\"%s\" failed"
+msgstr "\"%s\" misslyckades"
 
-#: fe-connect.c:5855
+#: fe-connect.c:4193
 #, c-format
-msgid "forbidden value %%00 in percent-encoded value: \"%s\"\n"
-msgstr "förbjudet värde %%00 i procentkodat värde: \"%s\"\n"
+msgid "invalid connection state %d, probably indicative of memory corruption"
+msgstr "ogiltigt tillstånd %d i anslutning, antagligen korrupt minne"
 
-#: fe-connect.c:6201
+#: fe-connect.c:5174
+#, c-format
+msgid "invalid LDAP URL \"%s\": scheme must be ldap://"
+msgstr "ogiltig LDAP URL \"%s\": schemat måste vara ldap://"
+
+#: fe-connect.c:5189
+#, c-format
+msgid "invalid LDAP URL \"%s\": missing distinguished name"
+msgstr "ogiltig LDAP URL \"%s\": saknar \"distinguished name\""
+
+#: fe-connect.c:5201 fe-connect.c:5259
+#, c-format
+msgid "invalid LDAP URL \"%s\": must have exactly one attribute"
+msgstr "ogiltig LDAP URL \"%s\": måste finnas exakt ett attribut"
+
+#: fe-connect.c:5213 fe-connect.c:5275
+#, c-format
+msgid "invalid LDAP URL \"%s\": must have search scope (base/one/sub)"
+msgstr "ogiltig LDAP URL \"%s\": måste ha sök-scope (base/one/sub)"
+
+#: fe-connect.c:5225
+#, c-format
+msgid "invalid LDAP URL \"%s\": no filter"
+msgstr "ogiltigt LDAP URL \"%s\": inget filter"
+
+#: fe-connect.c:5247
+#, c-format
+msgid "invalid LDAP URL \"%s\": invalid port number"
+msgstr "ogiltig LDAP URL \"%s\": ogiltigt portnummer"
+
+#: fe-connect.c:5284
+#, c-format
+msgid "could not create LDAP structure"
+msgstr "kunde inte skapa LDAP-struktur"
+
+#: fe-connect.c:5359
+#, c-format
+msgid "lookup on LDAP server failed: %s"
+msgstr "uppslagning av LDAP-server misslyckades: %s"
+
+#: fe-connect.c:5369
+#, c-format
+msgid "more than one entry found on LDAP lookup"
+msgstr "mer än en post hittad i LDAP-uppslagning"
+
+#: fe-connect.c:5371 fe-connect.c:5382
+#, c-format
+msgid "no entry found on LDAP lookup"
+msgstr "ingen post hittad i LDAP-uppslagning"
+
+#: fe-connect.c:5392 fe-connect.c:5404
+#, c-format
+msgid "attribute has no values on LDAP lookup"
+msgstr "attributet har inga värden i LDAP-uppslagning"
+
+#: fe-connect.c:5455 fe-connect.c:5474 fe-connect.c:5998
+#, c-format
+msgid "missing \"=\" after \"%s\" in connection info string"
+msgstr "\"=\" efter \"%s\" saknas i anslutningssträng"
+
+#: fe-connect.c:5545 fe-connect.c:6181 fe-connect.c:6979
+#, c-format
+msgid "invalid connection option \"%s\""
+msgstr "ogiltig anslutningsparameter \"%s\""
+
+#: fe-connect.c:5560 fe-connect.c:6046
+#, c-format
+msgid "unterminated quoted string in connection info string"
+msgstr "icke terminerad sträng i uppkopplingsinformationen"
+
+#: fe-connect.c:5640
+#, c-format
+msgid "definition of service \"%s\" not found"
+msgstr "definition av service \"%s\" hittades inte"
+
+#: fe-connect.c:5666
+#, c-format
+msgid "service file \"%s\" not found"
+msgstr "servicefil \"%s\" hittades inte"
+
+#: fe-connect.c:5679
+#, c-format
+msgid "line %d too long in service file \"%s\""
+msgstr "rad %d för lång i servicefil \"%s\""
+
+#: fe-connect.c:5750 fe-connect.c:5793
+#, c-format
+msgid "syntax error in service file \"%s\", line %d"
+msgstr "syntaxfel i servicefel \"%s\", rad %d"
+
+#: fe-connect.c:5761
+#, c-format
+msgid "nested service specifications not supported in service file \"%s\", line %d"
+msgstr "nästlade servicespecifikationer stöds inte i servicefil \"%s\", rad %d"
+
+#: fe-connect.c:6500
+#, c-format
+msgid "invalid URI propagated to internal parser routine: \"%s\""
+msgstr "ogiltig URI propagerad till intern parsningsrutin: \"%s\""
+
+#: fe-connect.c:6577
+#, c-format
+msgid "end of string reached when looking for matching \"]\" in IPv6 host address in URI: \"%s\""
+msgstr "nådde slutet på strängen när vi letade efter matchande \"]\" i IPv6-värdadress i URI: \"%s\""
+
+#: fe-connect.c:6584
+#, c-format
+msgid "IPv6 host address may not be empty in URI: \"%s\""
+msgstr "IPv6-värdadress får ej vara tom i URI: \"%s\""
+
+#: fe-connect.c:6599
+#, c-format
+msgid "unexpected character \"%c\" at position %d in URI (expected \":\" or \"/\"): \"%s\""
+msgstr "oväntat tecken \"%c\" vid position %d i URI (förväntade \":\" eller \"/\"): \"%s\""
+
+#: fe-connect.c:6728
+#, c-format
+msgid "extra key/value separator \"=\" in URI query parameter: \"%s\""
+msgstr "extra nyckel/värde-separator \"=\" i URI-frågeparameter: \"%s\""
+
+#: fe-connect.c:6748
+#, c-format
+msgid "missing key/value separator \"=\" in URI query parameter: \"%s\""
+msgstr "saknar nyckel/värde-separator \"=\" i URI-frågeparameter: \"%s\""
+
+#: fe-connect.c:6800
+#, c-format
+msgid "invalid URI query parameter: \"%s\""
+msgstr "ogiltig URI-frågeparameter: \"%s\""
+
+#: fe-connect.c:6874
+#, c-format
+msgid "invalid percent-encoded token: \"%s\""
+msgstr "ogiltigt procent-kodad symbol: \"%s\""
+
+#: fe-connect.c:6884
+#, c-format
+msgid "forbidden value %%00 in percent-encoded value: \"%s\""
+msgstr "förbjudet värde %%00 i procentkodat värde: \"%s\""
+
+#: fe-connect.c:7248
 msgid "connection pointer is NULL\n"
 msgstr "anslutningspekare är NULL\n"
 
-#: fe-connect.c:6499
+#: fe-connect.c:7256 fe-exec.c:710 fe-exec.c:970 fe-exec.c:3292
+#: fe-protocol3.c:974 fe-protocol3.c:1007
+msgid "out of memory\n"
+msgstr "slut på minne\n"
+
+#: fe-connect.c:7547
 #, c-format
 msgid "WARNING: password file \"%s\" is not a plain file\n"
 msgstr "FEL: lösenordsfil \"%s\" är inte en vanlig fil\n"
 
-#: fe-connect.c:6508
+#: fe-connect.c:7556
 #, c-format
 msgid "WARNING: password file \"%s\" has group or world access; permissions should be u=rw (0600) or less\n"
 msgstr "VARNING: lösenordsfilen \"%s\" har läsrättigheter för gruppen eller världen; rättigheten skall vara u=rw (0600) eller mindre\n"
 
-#: fe-connect.c:6602
+#: fe-connect.c:7663
 #, c-format
-msgid "password retrieved from file \"%s\"\n"
-msgstr "lösenord hämtat från fil \"%s\"\n"
+msgid "password retrieved from file \"%s\""
+msgstr "lösenord hämtat från fil \"%s\""
 
-#: fe-exec.c:437 fe-exec.c:2776
+#: fe-exec.c:466 fe-exec.c:3366
 #, c-format
 msgid "row number %d is out of range 0..%d"
 msgstr "radnummer %d är utanför giltigt intervall 0..%d"
 
-#: fe-exec.c:498 fe-protocol2.c:502 fe-protocol2.c:537 fe-protocol2.c:1056
-#: fe-protocol3.c:208 fe-protocol3.c:235 fe-protocol3.c:252 fe-protocol3.c:332
-#: fe-protocol3.c:727 fe-protocol3.c:958
-msgid "out of memory"
-msgstr "slut på minne"
-
-#: fe-exec.c:499 fe-protocol2.c:1402 fe-protocol3.c:1893
+#: fe-exec.c:528 fe-protocol3.c:1976
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: fe-exec.c:847
+#: fe-exec.c:831
+#, c-format
+msgid "write to server failed"
+msgstr "skrivning till servern misslyckades"
+
+#: fe-exec.c:869
+#, c-format
+msgid "no error text available"
+msgstr "inget feltext finns tillgänglig"
+
+#: fe-exec.c:958
 msgid "NOTICE"
 msgstr "NOTIS"
 
-#: fe-exec.c:905
+#: fe-exec.c:1016
 msgid "PGresult cannot support more than INT_MAX tuples"
 msgstr "PGresult stöder inte mer än INT_MAX tupler"
 
-#: fe-exec.c:917
+#: fe-exec.c:1028
 msgid "size_t overflow"
 msgstr "size_t-överspill"
 
-#: fe-exec.c:1192 fe-exec.c:1250 fe-exec.c:1296
-msgid "command string is a null pointer\n"
-msgstr "kommandosträngen är en null-pekare\n"
-
-#: fe-exec.c:1256 fe-exec.c:1302 fe-exec.c:1397
-msgid "number of parameters must be between 0 and 65535\n"
-msgstr "antal parametrar måste bara mellan 0 och 65535\n"
-
-#: fe-exec.c:1290 fe-exec.c:1391
-msgid "statement name is a null pointer\n"
-msgstr "satsens namn  är en null-pekare\n"
-
-#: fe-exec.c:1310 fe-exec.c:1473 fe-exec.c:2191 fe-exec.c:2390
-msgid "function requires at least protocol version 3.0\n"
-msgstr "funktionen kräver minst protokollversion 3.0\n"
-
-#: fe-exec.c:1428
-msgid "no connection to the server\n"
-msgstr "inte förbunden till servern\n"
-
-#: fe-exec.c:1435
-msgid "another command is already in progress\n"
-msgstr "ett annat kommando pågår redan\n"
-
-#: fe-exec.c:1549
-msgid "length must be given for binary parameter\n"
-msgstr "längden måste anges för en binär parameter\n"
-
-#: fe-exec.c:1821
+#: fe-exec.c:1444 fe-exec.c:1513 fe-exec.c:1559
 #, c-format
-msgid "unexpected asyncStatus: %d\n"
-msgstr "oväntad asyncStatus: %d\n"
+msgid "command string is a null pointer"
+msgstr "kommandosträngen är en null-pekare"
 
-#: fe-exec.c:1841
+#: fe-exec.c:1450 fe-exec.c:2888
 #, c-format
-msgid "PGEventProc \"%s\" failed during PGEVT_RESULTCREATE event\n"
-msgstr "PGEventProc \"%s\" misslyckades under PGEVT_RESULTCREATE-händelse\n"
+msgid "%s not allowed in pipeline mode"
+msgstr "%s tillåts inte i pipeline-läge"
 
-#: fe-exec.c:2001
+#: fe-exec.c:1518 fe-exec.c:1564 fe-exec.c:1658
+#, c-format
+msgid "number of parameters must be between 0 and %d"
+msgstr "antal parametrar måste vara mellan 0 och %d"
+
+#: fe-exec.c:1554 fe-exec.c:1653
+#, c-format
+msgid "statement name is a null pointer"
+msgstr "satsens namn  är en null-pekare"
+
+#: fe-exec.c:1695 fe-exec.c:3220
+#, c-format
+msgid "no connection to the server"
+msgstr "inte ansluten till servern"
+
+#: fe-exec.c:1703 fe-exec.c:3228
+#, c-format
+msgid "another command is already in progress"
+msgstr "ett annat kommando körs redan"
+
+#: fe-exec.c:1733
+#, c-format
+msgid "cannot queue commands during COPY"
+msgstr "kan inte köa kommandon när COPY körs"
+
+#: fe-exec.c:1850
+#, c-format
+msgid "length must be given for binary parameter"
+msgstr "längden måste anges för en binär parameter"
+
+#: fe-exec.c:2171
+#, c-format
+msgid "unexpected asyncStatus: %d"
+msgstr "oväntad asyncStatus: %d"
+
+#: fe-exec.c:2327
+#, c-format
+msgid "synchronous command execution functions are not allowed in pipeline mode"
+msgstr "synkrona kommandoexekveringsfunktioner tillåts inte i pipeline-läge"
+
+#: fe-exec.c:2344
 msgid "COPY terminated by new PQexec"
 msgstr "COPY terminerad av ny PQexec"
 
-#: fe-exec.c:2009
-msgid "COPY IN state must be terminated first\n"
-msgstr "COPY IN-läge måste avslutas först\n"
+#: fe-exec.c:2360
+#, c-format
+msgid "PQexec not allowed during COPY BOTH"
+msgstr "PQexec tillåts inte under COPY BOTH"
 
-#: fe-exec.c:2029
-msgid "COPY OUT state must be terminated first\n"
-msgstr "COPY OUT-läge måste avslutas först\n"
+#: fe-exec.c:2586 fe-exec.c:2641 fe-exec.c:2709 fe-protocol3.c:1907
+#, c-format
+msgid "no COPY in progress"
+msgstr "ingen COPY körs"
 
-#: fe-exec.c:2037
-msgid "PQexec not allowed during COPY BOTH\n"
-msgstr "PQexec tillåts inte under COPY BOTH\n"
+#: fe-exec.c:2895
+#, c-format
+msgid "connection in wrong state"
+msgstr "anslutning i felaktigt tillstånd"
 
-#: fe-exec.c:2280 fe-exec.c:2347 fe-exec.c:2437 fe-protocol2.c:1359
-#: fe-protocol3.c:1824
-msgid "no COPY in progress\n"
-msgstr "ingen COPY pågår\n"
+#: fe-exec.c:2938
+#, c-format
+msgid "cannot enter pipeline mode, connection not idle"
+msgstr "kan inte byta till pipeline-läge, anslutningen är inte inaktiv"
 
-#: fe-exec.c:2627
-msgid "connection in wrong state\n"
-msgstr "förbindelse i felaktigt tillstånd\n"
+#: fe-exec.c:2974 fe-exec.c:2995
+#, c-format
+msgid "cannot exit pipeline mode with uncollected results"
+msgstr "kan inte anvsluta pipeline-läge när alla svar inte tagits emot"
 
-#: fe-exec.c:2658
+#: fe-exec.c:2978
+#, c-format
+msgid "cannot exit pipeline mode while busy"
+msgstr "är upptagen och kan inte avsluta pipeline-läge"
+
+#: fe-exec.c:2989
+#, c-format
+msgid "cannot exit pipeline mode while in COPY"
+msgstr "kan inte avsluta pipeline-läge inne i en COPY"
+
+#: fe-exec.c:3154
+#, c-format
+msgid "cannot send pipeline when not in pipeline mode"
+msgstr "kan inte skicka en pipeline när vi inte är i pipeline-läge"
+
+#: fe-exec.c:3255
 msgid "invalid ExecStatusType code"
 msgstr "ogiltig ExecStatusType-kod"
 
-#: fe-exec.c:2685
+#: fe-exec.c:3282
 msgid "PGresult is not an error result\n"
 msgstr "PGresult är inte ett felresultat\n"
 
-#: fe-exec.c:2760 fe-exec.c:2783
+#: fe-exec.c:3350 fe-exec.c:3373
 #, c-format
 msgid "column number %d is out of range 0..%d"
 msgstr "kolumnnummer %d är utanför giltigt intervall 0..%d"
 
-#: fe-exec.c:2798
+#: fe-exec.c:3388
 #, c-format
 msgid "parameter number %d is out of range 0..%d"
 msgstr "parameter nummer %d är utanför giltigt intervall 0..%d"
 
-#: fe-exec.c:3108
+#: fe-exec.c:3699
 #, c-format
 msgid "could not interpret result from server: %s"
 msgstr "kunde inte tolka svaret från servern: %s"
 
-#: fe-exec.c:3347 fe-exec.c:3431
-msgid "incomplete multibyte character\n"
-msgstr "ofullständigt multibyte-tecken\n"
-
-#: fe-lobj.c:154
-msgid "cannot determine OID of function lo_truncate\n"
-msgstr "kan inte ta reda på OID för funktionen lo_truncate\n"
-
-#: fe-lobj.c:170
-msgid "argument of lo_truncate exceeds integer range\n"
-msgstr "argumentet till lo_truncate överskrider heltalsintervallet\n"
-
-#: fe-lobj.c:221
-msgid "cannot determine OID of function lo_truncate64\n"
-msgstr "kan inte ta reda på OID för funktionen lo_truncate64\n"
-
-#: fe-lobj.c:279
-msgid "argument of lo_read exceeds integer range\n"
-msgstr "ett argument till lo_read överskriver heltalsintervallet\n"
-
-#: fe-lobj.c:334
-msgid "argument of lo_write exceeds integer range\n"
-msgstr "ett argument till lo_write överskriver heltalsintervallet\n"
-
-#: fe-lobj.c:425
-msgid "cannot determine OID of function lo_lseek64\n"
-msgstr "kan inte ta reda på OID för funktionen lo_lseek64\n"
-
-#: fe-lobj.c:521
-msgid "cannot determine OID of function lo_create\n"
-msgstr "kan inte ta reda på OID för funktionen lo_create\n"
-
-#: fe-lobj.c:600
-msgid "cannot determine OID of function lo_tell64\n"
-msgstr "kan inte ta reda på OID för funktionen lo_tell64\n"
-
-#: fe-lobj.c:706 fe-lobj.c:815
+#: fe-exec.c:3964 fe-exec.c:4054
 #, c-format
-msgid "could not open file \"%s\": %s\n"
-msgstr "kan inte öppna fil \"%s\": %s\n"
+msgid "incomplete multibyte character"
+msgstr "ofullständigt multibyte-tecken"
 
-#: fe-lobj.c:761
+#: fe-gssapi-common.c:122
+msgid "GSSAPI name import error"
+msgstr "GSSAPI-fel vid import av namn"
+
+#: fe-lobj.c:144 fe-lobj.c:207 fe-lobj.c:397 fe-lobj.c:487 fe-lobj.c:560
+#: fe-lobj.c:956 fe-lobj.c:963 fe-lobj.c:970 fe-lobj.c:977 fe-lobj.c:984
+#: fe-lobj.c:991 fe-lobj.c:998 fe-lobj.c:1005
 #, c-format
-msgid "could not read from file \"%s\": %s\n"
-msgstr "kunde inte läsa från fil \"%s\": %s\n"
+msgid "cannot determine OID of function %s"
+msgstr "kan inte härleda OID för funktionen %s"
 
-#: fe-lobj.c:835 fe-lobj.c:859
+#: fe-lobj.c:160
 #, c-format
-msgid "could not write to file \"%s\": %s\n"
-msgstr "kan inte skriva till fil \"%s\": %s\n"
+msgid "argument of lo_truncate exceeds integer range"
+msgstr "argumentet till lo_truncate överskrider heltalsintervallet"
 
-#: fe-lobj.c:946
-msgid "query to initialize large object functions did not return data\n"
-msgstr "fråga för att initiera stort objekt-funktion returnerade ingen data\n"
+#: fe-lobj.c:262
+#, c-format
+msgid "argument of lo_read exceeds integer range"
+msgstr "ett argument till lo_read överskriver heltalsintervallet"
 
-#: fe-lobj.c:995
-msgid "cannot determine OID of function lo_open\n"
-msgstr "kan inte ta reda på OID för funktionen lo_open\n"
+#: fe-lobj.c:313
+#, c-format
+msgid "argument of lo_write exceeds integer range"
+msgstr "ett argument till lo_write överskriver heltalsintervallet"
 
-#: fe-lobj.c:1002
-msgid "cannot determine OID of function lo_close\n"
-msgstr "kan inte ta reda på OID för funktionen lo_close\n"
+#: fe-lobj.c:669 fe-lobj.c:780
+#, c-format
+msgid "could not open file \"%s\": %s"
+msgstr "kunde inte öppna fil \"%s\": %s"
 
-#: fe-lobj.c:1009
-msgid "cannot determine OID of function lo_creat\n"
-msgstr "kan inte ta reda på OID för funktionen lo_create\n"
+#: fe-lobj.c:725
+#, c-format
+msgid "could not read from file \"%s\": %s"
+msgstr "kunde inte läsa från fil \"%s\": %s"
 
-#: fe-lobj.c:1016
-msgid "cannot determine OID of function lo_unlink\n"
-msgstr "kan inte ta reda på OID för funktionen lo_unlink\n"
+#: fe-lobj.c:801 fe-lobj.c:824
+#, c-format
+msgid "could not write to file \"%s\": %s"
+msgstr "kan inte skriva till fil \"%s\": %s"
 
-#: fe-lobj.c:1023
-msgid "cannot determine OID of function lo_lseek\n"
-msgstr "kan inte ta reda på OID för funktionen lo_lseek\n"
+#: fe-lobj.c:908
+#, c-format
+msgid "query to initialize large object functions did not return data"
+msgstr "fråga för att initiera stort objekt-funktion returnerade ingen data"
 
-#: fe-lobj.c:1030
-msgid "cannot determine OID of function lo_tell\n"
-msgstr "kan inte ta reda på OID för funktionen lo_tell\n"
-
-#: fe-lobj.c:1037
-msgid "cannot determine OID of function loread\n"
-msgstr "kan inte ta reda på OID för funktionen loread\n"
-
-#: fe-lobj.c:1044
-msgid "cannot determine OID of function lowrite\n"
-msgstr "kan inte ta reda på OID för funktionen lowrite\n"
-
-#: fe-misc.c:290
+#: fe-misc.c:240
 #, c-format
 msgid "integer of size %lu not supported by pqGetInt"
 msgstr "heltal med storlek %lu stöds inte av pqGetInt"
 
-#: fe-misc.c:326
+#: fe-misc.c:273
 #, c-format
 msgid "integer of size %lu not supported by pqPutInt"
 msgstr "heltal med storlek %lu stöds inte av pqPutInt"
 
-#: fe-misc.c:637 fe-misc.c:838
-msgid "connection not open\n"
-msgstr "förbindelse inte öppen\n"
+#: fe-misc.c:573
+#, c-format
+msgid "connection not open"
+msgstr "anslutningen är inte öppen"
 
-#: fe-misc.c:807 fe-secure-openssl.c:206 fe-secure-openssl.c:314
-#: fe-secure.c:261 fe-secure.c:371
+#: fe-misc.c:751 fe-secure-openssl.c:215 fe-secure-openssl.c:315
+#: fe-secure.c:257 fe-secure.c:419
+#, c-format
 msgid ""
 "server closed the connection unexpectedly\n"
 "\tThis probably means the server terminated abnormally\n"
-"\tbefore or while processing the request.\n"
+"\tbefore or while processing the request."
 msgstr ""
 "servern stängde oväntat ner uppkopplingen\n"
 "\tTroligen så terminerade servern pga något fel antingen\n"
-"\tinnan eller under tiden den bearbetade en förfrågan.\n"
+"\tinnan eller under tiden den bearbetade en förfrågan."
 
-#: fe-misc.c:1009
-msgid "timeout expired\n"
-msgstr "timeout utgången\n"
+#: fe-misc.c:818
+msgid "connection not open\n"
+msgstr "anslutningen är inte öppen\n"
 
-#: fe-misc.c:1054
-msgid "invalid socket\n"
-msgstr "ogiltigt uttag\n"
-
-#: fe-misc.c:1077
+#: fe-misc.c:1003
 #, c-format
-msgid "select() failed: %s\n"
-msgstr "select() misslyckades: %s\n"
+msgid "timeout expired"
+msgstr "timeout utgången"
 
-#: fe-protocol2.c:90
+#: fe-misc.c:1047
 #, c-format
-msgid "invalid setenv state %c, probably indicative of memory corruption\n"
-msgstr "ogiltigt setenv-tillstånd %c, indikerar troligen ett minnesfel\n"
+msgid "invalid socket"
+msgstr "ogiltig socket"
 
-#: fe-protocol2.c:389
+#: fe-misc.c:1069
 #, c-format
-msgid "invalid state %c, probably indicative of memory corruption\n"
-msgstr "ogiltigt tillstånd %c, indikerar troligen ett minnesfel\n"
+msgid "%s() failed: %s"
+msgstr "%s() misslyckades: %s"
 
-#: fe-protocol2.c:478 fe-protocol3.c:185
+#: fe-protocol3.c:182
 #, c-format
 msgid "message type 0x%02x arrived from server while idle"
 msgstr "meddelandetyp 0x%02x kom från server under viloperiod"
 
-#: fe-protocol2.c:528
-#, c-format
-msgid "unexpected character %c following empty query response (\"I\" message)"
-msgstr "oväntat tecken %c följer på ett tomt frågesvar (meddelande \"I\")"
-
-#: fe-protocol2.c:594
+#: fe-protocol3.c:385
 #, c-format
 msgid "server sent data (\"D\" message) without prior row description (\"T\" message)"
-msgstr "servern skickade data (meddelande \"D\") utan föregående radbeskrivning (meddelande \"T\")"
+msgstr "servern skickade data (meddelande \"D\") utan att först skicka en radbeskrivning (meddelande \"T\")"
 
-#: fe-protocol2.c:612
+#: fe-protocol3.c:427
 #, c-format
-msgid "server sent binary data (\"B\" message) without prior row description (\"T\" message)"
-msgstr "servern skickade binärdata (meddelande \"B\") utan föregående radbeskrivning (meddelande \"T\")"
+msgid "unexpected response from server; first received character was \"%c\""
+msgstr "oväntat svar för servern; första mottagna tecknet var \"%c\""
 
-#: fe-protocol2.c:632 fe-protocol3.c:411
+#: fe-protocol3.c:450
 #, c-format
-msgid "unexpected response from server; first received character was \"%c\"\n"
-msgstr "oväntat svar för servern; första mottagna tecknet var \"%c\"\n"
+msgid "message contents do not agree with length in message type \"%c\""
+msgstr "meddelandeinnehåll stämmer inte med längden för meddelandetyp \"%c\""
 
-#: fe-protocol2.c:761 fe-protocol2.c:936 fe-protocol3.c:626 fe-protocol3.c:853
-msgid "out of memory for query result"
-msgstr "slut på minnet för frågeresultat"
-
-#: fe-protocol2.c:1414
+#: fe-protocol3.c:468
 #, c-format
-msgid "lost synchronization with server, resetting connection"
-msgstr "tappade synkronisering med servern, startar o, uppkopplingen"
+msgid "lost synchronization with server: got message type \"%c\", length %d"
+msgstr "tappade synkronisering med servern: fick meddelandetyp \"%c\", längd %d"
 
-#: fe-protocol2.c:1548 fe-protocol2.c:1580 fe-protocol3.c:2096
-#, c-format
-msgid "protocol error: id=0x%x\n"
-msgstr "protokollfel: id=0x%x\n"
-
-#: fe-protocol3.c:367
-msgid "server sent data (\"D\" message) without prior row description (\"T\" message)\n"
-msgstr "servern skickade data (meddelande \"D\") utan att först skicka en radbeskrivning (meddelande \"T\")\n"
-
-#: fe-protocol3.c:432
-#, c-format
-msgid "message contents do not agree with length in message type \"%c\"\n"
-msgstr "meddelandeinnehåll stämmer inte med längden för meddelandetyp \"%c\"\n"
-
-#: fe-protocol3.c:453
-#, c-format
-msgid "lost synchronization with server: got message type \"%c\", length %d\n"
-msgstr "tappade synkronisering med servern: fick meddelandetyp \"%c\", längd %d\n"
-
-#: fe-protocol3.c:504 fe-protocol3.c:544
+#: fe-protocol3.c:520 fe-protocol3.c:560
 msgid "insufficient data in \"T\" message"
 msgstr "otillräckligt med data i \"T\"-meddelande"
 
-#: fe-protocol3.c:577
-msgid "extraneous data in \"T\" message"
-msgstr "extra data i \"T\"-meddelande"
+#: fe-protocol3.c:631 fe-protocol3.c:837
+msgid "out of memory for query result"
+msgstr "slut på minnet för frågeresultat"
 
-#: fe-protocol3.c:690
-msgid "extraneous data in \"t\" message"
-msgstr "extra data i \"t\"-meddelande"
+#: fe-protocol3.c:700
+msgid "insufficient data in \"t\" message"
+msgstr "otillräckligt med data i \"t\"-meddelande"
 
-#: fe-protocol3.c:761 fe-protocol3.c:793 fe-protocol3.c:811
+#: fe-protocol3.c:759 fe-protocol3.c:791 fe-protocol3.c:809
 msgid "insufficient data in \"D\" message"
 msgstr "otillräckligt med data i \"D\"-meddelande"
 
-#: fe-protocol3.c:767
+#: fe-protocol3.c:765
 msgid "unexpected field count in \"D\" message"
 msgstr "oväntat fältantal i \"D\"-meddelande"
 
-#: fe-protocol3.c:820
-msgid "extraneous data in \"D\" message"
-msgstr "extra data i \"D\"-meddelande"
-
-#: fe-protocol3.c:1012
+#: fe-protocol3.c:1020
 msgid "no error message available\n"
 msgstr "inget felmeddelande finns tillgängligt\n"
 
 #. translator: %s represents a digit string
-#: fe-protocol3.c:1042 fe-protocol3.c:1061
+#: fe-protocol3.c:1068 fe-protocol3.c:1087
 #, c-format
 msgid " at character %s"
 msgstr " vid tecken %s"
 
-#: fe-protocol3.c:1074
+#: fe-protocol3.c:1100
 #, c-format
 msgid "DETAIL:  %s\n"
 msgstr "DETALJ:  %s\n"
 
-#: fe-protocol3.c:1077
+#: fe-protocol3.c:1103
 #, c-format
 msgid "HINT:  %s\n"
 msgstr "TIPS:  %s\n"
 
-#: fe-protocol3.c:1080
+#: fe-protocol3.c:1106
 #, c-format
 msgid "QUERY:  %s\n"
 msgstr "FRÅGA:  %s\n"
 
-#: fe-protocol3.c:1087
+#: fe-protocol3.c:1113
 #, c-format
 msgid "CONTEXT:  %s\n"
 msgstr "KONTEXT:  %s\n"
 
-#: fe-protocol3.c:1096
+#: fe-protocol3.c:1122
 #, c-format
 msgid "SCHEMA NAME:  %s\n"
 msgstr "SCHEMANAMN:  %s\n"
 
-#: fe-protocol3.c:1100
+#: fe-protocol3.c:1126
 #, c-format
 msgid "TABLE NAME:  %s\n"
 msgstr "TABELLNAMN:  %s\n"
 
-#: fe-protocol3.c:1104
+#: fe-protocol3.c:1130
 #, c-format
 msgid "COLUMN NAME:  %s\n"
 msgstr "KOLUMNNAMN:  %s\n"
 
-#: fe-protocol3.c:1108
+#: fe-protocol3.c:1134
 #, c-format
 msgid "DATATYPE NAME:  %s\n"
 msgstr "DATATYPNAMN:  %s\n"
 
-#: fe-protocol3.c:1112
+#: fe-protocol3.c:1138
 #, c-format
 msgid "CONSTRAINT NAME:  %s\n"
 msgstr "VILLKORSNAMN:  %s\n"
 
-#: fe-protocol3.c:1124
+#: fe-protocol3.c:1150
 msgid "LOCATION:  "
 msgstr "PLATS:  "
 
-#: fe-protocol3.c:1126
+#: fe-protocol3.c:1152
 #, c-format
 msgid "%s, "
 msgstr "%s, "
 
-#: fe-protocol3.c:1128
+#: fe-protocol3.c:1154
 #, c-format
 msgid "%s:%s"
 msgstr "%s:%s"
 
-#: fe-protocol3.c:1323
+#: fe-protocol3.c:1349
 #, c-format
 msgid "LINE %d: "
 msgstr "RAD %d: "
 
-#: fe-protocol3.c:1718
-msgid "PQgetline: not doing text COPY OUT\n"
-msgstr "PQgetline: utför inte text-COPY OUT\n"
-
-#: fe-secure-common.c:124
-msgid "SSL certificate's name contains embedded null\n"
-msgstr "SSL-certifikatets namn innehåller null-värden\n"
-
-#: fe-secure-common.c:171
-msgid "host name must be specified for a verified SSL connection\n"
-msgstr "värdnamn måste anges för en verifierad SSL-anslutning\n"
-
-#: fe-secure-common.c:196
+#: fe-protocol3.c:1423
 #, c-format
-msgid "server certificate for \"%s\" does not match host name \"%s\"\n"
-msgstr "servercertifikat för  \"%s\" matchar inte värdnamn \"%s\"\n"
+msgid "protocol version not supported by server: client uses %u.%u, server supports up to %u.%u"
+msgstr "protokollversionen stöds inte av servern: klienten använder %u.%u, servern stöder upp till %u.%u"
 
-#: fe-secure-common.c:202
-msgid "could not get server's host name from server certificate\n"
-msgstr "kan inte hämta ut serverns värdnamn från servercertifikatet\n"
-
-#: fe-secure-openssl.c:211 fe-secure-openssl.c:319 fe-secure-openssl.c:1219
+#: fe-protocol3.c:1429
 #, c-format
-msgid "SSL SYSCALL error: %s\n"
-msgstr "SSL SYSCALL fel: %s\n"
+msgid "protocol extension not supported by server: %s"
+msgid_plural "protocol extensions not supported by server: %s"
+msgstr[0] "protokollutökning stöds inte av servern: %s"
+msgstr[1] "protokollutökningar stöds inte av servern: %s"
 
-#: fe-secure-openssl.c:218 fe-secure-openssl.c:326 fe-secure-openssl.c:1223
-msgid "SSL SYSCALL error: EOF detected\n"
-msgstr "SSL SYSCALL-fel: EOF upptäckt\n"
-
-#: fe-secure-openssl.c:229 fe-secure-openssl.c:337 fe-secure-openssl.c:1232
+#: fe-protocol3.c:1437
 #, c-format
-msgid "SSL error: %s\n"
-msgstr "SSL-fel: %s\n"
+msgid "invalid %s message"
+msgstr "ogiltig %s-meddelande"
 
-#: fe-secure-openssl.c:244 fe-secure-openssl.c:352
-msgid "SSL connection has been closed unexpectedly\n"
-msgstr "SSL-anslutning har oväntat stängts\n"
-
-#: fe-secure-openssl.c:250 fe-secure-openssl.c:358 fe-secure-openssl.c:1241
+#: fe-protocol3.c:1802
 #, c-format
-msgid "unrecognized SSL error code: %d\n"
-msgstr "okänd SSL-felkod: %d\n"
+msgid "PQgetline: not doing text COPY OUT"
+msgstr "PQgetline: utför inte text-COPY OUT"
 
-#: fe-secure-openssl.c:398
-msgid "could not determine server certificate signature algorithm\n"
-msgstr "kunde inte lista ut serverns algoritm för certifikatsignering\n"
-
-#: fe-secure-openssl.c:419
+#: fe-protocol3.c:2176
 #, c-format
-msgid "could not find digest for NID %s\n"
-msgstr "kunde inte hitta kontrollsumma för NID %s\n"
+msgid "protocol error: no function result"
+msgstr "protokollfel: inget funktionsresultat"
 
-#: fe-secure-openssl.c:429
-msgid "could not generate peer certificate hash\n"
-msgstr "kunde inte generera peer-certifikathash\n"
-
-#: fe-secure-openssl.c:486
-msgid "SSL certificate's name entry is missing\n"
-msgstr "SSL-certifikatets namn saknas\n"
-
-#: fe-secure-openssl.c:815
+#: fe-protocol3.c:2187
 #, c-format
-msgid "could not create SSL context: %s\n"
-msgstr "kan inte skapa SSL-omgivning: %s\n"
+msgid "protocol error: id=0x%x"
+msgstr "protokollfel: id=0x%x"
 
-#: fe-secure-openssl.c:852
+#: fe-secure-common.c:123
 #, c-format
-msgid "could not read root certificate file \"%s\": %s\n"
-msgstr "kunde inte läsa root-certifikatfilen \"%s\": %s\n"
+msgid "SSL certificate's name contains embedded null"
+msgstr "SSL-certifikatets namn innehåller null-värden"
 
-#: fe-secure-openssl.c:880
+#: fe-secure-common.c:228
 #, c-format
-msgid "SSL library does not support CRL certificates (file \"%s\")\n"
-msgstr "SSL-bibliotek stöder inte CRL-certifikat (fil \"%s\")\n"
+msgid "certificate contains IP address with invalid length %zu"
+msgstr "certifikater innehåller IP-adress med ogiltig längd %zu"
 
-#: fe-secure-openssl.c:908
+#: fe-secure-common.c:237
+#, c-format
+msgid "could not convert certificate's IP address to string: %s"
+msgstr "kunde inte konvertera certifikatets IP-adress till sträng: %s"
+
+#: fe-secure-common.c:269
+#, c-format
+msgid "host name must be specified for a verified SSL connection"
+msgstr "värdnamn måste anges för en verifierad SSL-anslutning"
+
+#: fe-secure-common.c:286
+#, c-format
+msgid "server certificate for \"%s\" (and %d other name) does not match host name \"%s\""
+msgid_plural "server certificate for \"%s\" (and %d other names) does not match host name \"%s\""
+msgstr[0] "servercertifikat för \"%s\" (och %d annat namn) matchar inte värdnamn \"%s\""
+msgstr[1] "servercertifikat för \"%s\" (och %d andra namn) matchar inte värdnamn \"%s\""
+
+#: fe-secure-common.c:294
+#, c-format
+msgid "server certificate for \"%s\" does not match host name \"%s\""
+msgstr "servercertifikat för  \"%s\" matchar inte värdnamn \"%s\""
+
+#: fe-secure-common.c:299
+#, c-format
+msgid "could not get server's host name from server certificate"
+msgstr "kan inte hämta ut serverns värdnamn från servercertifikatet"
+
+#: fe-secure-gssapi.c:201
+msgid "GSSAPI wrap error"
+msgstr "GSSAPI-fel vid inpackning"
+
+#: fe-secure-gssapi.c:208
+#, c-format
+msgid "outgoing GSSAPI message would not use confidentiality"
+msgstr "utående GSSAPI-meddelande skulle inte använda sekretess"
+
+#: fe-secure-gssapi.c:215
+#, c-format
+msgid "client tried to send oversize GSSAPI packet (%zu > %zu)"
+msgstr "klienten försökte skicka för stort GSSAPI-paket (%zu > %zu)"
+
+#: fe-secure-gssapi.c:351 fe-secure-gssapi.c:593
+#, c-format
+msgid "oversize GSSAPI packet sent by the server (%zu > %zu)"
+msgstr "för stort GSSAPI-paket skickat av servern (%zu > %zu)"
+
+#: fe-secure-gssapi.c:390
+msgid "GSSAPI unwrap error"
+msgstr "GSSAPI-fel vid uppackning"
+
+#: fe-secure-gssapi.c:399
+#, c-format
+msgid "incoming GSSAPI message did not use confidentiality"
+msgstr "inkommande GSSAPI-meddelande använde inte sekretess"
+
+#: fe-secure-gssapi.c:656
+msgid "could not initiate GSSAPI security context"
+msgstr "kunde inte initiera GSSAPI-säkerhetskontext"
+
+#: fe-secure-gssapi.c:685
+msgid "GSSAPI size check error"
+msgstr "GSSAPI-fel vid kontroll av storlek"
+
+#: fe-secure-gssapi.c:696
+msgid "GSSAPI context establishment error"
+msgstr "GSSAPI-fel vid skapande av kontext"
+
+#: fe-secure-openssl.c:219 fe-secure-openssl.c:319 fe-secure-openssl.c:1531
+#, c-format
+msgid "SSL SYSCALL error: %s"
+msgstr "SSL SYSCALL fel: %s"
+
+#: fe-secure-openssl.c:225 fe-secure-openssl.c:325 fe-secure-openssl.c:1534
+#, c-format
+msgid "SSL SYSCALL error: EOF detected"
+msgstr "SSL SYSCALL-fel: EOF upptäckt"
+
+#: fe-secure-openssl.c:235 fe-secure-openssl.c:335 fe-secure-openssl.c:1542
+#, c-format
+msgid "SSL error: %s"
+msgstr "SSL-fel: %s"
+
+#: fe-secure-openssl.c:249 fe-secure-openssl.c:349
+#, c-format
+msgid "SSL connection has been closed unexpectedly"
+msgstr "SSL-anslutning har oväntat stängts"
+
+#: fe-secure-openssl.c:254 fe-secure-openssl.c:354 fe-secure-openssl.c:1589
+#, c-format
+msgid "unrecognized SSL error code: %d"
+msgstr "okänd SSL-felkod: %d"
+
+#: fe-secure-openssl.c:397
+#, c-format
+msgid "could not determine server certificate signature algorithm"
+msgstr "kunde inte bestämma serverns algoritm för certifikatsignering"
+
+#: fe-secure-openssl.c:417
+#, c-format
+msgid "could not find digest for NID %s"
+msgstr "kunde inte hitta kontrollsumma för NID %s"
+
+#: fe-secure-openssl.c:426
+#, c-format
+msgid "could not generate peer certificate hash"
+msgstr "kunde inte generera peer-certifikathash"
+
+#: fe-secure-openssl.c:509
+#, c-format
+msgid "SSL certificate's name entry is missing"
+msgstr "SSL-certifikatets namnpost saknas"
+
+#: fe-secure-openssl.c:543
+#, c-format
+msgid "SSL certificate's address entry is missing"
+msgstr "SSL-certifikatets adresspost saknas"
+
+#: fe-secure-openssl.c:960
+#, c-format
+msgid "could not create SSL context: %s"
+msgstr "kunde inte skapa SSL-kontext: %s"
+
+#: fe-secure-openssl.c:1002
+#, c-format
+msgid "invalid value \"%s\" for minimum SSL protocol version"
+msgstr "ogiltigt värde \"%s\" för minimal SSL-protokollversion"
+
+#: fe-secure-openssl.c:1012
+#, c-format
+msgid "could not set minimum SSL protocol version: %s"
+msgstr "kunde inte sätta minimal SSL-protokollversion: %s"
+
+#: fe-secure-openssl.c:1028
+#, c-format
+msgid "invalid value \"%s\" for maximum SSL protocol version"
+msgstr "ogiltigt värde \"%s\" för maximal SSL-protokollversion"
+
+#: fe-secure-openssl.c:1038
+#, c-format
+msgid "could not set maximum SSL protocol version: %s"
+msgstr "kunde inte sätta maximal SSL-protokollversion: %s"
+
+#: fe-secure-openssl.c:1076
+#, c-format
+msgid "could not load system root certificate paths: %s"
+msgstr "kunde inte ladda systemets root-certifikatsökvägar: %s"
+
+#: fe-secure-openssl.c:1093
+#, c-format
+msgid "could not read root certificate file \"%s\": %s"
+msgstr "kunde inte läsa root-certifikatfilen \"%s\": %s"
+
+#: fe-secure-openssl.c:1145
+#, c-format
 msgid ""
 "could not get home directory to locate root certificate file\n"
-"Either provide the file or change sslmode to disable server certificate verification.\n"
+"Either provide the file, use the system's trusted roots with sslrootcert=system, or change sslmode to disable server certificate verification."
 msgstr ""
 "kunde inte hämta hemkatalogen för att lokalisera root-certifikatfilen\n"
-"Antingen tillhandahåll filen eller ändra sslmode för att stänga av serverns certifikatverifiering.\n"
+"Antingen tillhandahåll filen, använd systemets betrodda root med sslrootcert=system eller ändra sslmode för att stänga av serverns certifikatverifiering."
 
-#: fe-secure-openssl.c:912
+#: fe-secure-openssl.c:1148
 #, c-format
 msgid ""
 "root certificate file \"%s\" does not exist\n"
-"Either provide the file or change sslmode to disable server certificate verification.\n"
+"Either provide the file, use the system's trusted roots with sslrootcert=system, or change sslmode to disable server certificate verification."
 msgstr ""
 "root-certifikatfilen \"%s\" finns inte\n"
-"Antingen tillhandahåll filen eller ändra sslmode för att stänga av serverns certifikatverifiering.\n"
+"Antingen tillhandahåll filen, använd systemets betrodda root med sslrootcert=system eller ändra sslmode för att stänga av serverns certifikatverifiering."
 
-#: fe-secure-openssl.c:943
+#: fe-secure-openssl.c:1183
 #, c-format
-msgid "could not open certificate file \"%s\": %s\n"
-msgstr "kunde inte öppna certifikatfil \"%s\": %s\n"
+msgid "could not open certificate file \"%s\": %s"
+msgstr "kunde inte öppna certifikatfil \"%s\": %s"
 
-#: fe-secure-openssl.c:962
+#: fe-secure-openssl.c:1201
 #, c-format
-msgid "could not read certificate file \"%s\": %s\n"
-msgstr "kunde inte läsa certifikatfil \"%s\": %s\n"
+msgid "could not read certificate file \"%s\": %s"
+msgstr "kunde inte läsa certifikatfil \"%s\": %s"
 
-#: fe-secure-openssl.c:987
+#: fe-secure-openssl.c:1225
 #, c-format
-msgid "could not establish SSL connection: %s\n"
-msgstr "kan inte skapa SSL-förbindelse: %s\n"
+msgid "could not establish SSL connection: %s"
+msgstr "kan inte skapa SSL-anslutning: %s"
 
-#: fe-secure-openssl.c:1041
+#: fe-secure-openssl.c:1257
 #, c-format
-msgid "could not load SSL engine \"%s\": %s\n"
-msgstr "kunde inte ladda SSL-motor \"%s\": %s\n"
+msgid "could not set SSL Server Name Indication (SNI): %s"
+msgstr "kunde inte sätta SSL servernamnsindikering (SNI): %s"
 
-#: fe-secure-openssl.c:1053
+#: fe-secure-openssl.c:1300
 #, c-format
-msgid "could not initialize SSL engine \"%s\": %s\n"
-msgstr "kunde inte initiera SSL-motor \"%s\": %s\n"
+msgid "could not load SSL engine \"%s\": %s"
+msgstr "kunde inte ladda SSL-motor \"%s\": %s"
 
-#: fe-secure-openssl.c:1069
+#: fe-secure-openssl.c:1311
 #, c-format
-msgid "could not read private SSL key \"%s\" from engine \"%s\": %s\n"
-msgstr "kunde inte läsa privat SSL-nyckel \"%s\" från motor \"%s\": %s\n"
+msgid "could not initialize SSL engine \"%s\": %s"
+msgstr "kunde inte initiera SSL-motor \"%s\": %s"
 
-#: fe-secure-openssl.c:1083
+#: fe-secure-openssl.c:1326
 #, c-format
-msgid "could not load private SSL key \"%s\" from engine \"%s\": %s\n"
-msgstr "kunde inte ladda privat SSL-nyckel \"%s\" från motor \"%s\": %s\n"
+msgid "could not read private SSL key \"%s\" from engine \"%s\": %s"
+msgstr "kunde inte läsa privat SSL-nyckel \"%s\" från motor \"%s\": %s"
 
-#: fe-secure-openssl.c:1120
+#: fe-secure-openssl.c:1339
 #, c-format
-msgid "certificate present, but not private key file \"%s\"\n"
-msgstr "certifikat tillgängligt, men inte den privata nyckelfilen \"%s\"\n"
+msgid "could not load private SSL key \"%s\" from engine \"%s\": %s"
+msgstr "kunde inte ladda privat SSL-nyckel \"%s\" från motor \"%s\": %s"
 
-#: fe-secure-openssl.c:1128
+#: fe-secure-openssl.c:1376
 #, c-format
-msgid "private key file \"%s\" has group or world access; permissions should be u=rw (0600) or less\n"
-msgstr "privata nyckelfilen \"%s\" har läsrättigheter för gruppen eller världen; rättigheten skall vara u=rw (0600) eller mindre\n"
+msgid "certificate present, but not private key file \"%s\""
+msgstr "certifikat tillgängligt, men inte den privata nyckelfilen \"%s\""
 
-#: fe-secure-openssl.c:1139
+#: fe-secure-openssl.c:1379
 #, c-format
-msgid "could not load private key file \"%s\": %s\n"
-msgstr "kunde inte ladda privata nyckelfilen \"%s\": %s\n"
+msgid "could not stat private key file \"%s\": %m"
+msgstr "kunde inte köra stat() på privata nyckelfilen \"%s\": %m"
 
-#: fe-secure-openssl.c:1153
+#: fe-secure-openssl.c:1387
 #, c-format
-msgid "certificate does not match private key file \"%s\": %s\n"
-msgstr "certifikatet matchar inte den privata nyckelfilen \"%s\": %s\n"
+msgid "private key file \"%s\" is not a regular file"
+msgstr "privat nyckelfil \"%s\" är inte en vanlig fil"
 
-#: fe-secure-openssl.c:1262
+#: fe-secure-openssl.c:1420
 #, c-format
-msgid "certificate could not be obtained: %s\n"
-msgstr "certifikatet kunde inte hämtas: %s\n"
+msgid "private key file \"%s\" has group or world access; file must have permissions u=rw (0600) or less if owned by the current user, or permissions u=rw,g=r (0640) or less if owned by root"
+msgstr "privata nyckelfilen \"%s\" har grupp- eller världsrättigheter; filen måste ha rättigheterna u=rw (0600) eller mindre om den ägs av databasanvändaren eller rättigheterna u=rw,g=r (0640) eller mindre om den ägs av root."
 
-#: fe-secure-openssl.c:1351
+#: fe-secure-openssl.c:1444
+#, c-format
+msgid "could not load private key file \"%s\": %s"
+msgstr "kunde inte läsa in privata nyckelfilen \"%s\": %s"
+
+#: fe-secure-openssl.c:1460
+#, c-format
+msgid "certificate does not match private key file \"%s\": %s"
+msgstr "certifikatet matchar inte den privata nyckelfilen \"%s\": %s"
+
+#: fe-secure-openssl.c:1528
+#, c-format
+msgid "SSL error: certificate verify failed: %s"
+msgstr "SSL-fel: verifiering av certifikat misslyckades: %s"
+
+#: fe-secure-openssl.c:1573
+#, c-format
+msgid "This may indicate that the server does not support any SSL protocol version between %s and %s."
+msgstr "Detta kan tyda på att servern inte stöder någon SSL-protokolversion mellan %s oc %s."
+
+#: fe-secure-openssl.c:1606
+#, c-format
+msgid "certificate could not be obtained: %s"
+msgstr "certifikatet kunde inte hämtas: %s"
+
+#: fe-secure-openssl.c:1711
 #, c-format
 msgid "no SSL error reported"
 msgstr "inget SSL-fel rapporterat"
 
-#: fe-secure-openssl.c:1360
+#: fe-secure-openssl.c:1720
 #, c-format
 msgid "SSL error code %lu"
 msgstr "SSL-felkod %lu"
 
-#: fe-secure.c:269
+#: fe-secure-openssl.c:1986
 #, c-format
-msgid "could not receive data from server: %s\n"
-msgstr "kan inte ta emot data från servern: %s\n"
+msgid "WARNING: sslpassword truncated\n"
+msgstr "VARNING: sslpassword trunkerat\n"
 
-#: fe-secure.c:378
+#: fe-secure.c:263
 #, c-format
-msgid "could not send data to server: %s\n"
-msgstr "kan inte skicka data till servern: %s\n"
+msgid "could not receive data from server: %s"
+msgstr "kunde inte ta emot data från servern: %s"
 
-#: win32.c:317
+#: fe-secure.c:434
+#, c-format
+msgid "could not send data to server: %s"
+msgstr "kunde inte skicka data till servern: %s"
+
+#: win32.c:310
 #, c-format
 msgid "unrecognized socket error: 0x%08X/%d"
-msgstr "okänt uttagsfel: 0x%08X/%d"
+msgstr "okänt socket-fel: 0x%08X/%d"
 
-#~ msgid "could not set socket to blocking mode: %s\n"
-#~ msgstr "kunde inte ställa in uttag (socket) i blockerande läge: %s\n"
+#, c-format
+#~ msgid "%s(%s) failed: error code %d\n"
+#~ msgstr "%s(%s) misslyckades: felkod %d\n"
 
-#~ msgid "Kerberos 5 authentication rejected: %*s\n"
-#~ msgstr "Kerberos-5-autentisering vägras: %*s\n"
+#~ msgid "SCM_CRED authentication method not supported\n"
+#~ msgstr "autentiseringsmetoden SCM_CRED stöds ej\n"
 
-#~ msgid "could not restore non-blocking mode on socket: %s\n"
-#~ msgstr "kunde inte återställa ickeblockerande läge för uttag (socket): %s\n"
+#, c-format
+#~ msgid "SSL error: %s\n"
+#~ msgstr "SSL-fel: %s\n"
 
-#~ msgid "setsockopt(TCP_KEEPIDLE) failed: %s\n"
-#~ msgstr "setsockopt(TCP_KEEPIDLE) misslyckades: %s\n"
+#, c-format
+#~ msgid "Unix-domain socket path \"%s\" is too long (maximum %d bytes)\n"
+#~ msgstr "Sökväg till unixdomänuttag \"%s\" är för lång (maximalt %d byte)\n"
 
-#~ msgid "setsockopt(TCP_KEEPALIVE) failed: %s\n"
-#~ msgstr "setsockopt(TCP_KEEPALIVE) misslyckades: %s\n"
+#, c-format
+#~ msgid "could not create SSL context: %s\n"
+#~ msgstr "kan inte skapa SSL-omgivning: %s\n"
 
-#~ msgid "setsockopt(TCP_KEEPINTVL) failed: %s\n"
-#~ msgstr "setsockopt(TCP_KEEPINTVL) misslyckades: %s\n"
+#, c-format
+#~ msgid "could not load private key file \"%s\": %s\n"
+#~ msgstr "kunde inte ladda privata nyckelfilen \"%s\": %s\n"
 
-#~ msgid "setsockopt(SO_KEEPALIVE) failed: %s\n"
-#~ msgstr "setsockopt(SO_KEEPALIVE) misslyckades: %s\n"
+#, c-format
+#~ msgid "could not open file \"%s\": %s\n"
+#~ msgstr "kan inte öppna fil \"%s\": %s\n"
 
-#~ msgid "socket not open\n"
-#~ msgstr "uttag (socket) ej öppen\n"
+#~ msgid "incoming GSSAPI message did not use confidentiality\n"
+#~ msgstr "inkommande GSSAPI-meddelande använde inte sekretess\n"
 
-#, fuzzy
-#~ msgid "could not get home directory to locate client certificate files\n"
-#~ msgstr "kunde inte hämta hemkatalogen: %s\n"
+#~ msgid "outgoing GSSAPI message would not use confidentiality\n"
+#~ msgstr "utgående GSSAPI-meddelande skulle inte använda sekretess\n"
 
-#~ msgid "error querying socket: %s\n"
-#~ msgstr "fel vid förfrågan till uttag (socket): %s\n"
+#, c-format
+#~ msgid "private key file \"%s\" is not a regular file\n"
+#~ msgstr "privat nyckelfilen \"%s\" är inte en vanlig fil\n"
 
-#~ msgid "could not get information about host \"%s\": %s\n"
-#~ msgstr "kunde inte få information om värd \"%s\": %s\n"
+#, c-format
+#~ msgid "unrecognized SSL error code: %d\n"
+#~ msgstr "okänd SSL-felkod: %d\n"
 
-#~ msgid "unsupported protocol\n"
-#~ msgstr "protokoll stöds inte\n"
-
-#~ msgid "server common name \"%s\" does not resolve to %ld.%ld.%ld.%ld\n"
-#~ msgstr "värdens namn \"%s\" är inte %ld.%ld.%ld.%ld efter uppslagning\n"
-
-#~ msgid "could not get user information\n"
-#~ msgstr "kunde inte hämta användarinformation\n"
-
-#~ msgid "invalid value of PGSSLKEY environment variable\n"
-#~ msgstr "felaktigt värde på miljövariabeln PGSSLKEY\n"
-
-#~ msgid "private key file \"%s\" has wrong permissions\n"
-#~ msgstr "privata nyckelfilen \"%s\" har fel rättigheter\n"
-
-#~ msgid "could not open private key file \"%s\": %s\n"
-#~ msgstr "kan inte öppna privat nyckelfil \"%s\": %s\n"
-
-#~ msgid "private key file \"%s\" changed during execution\n"
-#~ msgstr "privata nyckelfilen \"%s\" har ändrats under körning\n"
-
-#~ msgid "could not read private key file \"%s\": %s\n"
-#~ msgstr "kunde inte läsa privat nyckelfil \"%s\": %s\n"
-
-#~ msgid "certificate could not be validated: %s\n"
-#~ msgstr "certifikatet kunde inte valideras: %s\n"
-
-#~ msgid "could not get home directory to locate service definition file"
-#~ msgstr "kunde inte hämta hemkatalogen för att lokalisera servicedefinitionsfilen"
-
-#~ msgid "could not get home directory to locate password file\n"
-#~ msgstr "kunde inte hämta hemkatalogen för att lokalisera lösenordsfilen\n"
-
-#~ msgid "channel binding type \"tls-server-end-point\" is not supported by this build\n"
-#~ msgstr "kanalbindningstyp \"tls-server-end-point\" stöds inte av detta bygge\n"
-
-#~ msgid "empty channel binding data for channel binding type \"%s\"\n"
-#~ msgstr "tom kanalbindningsdata för kanalbindningstyp \"%s\"\n"
-
-#~ msgid "invalid channel binding type\n"
-#~ msgstr "ogiltig kanalbindningstyp\n"
+#, c-format
+#~ msgid "user name lookup failure: error code %lu\n"
+#~ msgstr "misslyckad sökning efter användarnamn: felkod %lu\n"

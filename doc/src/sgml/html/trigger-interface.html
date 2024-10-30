@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>39.3. Writing Trigger Functions in C</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="trigger-datachanges.html" title="39.2. Visibility of Data Changes" /><link rel="next" href="trigger-example.html" title="39.4. A Complete Trigger Example" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">39.3. Writing Trigger Functions in C</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="trigger-datachanges.html" title="39.2. Visibility of Data Changes">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="triggers.html" title="Chapter 39. Triggers">Up</a></td><th width="60%" align="center">Chapter 39. Triggers</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="trigger-example.html" title="39.4. A Complete Trigger Example">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TRIGGER-INTERFACE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">39.3. Writing Trigger Functions in C</h2></div></div></div><a id="id-1.8.4.7.2" class="indexterm"></a><a id="id-1.8.4.7.3" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>39.3. Writing Trigger Functions in C</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="trigger-datachanges.html" title="39.2. Visibility of Data Changes" /><link rel="next" href="trigger-example.html" title="39.4. A Complete Trigger Example" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">39.3. Writing Trigger Functions in C</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="trigger-datachanges.html" title="39.2. Visibility of Data Changes">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="triggers.html" title="Chapter 39. Triggers">Up</a></td><th width="60%" align="center">Chapter 39. Triggers</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="trigger-example.html" title="39.4. A Complete Trigger Example">Next</a></td></tr></table><hr /></div><div class="sect1" id="TRIGGER-INTERFACE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">39.3. Writing Trigger Functions in C <a href="#TRIGGER-INTERFACE" class="id_link">#</a></h2></div></div></div><a id="id-1.8.4.7.2" class="indexterm"></a><a id="id-1.8.4.7.3" class="indexterm"></a><p>
     This section describes the low-level details of the interface to a
     trigger function.  This information is only needed when writing
     trigger functions in C.  If you are using a higher-level language then
@@ -42,10 +42,11 @@ typedef struct TriggerData
     HeapTuple        tg_trigtuple;
     HeapTuple        tg_newtuple;
     Trigger         *tg_trigger;
-    Buffer           tg_trigtuplebuf;
-    Buffer           tg_newtuplebuf;
+    TupleTableSlot  *tg_trigslot;
+    TupleTableSlot  *tg_newslot;
     Tuplestorestate *tg_oldtable;
     Tuplestorestate *tg_newtable;
+    const Bitmapset *tg_updatedcols;
 } TriggerData;
 </pre><p>
 
@@ -117,6 +118,7 @@ typedef struct Trigger
     int16       tgtype;
     char        tgenabled;
     bool        tgisinternal;
+    bool        tgisclone;
     Oid         tgconstrrelid;
     Oid         tgconstrindid;
     Oid         tgconstraint;
@@ -138,12 +140,12 @@ typedef struct Trigger
        pointers to the arguments specified in the <code class="command">CREATE
        TRIGGER</code> statement. The other members are for internal use
        only.
-       </p></dd><dt><span class="term"><code class="structfield">tg_trigtuplebuf</code></span></dt><dd><p>
-        The buffer containing <code class="structfield">tg_trigtuple</code>, or <code class="symbol">InvalidBuffer</code> if there
-        is no such tuple or it is not stored in a disk buffer.
-       </p></dd><dt><span class="term"><code class="structfield">tg_newtuplebuf</code></span></dt><dd><p>
-        The buffer containing <code class="structfield">tg_newtuple</code>, or <code class="symbol">InvalidBuffer</code> if there
-        is no such tuple or it is not stored in a disk buffer.
+       </p></dd><dt><span class="term"><code class="structfield">tg_trigslot</code></span></dt><dd><p>
+        The slot containing <code class="structfield">tg_trigtuple</code>,
+        or a <code class="symbol">NULL</code> pointer if there is no such tuple.
+       </p></dd><dt><span class="term"><code class="structfield">tg_newslot</code></span></dt><dd><p>
+        The slot containing <code class="structfield">tg_newtuple</code>,
+        or a <code class="symbol">NULL</code> pointer if there is no such tuple.
        </p></dd><dt><span class="term"><code class="structfield">tg_oldtable</code></span></dt><dd><p>
         A pointer to a structure of type <code class="structname">Tuplestorestate</code>
         containing zero or more rows in the format specified by
@@ -154,6 +156,20 @@ typedef struct Trigger
         containing zero or more rows in the format specified by
         <code class="structfield">tg_relation</code>, or a <code class="symbol">NULL</code> pointer
         if there is no <code class="literal">NEW TABLE</code> transition relation.
+       </p></dd><dt><span class="term"><code class="structfield">tg_updatedcols</code></span></dt><dd><p>
+        For <code class="literal">UPDATE</code> triggers, a bitmap set indicating the
+        columns that were updated by the triggering command.  Generic trigger
+        functions can use this to optimize actions by not having to deal with
+        columns that were not changed.
+       </p><p>
+        As an example, to determine whether a column with attribute number
+        <code class="varname">attnum</code> (1-based) is a member of this bitmap set,
+        call <code class="literal">bms_is_member(attnum -
+        FirstLowInvalidHeapAttributeNumber,
+        trigdata-&gt;tg_updatedcols))</code>.
+       </p><p>
+        For triggers other than <code class="literal">UPDATE</code> triggers, this will
+        be <code class="symbol">NULL</code>.
        </p></dd></dl></div><p>
    </p><p>
     To allow queries issued through SPI to reference transition tables, see
@@ -165,4 +181,4 @@ typedef struct Trigger
     Be careful to return either
     <code class="structfield">tg_trigtuple</code> or <code class="structfield">tg_newtuple</code>,
     as appropriate, if you don't want to modify the row being operated on.
-   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="trigger-datachanges.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="triggers.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="trigger-example.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">39.2. Visibility of Data Changes </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 39.4. A Complete Trigger Example</td></tr></table></div></body></html>
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="trigger-datachanges.html" title="39.2. Visibility of Data Changes">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="triggers.html" title="Chapter 39. Triggers">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="trigger-example.html" title="39.4. A Complete Trigger Example">Next</a></td></tr><tr><td width="40%" align="left" valign="top">39.2. Visibility of Data Changes </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 39.4. A Complete Trigger Example</td></tr></table></div></body></html>

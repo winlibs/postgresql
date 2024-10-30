@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER EXTENSION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER EXTENSION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER EXTENSION" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -101,7 +101,7 @@ DROP \fImember_object\fR
 This form removes a member object from the extension\&. This is mainly useful in extension update scripts\&. The object is not dropped, only disassociated from the extension\&.
 .RE
 See
-Section\ \&38.16
+Section\ \&38.17
 for more information about these operations\&.
 .PP
 You must own the extension to use
@@ -189,7 +189,7 @@ The data type of a function, procedure, or aggregate argument\&.
 .RS 4
 The data type(s) of the operator\*(Aqs arguments (optionally schema\-qualified)\&. Write
 NONE
-for the missing argument of a prefix or postfix operator\&.
+for the missing argument of a prefix operator\&.
 .RE
 .PP
 PROCEDURAL

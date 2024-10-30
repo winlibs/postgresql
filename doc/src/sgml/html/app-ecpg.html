@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ecpg</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="app-dropuser.html" title="dropuser" /><link rel="next" href="app-pgbasebackup.html" title="pg_basebackup" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center"><span xmlns="http://www.w3.org/1999/xhtml" class="application">ecpg</span></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="app-dropuser.html" title="dropuser">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="reference-client.html" title="PostgreSQL Client Applications">Up</a></td><th width="60%" align="center">PostgreSQL Client Applications</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="app-pgbasebackup.html" title="pg_basebackup">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="APP-ECPG"><div class="titlepage"></div><a id="id-1.9.4.8.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle"><span class="application">ecpg</span></span></h2><p><span class="application">ecpg</span> — embedded SQL C preprocessor</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p id="id-1.9.4.8.4.1"><code class="command">ecpg</code> [<em class="replaceable"><code>option</code></em>...]  <em class="replaceable"><code>file</code></em>... </p></div></div><div class="refsect1" id="APP-ECPG-DESCRIPTION"><h2>Description</h2><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ecpg</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="app-dropuser.html" title="dropuser" /><link rel="next" href="app-pgamcheck.html" title="pg_amcheck" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center"><span class="application">ecpg</span></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="app-dropuser.html" title="dropuser">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="reference-client.html" title="PostgreSQL Client Applications">Up</a></td><th width="60%" align="center">PostgreSQL Client Applications</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="app-pgamcheck.html" title="pg_amcheck">Next</a></td></tr></table><hr /></div><div class="refentry" id="APP-ECPG"><div class="titlepage"></div><a id="id-1.9.4.8.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle"><span class="application">ecpg</span></span></h2><p><span class="application">ecpg</span> — embedded SQL C preprocessor</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p id="id-1.9.4.8.4.1"><code class="command">ecpg</code> [<em class="replaceable"><code>option</code></em>...]  <em class="replaceable"><code>file</code></em>... </p></div></div><div class="refsect1" id="APP-ECPG-DESCRIPTION"><h2>Description</h2><p>
    <code class="command">ecpg</code> is the embedded SQL preprocessor for C
    programs.  It converts C programs with embedded SQL statements to
    normal C code by replacing the SQL invocations with special
@@ -7,15 +7,20 @@
    compiler tool chain.
   </p><p>
    <code class="command">ecpg</code> will convert each input file given on the
-   command line to the corresponding C output file.  Input files
-   preferably have the extension <code class="filename">.pgc</code>.
-   The extension will be replaced by <code class="filename">.c</code> to
-   determine the output file name.
-   The output file name can also be overridden using the
+   command line to the corresponding C output file.  If an input file
+   name does not have any extension, <code class="filename">.pgc</code> is
+   assumed.  The file's extension will be replaced
+   by <code class="filename">.c</code> to construct the output file name.
+   But the output file name can be overridden using the
    <code class="option">-o</code> option.
   </p><p>
+   If an input file name is just <code class="literal">-</code>,
+   <code class="command">ecpg</code> reads the program from standard input
+   (and writes to standard output, unless that is overridden
+   with <code class="option">-o</code>).
+  </p><p>
    This reference page does not describe the embedded SQL language.
-   See <a class="xref" href="ecpg.html" title="Chapter 36. ECPG - Embedded SQL in C">Chapter 36</a> for more information on that topic.
+   See <a class="xref" href="ecpg.html" title="Chapter 36. ECPG — Embedded SQL in C">Chapter 36</a> for more information on that topic.
   </p></div><div class="refsect1" id="id-1.9.4.8.6"><h2>Options</h2><p>
    <code class="command">ecpg</code> accepts the following command-line
    arguments:
@@ -27,8 +32,16 @@
        Set a compatibility mode.  <em class="replaceable"><code>mode</code></em> can
        be <code class="literal">INFORMIX</code>,
        <code class="literal">INFORMIX_SE</code>, or <code class="literal">ORACLE</code>.
-      </p></dd><dt><span class="term"><code class="option">-D <em class="replaceable"><code>symbol</code></em></code></span></dt><dd><p>
-       Define a C preprocessor symbol.
+      </p></dd><dt><span class="term"><code class="option">-D <em class="replaceable"><code>symbol</code></em>[=<em class="replaceable"><code>value</code></em>]</code></span></dt><dd><p>
+       Define a preprocessor symbol, equivalently to the <code class="command">EXEC SQL
+       DEFINE</code> directive.  If no <em class="replaceable"><code>value</code></em> is
+       specified, the symbol is defined with the value <code class="literal">1</code>.
+      </p></dd><dt><span class="term"><code class="option">-h</code></span></dt><dd><p>
+       Process header files.  When this option is specified, the output file
+       extension becomes <code class="literal">.h</code> not <code class="literal">.c</code>,
+       and the default input file extension is <code class="literal">.pgh</code>
+       not <code class="literal">.pgc</code>.  Also, the <code class="option">-c</code> option is
+       forced on.
       </p></dd><dt><span class="term"><code class="option">-i</code></span></dt><dd><p>
        Parse system include files as well.
       </p></dd><dt><span class="term"><code class="option">-I <em class="replaceable"><code>directory</code></em></code></span></dt><dd><p>
@@ -43,6 +56,7 @@
       </p></dd><dt><span class="term"><code class="option">-o <em class="replaceable"><code>filename</code></em></code></span></dt><dd><p>
        Specifies that <code class="command">ecpg</code> should write all
        its output to the given <em class="replaceable"><code>filename</code></em>.
+       Write <code class="literal">-o -</code> to send all output to standard output.
       </p></dd><dt><span class="term"><code class="option">-r <em class="replaceable"><code>option</code></em></code></span></dt><dd><p>
        Selects run-time behavior.  <em class="replaceable"><code>Option</code></em> can be
        one of the following:
@@ -82,7 +96,7 @@
    linker options <code class="literal">-L/usr/local/pgsql/lib -lecpg</code>.
   </p><p>
    The value of either of these directories that is appropriate for
-   the installation can be found out using <a class="xref" href="app-pgconfig.html" title="pg_config"><span class="refentrytitle">pg_config</span></a>.
+   the installation can be found out using <a class="xref" href="app-pgconfig.html" title="pg_config"><span class="refentrytitle"><span class="application">pg_config</span></span></a>.
   </p></div><div class="refsect1" id="id-1.9.4.8.8"><h2>Examples</h2><p>
    If you have an embedded SQL C source file named
    <code class="filename">prog1.pgc</code>, you can create an executable
@@ -91,4 +105,4 @@
 ecpg prog1.pgc
 cc -I/usr/local/pgsql/include -c prog1.c
 cc -o prog1 prog1.o -L/usr/local/pgsql/lib -lecpg
-</pre></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="app-dropuser.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="reference-client.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="app-pgbasebackup.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top"><span class="application">dropuser</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> pg_basebackup</td></tr></table></div></body></html>
+</pre></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="app-dropuser.html" title="dropuser">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="reference-client.html" title="PostgreSQL Client Applications">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="app-pgamcheck.html" title="pg_amcheck">Next</a></td></tr><tr><td width="40%" align="left" valign="top"><span class="application">dropuser</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> <span class="application">pg_amcheck</span></td></tr></table></div></body></html>

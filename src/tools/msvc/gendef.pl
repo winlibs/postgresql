@@ -1,8 +1,10 @@
+
+# Copyright (c) 2021-2023, PostgreSQL Global Development Group
+
 use strict;
 use warnings;
-use 5.8.0;
-use File::Spec::Functions qw(splitpath catpath);
-use List::Util qw(max);
+use List::Util qw(min);
+use Getopt::Long;
 
 my @def;
 
@@ -11,17 +13,6 @@ my @def;
 #
 # src/tools/msvc/gendef.pl
 #
-
-sub dumpsyms
-{
-	my ($objfile, $symfile) = @_;
-	my ($symvol, $symdirs, $symbase) = splitpath($symfile);
-	my $tmpfile = catpath($symvol, $symdirs, "symbols.out");
-	system("dumpbin /symbols /out:$tmpfile $_ >NUL")
-	  && die "Could not call dumpbin";
-	rename($tmpfile, $symfile);
-	return;
-}
 
 # Given a symbol file path, loops over its contents
 # and returns a list of symbols of interest as a dictionary
@@ -122,7 +113,7 @@ sub extract_syms
 
 sub writedef
 {
-	my ($deffile, $platform, $def) = @_;
+	my ($deffile, $arch, $def) = @_;
 	open(my $fh, '>', $deffile) || die "Could not write to $deffile\n";
 	print $fh "EXPORTS\n";
 	foreach my $f (sort keys %{$def})
@@ -131,7 +122,7 @@ sub writedef
 
 		# Strip the leading underscore for win32, but not x64
 		$f =~ s/^_//
-		  unless ($platform eq "x64");
+		  unless ($arch eq "x86_64");
 
 		# Emit just the name if it's a function symbol, or emit the name
 		# decorated with the DATA option for variables.
@@ -151,43 +142,64 @@ sub writedef
 
 sub usage
 {
-	die(    "Usage: gendef.pl <modulepath> <platform>\n"
-		  . "    modulepath: path to dir with obj files, no trailing slash"
-		  . "    platform: Win32 | x64");
+	die("Usage: gendef.pl --arch <arch> --deffile <deffile> --tempdir <tempdir> files-or-directories\n"
+		  . "    arch: x86 | x86_64\n"
+		  . "    deffile: path of the generated file\n"
+		  . "    tempdir: directory for temporary files\n"
+		  . "    files or directories: object files or directory containing object files\n"
+	);
 }
 
-usage()
-  unless scalar(@ARGV) == 2
-  && ( ($ARGV[0] =~ /\\([^\\]+$)/)
-	&& ($ARGV[1] eq 'Win32' || $ARGV[1] eq 'x64'));
-my $defname  = uc $1;
-my $deffile  = "$ARGV[0]/$defname.def";
-my $platform = $ARGV[1];
+my $arch;
+my $deffile;
+my $tempdir = '.';
+
+GetOptions(
+	'arch:s' => \$arch,
+	'deffile:s' => \$deffile,
+	'tempdir:s' => \$tempdir,) or usage();
+
+usage("arch: $arch")
+  unless ($arch eq 'x86' || $arch eq 'x86_64');
+
+my @files;
+
+foreach my $in (@ARGV)
+{
+	if (-d $in)
+	{
+		push @files, glob "$in/*.obj";
+	}
+	else
+	{
+		push @files, $in;
+	}
+}
 
 # if the def file exists and is newer than all input object files, skip
 # its creation
 if (-f $deffile
-	&& (-M $deffile > max(map { -M } <$ARGV[0]/*.obj>)))
+	&& (-M $deffile < min(map { -M } @files)))
 {
-	print "Not re-generating $defname.DEF, file already exists.\n";
+	print "Not re-generating $deffile, file already exists.\n";
 	exit(0);
 }
 
-print "Generating $defname.DEF from directory $ARGV[0], platform $platform\n";
+print "Generating $deffile in tempdir $tempdir\n";
 
 my %def = ();
 
-while (<$ARGV[0]/*.obj>)    ## no critic (RequireGlobFunction);
-{
-	my $objfile = $_;
-	my $symfile = $objfile;
-	$symfile =~ s/\.obj$/.sym/i;
-	dumpsyms($objfile, $symfile);
-	print ".";
-	extract_syms($symfile, \%def);
-}
+my $symfile = "$tempdir/all.sym";
+my $tmpfile = "$tempdir/tmp.sym";
+mkdir($tempdir) unless -d $tempdir;
+
+my $cmd = "dumpbin /nologo /symbols /out:$tmpfile " . join(' ', @files);
+
+system($cmd) && die "Could not call dumpbin";
+rename($tmpfile, $symfile);
+extract_syms($symfile, \%def);
 print "\n";
 
-writedef($deffile, $platform, \%def);
+writedef($deffile, $arch, \%def);
 
 print "Generated " . scalar(keys(%def)) . " symbols\n";

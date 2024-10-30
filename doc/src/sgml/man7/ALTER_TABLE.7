@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER TABLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER TABLE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER TABLE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -47,7 +47,7 @@ ALTER TABLE ALL IN TABLESPACE \fIname\fR [ OWNED BY \fIrole_name\fR [, \&.\&.\&.
 ALTER TABLE [ IF EXISTS ] \fIname\fR
     ATTACH PARTITION \fIpartition_name\fR { FOR VALUES \fIpartition_bound_spec\fR | DEFAULT }
 ALTER TABLE [ IF EXISTS ] \fIname\fR
-    DETACH PARTITION \fIpartition_name\fR
+    DETACH PARTITION \fIpartition_name\fR [ CONCURRENTLY | FINALIZE ]
 
 where \fIaction\fR is one of:
 
@@ -57,13 +57,15 @@ where \fIaction\fR is one of:
     ALTER [ COLUMN ] \fIcolumn_name\fR SET DEFAULT \fIexpression\fR
     ALTER [ COLUMN ] \fIcolumn_name\fR DROP DEFAULT
     ALTER [ COLUMN ] \fIcolumn_name\fR { SET | DROP } NOT NULL
+    ALTER [ COLUMN ] \fIcolumn_name\fR DROP EXPRESSION [ IF EXISTS ]
     ALTER [ COLUMN ] \fIcolumn_name\fR ADD GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY [ ( \fIsequence_options\fR ) ]
     ALTER [ COLUMN ] \fIcolumn_name\fR { SET GENERATED { ALWAYS | BY DEFAULT } | SET \fIsequence_option\fR | RESTART [ [ WITH ] \fIrestart\fR ] } [\&.\&.\&.]
     ALTER [ COLUMN ] \fIcolumn_name\fR DROP IDENTITY [ IF EXISTS ]
     ALTER [ COLUMN ] \fIcolumn_name\fR SET STATISTICS \fIinteger\fR
     ALTER [ COLUMN ] \fIcolumn_name\fR SET ( \fIattribute_option\fR = \fIvalue\fR [, \&.\&.\&. ] )
     ALTER [ COLUMN ] \fIcolumn_name\fR RESET ( \fIattribute_option\fR [, \&.\&.\&. ] )
-    ALTER [ COLUMN ] \fIcolumn_name\fR SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
+    ALTER [ COLUMN ] \fIcolumn_name\fR SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN | DEFAULT }
+    ALTER [ COLUMN ] \fIcolumn_name\fR SET COMPRESSION \fIcompression_method\fR
     ADD \fItable_constraint\fR [ NOT VALID ]
     ADD \fItable_constraint_using_index\fR
     ALTER CONSTRAINT \fIconstraint_name\fR [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
@@ -83,24 +85,24 @@ where \fIaction\fR is one of:
     NO FORCE ROW LEVEL SECURITY
     CLUSTER ON \fIindex_name\fR
     SET WITHOUT CLUSTER
-    SET WITH OIDS
     SET WITHOUT OIDS
+    SET ACCESS METHOD \fInew_access_method\fR
     SET TABLESPACE \fInew_tablespace\fR
     SET { LOGGED | UNLOGGED }
-    SET ( \fIstorage_parameter\fR = \fIvalue\fR [, \&.\&.\&. ] )
+    SET ( \fIstorage_parameter\fR [= \fIvalue\fR] [, \&.\&.\&. ] )
     RESET ( \fIstorage_parameter\fR [, \&.\&.\&. ] )
     INHERIT \fIparent_table\fR
     NO INHERIT \fIparent_table\fR
     OF \fItype_name\fR
     NOT OF
-    OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+    OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
     REPLICA IDENTITY { DEFAULT | USING INDEX \fIindex_name\fR | FULL | NOTHING }
 
 and \fIpartition_bound_spec\fR is:
 
-IN ( { \fInumeric_literal\fR | \fIstring_literal\fR | TRUE | FALSE | NULL } [, \&.\&.\&.] ) |
-FROM ( { \fInumeric_literal\fR | \fIstring_literal\fR | TRUE | FALSE | MINVALUE | MAXVALUE } [, \&.\&.\&.] )
-  TO ( { \fInumeric_literal\fR | \fIstring_literal\fR | TRUE | FALSE | MINVALUE | MAXVALUE } [, \&.\&.\&.] ) |
+IN ( \fIpartition_bound_expr\fR [, \&.\&.\&.] ) |
+FROM ( { \fIpartition_bound_expr\fR | MINVALUE | MAXVALUE } [, \&.\&.\&.] )
+  TO ( { \fIpartition_bound_expr\fR | MINVALUE | MAXVALUE } [, \&.\&.\&.] ) |
 WITH ( MODULUS \fInumeric_literal\fR, REMAINDER \fInumeric_literal\fR )
 
 and \fIcolumn_constraint\fR is:
@@ -110,22 +112,23 @@ and \fIcolumn_constraint\fR is:
   NULL |
   CHECK ( \fIexpression\fR ) [ NO INHERIT ] |
   DEFAULT \fIdefault_expr\fR |
+  GENERATED ALWAYS AS ( \fIgeneration_expr\fR ) STORED |
   GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY [ ( \fIsequence_options\fR ) ] |
-  UNIQUE \fIindex_parameters\fR |
+  UNIQUE [ NULLS [ NOT ] DISTINCT ] \fIindex_parameters\fR |
   PRIMARY KEY \fIindex_parameters\fR |
   REFERENCES \fIreftable\fR [ ( \fIrefcolumn\fR ) ] [ MATCH FULL | MATCH PARTIAL | MATCH SIMPLE ]
-    [ ON DELETE \fIaction\fR ] [ ON UPDATE \fIaction\fR ] }
+    [ ON DELETE \fIreferential_action\fR ] [ ON UPDATE \fIreferential_action\fR ] }
 [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
 
 and \fItable_constraint\fR is:
 
 [ CONSTRAINT \fIconstraint_name\fR ]
 { CHECK ( \fIexpression\fR ) [ NO INHERIT ] |
-  UNIQUE ( \fIcolumn_name\fR [, \&.\&.\&. ] ) \fIindex_parameters\fR |
+  UNIQUE [ NULLS [ NOT ] DISTINCT ] ( \fIcolumn_name\fR [, \&.\&.\&. ] ) \fIindex_parameters\fR |
   PRIMARY KEY ( \fIcolumn_name\fR [, \&.\&.\&. ] ) \fIindex_parameters\fR |
   EXCLUDE [ USING \fIindex_method\fR ] ( \fIexclude_element\fR WITH \fIoperator\fR [, \&.\&.\&. ] ) \fIindex_parameters\fR [ WHERE ( \fIpredicate\fR ) ] |
   FOREIGN KEY ( \fIcolumn_name\fR [, \&.\&.\&. ] ) REFERENCES \fIreftable\fR [ ( \fIrefcolumn\fR [, \&.\&.\&. ] ) ]
-    [ MATCH FULL | MATCH PARTIAL | MATCH SIMPLE ] [ ON DELETE \fIaction\fR ] [ ON UPDATE \fIaction\fR ] }
+    [ MATCH FULL | MATCH PARTIAL | MATCH SIMPLE ] [ ON DELETE \fIreferential_action\fR ] [ ON UPDATE \fIreferential_action\fR ] }
 [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
 
 and \fItable_constraint_using_index\fR is:
@@ -142,19 +145,23 @@ and \fItable_constraint_using_index\fR is:
 
 \fIexclude_element\fR in an EXCLUDE constraint is:
 
-{ \fIcolumn_name\fR | ( \fIexpression\fR ) } [ \fIopclass\fR ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ]
+{ \fIcolumn_name\fR | ( \fIexpression\fR ) } [ COLLATE \fIcollation\fR ] [ \fIopclass\fR [ ( \fIopclass_parameter\fR = \fIvalue\fR [, \&.\&.\&. ] ) ] ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ]
+
+\fIreferential_action\fR in a FOREIGN KEY/REFERENCES constraint is:
+
+{ NO ACTION | RESTRICT | CASCADE | SET NULL [ ( \fIcolumn_name\fR [, \&.\&.\&. ] ) ] | SET DEFAULT [ ( \fIcolumn_name\fR [, \&.\&.\&. ] ) ] }
 .fi
 .SH "DESCRIPTION"
 .PP
 \fBALTER TABLE\fR
 changes the definition of an existing table\&. There are several subforms described below\&. Note that the lock level required may differ for each subform\&. An
 ACCESS EXCLUSIVE
-lock is held unless explicitly noted\&. When multiple subcommands are listed, the lock held will be the strictest one required from any subcommand\&.
+lock is acquired unless explicitly noted\&. When multiple subcommands are given, the lock acquired will be the strictest one required by any subcommand\&.
 .PP
 ADD COLUMN [ IF NOT EXISTS ]
 .RS 4
 This form adds a new column to the table, using the same syntax as
-CREATE TABLE (\fBCREATE_TABLE\fR(7))\&. If
+\fBCREATE TABLE\fR\&. If
 IF NOT EXISTS
 is specified and a column already exists with this name, no error is thrown\&.
 .RE
@@ -177,22 +184,35 @@ USING
 clause specifies how to compute the new column value from the old; if omitted, the default conversion is the same as an assignment cast from old data type to new\&. A
 USING
 clause must be provided if there is no implicit or assignment cast from old to new type\&.
+.sp
+When this form is used, the column\*(Aqs statistics are removed, so running
+\fBANALYZE\fR
+on the table afterwards is recommended\&.
 .RE
 .PP
 SET/DROP DEFAULT
 .RS 4
-These forms set or remove the default value for a column\&. Default values only apply in subsequent
+These forms set or remove the default value for a column (where removal is equivalent to setting the default value to NULL)\&. The new default value will only apply in subsequent
 \fBINSERT\fR
 or
 \fBUPDATE\fR
-commands; they do not cause rows already in the table to change\&.
+commands; it does not cause rows already in the table to change\&.
 .RE
 .PP
 SET/DROP NOT NULL
 .RS 4
-These forms change whether a column is marked to allow null values or to reject null values\&. You can only use
+These forms change whether a column is marked to allow null values or to reject null values\&.
+.sp
 SET NOT NULL
-when the column contains no null values\&.
+may only be applied to a column provided none of the records in the table contain a
+NULL
+value for the column\&. Ordinarily this is checked during the
+ALTER TABLE
+by scanning the entire table; however, if a valid
+CHECK
+constraint is found which proves no
+NULL
+can exist, then the table scan is skipped\&.
 .sp
 If this table is a partition, one cannot perform
 DROP NOT NULL
@@ -207,6 +227,15 @@ NOT NULL
 constraint on the parent, such a constraint can still be added to individual partitions, if desired; that is, the children can disallow nulls even if the parent allows them, but not the other way around\&.
 .RE
 .PP
+DROP EXPRESSION [ IF EXISTS ]
+.RS 4
+This form turns a stored generated column into a normal base column\&. Existing data in the columns is retained, but future changes will no longer apply the generation expression\&.
+.sp
+If
+DROP EXPRESSION IF EXISTS
+is specified and the column is not a stored generated column, no error is thrown\&. In this case a notice is issued instead\&.
+.RE
+.PP
 ADD GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY
 .br
 SET GENERATED { ALWAYS | BY DEFAULT }
@@ -214,8 +243,13 @@ SET GENERATED { ALWAYS | BY DEFAULT }
 DROP IDENTITY [ IF EXISTS ]
 .RS 4
 These forms change whether a column is an identity column or change the generation attribute of an existing identity column\&. See
-CREATE TABLE (\fBCREATE_TABLE\fR(7))
-for details\&.
+\fBCREATE TABLE\fR
+for details\&. Like
+SET DEFAULT, these forms only affect the behavior of subsequent
+\fBINSERT\fR
+and
+\fBUPDATE\fR
+commands; they do not cause rows already in the table to change\&.
 .sp
 If
 DROP IDENTITY IF EXISTS
@@ -229,7 +263,7 @@ RESTART
 These forms alter the sequence that underlies an existing identity column\&.
 \fIsequence_option\fR
 is an option supported by
-ALTER SEQUENCE (\fBALTER_SEQUENCE\fR(7))
+\fBALTER SEQUENCE\fR
 such as
 INCREMENT BY\&.
 .RE
@@ -237,7 +271,7 @@ INCREMENT BY\&.
 SET STATISTICS
 .RS 4
 This form sets the per\-column statistics\-gathering target for subsequent
-\fBANALYZE\fR(7)
+\fBANALYZE\fR
 operations\&. The target can be set in the range 0 to 10000; alternatively, set it to \-1 to revert to using the system default statistics target (default_statistics_target)\&. For more information on the use of statistics by the
 PostgreSQL
 query planner, refer to
@@ -257,7 +291,7 @@ This form sets or resets per\-attribute options\&. Currently, the only defined p
 n_distinct
 and
 n_distinct_inherited, which override the number\-of\-distinct\-values estimates made by subsequent
-\fBANALYZE\fR(7)
+\fBANALYZE\fR
 operations\&.
 n_distinct
 affects the statistics for the table itself, while
@@ -276,7 +310,7 @@ SHARE UPDATE EXCLUSIVE
 lock\&.
 .RE
 .PP
-SET STORAGE
+SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN | DEFAULT }
 .RS 4
 This form sets the storage mode for a column\&. This controls whether this column is held inline or in a secondary
 TOAST
@@ -290,7 +324,9 @@ is for inline, compressible data\&.
 EXTERNAL
 is for external, uncompressed data, and
 EXTENDED
-is for external, compressed data\&.
+is for external, compressed data\&. Writing
+DEFAULT
+sets the storage mode to the default mode for the column\*(Aqs data type\&.
 EXTENDED
 is the default for most data types that support non\-PLAIN
 storage\&. Use of
@@ -300,29 +336,65 @@ text
 and
 bytea
 values run faster, at the penalty of increased storage space\&. Note that
-SET STORAGE
-doesn\*(Aqt itself change anything in the table, it just sets the strategy to be pursued during future table updates\&. See
-Section\ \&68.2
+ALTER TABLE \&.\&.\&. SET STORAGE
+doesn\*(Aqt itself change anything in the table; it just sets the strategy to be pursued during future table updates\&. See
+Section\ \&73.2
 for more information\&.
+.RE
+.PP
+SET COMPRESSION \fIcompression_method\fR
+.RS 4
+This form sets the compression method for a column, determining how values inserted in future will be compressed (if the storage mode permits compression at all)\&. This does not cause the table to be rewritten, so existing data may still be compressed with other compression methods\&. If the table is restored with
+pg_restore, then all values are rewritten with the configured compression method\&. However, when data is inserted from another relation (for example, by
+\fBINSERT \&.\&.\&. SELECT\fR), values from the source table are not necessarily detoasted, so any previously compressed data may retain its existing compression method, rather than being recompressed with the compression method of the target column\&. The supported compression methods are
+pglz
+and
+lz4\&. (lz4
+is available only if
+\fB\-\-with\-lz4\fR
+was used when building
+PostgreSQL\&.) In addition,
+\fIcompression_method\fR
+can be
+default, which selects the default behavior of consulting the
+default_toast_compression
+setting at the time of data insertion to determine the method to use\&.
 .RE
 .PP
 ADD \fItable_constraint\fR [ NOT VALID ]
 .RS 4
-This form adds a new constraint to a table using the same syntax as
-CREATE TABLE (\fBCREATE_TABLE\fR(7)), plus the option
-NOT VALID, which is currently only allowed for foreign key and CHECK constraints\&. If the constraint is marked
-NOT VALID, the potentially\-lengthy initial check to verify that all rows in the table satisfy the constraint is skipped\&. The constraint will still be enforced against subsequent inserts or updates (that is, they\*(Aqll fail unless there is a matching row in the referenced table, in the case of foreign keys; and they\*(Aqll fail unless the new row matches the specified check constraints)\&. But the database will not assume that the constraint holds for all rows in the table, until it is validated by using the
-VALIDATE CONSTRAINT
-option\&. Foreign key constraints on partitioned tables may not be declared
-NOT VALID
-at present\&.
+This form adds a new constraint to a table using the same constraint syntax as
+\fBCREATE TABLE\fR, plus the option
+NOT VALID, which is currently only allowed for foreign key and CHECK constraints\&.
 .sp
-The addition of a foreign key constraint requires a
+Normally, this form will cause a scan of the table to verify that all existing rows in the table satisfy the new constraint\&. But if the
+NOT VALID
+option is used, this potentially\-lengthy scan is skipped\&. The constraint will still be enforced against subsequent inserts or updates (that is, they\*(Aqll fail unless there is a matching row in the referenced table, in the case of foreign keys, or they\*(Aqll fail unless the new row matches the specified check condition)\&. But the database will not assume that the constraint holds for all rows in the table, until it is validated by using the
+VALIDATE CONSTRAINT
+option\&. See
+Notes
+below for more information about using the
+NOT VALID
+option\&.
+.sp
+Although most forms of
+ADD \fItable_constraint\fR
+require an
+ACCESS EXCLUSIVE
+lock,
+ADD FOREIGN KEY
+requires only a
 SHARE ROW EXCLUSIVE
-lock on the referenced table\&.
+lock\&. Note that
+ADD FOREIGN KEY
+also acquires a
+SHARE ROW EXCLUSIVE
+lock on the referenced table, in addition to the lock on the table on which the constraint is declared\&.
 .sp
 Additional restrictions apply when unique or primary key constraints are added to partitioned tables; see
-CREATE TABLE (\fBCREATE_TABLE\fR(7))\&.
+\fBCREATE TABLE\fR\&. Also, foreign key constraints on partitioned tables may not be declared
+NOT VALID
+at present\&.
 .RE
 .PP
 ADD \fItable_constraint_using_index\fR
@@ -383,15 +455,13 @@ This form alters the attributes of a constraint that was previously created\&. C
 VALIDATE CONSTRAINT
 .RS 4
 This form validates a foreign key or check constraint that was previously created as
-NOT VALID, by scanning the table to ensure there are no rows for which the constraint is not satisfied\&. Nothing happens if the constraint is already marked valid\&.
+NOT VALID, by scanning the table to ensure there are no rows for which the constraint is not satisfied\&. Nothing happens if the constraint is already marked valid\&. (See
+Notes
+below for an explanation of the usefulness of this command\&.)
 .sp
-Validation can be a long process on larger tables\&. The value of separating validation from initial creation is that you can defer validation to less busy times, or can be used to give additional time to correct pre\-existing errors while preventing new errors\&. Note also that validation on its own does not prevent normal write commands against the table while it runs\&.
-.sp
-Validation acquires only a
+This command acquires a
 SHARE UPDATE EXCLUSIVE
-lock on the table being altered\&. If the constraint is a foreign key then a
-ROW SHARE
-lock is also required on the table referenced by the constraint\&.
+lock\&.
 .RE
 .PP
 DROP CONSTRAINT [ IF EXISTS ]
@@ -403,7 +473,7 @@ is specified and the constraint does not exist, no error is thrown\&. In this ca
 .PP
 DISABLE/ENABLE [ REPLICA | ALWAYS ] TRIGGER
 .RS 4
-These forms configure the firing of trigger(s) belonging to the table\&. A disabled trigger is still known to the system, but is not executed when its triggering event occurs\&. For a deferred trigger, the enable status is checked when the event occurs, not when the trigger function is actually executed\&. One can disable or enable a single trigger specified by name, or all triggers on the table, or only user triggers (this option excludes internally generated constraint triggers such as those that are used to implement foreign key constraints or deferrable uniqueness and exclusion constraints)\&. Disabling or enabling internally generated constraint triggers requires superuser privileges; it should be done with caution since of course the integrity of the constraint cannot be guaranteed if the triggers are not executed\&.
+These forms configure the firing of trigger(s) belonging to the table\&. A disabled trigger is still known to the system, but is not executed when its triggering event occurs\&. (For a deferred trigger, the enable status is checked when the event occurs, not when the trigger function is actually executed\&.) One can disable or enable a single trigger specified by name, or all triggers on the table, or only user triggers (this option excludes internally generated constraint triggers, such as those that are used to implement foreign key constraints or deferrable uniqueness and exclusion constraints)\&. Disabling or enabling internally generated constraint triggers requires superuser privileges; it should be done with caution since of course the integrity of the constraint cannot be guaranteed if the triggers are not executed\&.
 .sp
 The trigger firing mechanism is also affected by the configuration variable
 session_replication_role\&. Simply enabled triggers (the default) will fire when the replication role is
@@ -417,9 +487,13 @@ mode, and triggers configured as
 ENABLE ALWAYS
 will fire regardless of the current replication role\&.
 .sp
-The effect of this mechanism is that in the default configuration, triggers do not fire on replicas\&. This is useful because if a trigger is used on the origin to propagate data between tables, then the replication system will also replicate the propagated data, and the trigger should not fire a second time on the replica, because that would lead to duplication\&. However, if a trigger is used for another purpose such as creating external alerts, then it might be appropriate to set it to
+The effect of this mechanism is that in the default configuration, triggers do not fire on replicas\&. This is useful because if a trigger is used on the origin to propagate data between tables, then the replication system will also replicate the propagated data; so the trigger should not fire a second time on the replica, because that would lead to duplication\&. However, if a trigger is used for another purpose such as creating external alerts, then it might be appropriate to set it to
 ENABLE ALWAYS
 so that it is also fired on replicas\&.
+.sp
+When this command is applied to a partitioned table, the states of corresponding clone triggers in the partitions are updated too, unless
+ONLY
+is specified\&.
 .sp
 This command acquires a
 SHARE ROW EXCLUSIVE
@@ -438,20 +512,22 @@ session_replication_role, analogous to triggers as described above\&.
 .PP
 DISABLE/ENABLE ROW LEVEL SECURITY
 .RS 4
-These forms control the application of row security policies belonging to the table\&. If enabled and no policies exist for the table, then a default\-deny policy is applied\&. Note that policies can exist for a table even if row level security is disabled \- in this case, the policies will NOT be applied and the policies will be ignored\&. See also
-CREATE POLICY (\fBCREATE_POLICY\fR(7))\&.
+These forms control the application of row security policies belonging to the table\&. If enabled and no policies exist for the table, then a default\-deny policy is applied\&. Note that policies can exist for a table even if row\-level security is disabled\&. In this case, the policies will
+\fInot\fR
+be applied and the policies will be ignored\&. See also
+\fBCREATE POLICY\fR\&.
 .RE
 .PP
 NO FORCE/FORCE ROW LEVEL SECURITY
 .RS 4
-These forms control the application of row security policies belonging to the table when the user is the table owner\&. If enabled, row level security policies will be applied when the user is the table owner\&. If disabled (the default) then row level security will not be applied when the user is the table owner\&. See also
-CREATE POLICY (\fBCREATE_POLICY\fR(7))\&.
+These forms control the application of row security policies belonging to the table when the user is the table owner\&. If enabled, row\-level security policies will be applied when the user is the table owner\&. If disabled (the default) then row\-level security will not be applied when the user is the table owner\&. See also
+\fBCREATE POLICY\fR\&.
 .RE
 .PP
 CLUSTER ON
 .RS 4
 This form selects the default index for future
-\fBCLUSTER\fR(7)
+\fBCLUSTER\fR
 operations\&. It does not actually re\-cluster the table\&.
 .sp
 Changing cluster options acquires a
@@ -462,7 +538,7 @@ lock\&.
 SET WITHOUT CLUSTER
 .RS 4
 This form removes the most recently used
-\fBCLUSTER\fR(7)
+\fBCLUSTER\fR
 index specification from the table\&. This affects future cluster operations that don\*(Aqt specify an index\&.
 .sp
 Changing cluster options acquires a
@@ -470,102 +546,71 @@ SHARE UPDATE EXCLUSIVE
 lock\&.
 .RE
 .PP
-SET WITH OIDS
-.RS 4
-This form adds an
-oid
-system column to the table (see
-Section\ \&5.4)\&. It does nothing if the table already has OIDs\&.
-.sp
-Note that this is not equivalent to
-ADD COLUMN oid oid; that would add a normal column that happened to be named
-oid, not a system column\&.
-.RE
-.PP
 SET WITHOUT OIDS
 .RS 4
-This form removes the
+Backward\-compatible syntax for removing the
 oid
-system column from the table\&. This is exactly equivalent to
-DROP COLUMN oid RESTRICT, except that it will not complain if there is already no
+system column\&. As
 oid
-column\&.
+system columns cannot be added anymore, this never has an effect\&.
+.RE
+.PP
+SET ACCESS METHOD
+.RS 4
+This form changes the access method of the table by rewriting it\&. See
+Chapter\ \&63
+for more information\&.
 .RE
 .PP
 SET TABLESPACE
 .RS 4
 This form changes the table\*(Aqs tablespace to the specified tablespace and moves the data file(s) associated with the table to the new tablespace\&. Indexes on the table, if any, are not moved; but they can be moved separately with additional
 SET TABLESPACE
-commands\&. All tables in the current database in a tablespace can be moved by using the
+commands\&. When applied to a partitioned table, nothing is moved, but any partitions created afterwards with
+\fBCREATE TABLE PARTITION OF\fR
+will use that tablespace, unless overridden by a
+TABLESPACE
+clause\&.
+.sp
+All tables in the current database in a tablespace can be moved by using the
 ALL IN TABLESPACE
 form, which will lock all tables to be moved first and then move each one\&. This form also supports
 OWNED BY, which will only move tables owned by the roles specified\&. If the
 NOWAIT
-option is specified then the command will fail if it is unable to acquire all of the locks required immediately\&. Note that system catalogs are not moved by this command, use
+option is specified then the command will fail if it is unable to acquire all of the locks required immediately\&. Note that system catalogs are not moved by this command; use
 \fBALTER DATABASE\fR
 or explicit
 \fBALTER TABLE\fR
 invocations instead if desired\&. The
 information_schema
 relations are not considered part of the system catalogs and will be moved\&. See also
-CREATE TABLESPACE (\fBCREATE_TABLESPACE\fR(7))\&.
+\fBCREATE TABLESPACE\fR\&.
 .RE
 .PP
 SET { LOGGED | UNLOGGED }
 .RS 4
 This form changes the table from unlogged to logged or vice\-versa (see
 UNLOGGED)\&. It cannot be applied to a temporary table\&.
+.sp
+This also changes the persistence of any sequences linked to the table (for identity or serial columns)\&. However, it is also possible to change the persistence of such sequences separately\&.
 .RE
 .PP
-SET ( \fIstorage_parameter\fR = \fIvalue\fR [, \&.\&.\&. ] )
+SET ( \fIstorage_parameter\fR [= \fIvalue\fR] [, \&.\&.\&. ] )
 .RS 4
 This form changes one or more storage parameters for the table\&. See
 Storage Parameters
-for details on the available parameters\&. Note that the table contents will not be modified immediately by this command; depending on the parameter you might need to rewrite the table to get the desired effects\&. That can be done with
-VACUUM FULL,
-\fBCLUSTER\fR(7)
+in the
+\fBCREATE TABLE\fR
+documentation for details on the available parameters\&. Note that the table contents will not be modified immediately by this command; depending on the parameter you might need to rewrite the table to get the desired effects\&. That can be done with
+\fBVACUUM FULL\fR,
+\fBCLUSTER\fR
 or one of the forms of
 \fBALTER TABLE\fR
 that forces a table rewrite\&. For planner related parameters, changes will take effect from the next time the table is locked so currently executing queries will not be affected\&.
 .sp
 SHARE UPDATE EXCLUSIVE
-lock will be taken for fillfactor, toast and autovacuum storage parameters, as well as the following planner related parameters:
-\fIeffective_io_concurrency\fR,
-\fIparallel_workers\fR,
-\fIseq_page_cost\fR,
-\fIrandom_page_cost\fR,
-\fIn_distinct\fR
-and
-\fIn_distinct_inherited\fR\&.
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBNote\fR
-.ps -1
-.br
-While
-\fBCREATE TABLE\fR
-allows
-OIDS
-to be specified in the
-WITH (\fIstorage_parameter\fR)
-syntax,
-\fBALTER TABLE\fR
-does not treat
-OIDS
-as a storage parameter\&. Instead use the
-SET WITH OIDS
-and
-SET WITHOUT OIDS
-forms to change OID status\&.
-.sp .5v
-.RE
+lock will be taken for fillfactor, toast and autovacuum storage parameters, as well as the planner parameter
+\fIparallel_workers\fR\&.
 .RE
 .PP
 RESET ( \fIstorage_parameter\fR [, \&.\&.\&. ] )
@@ -601,9 +646,7 @@ OF \fItype_name\fR
 .RS 4
 This form links the table to a composite type as though
 \fBCREATE TABLE OF\fR
-had formed it\&. The table\*(Aqs list of column names and types must precisely match that of the composite type; the presence of an
-oid
-system column is permitted to differ\&. The table must not inherit from any other table\&. These restrictions ensure that
+had formed it\&. The table\*(Aqs list of column names and types must precisely match that of the composite type\&. The table must not inherit from any other table\&. These restrictions ensure that
 \fBCREATE TABLE OF\fR
 would permit an equivalent table definition\&.
 .RE
@@ -620,16 +663,29 @@ This form changes the owner of the table, sequence, view, materialized view, or 
 .PP
 REPLICA IDENTITY
 .RS 4
-This form changes the information which is written to the write\-ahead log to identify rows which are updated or deleted\&. This option has no effect except when logical replication is in use\&.
+This form changes the information which is written to the write\-ahead log to identify rows which are updated or deleted\&. In most cases, the old value of each column is only logged if it differs from the new value; however, if the old value is stored externally, it is always logged regardless of whether it changed\&. This option has no effect except when logical replication is in use\&.
+.PP
 DEFAULT
-(the default for non\-system tables) records the old values of the columns of the primary key, if any\&.
-USING INDEX
-records the old values of the columns covered by the named index, which must be unique, not partial, not deferrable, and include only columns marked
-NOT NULL\&.
+.RS 4
+Records the old values of the columns of the primary key, if any\&. This is the default for non\-system tables\&.
+.RE
+.PP
+USING INDEX \fIindex_name\fR
+.RS 4
+Records the old values of the columns covered by the named index, that must be unique, not partial, not deferrable, and include only columns marked
+NOT NULL\&. If this index is dropped, the behavior is the same as
+NOTHING\&.
+.RE
+.PP
 FULL
-records the old values of all columns in the row\&.
+.RS 4
+Records the old values of all columns in the row\&.
+.RE
+.PP
 NOTHING
-records no information about the old row\&. (This is the default for system tables\&.) In all cases, no old values are logged unless at least one of the columns that would be logged differs between the old and new versions of the row\&.
+.RS 4
+Records no information about the old row\&. This is the default for system tables\&.
+.RE
 .RE
 .PP
 RENAME
@@ -649,17 +705,19 @@ ATTACH PARTITION \fIpartition_name\fR { FOR VALUES \fIpartition_bound_spec\fR | 
 This form attaches an existing table (which might itself be partitioned) as a partition of the target table\&. The table can be attached as a partition for specific values using
 FOR VALUES
 or as a default partition by using
-DEFAULT\&. For each index in the target table, a corresponding one will be created in the attached table; or, if an equivalent index already exists, will be attached to the target table\*(Aqs index, as if
+DEFAULT\&. For each index in the target table, a corresponding one will be created in the attached table; or, if an equivalent index already exists, it will be attached to the target table\*(Aqs index, as if
 \fBALTER INDEX ATTACH PARTITION\fR
-had been executed\&. Note that if the existing table is a foreign table, it is currently not allowed to attach the table as a partition of the target table if there are indexes on the target table\&. (See also
-CREATE FOREIGN TABLE (\fBCREATE_FOREIGN_TABLE\fR(7))\&.)
+had been executed\&. Note that if the existing table is a foreign table, it is currently not allowed to attach the table as a partition of the target table if there are
+UNIQUE
+indexes on the target table\&. (See also
+CREATE FOREIGN TABLE (\fBCREATE_FOREIGN_TABLE\fR(7))\&.) For each user\-defined row\-level trigger that exists in the target table, a corresponding one is created in the attached table\&.
 .sp
 A partition using
 FOR VALUES
 uses same syntax for
 \fIpartition_bound_spec\fR
 as
-CREATE TABLE (\fBCREATE_TABLE\fR(7))\&. The partition bound specification must correspond to the partitioning strategy and partition key of the target table\&. The table to be attached must have all the same columns as the target table and no more; moreover, the column types must also match\&. Also, it must have all the
+\fBCREATE TABLE\fR\&. The partition bound specification must correspond to the partitioning strategy and partition key of the target table\&. The table to be attached must have all the same columns as the target table and no more; moreover, the column types must also match\&. Also, it must have all the
 NOT NULL
 and
 CHECK
@@ -671,18 +729,20 @@ and
 PRIMARY KEY
 constraints from the parent table will be created in the partition, if they don\*(Aqt already exist\&. If any of the
 CHECK
-constraints of the table being attached is marked
-NO INHERIT, the command will fail; such a constraint must be recreated without the
+constraints of the table being attached are marked
+NO INHERIT, the command will fail; such constraints must be recreated without the
 NO INHERIT
 clause\&.
 .sp
-If the new partition is a regular table, a full table scan is performed to check that no existing row in the table violates the partition constraint\&. It is possible to avoid this scan by adding a valid
+If the new partition is a regular table, a full table scan is performed to check that existing rows in the table do not violate the partition constraint\&. It is possible to avoid this scan by adding a valid
 CHECK
-constraint to the table that would allow only the rows satisfying the desired partition constraint before running this command\&. It will be determined using such a constraint that the table need not be scanned to validate the partition constraint\&. This does not work, however, if any of the partition keys is an expression and the partition does not accept
+constraint to the table that allows only rows satisfying the desired partition constraint before running this command\&. The
+CHECK
+constraint will be used to determine that the table need not be scanned to validate the partition constraint\&. This does not work, however, if any of the partition keys is an expression and the partition does not accept
 NULL
 values\&. If attaching a list partition that will not accept
 NULL
-values, also add
+values, also add a
 NOT NULL
 constraint to the partition key column, unless it\*(Aqs an expression\&.
 .sp
@@ -693,11 +753,44 @@ about constraints on the foreign table\&.)
 When a table has a default partition, defining a new partition changes the partition constraint for the default partition\&. The default partition can\*(Aqt contain any rows that would need to be moved to the new partition, and will be scanned to verify that none are present\&. This scan, like the scan of the new partition, can be avoided if an appropriate
 CHECK
 constraint is present\&. Also like the scan of the new partition, it is always skipped when the default partition is a foreign table\&.
+.sp
+Attaching a partition acquires a
+SHARE UPDATE EXCLUSIVE
+lock on the parent table, in addition to the
+ACCESS EXCLUSIVE
+locks on the table being attached and on the default partition (if any)\&.
+.sp
+Further locks must also be held on all sub\-partitions if the table being attached is itself a partitioned table\&. Likewise if the default partition is itself a partitioned table\&. The locking of the sub\-partitions can be avoided by adding a
+CHECK
+constraint as described in
+Section\ \&5.11.2.2\&.
 .RE
 .PP
-DETACH PARTITION \fIpartition_name\fR
+DETACH PARTITION \fIpartition_name\fR [ CONCURRENTLY | FINALIZE ]
 .RS 4
-This form detaches specified partition of the target table\&. The detached partition continues to exist as a standalone table, but no longer has any ties to the table from which it was detached\&. Any indexes that were attached to the target table\*(Aqs indexes are detached\&.
+This form detaches the specified partition of the target table\&. The detached partition continues to exist as a standalone table, but no longer has any ties to the table from which it was detached\&. Any indexes that were attached to the target table\*(Aqs indexes are detached\&. Any triggers that were created as clones of those in the target table are removed\&.
+SHARE
+lock is obtained on any tables that reference this partitioned table in foreign key constraints\&.
+.sp
+If
+CONCURRENTLY
+is specified, it runs using a reduced lock level to avoid blocking other sessions that might be accessing the partitioned table\&. In this mode, two transactions are used internally\&. During the first transaction, a
+SHARE UPDATE EXCLUSIVE
+lock is taken on both parent table and partition, and the partition is marked as undergoing detach; at that point, the transaction is committed and all other transactions using the partitioned table are waited for\&. Once all those transactions have completed, the second transaction acquires
+SHARE UPDATE EXCLUSIVE
+on the partitioned table and
+ACCESS EXCLUSIVE
+on the partition, and the detach process completes\&. A
+CHECK
+constraint that duplicates the partition constraint is added to the partition\&.
+CONCURRENTLY
+cannot be run in a transaction block and is not allowed if the partitioned table contains a default partition\&.
+.sp
+If
+FINALIZE
+is specified, a previous
+DETACH CONCURRENTLY
+invocation that was canceled or interrupted is completed\&. At most one partition in a partitioned table can be pending detach at a time\&.
 .RE
 .PP
 All the forms of ALTER TABLE that act on a single table, except
@@ -710,7 +803,9 @@ can be combined into a list of multiple alterations to be applied together\&. Fo
 You must own the table to use
 \fBALTER TABLE\fR\&. To change the schema or tablespace of a table, you must also have
 CREATE
-privilege on the new schema or tablespace\&. To add the table as a new child of a parent table, you must own the parent table as well\&. Also, to attach a table as a new partition of the table, you must own the table being attached\&. To alter the owner, you must also be a direct or indirect member of the new owning role, and that role must have
+privilege on the new schema or tablespace\&. To add the table as a new child of a parent table, you must own the parent table as well\&. Also, to attach a table as a new partition of the table, you must own the table being attached\&. To alter the owner, you must be able to
+SET ROLE
+to the new owning role, and that role must have
 CREATE
 privilege on the table\*(Aqs schema\&. (These restrictions enforce that altering the owner doesn\*(Aqt do anything you couldn\*(Aqt do by dropping and recreating the table\&. However, a superuser can alter ownership of any table anyway\&.) To add a column or alter a column type or use the
 OF
@@ -768,7 +863,7 @@ Name of a new or existing constraint\&.
 CASCADE
 .RS 4
 Automatically drop objects that depend on the dropped column or constraint (for example, views referencing the column), and in turn all objects that depend on those objects (see
-Section\ \&5.13)\&.
+Section\ \&5.14)\&.
 .RE
 .PP
 RESTRICT
@@ -783,12 +878,12 @@ Name of a single trigger to disable or enable\&.
 .PP
 ALL
 .RS 4
-Disable or enable all triggers belonging to the table\&. (This requires superuser privilege if any of the triggers are internally generated constraint triggers such as those that are used to implement foreign key constraints or deferrable uniqueness and exclusion constraints\&.)
+Disable or enable all triggers belonging to the table\&. (This requires superuser privilege if any of the triggers are internally generated constraint triggers, such as those that are used to implement foreign key constraints or deferrable uniqueness and exclusion constraints\&.)
 .RE
 .PP
 USER
 .RS 4
-Disable or enable all triggers belonging to the table except for internally generated constraint triggers such as those that are used to implement foreign key constraints or deferrable uniqueness and exclusion constraints\&.
+Disable or enable all triggers belonging to the table except for internally generated constraint triggers, such as those that are used to implement foreign key constraints or deferrable uniqueness and exclusion constraints\&.
 .RE
 .PP
 \fIindex_name\fR
@@ -814,6 +909,11 @@ A parent table to associate or de\-associate with this table\&.
 \fInew_owner\fR
 .RS 4
 The user name of the new owner of the table\&.
+.RE
+.PP
+\fInew_access_method\fR
+.RS 4
+The name of the access method to which the table will be converted\&.
 .RE
 .PP
 \fInew_tablespace\fR
@@ -855,9 +955,11 @@ Adding a column with a volatile
 DEFAULT
 or changing the type of an existing column will require the entire table and its indexes to be rewritten\&. As an exception, when changing the type of an existing column, if the
 USING
-clause does not change the column contents and the old type is either binary coercible to the new type or an unconstrained domain over the new type, a table rewrite is not needed; but any indexes on the affected columns must still be rebuilt\&. Adding or removing a system
-oid
-column also requires rewriting the entire table\&. Table and/or index rebuilds may take a significant amount of time for a large table; and will temporarily require as much as double the disk space\&.
+clause does not change the column contents and the old type is either binary coercible to the new type or an unconstrained domain over the new type, a table rewrite is not needed\&. However, indexes must always be rebuilt unless the system can verify that the new index would be logically equivalent to the existing one\&. For example, if the collation for a column has been changed, an index rebuild is always required because the new sort order might be different\&. However, in the absence of a collation change, a column can be changed from
+text
+to
+varchar
+(or vice versa) without rebuilding the indexes because these data types sort identically\&. Table and/or index rebuilds may take a significant amount of time for a large table; and will temporarily require as much as double the disk space\&.
 .PP
 Adding a
 CHECK
@@ -871,11 +973,30 @@ The main reason for providing the option to specify multiple changes in a single
 \fBALTER TABLE\fR
 is that multiple table scans or rewrites can thereby be combined into a single pass over the table\&.
 .PP
+Scanning a large table to verify a new foreign key or check constraint can take a long time, and other updates to the table are locked out until the
+\fBALTER TABLE ADD CONSTRAINT\fR
+command is committed\&. The main purpose of the
+NOT VALID
+constraint option is to reduce the impact of adding a constraint on concurrent updates\&. With
+NOT VALID, the
+\fBADD CONSTRAINT\fR
+command does not scan the table and can be committed immediately\&. After that, a
+VALIDATE CONSTRAINT
+command can be issued to verify that existing rows satisfy the constraint\&. The validation step does not need to lock out concurrent updates, since it knows that other transactions will be enforcing the constraint for rows that they insert or update; only pre\-existing rows need to be checked\&. Hence, validation acquires only a
+SHARE UPDATE EXCLUSIVE
+lock on the table being altered\&. (If the constraint is a foreign key then a
+ROW SHARE
+lock is also required on the table referenced by the constraint\&.) In addition to improving concurrency, it can be useful to use
+NOT VALID
+and
+VALIDATE CONSTRAINT
+in cases where the table is known to contain pre\-existing violations\&. Once the constraint is in place, no new violations can be inserted, and the existing problems can be corrected at leisure until
+VALIDATE CONSTRAINT
+finally succeeds\&.
+.PP
 The
 DROP COLUMN
-form does not physically remove the column, but simply makes it invisible to SQL operations\&. Subsequent insert and update operations in the table will store a null value for the column\&. Thus, dropping a column is quick but it will not immediately reduce the on\-disk size of your table, as the space occupied by the dropped column is not reclaimed\&. The space will be reclaimed over time as existing rows are updated\&. (These statements do not apply when dropping the system
-oid
-column; that is done with an immediate rewrite\&.)
+form does not physically remove the column, but simply makes it invisible to SQL operations\&. Subsequent insert and update operations in the table will store a null value for the column\&. Thus, dropping a column is quick but it will not immediately reduce the on\-disk size of your table, as the space occupied by the dropped column is not reclaimed\&. The space will be reclaimed over time as existing rows are updated\&.
 .PP
 To force immediate reclamation of space occupied by a dropped column, you can execute one of the forms of
 \fBALTER TABLE\fR
@@ -884,7 +1005,7 @@ that performs a rewrite of the whole table\&. This results in reconstructing eac
 The rewriting forms of
 \fBALTER TABLE\fR
 are not MVCC\-safe\&. After a table rewrite, the table will appear empty to concurrent transactions, if they are using a snapshot taken before the rewrite occurred\&. See
-Section\ \&13.5
+Section\ \&13.6
 for more details\&.
 .PP
 The
@@ -926,13 +1047,14 @@ The actions for identity columns (ADD GENERATED,
 SET
 etc\&.,
 DROP IDENTITY), as well as the actions
-TRIGGER,
 CLUSTER,
 OWNER, and
 TABLESPACE
 never recurse to descendant tables; that is, they always act as though
 ONLY
-were specified\&. Adding a constraint recurses only for
+were specified\&. Actions affecting trigger states recurse to partitions of partitioned tables (unless
+ONLY
+is specified), but never to traditional\-inheritance descendants\&. Adding a constraint recurses only for
 CHECK
 constraints that are not marked
 NO INHERIT\&.
@@ -959,6 +1081,43 @@ ALTER TABLE distributors ADD COLUMN address varchar(30);
 .if n \{\
 .RE
 .\}
+.sp
+That will cause all existing rows in the table to be filled with null values for the new column\&.
+.PP
+To add a column with a non\-null default:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ALTER TABLE measurements
+  ADD COLUMN mtime timestamp with time zone DEFAULT now();
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Existing rows will be filled with the current time as the value of the new column, and then new rows will receive the time of their insertion\&.
+.PP
+To add a column and fill it with a value different from the default to be used later:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ALTER TABLE transactions
+  ADD COLUMN status varchar(30) DEFAULT \*(Aqold\*(Aq,
+  ALTER COLUMN status SET default \*(Aqcurrent\*(Aq;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Existing rows will be filled with
+old, but then the default for subsequent commands will be
+current\&. The effects are the same as if the two sub\-commands had been issued in separate
+\fBALTER TABLE\fR
+commands\&.
 .PP
 To drop a column from a table:
 .sp

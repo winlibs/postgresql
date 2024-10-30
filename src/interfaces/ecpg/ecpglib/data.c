@@ -3,18 +3,17 @@
 #define POSTGRES_ECPG_INTERNAL
 #include "postgres_fe.h"
 
-#include <float.h>
 #include <math.h>
 
-#include "ecpgtype.h"
-#include "ecpglib.h"
 #include "ecpgerrno.h"
-#include "extern.h"
-#include "sqlca.h"
-#include "pgtypes_numeric.h"
+#include "ecpglib.h"
+#include "ecpglib_extern.h"
+#include "ecpgtype.h"
 #include "pgtypes_date.h"
-#include "pgtypes_timestamp.h"
 #include "pgtypes_interval.h"
+#include "pgtypes_numeric.h"
+#include "pgtypes_timestamp.h"
+#include "sqlca.h"
 
 /* returns true if character c is a delimiter for the given array type */
 static bool
@@ -123,6 +122,86 @@ check_special_value(char *ptr, double *retval, char **endptr)
 	return false;
 }
 
+/* imported from src/backend/utils/adt/encode.c */
+
+unsigned
+ecpg_hex_enc_len(unsigned srclen)
+{
+	return srclen << 1;
+}
+
+unsigned
+ecpg_hex_dec_len(unsigned srclen)
+{
+	return srclen >> 1;
+}
+
+static inline char
+get_hex(char c)
+{
+	static const int8 hexlookup[128] = {
+		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1, -1, -1, -1, -1, -1,
+		-1, 10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+		-1, 10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+		-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	};
+	int			res = -1;
+
+	if (c > 0 && c < 127)
+		res = hexlookup[(unsigned char) c];
+
+	return (char) res;
+}
+
+static unsigned
+hex_decode(const char *src, unsigned len, char *dst)
+{
+	const char *s,
+			   *srcend;
+	char		v1,
+				v2,
+			   *p;
+
+	srcend = src + len;
+	s = src;
+	p = dst;
+	while (s < srcend)
+	{
+		if (*s == ' ' || *s == '\n' || *s == '\t' || *s == '\r')
+		{
+			s++;
+			continue;
+		}
+		v1 = get_hex(*s++) << 4;
+		if (s >= srcend)
+			return -1;
+
+		v2 = get_hex(*s++);
+		*p++ = v1 | v2;
+	}
+
+	return p - dst;
+}
+
+unsigned
+ecpg_hex_encode(const char *src, unsigned len, char *dst)
+{
+	static const char hextbl[] = "0123456789abcdef";
+	const char *end = src + len;
+
+	while (src < end)
+	{
+		*dst++ = hextbl[(*src >> 4) & 0xF];
+		*dst++ = hextbl[*src & 0xF];
+		src++;
+	}
+	return len * 2;
+}
+
 bool
 ecpg_get_data(const PGresult *results, int act_tuple, int act_field, int lineno,
 			  enum ECPGttype type, enum ECPGttype ind_type,
@@ -188,12 +267,10 @@ ecpg_get_data(const PGresult *results, int act_tuple, int act_field, int lineno,
 		case ECPGt_unsigned_long:
 			*((long *) (ind + ind_offset * act_tuple)) = value_for_indicator;
 			break;
-#ifdef HAVE_LONG_LONG_INT
 		case ECPGt_long_long:
 		case ECPGt_unsigned_long_long:
 			*((long long int *) (ind + ind_offset * act_tuple)) = value_for_indicator;
 			break;
-#endif							/* HAVE_LONG_LONG_INT */
 		case ECPGt_NO_INDICATOR:
 			if (value_for_indicator == -1)
 			{
@@ -276,12 +353,10 @@ ecpg_get_data(const PGresult *results, int act_tuple, int act_field, int lineno,
 						case ECPGt_unsigned_long:
 							*((long *) (ind + ind_offset * act_tuple)) = size;
 							break;
-#ifdef HAVE_LONG_LONG_INT
 						case ECPGt_long_long:
 						case ECPGt_unsigned_long_long:
 							*((long long int *) (ind + ind_offset * act_tuple)) = size;
 							break;
-#endif							/* HAVE_LONG_LONG_INT */
 						default:
 							break;
 					}
@@ -363,8 +438,6 @@ ecpg_get_data(const PGresult *results, int act_tuple, int act_field, int lineno,
 					}
 					break;
 
-#ifdef HAVE_LONG_LONG_INT
-#ifdef HAVE_STRTOLL
 				case ECPGt_long_long:
 					*((long long int *) (var + offset * act_tuple)) = strtoll(pval, &scan_length, 10);
 					if (garbage_left(isarray, &scan_length, compat))
@@ -375,8 +448,7 @@ ecpg_get_data(const PGresult *results, int act_tuple, int act_field, int lineno,
 					pval = scan_length;
 
 					break;
-#endif							/* HAVE_STRTOLL */
-#ifdef HAVE_STRTOULL
+
 				case ECPGt_unsigned_long_long:
 					*((unsigned long long int *) (var + offset * act_tuple)) = strtoull(pval, &scan_length, 10);
 					if (garbage_left(isarray, &scan_length, compat))
@@ -387,8 +459,6 @@ ecpg_get_data(const PGresult *results, int act_tuple, int act_field, int lineno,
 					pval = scan_length;
 
 					break;
-#endif							/* HAVE_STRTOULL */
-#endif							/* HAVE_LONG_LONG_INT */
 
 				case ECPGt_float:
 				case ECPGt_double:
@@ -448,6 +518,52 @@ ecpg_get_data(const PGresult *results, int act_tuple, int act_field, int lineno,
 					return false;
 					break;
 
+				case ECPGt_bytea:
+					{
+						struct ECPGgeneric_bytea *variable =
+							(struct ECPGgeneric_bytea *) (var + offset * act_tuple);
+						long		dst_size,
+									src_size,
+									dec_size;
+
+						dst_size = ecpg_hex_enc_len(varcharsize);
+						src_size = size - 2;	/* exclude backslash + 'x' */
+						dec_size = src_size < dst_size ? src_size : dst_size;
+						variable->len = hex_decode(pval + 2, dec_size, variable->arr);
+
+						if (dst_size < src_size)
+						{
+							long		rcv_size = ecpg_hex_dec_len(size - 2);
+
+							/* truncation */
+							switch (ind_type)
+							{
+								case ECPGt_short:
+								case ECPGt_unsigned_short:
+									*((short *) (ind + ind_offset * act_tuple)) = rcv_size;
+									break;
+								case ECPGt_int:
+								case ECPGt_unsigned_int:
+									*((int *) (ind + ind_offset * act_tuple)) = rcv_size;
+									break;
+								case ECPGt_long:
+								case ECPGt_unsigned_long:
+									*((long *) (ind + ind_offset * act_tuple)) = rcv_size;
+									break;
+								case ECPGt_long_long:
+								case ECPGt_unsigned_long_long:
+									*((long long int *) (ind + ind_offset * act_tuple)) = rcv_size;
+									break;
+								default:
+									break;
+							}
+							sqlca->sqlwarn[0] = sqlca->sqlwarn[1] = 'W';
+						}
+
+						pval += size;
+					}
+					break;
+
 				case ECPGt_char:
 				case ECPGt_unsigned_char:
 				case ECPGt_string:
@@ -462,7 +578,7 @@ ecpg_get_data(const PGresult *results, int act_tuple, int act_field, int lineno,
 						if (varcharsize == 0 && offset == sizeof(char *))
 							str = *(char **) str;
 
-						if (varcharsize == 0 || varcharsize > size)
+						if (varcharsize > size)
 						{
 							/*
 							 * compatibility mode, blank pad and null
@@ -495,12 +611,10 @@ ecpg_get_data(const PGresult *results, int act_tuple, int act_field, int lineno,
 										case ECPGt_unsigned_long:
 											*((long *) (ind + ind_offset * act_tuple)) = -1;
 											break;
-#ifdef HAVE_LONG_LONG_INT
 										case ECPGt_long_long:
 										case ECPGt_unsigned_long_long:
 											*((long long int *) (ind + ind_offset * act_tuple)) = -1;
 											break;
-#endif							/* HAVE_LONG_LONG_INT */
 										default:
 											break;
 									}
@@ -524,16 +638,25 @@ ecpg_get_data(const PGresult *results, int act_tuple, int act_field, int lineno,
 						}
 						else
 						{
-							strncpy(str, pval, varcharsize);
+							int			charsize = varcharsize;
+
+							/*
+							 * assume that the caller provided storage exactly
+							 * fit when varcharsize is zero.
+							 */
+							if (varcharsize == 0)
+								charsize = size + 1;
+
+							strncpy(str, pval, charsize);
 
 							/* compatibility mode, null terminate char array */
-							if (ORACLE_MODE(compat) && (varcharsize - 1) < size)
+							if (ORACLE_MODE(compat) && (charsize - 1) < size)
 							{
 								if (type == ECPGt_char || type == ECPGt_unsigned_char)
-									str[varcharsize - 1] = '\0';
+									str[charsize - 1] = '\0';
 							}
 
-							if (varcharsize < size || (ORACLE_MODE(compat) && (varcharsize - 1) < size))
+							if (charsize < size || (ORACLE_MODE(compat) && (charsize - 1) < size))
 							{
 								/* truncation */
 								switch (ind_type)
@@ -550,12 +673,10 @@ ecpg_get_data(const PGresult *results, int act_tuple, int act_field, int lineno,
 									case ECPGt_unsigned_long:
 										*((long *) (ind + ind_offset * act_tuple)) = size;
 										break;
-#ifdef HAVE_LONG_LONG_INT
 									case ECPGt_long_long:
 									case ECPGt_unsigned_long_long:
 										*((long long int *) (ind + ind_offset * act_tuple)) = size;
 										break;
-#endif							/* HAVE_LONG_LONG_INT */
 									default:
 										break;
 								}
@@ -569,7 +690,7 @@ ecpg_get_data(const PGresult *results, int act_tuple, int act_field, int lineno,
 				case ECPGt_varchar:
 					{
 						struct ECPGgeneric_varchar *variable =
-						(struct ECPGgeneric_varchar *) (var + offset * act_tuple);
+							(struct ECPGgeneric_varchar *) (var + offset * act_tuple);
 
 						variable->len = size;
 						if (varcharsize == 0)
@@ -595,12 +716,10 @@ ecpg_get_data(const PGresult *results, int act_tuple, int act_field, int lineno,
 									case ECPGt_unsigned_long:
 										*((long *) (ind + ind_offset * act_tuple)) = variable->len;
 										break;
-#ifdef HAVE_LONG_LONG_INT
 									case ECPGt_long_long:
 									case ECPGt_unsigned_long_long:
 										*((long long int *) (ind + ind_offset * act_tuple)) = variable->len;
 										break;
-#endif							/* HAVE_LONG_LONG_INT */
 									default:
 										break;
 								}

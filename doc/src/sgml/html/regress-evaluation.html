@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>33.2. Test Evaluation</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="regress-run.html" title="33.1. Running the Tests" /><link rel="next" href="regress-variant.html" title="33.3. Variant Comparison Files" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">33.2. Test Evaluation</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="regress-run.html" title="33.1. Running the Tests">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="regress.html" title="Chapter 33. Regression Tests">Up</a></td><th width="60%" align="center">Chapter 33. Regression Tests</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="regress-variant.html" title="33.3. Variant Comparison Files">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="REGRESS-EVALUATION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">33.2. Test Evaluation</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="regress-evaluation.html#id-1.6.20.6.6">33.2.1. Error Message Differences</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#id-1.6.20.6.7">33.2.2. Locale Differences</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#id-1.6.20.6.8">33.2.3. Date and Time Differences</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#id-1.6.20.6.9">33.2.4. Floating-Point Differences</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#id-1.6.20.6.10">33.2.5. Row Ordering Differences</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#id-1.6.20.6.11">33.2.6. Insufficient Stack Depth</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#id-1.6.20.6.12">33.2.7. The <span class="quote">“<span class="quote">random</span>”</span> Test</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#id-1.6.20.6.13">33.2.8. Configuration Parameters</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>33.2. Test Evaluation</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="regress-run.html" title="33.1. Running the Tests" /><link rel="next" href="regress-variant.html" title="33.3. Variant Comparison Files" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">33.2. Test Evaluation</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="regress-run.html" title="33.1. Running the Tests">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="regress.html" title="Chapter 33. Regression Tests">Up</a></td><th width="60%" align="center">Chapter 33. Regression Tests</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="regress-variant.html" title="33.3. Variant Comparison Files">Next</a></td></tr></table><hr /></div><div class="sect1" id="REGRESS-EVALUATION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">33.2. Test Evaluation <a href="#REGRESS-EVALUATION" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="regress-evaluation.html#REGRESS-EVALUATION-MESSAGE-DIFFERENCES">33.2.1. Error Message Differences</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#REGRESS-EVALUATION-LOCALE-DIFFERENCES">33.2.2. Locale Differences</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#REGRESS-EVALUATION-DATE-TIME-DIFFERENCES">33.2.3. Date and Time Differences</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#REGRESS-EVALUATION-FLOAT-DIFFERENCES">33.2.4. Floating-Point Differences</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#REGRESS-EVALUATION-ORDERING-DIFFERENCES">33.2.5. Row Ordering Differences</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#REGRESS-EVALUATION-STACK-DEPTH">33.2.6. Insufficient Stack Depth</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#REGRESS-EVALUATION-RANDOM-TEST">33.2.7. The <span class="quote">“<span class="quote">random</span>”</span> Test</a></span></dt><dt><span class="sect2"><a href="regress-evaluation.html#REGRESS-EVALUATION-CONFIG-PARAMS">33.2.8. Configuration Parameters</a></span></dt></dl></div><p>
     Some properly installed and fully functional
     <span class="productname">PostgreSQL</span> installations can
     <span class="quote">“<span class="quote">fail</span>”</span> some of these regression tests due to
@@ -28,7 +28,7 @@
     If you don't
     like the <code class="command">diff</code> options that are used by default, set the
     environment variable <code class="envar">PG_REGRESS_DIFF_OPTS</code>, for
-    instance <code class="literal">PG_REGRESS_DIFF_OPTS='-u'</code>.  (Or you
+    instance <code class="literal">PG_REGRESS_DIFF_OPTS='-c'</code>.  (Or you
     can run <code class="command">diff</code> yourself, if you prefer.)
    </p><p>
     If for some reason a particular platform generates a <span class="quote">“<span class="quote">failure</span>”</span>
@@ -36,7 +36,7 @@
     the result is valid, you can add a new comparison file to silence
     the failure report in future test runs.  See
     <a class="xref" href="regress-variant.html" title="33.3. Variant Comparison Files">Section 33.3</a> for details.
-   </p><div class="sect2" id="id-1.6.20.6.6"><div class="titlepage"><div><div><h3 class="title">33.2.1. Error Message Differences</h3></div></div></div><p>
+   </p><div class="sect2" id="REGRESS-EVALUATION-MESSAGE-DIFFERENCES"><div class="titlepage"><div><div><h3 class="title">33.2.1. Error Message Differences <a href="#REGRESS-EVALUATION-MESSAGE-DIFFERENCES" class="id_link">#</a></h3></div></div></div><p>
      Some of the regression tests involve intentional invalid input
      values.  Error messages can come from either the
      <span class="productname">PostgreSQL</span> code or from the host
@@ -45,7 +45,7 @@
      information. These differences in messages will result in a
      <span class="quote">“<span class="quote">failed</span>”</span> regression test that can be validated by
      inspection.
-    </p></div><div class="sect2" id="id-1.6.20.6.7"><div class="titlepage"><div><div><h3 class="title">33.2.2. Locale Differences</h3></div></div></div><p>
+    </p></div><div class="sect2" id="REGRESS-EVALUATION-LOCALE-DIFFERENCES"><div class="titlepage"><div><div><h3 class="title">33.2.2. Locale Differences <a href="#REGRESS-EVALUATION-LOCALE-DIFFERENCES" class="id_link">#</a></h3></div></div></div><p>
      If you run the tests against a server that was
      initialized with a collation-order locale other than C, then
      there might be differences due to sort order and subsequent
@@ -82,7 +82,7 @@ make check NO_LOCALE=1
      might get failures, but then you will at least know what
      locale-specific behaviors to expect when running real
      applications.
-    </p></div><div class="sect2" id="id-1.6.20.6.8"><div class="titlepage"><div><div><h3 class="title">33.2.3. Date and Time Differences</h3></div></div></div><p>
+    </p></div><div class="sect2" id="REGRESS-EVALUATION-DATE-TIME-DIFFERENCES"><div class="titlepage"><div><div><h3 class="title">33.2.3. Date and Time Differences <a href="#REGRESS-EVALUATION-DATE-TIME-DIFFERENCES" class="id_link">#</a></h3></div></div></div><p>
      Most of the date and time results are dependent on the time zone
      environment.  The reference files are generated for time zone
      <code class="literal">PST8PDT</code> (Berkeley, California), and there will be
@@ -90,7 +90,7 @@ make check NO_LOCALE=1
      The regression test driver sets environment variable
      <code class="envar">PGTZ</code> to <code class="literal">PST8PDT</code>, which normally
      ensures proper results.
-    </p></div><div class="sect2" id="id-1.6.20.6.9"><div class="titlepage"><div><div><h3 class="title">33.2.4. Floating-Point Differences</h3></div></div></div><p>
+    </p></div><div class="sect2" id="REGRESS-EVALUATION-FLOAT-DIFFERENCES"><div class="titlepage"><div><div><h3 class="title">33.2.4. Floating-Point Differences <a href="#REGRESS-EVALUATION-FLOAT-DIFFERENCES" class="id_link">#</a></h3></div></div></div><p>
      Some of the tests involve computing 64-bit floating-point numbers (<code class="type">double
      precision</code>) from table columns. Differences in
      results involving mathematical functions of <code class="type">double
@@ -108,7 +108,7 @@ make check NO_LOCALE=1
      <code class="function">exp()</code> differently from the mechanism
      expected by the current <span class="productname">PostgreSQL</span>
      code.
-    </p></div><div class="sect2" id="id-1.6.20.6.10"><div class="titlepage"><div><div><h3 class="title">33.2.5. Row Ordering Differences</h3></div></div></div><p>
+    </p></div><div class="sect2" id="REGRESS-EVALUATION-ORDERING-DIFFERENCES"><div class="titlepage"><div><div><h3 class="title">33.2.5. Row Ordering Differences <a href="#REGRESS-EVALUATION-ORDERING-DIFFERENCES" class="id_link">#</a></h3></div></div></div><p>
 You might see differences in which the same rows are output in a
 different order than what appears in the expected file.  In most cases
 this is not, strictly speaking, a bug.  Most of the regression test
@@ -134,7 +134,7 @@ to get rid of this issue once and for all.  The reason is that that would
 make the regression tests less useful, not more, since they'd tend
 to exercise query plan types that produce ordered results to the
 exclusion of those that don't.
-    </p></div><div class="sect2" id="id-1.6.20.6.11"><div class="titlepage"><div><div><h3 class="title">33.2.6. Insufficient Stack Depth</h3></div></div></div><p>
+    </p></div><div class="sect2" id="REGRESS-EVALUATION-STACK-DEPTH"><div class="titlepage"><div><div><h3 class="title">33.2.6. Insufficient Stack Depth <a href="#REGRESS-EVALUATION-STACK-DEPTH" class="id_link">#</a></h3></div></div></div><p>
      If the <code class="literal">errors</code> test results in a server crash
      at the <code class="literal">select infinite_recurse()</code> command, it means that
      the platform's limit on process stack size is smaller than the
@@ -148,7 +148,7 @@ exclusion of those that don't.
      automatically choose a safe value of <code class="varname">max_stack_depth</code>;
      so unless you've manually overridden this setting, a failure of this
      kind is a reportable bug.
-    </p></div><div class="sect2" id="id-1.6.20.6.12"><div class="titlepage"><div><div><h3 class="title">33.2.7. The <span class="quote">“<span class="quote">random</span>”</span> Test</h3></div></div></div><p>
+    </p></div><div class="sect2" id="REGRESS-EVALUATION-RANDOM-TEST"><div class="titlepage"><div><div><h3 class="title">33.2.7. The <span class="quote">“<span class="quote">random</span>”</span> Test <a href="#REGRESS-EVALUATION-RANDOM-TEST" class="id_link">#</a></h3></div></div></div><p>
      The <code class="literal">random</code> test script is intended to produce
      random results.   In very rare cases, this causes that regression
      test to fail.  Typing:
@@ -157,10 +157,10 @@ diff results/random.out expected/random.out
 </pre><p>
      should produce only one or a few lines of differences.  You need
      not worry unless the random test fails repeatedly.
-    </p></div><div class="sect2" id="id-1.6.20.6.13"><div class="titlepage"><div><div><h3 class="title">33.2.8. Configuration Parameters</h3></div></div></div><p>
+    </p></div><div class="sect2" id="REGRESS-EVALUATION-CONFIG-PARAMS"><div class="titlepage"><div><div><h3 class="title">33.2.8. Configuration Parameters <a href="#REGRESS-EVALUATION-CONFIG-PARAMS" class="id_link">#</a></h3></div></div></div><p>
      When running the tests against an existing installation, some non-default
      parameter settings could cause the tests to fail.  For example, changing
      parameters such as <code class="varname">enable_seqscan</code> or
      <code class="varname">enable_indexscan</code> could cause plan changes that would
      affect the results of tests that use <code class="command">EXPLAIN</code>.
-    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="regress-run.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="regress.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="regress-variant.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">33.1. Running the Tests </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 33.3. Variant Comparison Files</td></tr></table></div></body></html>
+    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="regress-run.html" title="33.1. Running the Tests">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="regress.html" title="Chapter 33. Regression Tests">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="regress-variant.html" title="33.3. Variant Comparison Files">Next</a></td></tr><tr><td width="40%" align="left" valign="top">33.1. Running the Tests </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 33.3. Variant Comparison Files</td></tr></table></div></body></html>

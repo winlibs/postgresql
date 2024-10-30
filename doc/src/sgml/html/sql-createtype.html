@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE TYPE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-createtrigger.html" title="CREATE TRIGGER" /><link rel="next" href="sql-createuser.html" title="CREATE USER" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE TYPE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createtrigger.html" title="CREATE TRIGGER">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createuser.html" title="CREATE USER">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-CREATETYPE"><div class="titlepage"></div><a id="id-1.9.3.94.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE TYPE</span></h2><p>CREATE TYPE — define a new data type</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE TYPE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-createtrigger.html" title="CREATE TRIGGER" /><link rel="next" href="sql-createuser.html" title="CREATE USER" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE TYPE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createtrigger.html" title="CREATE TRIGGER">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createuser.html" title="CREATE USER">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-CREATETYPE"><div class="titlepage"></div><a id="id-1.9.3.94.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE TYPE</span></h2><p>CREATE TYPE — define a new data type</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 CREATE TYPE <em class="replaceable"><code>name</code></em> AS
     ( [ <em class="replaceable"><code>attribute_name</code></em> <em class="replaceable"><code>data_type</code></em> [ COLLATE <em class="replaceable"><code>collation</code></em> ] [, ... ] ] )
 
@@ -12,6 +12,7 @@ CREATE TYPE <em class="replaceable"><code>name</code></em> AS RANGE (
     [ , COLLATION = <em class="replaceable"><code>collation</code></em> ]
     [ , CANONICAL = <em class="replaceable"><code>canonical_function</code></em> ]
     [ , SUBTYPE_DIFF = <em class="replaceable"><code>subtype_diff_function</code></em> ]
+    [ , MULTIRANGE_TYPE_NAME = <em class="replaceable"><code>multirange_type_name</code></em> ]
 )
 
 CREATE TYPE <em class="replaceable"><code>name</code></em> (
@@ -22,6 +23,7 @@ CREATE TYPE <em class="replaceable"><code>name</code></em> (
     [ , TYPMOD_IN = <em class="replaceable"><code>type_modifier_input_function</code></em> ]
     [ , TYPMOD_OUT = <em class="replaceable"><code>type_modifier_output_function</code></em> ]
     [ , ANALYZE = <em class="replaceable"><code>analyze_function</code></em> ]
+    [ , SUBSCRIPT = <em class="replaceable"><code>subscript_function</code></em> ]
     [ , INTERNALLENGTH = { <em class="replaceable"><code>internallength</code></em> | VARIABLE } ]
     [ , PASSEDBYVALUE ]
     [ , ALIGNMENT = <em class="replaceable"><code>alignment</code></em> ]
@@ -77,7 +79,7 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
     must be less than <code class="symbol">NAMEDATALEN</code> bytes long (64 bytes in a
     standard <span class="productname">PostgreSQL</span> build).  (It is possible to
     create an enumerated type with zero labels, but such a type cannot be used
-    to hold values before at least one label is added using <a class="xref" href="sql-altertype.html" title="ALTER TYPE"><span class="refentrytitle">ALTER TYPE</span></a>.)
+    to hold values before at least one label is added using <a class="link" href="sql-altertype.html" title="ALTER TYPE"><code class="command">ALTER TYPE</code></a>.)
    </p></div><div class="refsect2" id="SQL-CREATETYPE-RANGE"><h3>Range Types</h3><p>
     The third form of <code class="command">CREATE TYPE</code> creates a new
     range type, as described in <a class="xref" href="rangetypes.html" title="8.17. Range Types">Section 8.17</a>.
@@ -112,6 +114,15 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
     providing it allows much greater efficiency of GiST indexes on columns of
     the range type.  See <a class="xref" href="rangetypes.html#RANGETYPES-DEFINING" title="8.17.8. Defining New Range Types">Section 8.17.8</a> for more
     information.
+   </p><p>
+    The optional <em class="replaceable"><code>multirange_type_name</code></em>
+    parameter specifies the name of the corresponding multirange type.  If not
+    specified, this name is chosen automatically as follows.
+    If the range type name contains the substring <code class="literal">range</code>, then
+    the multirange type name is formed by replacement of the <code class="literal">range</code>
+    substring with <code class="literal">multirange</code> in the range
+    type name.  Otherwise, the multirange type name is formed by appending a
+    <code class="literal">_multirange</code> suffix to the range type name.
    </p></div><div class="refsect2" id="id-1.9.3.94.5.8"><h3>Base Types</h3><p>
    The fourth form of <code class="command">CREATE TYPE</code> creates a new base type
    (scalar type).  To create a new base type, you must be a superuser.
@@ -128,8 +139,9 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
    <em class="replaceable"><code>receive_function</code></em>,
    <em class="replaceable"><code>send_function</code></em>,
    <em class="replaceable"><code>type_modifier_input_function</code></em>,
-   <em class="replaceable"><code>type_modifier_output_function</code></em> and
-   <em class="replaceable"><code>analyze_function</code></em>
+   <em class="replaceable"><code>type_modifier_output_function</code></em>,
+   <em class="replaceable"><code>analyze_function</code></em>, and
+   <em class="replaceable"><code>subscript_function</code></em>
    are optional.  Generally these functions have to be coded in C
    or another low-level language.
   </p><p>
@@ -239,6 +251,26 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
    a <code class="type">boolean</code> result.  The detailed API for analysis functions appears
    in <code class="filename">src/include/commands/vacuum.h</code>.
   </p><p>
+   The optional <em class="replaceable"><code>subscript_function</code></em>
+   allows the data type to be subscripted in SQL commands.  Specifying this
+   function does not cause the type to be considered a <span class="quote">“<span class="quote">true</span>”</span>
+   array type; for example, it will not be a candidate for the result type
+   of <code class="literal">ARRAY[]</code> constructs.  But if subscripting a value
+   of the type is a natural notation for extracting data from it, then
+   a <em class="replaceable"><code>subscript_function</code></em> can
+   be written to define what that means.  The subscript function must be
+   declared to take a single argument of type <code class="type">internal</code>, and
+   return an <code class="type">internal</code> result, which is a pointer to a struct
+   of methods (functions) that implement subscripting.
+   The detailed API for subscript functions appears
+   in <code class="filename">src/include/nodes/subscripting.h</code>.
+   It may also be useful to read the array implementation
+   in <code class="filename">src/backend/utils/adt/arraysubs.c</code>,
+   or the simpler code
+   in <code class="filename">contrib/hstore/hstore_subs.c</code>.
+   Additional information appears in
+   <a class="xref" href="sql-createtype.html#SQL-CREATETYPE-ARRAY" title="Array Types">Array Types</a> below.
+  </p><p>
    While the details of the new type's internal representation are only
    known to the I/O functions and other functions you create to work with
    the type, there are several properties of the internal representation
@@ -253,7 +285,7 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
    by setting <code class="literal">typlen</code> to -1.)  The internal representation of all
    variable-length types must start with a 4-byte integer giving the total
    length of this value of the type.  (Note that the length field is often
-   encoded, as described in <a class="xref" href="storage-toast.html" title="68.2. TOAST">Section 68.2</a>; it's unwise
+   encoded, as described in <a class="xref" href="storage-toast.html" title="73.2. TOAST">Section 73.2</a>; it's unwise
    to access it directly.)
   </p><p>
    The optional flag <code class="literal">PASSEDBYVALUE</code> indicates that
@@ -288,7 +320,7 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
    All <em class="replaceable"><code>storage</code></em> values other
    than <code class="literal">plain</code> imply that the functions of the data type
    can handle values that have been <em class="firstterm">toasted</em>, as described
-   in <a class="xref" href="storage-toast.html" title="68.2. TOAST">Section 68.2</a> and <a class="xref" href="xtypes.html#XTYPES-TOAST" title="38.12.1. TOAST Considerations">Section 38.12.1</a>.
+   in <a class="xref" href="storage-toast.html" title="73.2. TOAST">Section 73.2</a> and <a class="xref" href="xtypes.html#XTYPES-TOAST" title="38.13.1. TOAST Considerations">Section 38.13.1</a>.
    The specific other value given merely determines the default TOAST
    storage strategy for columns of a toastable data type; users can pick
    other strategies for individual columns using <code class="literal">ALTER TABLE
@@ -331,11 +363,12 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
    (Such a default can be overridden by an explicit <code class="literal">DEFAULT</code>
    clause attached to a particular column.)
   </p><p>
-   To indicate that a type is an array, specify the type of the array
+   To indicate that a type is a fixed-length array type,
+   specify the type of the array
    elements using the <code class="literal">ELEMENT</code> key word.  For example, to
    define an array of 4-byte integers (<code class="type">int4</code>), specify
-   <code class="literal">ELEMENT = int4</code>. More details about array types
-   appear below.
+   <code class="literal">ELEMENT = int4</code>.  For more details,
+   see <a class="xref" href="sql-createtype.html#SQL-CREATETYPE-ARRAY" title="Array Types">Array Types</a> below.
   </p><p>
    To indicate the delimiter to be used between values in the external
    representation of arrays of this type, <em class="replaceable"><code>delimiter</code></em> can be
@@ -351,7 +384,7 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
    implementations of the functions operating on the type to actually
    make use of the collation information; this does not happen
    automatically merely by marking the type collatable.
-  </p></div><div class="refsect2" id="id-1.9.3.94.5.9"><h3>Array Types</h3><p>
+  </p></div><div class="refsect2" id="SQL-CREATETYPE-ARRAY"><h3>Array Types</h3><p>
     Whenever a user-defined type is created,
     <span class="productname">PostgreSQL</span> automatically creates an
     associated array type, whose name consists of the element type's
@@ -361,12 +394,14 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
     repeated until a non-colliding name is found.)
     This implicitly-created array type is variable length and uses the
     built-in input and output functions <code class="literal">array_in</code> and
-    <code class="literal">array_out</code>.  The array type tracks any changes in its
+    <code class="literal">array_out</code>.  Furthermore, this type is what the system
+    uses for constructs such as <code class="literal">ARRAY[]</code> over the
+    user-defined type.  The array type tracks any changes in its
     element type's owner or schema, and is dropped if the element type is.
    </p><p>
     You might reasonably ask why there is an <code class="option">ELEMENT</code>
     option, if the system makes the correct array type automatically.
-    The only case where it's useful to use <code class="option">ELEMENT</code> is when you are
+    The main case where it's useful to use <code class="option">ELEMENT</code> is when you are
     making a fixed-length type that happens to be internally an array of a number of
     identical things, and you want to allow these things to be accessed
     directly by subscripting, in addition to whatever operations you plan
@@ -375,12 +410,27 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
     using <code class="literal">point[0]</code> and <code class="literal">point[1]</code>.
     Note that
     this facility only works for fixed-length types whose internal form
-    is exactly a sequence of identical fixed-length fields.  A subscriptable
-    variable-length type must have the generalized internal representation
-    used by <code class="literal">array_in</code> and <code class="literal">array_out</code>.
+    is exactly a sequence of identical fixed-length fields.
     For historical reasons (i.e., this is clearly wrong but it's far too
     late to change it), subscripting of fixed-length array types starts from
     zero, rather than from one as for variable-length arrays.
+   </p><p>
+    Specifying the <code class="option">SUBSCRIPT</code> option allows a data type to
+    be subscripted, even though the system does not otherwise regard it as
+    an array type.  The behavior just described for fixed-length arrays is
+    actually implemented by the <code class="option">SUBSCRIPT</code> handler
+    function <code class="function">raw_array_subscript_handler</code>, which is
+    used automatically if you specify <code class="option">ELEMENT</code> for a
+    fixed-length type without also writing <code class="option">SUBSCRIPT</code>.
+   </p><p>
+    When specifying a custom <code class="option">SUBSCRIPT</code> function, it is
+    not necessary to specify <code class="option">ELEMENT</code> unless
+    the <code class="option">SUBSCRIPT</code> handler function needs to
+    consult <code class="structfield">typelem</code> to find out what to return.
+    Be aware that specifying <code class="option">ELEMENT</code> causes the system to
+    assume that the new type contains, or is somehow physically dependent on,
+    the element type; thus for example changing properties of the element
+    type won't be allowed if there are any columns of the dependent type.
    </p></div></div><div class="refsect1" id="id-1.9.3.94.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>name</code></em></span></dt><dd><p>
       The name (optionally schema-qualified) of a type to be created.
      </p></dd><dt><span class="term"><em class="replaceable"><code>attribute_name</code></em></span></dt><dd><p>
@@ -403,6 +453,8 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
       The name of the canonicalization function for the range type.
      </p></dd><dt><span class="term"><em class="replaceable"><code>subtype_diff_function</code></em></span></dt><dd><p>
       The name of a difference function for the subtype.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>multirange_type_name</code></em></span></dt><dd><p>
+      The name of the corresponding multirange type.
      </p></dd><dt><span class="term"><em class="replaceable"><code>input_function</code></em></span></dt><dd><p>
       The name of a function that converts data from the type's
       external textual form to its internal form.
@@ -424,6 +476,9 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
      </p></dd><dt><span class="term"><em class="replaceable"><code>analyze_function</code></em></span></dt><dd><p>
       The name of a function that performs statistical analysis for the
       data type.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>subscript_function</code></em></span></dt><dd><p>
+      The name of a function that defines what subscripting a value of the
+      data type does.
      </p></dd><dt><span class="term"><em class="replaceable"><code>internallength</code></em></span></dt><dd><p>
       A numeric constant that specifies the length in bytes of the new
       type's internal representation.  The default assumption is that
@@ -451,7 +506,7 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
       The category code (a single ASCII character) for this type.
       The default is <code class="literal">'U'</code> for <span class="quote">“<span class="quote">user-defined type</span>”</span>.
       Other standard category codes can be found in
-      <a class="xref" href="catalog-pg-type.html#CATALOG-TYPCATEGORY-TABLE" title="Table 52.63. typcategory Codes">Table 52.63</a>.  You may also choose
+      <a class="xref" href="catalog-pg-type.html#CATALOG-TYPCATEGORY-TABLE" title="Table 53.65. typcategory Codes">Table 53.65</a>.  You may also choose
       other ASCII characters in order to create custom categories.
      </p></dd><dt><span class="term"><em class="replaceable"><code>preferred</code></em></span></dt><dd><p>
       True if this type is a preferred type within its type category,
@@ -483,7 +538,7 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
    Before <span class="productname">PostgreSQL</span> version 8.3, the name of
    a generated array type was always exactly the element type's name with one
    underscore character (<code class="literal">_</code>) prepended.  (Type names were
-   therefore restricted in length to one less character than other names.)
+   therefore restricted in length to one fewer character than other names.)
    While this is still usually the case, the array type name may vary from
    this in case of maximum-length names or collisions with user type names
    that begin with underscore.  Writing code that depends on this convention
@@ -511,15 +566,14 @@ CREATE TYPE <em class="replaceable"><code>name</code></em>
    definitions, a shell type will only be made this way when the input
    function is written in C.
   </p><p>
-   In <span class="productname">PostgreSQL</span> versions before 7.3, it
-   was customary to avoid creating a shell type at all, by replacing the
-   functions' forward references to the type name with the placeholder
-   pseudo-type <code class="type">opaque</code>.  The <code class="type">cstring</code> arguments and
-   results also had to be declared as <code class="type">opaque</code> before 7.3.  To
-   support loading of old dump files, <code class="command">CREATE TYPE</code> will
-   accept I/O functions declared using <code class="type">opaque</code>, but it will issue
-   a notice and change the function declarations to use the correct
-   types.
+   In <span class="productname">PostgreSQL</span> version 16 and later,
+   it is desirable for base types' input functions to
+   return <span class="quote">“<span class="quote">soft</span>”</span> errors using the
+   new <code class="function">errsave()</code>/<code class="function">ereturn()</code>
+   mechanism, rather than throwing <code class="function">ereport()</code>
+   exceptions as in previous versions.
+   See <code class="filename">src/backend/utils/fmgr/README</code> for more
+   information.
   </p></div><div class="refsect1" id="id-1.9.3.94.8"><h2>Examples</h2><p>
    This example creates a composite type and uses it in
    a function definition:
@@ -595,7 +649,7 @@ CREATE TABLE big_objs (
 </pre><p>
   </p><p>
    More examples, including suitable input and output functions, are
-   in <a class="xref" href="xtypes.html" title="38.12. User-defined Types">Section 38.12</a>.
+   in <a class="xref" href="xtypes.html" title="38.13. User-Defined Types">Section 38.13</a>.
   </p></div><div class="refsect1" id="SQL-CREATETYPE-COMPATIBILITY"><h2>Compatibility</h2><p>
    The first form of the <code class="command">CREATE TYPE</code> command, which
    creates a composite type, conforms to the <acronym class="acronym">SQL</acronym> standard.
@@ -607,4 +661,4 @@ CREATE TABLE big_objs (
    The ability to create a composite type with zero attributes is
    a <span class="productname">PostgreSQL</span>-specific deviation from the
    standard (analogous to the same case in <code class="command">CREATE TABLE</code>).
-  </p></div><div class="refsect1" id="SQL-CREATETYPE-SEE-ALSO"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-altertype.html" title="ALTER TYPE"><span class="refentrytitle">ALTER TYPE</span></a>, <a class="xref" href="sql-createdomain.html" title="CREATE DOMAIN"><span class="refentrytitle">CREATE DOMAIN</span></a>, <a class="xref" href="sql-createfunction.html" title="CREATE FUNCTION"><span class="refentrytitle">CREATE FUNCTION</span></a>, <a class="xref" href="sql-droptype.html" title="DROP TYPE"><span class="refentrytitle">DROP TYPE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createtrigger.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createuser.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE TRIGGER </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> CREATE USER</td></tr></table></div></body></html>
+  </p></div><div class="refsect1" id="SQL-CREATETYPE-SEE-ALSO"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-altertype.html" title="ALTER TYPE"><span class="refentrytitle">ALTER TYPE</span></a>, <a class="xref" href="sql-createdomain.html" title="CREATE DOMAIN"><span class="refentrytitle">CREATE DOMAIN</span></a>, <a class="xref" href="sql-createfunction.html" title="CREATE FUNCTION"><span class="refentrytitle">CREATE FUNCTION</span></a>, <a class="xref" href="sql-droptype.html" title="DROP TYPE"><span class="refentrytitle">DROP TYPE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createtrigger.html" title="CREATE TRIGGER">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createuser.html" title="CREATE USER">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE TRIGGER </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> CREATE USER</td></tr></table></div></body></html>

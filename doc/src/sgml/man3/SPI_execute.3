@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SPI_execute
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "SPI_EXECUTE" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "SPI_EXECUTE" "3" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -154,29 +154,36 @@ is defined thus:
 .RS 4
 .\}
 .nf
-typedef struct
+typedef struct SPITupleTable
 {
+    /* Public members */
+    TupleDesc   tupdesc;        /* tuple descriptor */
+    HeapTuple  *vals;           /* array of tuples */
+    uint64      numvals;        /* number of valid tuples */
+
+    /* Private members, not intended for external callers */
+    uint64      alloced;        /* allocated length of vals array */
     MemoryContext tuptabcxt;    /* memory context of result table */
-    uint64      alloced;        /* number of alloced vals */
-    uint64      free;           /* number of free vals */
-    TupleDesc   tupdesc;        /* row descriptor */
-    HeapTuple  *vals;           /* rows */
+    slist_node  next;           /* link for internal bookkeeping */
+    SubTransactionId subid;     /* subxact in which tuptable was created */
 } SPITupleTable;
 .fi
 .if n \{\
 .RE
 .\}
 .sp
-
+The fields
+tupdesc,
+vals, and
+numvals
+can be used by SPI callers; the remaining fields are internal\&.
 vals
-is an array of pointers to rows\&. (The number of valid entries is given by
-\fISPI_processed\fR\&.)
+is an array of pointers to rows\&. The number of rows is given by
+numvals
+(for somewhat historical reasons, this count is also returned in
+\fISPI_processed\fR)\&.
 tupdesc
 is a row descriptor which you can pass to SPI functions dealing with rows\&.
-tuptabcxt,
-alloced, and
-free
-are internal fields not intended for use by SPI callers\&.
 .PP
 \fBSPI_finish\fR
 frees all
@@ -238,6 +245,13 @@ SPI_OK_UPDATE
 .RS 4
 if an
 \fBUPDATE\fR
+was executed
+.RE
+.PP
+SPI_OK_MERGE
+.RS 4
+if a
+\fBMERGE\fR
 was executed
 .RE
 .PP

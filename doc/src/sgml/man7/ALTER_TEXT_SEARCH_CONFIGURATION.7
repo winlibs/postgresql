@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER TEXT SEARCH CONFIGURATION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER TEXT SEARCH CONFIGURATION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER TEXT SEARCH CONFIGURATION" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -43,7 +43,7 @@ ALTER TEXT SEARCH CONFIGURATION \fIname\fR
 ALTER TEXT SEARCH CONFIGURATION \fIname\fR
     DROP MAPPING [ IF EXISTS ] FOR \fItoken_type\fR [, \&.\&.\&. ]
 ALTER TEXT SEARCH CONFIGURATION \fIname\fR RENAME TO \fInew_name\fR
-ALTER TEXT SEARCH CONFIGURATION \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+ALTER TEXT SEARCH CONFIGURATION \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 ALTER TEXT SEARCH CONFIGURATION \fIname\fR SET SCHEMA \fInew_schema\fR
 .fi
 .SH "DESCRIPTION"

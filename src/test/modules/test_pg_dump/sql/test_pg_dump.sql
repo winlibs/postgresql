@@ -3,7 +3,8 @@ CREATE EXTENSION test_pg_dump;
 
 ALTER EXTENSION test_pg_dump ADD DATABASE postgres; -- error
 
-CREATE TABLE test_pg_dump_t1 (c1 int);
+CREATE TABLE test_pg_dump_t1 (c1 int, junk text);
+ALTER TABLE test_pg_dump_t1 DROP COLUMN junk;  -- to exercise dropped-col cases
 CREATE VIEW test_pg_dump_v1 AS SELECT * FROM test_pg_dump_t1;
 CREATE MATERIALIZED VIEW test_pg_dump_mv1 AS SELECT * FROM test_pg_dump_t1;
 CREATE SCHEMA test_pg_dump_s1;
@@ -105,3 +106,8 @@ ALTER EXTENSION test_pg_dump DROP SERVER s0;
 ALTER EXTENSION test_pg_dump DROP TABLE test_pg_dump_t1;
 ALTER EXTENSION test_pg_dump DROP TYPE test_pg_dump_e1;
 ALTER EXTENSION test_pg_dump DROP VIEW test_pg_dump_v1;
+
+DROP EXTENSION test_pg_dump;
+
+-- shouldn't be anything left in pg_init_privs
+SELECT * FROM pg_init_privs WHERE privtype = 'e';

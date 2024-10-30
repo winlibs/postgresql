@@ -1,3 +1,6 @@
+
+# Copyright (c) 2021-2023, PostgreSQL Global Development Group
+
 package Project;
 
 #
@@ -20,20 +23,20 @@ sub _new
 	};
 	confess("Bad project type: $type\n") unless exists $good_types->{$type};
 	my $self = {
-		name                  => $name,
-		type                  => $type,
-		guid                  => Win32::GuidGen(),
-		files                 => {},
-		references            => [],
-		libraries             => [],
-		suffixlib             => [],
-		includes              => '',
-		prefixincludes        => '',
-		defines               => ';',
-		solution              => $solution,
-		disablewarnings       => '4018;4244;4273;4102;4090;4267',
+		name => $name,
+		type => $type,
+		guid => $^O eq "MSWin32" ? Win32::GuidGen() : 'FAKE',
+		files => {},
+		references => [],
+		libraries => [],
+		suffixlib => [],
+		includes => [],
+		prefixincludes => '',
+		defines => ';',
+		solution => $solution,
+		disablewarnings => '4018;4244;4273;4101;4102;4090;4267',
 		disablelinkerwarnings => '',
-		platform              => $solution->{platform},
+		platform => $solution->{platform},
 	};
 
 	bless($self, $classname);
@@ -44,20 +47,57 @@ sub AddFile
 {
 	my ($self, $filename) = @_;
 
+	$self->FindAndAddAdditionalFiles($filename);
 	$self->{files}->{$filename} = 1;
+	return;
+}
+
+sub AddDependantFiles
+{
+	my ($self, $filename) = @_;
+
+	$self->FindAndAddAdditionalFiles($filename);
 	return;
 }
 
 sub AddFiles
 {
 	my $self = shift;
-	my $dir  = shift;
+	my $dir = shift;
 
 	while (my $f = shift)
 	{
-		$self->{files}->{ $dir . "/" . $f } = 1;
+		$self->AddFile($dir . "/" . $f, 1);
 	}
 	return;
+}
+
+# Handle Makefile rules by searching for other files which exist with the same
+# name but a different file extension and add those files too.
+sub FindAndAddAdditionalFiles
+{
+	my $self = shift;
+	my $fname = shift;
+	$fname =~ /(.*)(\.[^.]+)$/;
+	my $filenoext = $1;
+	my $fileext = $2;
+
+	# For .c files, check if either a .l or .y file of the same name
+	# exists and add that too.
+	if ($fileext eq ".c")
+	{
+		my $file = $filenoext . ".l";
+		if (-e $file)
+		{
+			$self->AddFile($file);
+		}
+
+		$file = $filenoext . ".y";
+		if (-e $file)
+		{
+			$self->AddFile($file);
+		}
+	}
 }
 
 sub ReplaceFile
@@ -74,14 +114,14 @@ sub ReplaceFile
 			if ($file eq $filename)
 			{
 				delete $self->{files}{$file};
-				$self->{files}{$newname} = 1;
+				$self->AddFile($newname);
 				return;
 			}
 		}
 		elsif ($file =~ m/($re)/)
 		{
 			delete $self->{files}{$file};
-			$self->{files}{"$newname/$filename"} = 1;
+			$self->AddFile("$newname/$filename");
 			return;
 		}
 	}
@@ -121,7 +161,10 @@ sub AddReference
 
 	while (my $ref = shift)
 	{
-		push @{ $self->{references} }, $ref;
+		if (!grep { $_ eq $ref } @{ $self->{references} })
+		{
+			push @{ $self->{references} }, $ref;
+		}
 		$self->AddLibrary(
 			"__CFGNAME__/" . $ref->{name} . "/" . $ref->{name} . ".lib");
 	}
@@ -132,12 +175,17 @@ sub AddLibrary
 {
 	my ($self, $lib, $dbgsuffix) = @_;
 
-	if ($lib =~ m/\s/)
+	# quote lib name if it has spaces and isn't already quoted
+	if ($lib =~ m/\s/ && $lib !~ m/^[&]quot;/)
 	{
 		$lib = '&quot;' . $lib . "&quot;";
 	}
 
-	push @{ $self->{libraries} }, $lib;
+	if (!grep { $_ eq $lib } @{ $self->{libraries} })
+	{
+		push @{ $self->{libraries} }, $lib;
+	}
+
 	if ($dbgsuffix)
 	{
 		push @{ $self->{suffixlib} }, $lib;
@@ -147,13 +195,15 @@ sub AddLibrary
 
 sub AddIncludeDir
 {
-	my ($self, $inc) = @_;
+	my ($self, $incstr) = @_;
 
-	if ($self->{includes} ne '')
+	foreach my $inc (split(/;/, $incstr))
 	{
-		$self->{includes} .= ';';
+		if (!grep { $_ eq $inc } @{ $self->{includes} })
+		{
+			push @{ $self->{includes} }, $inc;
+		}
 	}
-	$self->{includes} .= $inc;
 	return;
 }
 
@@ -179,8 +229,8 @@ sub FullExportDLL
 	my ($self, $libname) = @_;
 
 	$self->{builddef} = 1;
-	$self->{def}      = "./__CFGNAME__/$self->{name}/$self->{name}.def";
-	$self->{implib}   = "__CFGNAME__/$self->{name}/$libname";
+	$self->{def} = "./__CFGNAME__/$self->{name}/$self->{name}.def";
+	$self->{implib} = "__CFGNAME__/$self->{name}/$libname";
 	return;
 }
 
@@ -213,13 +263,13 @@ sub AddDir
 	}
 	while ($mf =~ m{^(?:EXTRA_)?OBJS[^=]*=\s*(.*)$}m)
 	{
-		my $s         = $1;
+		my $s = $1;
 		my $filter_re = qr{\$\(filter ([^,]+),\s+\$\(([^\)]+)\)\)};
 		while ($s =~ /$filter_re/)
 		{
 
 			# Process $(filter a b c, $(VAR)) expressions
-			my $list   = $1;
+			my $list = $1;
 			my $filter = $2;
 			$list =~ s/\.o/\.c/g;
 			my @pieces = split /\s+/, $list;
@@ -230,8 +280,7 @@ sub AddDir
 				if ($filter eq "LIBOBJS")
 				{
 					no warnings qw(once);
-					if (grep(/$p/, @main::pgportfiles, @main::pgcommonfiles)
-						== 1)
+					if (grep(/$p/, @main::pgportfiles) == 1)
 					{
 						$p =~ s/\.c/\.o/;
 						$matches .= $p . " ";
@@ -256,11 +305,11 @@ sub AddDir
 			if ($f =~ /^\$\(top_builddir\)\/(.*)/)
 			{
 				$f = $1;
-				$self->{files}->{$f} = 1;
+				$self->AddFile($f);
 			}
 			else
 			{
-				$self->{files}->{"$reldir/$f"} = 1;
+				$self->AddFile("$reldir/$f");
 			}
 		}
 		$mf =~ s{OBJS[^=]*=\s*(.*)$}{}m;
@@ -272,8 +321,8 @@ sub AddDir
 	  qr{^([^:\n\$]+\.c)\s*:\s*(?:%\s*: )?\$(\([^\)]+\))\/(.*)\/[^\/]+\n}m;
 	while ($mf =~ m{$replace_re}m)
 	{
-		my $match  = $1;
-		my $top    = $2;
+		my $match = $1;
+		my $top = $2;
 		my $target = $3;
 		my @pieces = split /\s+/, $match;
 		foreach my $fn (@pieces)
@@ -318,10 +367,6 @@ sub AddResourceFile
 {
 	my ($self, $dir, $desc, $ico) = @_;
 
-	my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) =
-	  localtime(time);
-	my $d = sprintf("%02d%03d", ($year - 100), $yday);
-
 	if (Solution::IsNewer("$dir/win32ver.rc", 'src/port/win32ver.rc'))
 	{
 		print "Generating win32ver.rc for $dir\n";
@@ -334,10 +379,17 @@ sub AddResourceFile
 		{
 			s/FILEDESC/"$desc"/gm;
 			s/_ICO_/$icostr/gm;
-			s/(VERSION.*),0/$1,$d/;
 			if ($self->{type} eq "dll")
 			{
 				s/VFT_APP/VFT_DLL/gm;
+				my $name = $self->{name};
+				s/_INTERNAL_NAME_/"$name"/;
+				s/_ORIGINAL_NAME_/"$name.dll"/;
+			}
+			else
+			{
+				/_INTERNAL_NAME_/ && next;
+				/_ORIGINAL_NAME_/ && next;
 			}
 			print $o $_;
 		}
@@ -361,13 +413,6 @@ sub DisableLinkerWarnings
 sub Save
 {
 	my ($self) = @_;
-
-	# If doing DLL and haven't specified a DEF file, do a full export of all symbols
-	# in the project.
-	if ($self->{type} eq "dll" && !$self->{def})
-	{
-		$self->FullExportDLL($self->{name} . ".lib");
-	}
 
 	# Warning 4197 is about double exporting, disable this per
 	# http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=99193
@@ -412,13 +457,10 @@ sub read_file
 {
 	my $filename = shift;
 	my $F;
-	my $t = $/;
-
-	undef $/;
+	local $/ = undef;
 	open($F, '<', $filename) || croak "Could not open file $filename\n";
 	my $txt = <$F>;
 	close($F);
-	$/ = $t;
 
 	return $txt;
 }
@@ -427,15 +469,12 @@ sub read_makefile
 {
 	my $reldir = shift;
 	my $F;
-	my $t = $/;
-
-	undef $/;
+	local $/ = undef;
 	open($F, '<', "$reldir/GNUmakefile")
 	  || open($F, '<', "$reldir/Makefile")
 	  || confess "Could not open $reldir/Makefile\n";
 	my $txt = <$F>;
 	close($F);
-	$/ = $t;
 
 	return $txt;
 }

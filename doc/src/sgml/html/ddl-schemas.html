@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>5.8. Schemas</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="ddl-rowsecurity.html" title="5.7. Row Security Policies" /><link rel="next" href="ddl-inherit.html" title="5.9. Inheritance" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">5.8. Schemas</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="ddl-rowsecurity.html" title="5.7. Row Security Policies">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="ddl.html" title="Chapter 5. Data Definition">Up</a></td><th width="60%" align="center">Chapter 5. Data Definition</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="ddl-inherit.html" title="5.9. Inheritance">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="DDL-SCHEMAS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">5.8. Schemas</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-CREATE">5.8.1. Creating a Schema</a></span></dt><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-PUBLIC">5.8.2. The Public Schema</a></span></dt><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-PATH">5.8.3. The Schema Search Path</a></span></dt><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-PRIV">5.8.4. Schemas and Privileges</a></span></dt><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-CATALOG">5.8.5. The System Catalog Schema</a></span></dt><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-PATTERNS">5.8.6. Usage Patterns</a></span></dt><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-PORTABILITY">5.8.7. Portability</a></span></dt></dl></div><a id="id-1.5.4.10.2" class="indexterm"></a><p>
-   A <span class="productname">PostgreSQL</span> database cluster
-   contains one or more named databases.  Users and groups of users are
-   shared across the entire cluster, but no other data is shared across
-   databases.  Any given client connection to the server can access
-   only the data in a single database, the one specified in the connection
-   request.
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>5.9. Schemas</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="ddl-rowsecurity.html" title="5.8. Row Security Policies" /><link rel="next" href="ddl-inherit.html" title="5.10. Inheritance" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">5.9. Schemas</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="ddl-rowsecurity.html" title="5.8. Row Security Policies">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="ddl.html" title="Chapter 5. Data Definition">Up</a></td><th width="60%" align="center">Chapter 5. Data Definition</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="ddl-inherit.html" title="5.10. Inheritance">Next</a></td></tr></table><hr /></div><div class="sect1" id="DDL-SCHEMAS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">5.9. Schemas <a href="#DDL-SCHEMAS" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-CREATE">5.9.1. Creating a Schema</a></span></dt><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-PUBLIC">5.9.2. The Public Schema</a></span></dt><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-PATH">5.9.3. The Schema Search Path</a></span></dt><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-PRIV">5.9.4. Schemas and Privileges</a></span></dt><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-CATALOG">5.9.5. The System Catalog Schema</a></span></dt><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-PATTERNS">5.9.6. Usage Patterns</a></span></dt><dt><span class="sect2"><a href="ddl-schemas.html#DDL-SCHEMAS-PORTABILITY">5.9.7. Portability</a></span></dt></dl></div><a id="id-1.5.4.11.2" class="indexterm"></a><p>
+   A <span class="productname">PostgreSQL</span> database cluster contains
+   one or more named databases.  Roles and a few other object types are
+   shared across the entire cluster.  A client connection to the server
+   can only access data in a single database, the one specified in the
+   connection request.
   </p><div class="note"><h3 class="title">Note</h3><p>
     Users of a cluster do not necessarily have the privilege to access every
-    database in the cluster.  Sharing of user names means that there
-    cannot be different users named, say, <code class="literal">joe</code> in two databases
+    database in the cluster.  Sharing of role names means that there
+    cannot be different roles named, say, <code class="literal">joe</code> in two databases
     in the same cluster; but the system can be configured to allow
     <code class="literal">joe</code> access to only some of the databases.
    </p></div><p>
@@ -38,14 +37,14 @@
 
    Schemas are analogous to directories at the operating system level,
    except that schemas cannot be nested.
-  </p><div class="sect2" id="DDL-SCHEMAS-CREATE"><div class="titlepage"><div><div><h3 class="title">5.8.1. Creating a Schema</h3></div></div></div><a id="id-1.5.4.10.7.2" class="indexterm"></a><p>
+  </p><div class="sect2" id="DDL-SCHEMAS-CREATE"><div class="titlepage"><div><div><h3 class="title">5.9.1. Creating a Schema <a href="#DDL-SCHEMAS-CREATE" class="id_link">#</a></h3></div></div></div><a id="id-1.5.4.11.7.2" class="indexterm"></a><p>
     To create a schema, use the <a class="xref" href="sql-createschema.html" title="CREATE SCHEMA"><span class="refentrytitle">CREATE SCHEMA</span></a>
     command.  Give the schema a name
     of your choice.  For example:
 </p><pre class="programlisting">
 CREATE SCHEMA myschema;
 </pre><p>
-   </p><a id="id-1.5.4.10.7.4" class="indexterm"></a><a id="id-1.5.4.10.7.5" class="indexterm"></a><p>
+   </p><a id="id-1.5.4.11.7.4" class="indexterm"></a><a id="id-1.5.4.11.7.5" class="indexterm"></a><p>
     To create or access objects in a schema, write a
     <em class="firstterm">qualified name</em> consisting of the schema name and
     table name separated by a dot:
@@ -62,8 +61,8 @@ CREATE SCHEMA myschema;
 </p><pre class="synopsis">
 <em class="replaceable"><code>database</code></em><code class="literal">.</code><em class="replaceable"><code>schema</code></em><code class="literal">.</code><em class="replaceable"><code>table</code></em>
 </pre><p>
-    can be used too, but at present this is just for <span class="foreignphrase"><em class="foreignphrase">pro
-    forma</em></span> compliance with the SQL standard.  If you write a database name,
+    can be used too, but at present this is just for pro forma
+    compliance with the SQL standard.  If you write a database name,
     it must be the same as the database you are connected to.
    </p><p>
     So to create a table in the new schema, use:
@@ -72,7 +71,7 @@ CREATE TABLE myschema.mytable (
  ...
 );
 </pre><p>
-   </p><a id="id-1.5.4.10.7.9" class="indexterm"></a><p>
+   </p><a id="id-1.5.4.11.7.9" class="indexterm"></a><p>
     To drop a schema if it's empty (all objects in it have been
     dropped), use:
 </p><pre class="programlisting">
@@ -82,7 +81,7 @@ DROP SCHEMA myschema;
 </p><pre class="programlisting">
 DROP SCHEMA myschema CASCADE;
 </pre><p>
-    See <a class="xref" href="ddl-depend.html" title="5.13. Dependency Tracking">Section 5.13</a> for a description of the general
+    See <a class="xref" href="ddl-depend.html" title="5.14. Dependency Tracking">Section 5.14</a> for a description of the general
     mechanism behind this.
    </p><p>
     Often you will want to create a schema owned by someone else
@@ -92,11 +91,11 @@ DROP SCHEMA myschema CASCADE;
 CREATE SCHEMA <em class="replaceable"><code>schema_name</code></em> AUTHORIZATION <em class="replaceable"><code>user_name</code></em>;
 </pre><p>
     You can even omit the schema name, in which case the schema name
-    will be the same as the user name.  See <a class="xref" href="ddl-schemas.html#DDL-SCHEMAS-PATTERNS" title="5.8.6. Usage Patterns">Section 5.8.6</a> for how this can be useful.
+    will be the same as the user name.  See <a class="xref" href="ddl-schemas.html#DDL-SCHEMAS-PATTERNS" title="5.9.6. Usage Patterns">Section 5.9.6</a> for how this can be useful.
    </p><p>
     Schema names beginning with <code class="literal">pg_</code> are reserved for
     system purposes and cannot be created by users.
-   </p></div><div class="sect2" id="DDL-SCHEMAS-PUBLIC"><div class="titlepage"><div><div><h3 class="title">5.8.2. The Public Schema</h3></div></div></div><a id="id-1.5.4.10.8.2" class="indexterm"></a><p>
+   </p></div><div class="sect2" id="DDL-SCHEMAS-PUBLIC"><div class="titlepage"><div><div><h3 class="title">5.9.2. The Public Schema <a href="#DDL-SCHEMAS-PUBLIC" class="id_link">#</a></h3></div></div></div><a id="id-1.5.4.11.8.2" class="indexterm"></a><p>
     In the previous sections we created tables without specifying any
     schema names.  By default such tables (and other objects) are
     automatically put into a schema named <span class="quote">“<span class="quote">public</span>”</span>.  Every new
@@ -108,7 +107,7 @@ CREATE TABLE products ( ... );
 </p><pre class="programlisting">
 CREATE TABLE public.products ( ... );
 </pre><p>
-   </p></div><div class="sect2" id="DDL-SCHEMAS-PATH"><div class="titlepage"><div><div><h3 class="title">5.8.3. The Schema Search Path</h3></div></div></div><a id="id-1.5.4.10.9.2" class="indexterm"></a><a id="id-1.5.4.10.9.3" class="indexterm"></a><a id="id-1.5.4.10.9.4" class="indexterm"></a><p>
+   </p></div><div class="sect2" id="DDL-SCHEMAS-PATH"><div class="titlepage"><div><div><h3 class="title">5.9.3. The Schema Search Path <a href="#DDL-SCHEMAS-PATH" class="id_link">#</a></h3></div></div></div><a id="id-1.5.4.11.9.2" class="indexterm"></a><a id="id-1.5.4.11.9.3" class="indexterm"></a><a id="id-1.5.4.11.9.4" class="indexterm"></a><p>
     Qualified names are tedious to write, and it's often best not to
     wire a particular schema name into applications anyway.  Therefore
     tables are often referred to by <em class="firstterm">unqualified names</em>,
@@ -130,12 +129,12 @@ CREATE TABLE public.products ( ... );
     ordinary query, a malicious user able to create objects in a schema of
     your search path can take control and execute arbitrary SQL functions as
     though you executed them.
-   </p><a id="id-1.5.4.10.9.7" class="indexterm"></a><p>
+   </p><a id="id-1.5.4.11.9.7" class="indexterm"></a><p>
     The first schema named in the search path is called the current schema.
     Aside from being the first schema searched, it is also the schema in
     which new tables will be created if the <code class="command">CREATE TABLE</code>
     command does not specify a schema name.
-   </p><a id="id-1.5.4.10.9.9" class="indexterm"></a><p>
+   </p><a id="id-1.5.4.11.9.9" class="indexterm"></a><p>
     To show the current search path, use the following command:
 </p><pre class="programlisting">
 SHOW search_path;
@@ -181,7 +180,7 @@ SET search_path TO myschema;
     explicit qualification.  There is nothing special about the public
     schema except that it exists by default.  It can be dropped, too.
    </p><p>
-    See also <a class="xref" href="functions-info.html" title="9.25. System Information Functions">Section 9.25</a> for other ways to manipulate
+    See also <a class="xref" href="functions-info.html" title="9.26. System Information Functions and Operators">Section 9.26</a> for other ways to manipulate
     the schema search path.
    </p><p>
     The search path works in the same way for data type names, function names,
@@ -198,22 +197,20 @@ SELECT 3 OPERATOR(pg_catalog.+) 4;
 </pre><p>
     In practice one usually relies on the search path for operators,
     so as not to have to write anything so ugly as that.
-   </p></div><div class="sect2" id="DDL-SCHEMAS-PRIV"><div class="titlepage"><div><div><h3 class="title">5.8.4. Schemas and Privileges</h3></div></div></div><a id="id-1.5.4.10.10.2" class="indexterm"></a><p>
+   </p></div><div class="sect2" id="DDL-SCHEMAS-PRIV"><div class="titlepage"><div><div><h3 class="title">5.9.4. Schemas and Privileges <a href="#DDL-SCHEMAS-PRIV" class="id_link">#</a></h3></div></div></div><a id="id-1.5.4.11.10.2" class="indexterm"></a><p>
     By default, users cannot access any objects in schemas they do not
     own.  To allow that, the owner of the schema must grant the
-    <code class="literal">USAGE</code> privilege on the schema.  To allow users
-    to make use of the objects in the schema, additional privileges
-    might need to be granted, as appropriate for the object.
+    <code class="literal">USAGE</code> privilege on the schema.  By default, everyone
+    has that privilege on the schema <code class="literal">public</code>.  To allow
+    users to make use of the objects in a schema, additional privileges might
+    need to be granted, as appropriate for the object.
    </p><p>
-    A user can also be allowed to create objects in someone else's
-    schema.  To allow that, the <code class="literal">CREATE</code> privilege on
-    the schema needs to be granted.  Note that by default, everyone
-    has <code class="literal">CREATE</code> and <code class="literal">USAGE</code> privileges on
-    the schema
-    <code class="literal">public</code>.  This allows all users that are able to
-    connect to a given database to create objects in its
-    <code class="literal">public</code> schema.
-    Some <a class="link" href="ddl-schemas.html#DDL-SCHEMAS-PATTERNS" title="5.8.6. Usage Patterns">usage patterns</a> call for
+    A user can also be allowed to create objects in someone else's schema.  To
+    allow that, the <code class="literal">CREATE</code> privilege on the schema needs to
+    be granted.  In databases upgraded from
+    <span class="productname">PostgreSQL</span> 14 or earlier, everyone has that
+    privilege on the schema <code class="literal">public</code>.
+    Some <a class="link" href="ddl-schemas.html#DDL-SCHEMAS-PATTERNS" title="5.9.6. Usage Patterns">usage patterns</a> call for
     revoking that privilege:
 </p><pre class="programlisting">
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
@@ -223,7 +220,7 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
     first sense it is an identifier, in the second sense it is a
     key word, hence the different capitalization; recall the
     guidelines from <a class="xref" href="sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS" title="4.1.1. Identifiers and Key Words">Section 4.1.1</a>.)
-   </p></div><div class="sect2" id="DDL-SCHEMAS-CATALOG"><div class="titlepage"><div><div><h3 class="title">5.8.5. The System Catalog Schema</h3></div></div></div><a id="id-1.5.4.10.11.2" class="indexterm"></a><p>
+   </p></div><div class="sect2" id="DDL-SCHEMAS-CATALOG"><div class="titlepage"><div><div><h3 class="title">5.9.5. The System Catalog Schema <a href="#DDL-SCHEMAS-CATALOG" class="id_link">#</a></h3></div></div></div><a id="id-1.5.4.11.11.2" class="indexterm"></a><p>
     In addition to <code class="literal">public</code> and user-created schemas, each
     database contains a <code class="literal">pg_catalog</code> schema, which contains
     the system tables and all the built-in data types, functions, and
@@ -244,52 +241,61 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
     names beginning with <code class="literal">pg_</code>, so that they will not
     conflict with unqualified user-table names so long as users avoid
     the <code class="literal">pg_</code> prefix.
-   </p></div><div class="sect2" id="DDL-SCHEMAS-PATTERNS"><div class="titlepage"><div><div><h3 class="title">5.8.6. Usage Patterns</h3></div></div></div><p>
-    Schemas can be used to organize your data in many ways.  There are a few
-    usage patterns easily supported by the default configuration, only one of
-    which suffices when database users mistrust other database users:
+   </p></div><div class="sect2" id="DDL-SCHEMAS-PATTERNS"><div class="titlepage"><div><div><h3 class="title">5.9.6. Usage Patterns <a href="#DDL-SCHEMAS-PATTERNS" class="id_link">#</a></h3></div></div></div><p>
+    Schemas can be used to organize your data in many ways.
+    A <em class="firstterm">secure schema usage pattern</em> prevents untrusted
+    users from changing the behavior of other users' queries.  When a database
+    does not use a secure schema usage pattern, users wishing to securely
+    query that database would take protective action at the beginning of each
+    session.  Specifically, they would begin each session by
+    setting <code class="varname">search_path</code> to the empty string or otherwise
+    removing schemas that are writable by non-superusers
+    from <code class="varname">search_path</code>.  There are a few usage patterns
+    easily supported by the default configuration:
     </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
-       Constrain ordinary users to user-private schemas.  To implement this,
-       issue <code class="literal">REVOKE CREATE ON SCHEMA public FROM PUBLIC</code>,
-       and create a schema for each user with the same name as that user.  If
-       affected users had logged in before this, consider auditing the public
-       schema for objects named like objects in
-       schema <code class="literal">pg_catalog</code>.  Recall that the default search
-       path starts with <code class="literal">$user</code>, which resolves to the user
-       name.  Therefore, if each user has a separate schema, they access their
-       own schemas by default.
+       Constrain ordinary users to user-private schemas.
+       To implement this pattern, first ensure that no schemas have
+       public <code class="literal">CREATE</code> privileges.  Then, for every user
+       needing to create non-temporary objects, create a schema with the
+       same name as that user, for example
+       <code class="literal">CREATE SCHEMA alice AUTHORIZATION alice</code>.
+       (Recall that the default search path starts
+       with <code class="literal">$user</code>, which resolves to the user
+       name. Therefore, if each user has a separate schema, they access
+       their own schemas by default.)  This pattern is a secure schema
+       usage pattern unless an untrusted user is the database owner or
+       has been granted <code class="literal">ADMIN OPTION</code> on a relevant role,
+       in which case no secure schema usage pattern exists.
+      </p><p>
+       In <span class="productname">PostgreSQL</span> 15 and later, the default
+       configuration supports this usage pattern.  In prior versions, or
+       when using a database that has been upgraded from a prior version,
+       you will need to remove the public <code class="literal">CREATE</code>
+       privilege from the <code class="literal">public</code> schema (issue
+       <code class="literal">REVOKE CREATE ON SCHEMA public FROM PUBLIC</code>).
+       Then consider auditing the <code class="literal">public</code> schema for
+       objects named like objects in schema <code class="literal">pg_catalog</code>.
       </p></li><li class="listitem"><p>
-       Remove the public schema from each user's default search path
-       using <code class="literal">ALTER ROLE <em class="replaceable"><code>user</code></em> SET
-       search_path = "$user"</code>.  Everyone retains the ability to
-       create objects in the public schema, but only qualified names will
-       choose those objects.  While qualified table references are fine, calls
-       to functions in the public schema <a class="link" href="typeconv-func.html" title="10.3. Functions">will be
-       unsafe or unreliable</a>.  Also, a user holding
-       the <code class="literal">CREATEROLE</code> privilege can undo this setting and
-       issue arbitrary queries under the identity of users relying on the
-       setting.  If you create functions or extensions in the public schema or
-       grant <code class="literal">CREATEROLE</code> to users not warranting this
-       almost-superuser ability, use the first pattern instead.
+       Remove the public schema from the default search path, by modifying
+       <a class="link" href="config-setting.html#CONFIG-SETTING-CONFIGURATION-FILE" title="20.1.2. Parameter Interaction via the Configuration File"><code class="filename">postgresql.conf</code></a>
+       or by issuing <code class="literal">ALTER ROLE ALL SET search_path =
+       "$user"</code>.  Then, grant privileges to create in the public
+       schema.  Only qualified names will choose public schema objects.  While
+       qualified table references are fine, calls to functions in the public
+       schema <a class="link" href="typeconv-func.html" title="10.3. Functions">will be unsafe or
+       unreliable</a>.  If you create functions or extensions in the public
+       schema, use the first pattern instead.  Otherwise, like the first
+       pattern, this is secure unless an untrusted user is the database owner
+       or has been granted <code class="literal">ADMIN OPTION</code> on a relevant role.
       </p></li><li class="listitem"><p>
-       Remove the public schema from <code class="varname">search_path</code> in
-       <a class="link" href="config-setting.html#CONFIG-SETTING-CONFIGURATION-FILE" title="19.1.2. Parameter Interaction via the Configuration File"><code class="filename">postgresql.conf</code></a>.
-       The ensuing user experience matches the previous pattern.  In addition
-       to that pattern's implications for functions
-       and <code class="literal">CREATEROLE</code>, this trusts database owners
-       like <code class="literal">CREATEROLE</code>.  If you create functions or
-       extensions in the public schema or assign
-       the <code class="literal">CREATEROLE</code>
-       privilege, <code class="literal">CREATEDB</code> privilege or individual database
-       ownership to users not warranting almost-superuser access, use the
-       first pattern instead.
-      </p></li><li class="listitem"><p>
-       Keep the default.  All users access the public schema implicitly.  This
+       Keep the default search path, and grant privileges to create in the
+       public schema.  All users access the public schema implicitly.  This
        simulates the situation where schemas are not available at all, giving
-       a smooth transition from the non-schema-aware world.  However, any user
-       can issue arbitrary queries under the identity of any user not electing
-       to protect itself individually.  This pattern is acceptable only when
-       the database has a single user or a few mutually-trusting users.
+       a smooth transition from the non-schema-aware world.  However, this is
+       never a secure pattern.  It is acceptable only when the database has a
+       single user or a few mutually-trusting users.  In databases upgraded
+       from <span class="productname">PostgreSQL</span> 14 or earlier, this is the
+       default.
       </p></li></ul></div><p>
    </p><p>
     For any pattern, to install shared applications (tables to be used by
@@ -298,7 +304,7 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
     the other users to access them.  Users can then refer to these additional
     objects by qualifying the names with a schema name, or they can put the
     additional schemas into their search path, as they choose.
-   </p></div><div class="sect2" id="DDL-SCHEMAS-PORTABILITY"><div class="titlepage"><div><div><h3 class="title">5.8.7. Portability</h3></div></div></div><p>
+   </p></div><div class="sect2" id="DDL-SCHEMAS-PORTABILITY"><div class="titlepage"><div><div><h3 class="title">5.9.7. Portability <a href="#DDL-SCHEMAS-PORTABILITY" class="id_link">#</a></h3></div></div></div><p>
     In the SQL standard, the notion of objects in the same schema
     being owned by different users does not exist.  Moreover, some
     implementations do not allow you to create schemas that have a
@@ -320,4 +326,4 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
     limited) cross-database access.  If you need to work with those
     systems, then maximum portability would be achieved by not using
     schemas at all.
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ddl-rowsecurity.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ddl.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ddl-inherit.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">5.7. Row Security Policies </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 5.9. Inheritance</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ddl-rowsecurity.html" title="5.8. Row Security Policies">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ddl.html" title="Chapter 5. Data Definition">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ddl-inherit.html" title="5.10. Inheritance">Next</a></td></tr><tr><td width="40%" align="left" valign="top">5.8. Row Security Policies </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 5.10. Inheritance</td></tr></table></div></body></html>

@@ -1,7 +1,8 @@
 <!-- doc/src/sgml/dict-int.sgml -->
 
 <sect1 id="dict-int" xreflabel="dict_int">
- <title>dict_int</title>
+ <title>dict_int &mdash;
+   example full-text search dictionary for integers</title>
 
  <indexterm zone="dict-int">
   <primary>dict_int</primary>
@@ -15,11 +16,17 @@
   unique words, which greatly affects the performance of searching.
  </para>
 
- <sect2>
+ <para>
+  This module is considered <quote>trusted</quote>, that is, it can be
+  installed by non-superusers who have <literal>CREATE</literal> privilege
+  on the current database.
+ </para>
+
+ <sect2 id="dict-int-config">
   <title>Configuration</title>
 
   <para>
-   The dictionary accepts two options:
+   The dictionary accepts three options:
   </para>
 
   <itemizedlist>
@@ -40,10 +47,19 @@
      such an integer cannot be searched for.
     </para>
    </listitem>
+   <listitem>
+    <para>
+     The <literal>absval</literal> parameter specifies whether leading
+     <quote><literal>+</literal></quote> or <quote><literal>-</literal></quote>
+     signs should be removed from integer words.  The default
+     is <literal>false</literal>.  When <literal>true</literal>, the sign is
+     removed before <literal>maxlen</literal> is applied.
+    </para>
+   </listitem>
   </itemizedlist>
  </sect2>
 
- <sect2>
+ <sect2 id="dict-int-usage">
   <title>Usage</title>
 
   <para>

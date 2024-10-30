@@ -1,7 +1,7 @@
 /* src/interfaces/ecpg/preproc/ecpg.c */
 
 /* Main for ecpg, the PostgreSQL embedded SQL precompiler. */
-/* Copyright (c) 1996-2018, PostgreSQL Global Development Group */
+/* Copyright (c) 1996-2023, PostgreSQL Global Development Group */
 
 #include "postgres_fe.h"
 
@@ -9,7 +9,7 @@
 
 #include "getopt_long.h"
 
-#include "extern.h"
+#include "preproc_extern.h"
 
 int			ret_value = 0;
 bool		autocommit = false,
@@ -28,6 +28,7 @@ struct _include_path *include_paths = NULL;
 struct cursor *cur = NULL;
 struct typedefs *types = NULL;
 struct _defines *defines = NULL;
+struct declared_list *g_declared_list = NULL;
 
 static void
 help(const char *progname)
@@ -58,7 +59,8 @@ help(const char *progname)
 	printf(_("  -?, --help     show this help, then exit\n"));
 	printf(_("\nIf no output file is specified, the name is formed by adding .c to the\n"
 			 "input file name, after stripping off .pgc if present.\n"));
-	printf(_("\nReport bugs to <pgsql-bugs@postgresql.org>.\n"));
+	printf(_("\nReport bugs to <%s>.\n"), PACKAGE_BUGREPORT);
+	printf(_("%s home page: <%s>\n"), PACKAGE_NAME, PACKAGE_URL);
 }
 
 static void
@@ -80,35 +82,46 @@ add_include_path(char *path)
 	}
 }
 
+/*
+ * Process a command line -D switch
+ */
 static void
 add_preprocessor_define(char *define)
 {
-	struct _defines *pd = defines;
-	char	   *ptr,
-			   *define_copy = mm_strdup(define);
+	/* copy the argument to avoid relying on argv storage */
+	char	   *define_copy = mm_strdup(define);
+	char	   *ptr;
+	struct _defines *newdef;
 
-	defines = mm_alloc(sizeof(struct _defines));
+	newdef = mm_alloc(sizeof(struct _defines));
 
 	/* look for = sign */
 	ptr = strchr(define_copy, '=');
 	if (ptr != NULL)
 	{
+		/* symbol has a value */
 		char	   *tmp;
 
-		/* symbol has a value */
-		for (tmp = ptr - 1; *tmp == ' '; tmp--);
+		/* strip any spaces between name and '=' */
+		for (tmp = ptr - 1; tmp >= define_copy && *tmp == ' '; tmp--);
 		tmp[1] = '\0';
-		defines->old = define_copy;
-		defines->new = ptr + 1;
+
+		/*
+		 * Note we don't bother to separately malloc cmdvalue; it will never
+		 * be freed so that's not necessary.
+		 */
+		newdef->cmdvalue = ptr + 1;
 	}
 	else
 	{
-		defines->old = define_copy;
-		defines->new = mm_strdup("1");
+		/* define it as "1"; again no need to malloc it */
+		newdef->cmdvalue = "1";
 	}
-	defines->pertinent = true;
-	defines->used = NULL;
-	defines->next = pd;
+	newdef->name = define_copy;
+	newdef->value = mm_strdup(newdef->cmdvalue);
+	newdef->used = NULL;
+	newdef->next = defines;
+	defines = newdef;
 }
 
 #define ECPG_GETOPT_LONG_REGRESSION		1
@@ -155,12 +168,55 @@ main(int argc, char *const argv[])
 	}
 
 	output_filename = NULL;
-	while ((c = getopt_long(argc, argv, "vcio:I:tD:dC:r:h", ecpg_options, NULL)) != -1)
+	while ((c = getopt_long(argc, argv, "cC:dD:hiI:o:r:tv", ecpg_options, NULL)) != -1)
 	{
 		switch (c)
 		{
-			case ECPG_GETOPT_LONG_REGRESSION:
-				regression_mode = true;
+			case 'c':
+				auto_create_c = true;
+				break;
+			case 'C':
+				if (pg_strcasecmp(optarg, "INFORMIX") == 0 || pg_strcasecmp(optarg, "INFORMIX_SE") == 0)
+				{
+					char		pkginclude_path[MAXPGPATH];
+					char		informix_path[MAXPGPATH];
+
+					compat = (pg_strcasecmp(optarg, "INFORMIX") == 0) ? ECPG_COMPAT_INFORMIX : ECPG_COMPAT_INFORMIX_SE;
+					get_pkginclude_path(my_exec_path, pkginclude_path);
+					snprintf(informix_path, MAXPGPATH, "%s/informix/esql", pkginclude_path);
+					add_include_path(informix_path);
+				}
+				else if (pg_strcasecmp(optarg, "ORACLE") == 0)
+				{
+					compat = ECPG_COMPAT_ORACLE;
+				}
+				else
+				{
+					fprintf(stderr, _("Try \"%s --help\" for more information.\n"), argv[0]);
+					return ILLEGAL_OPTION;
+				}
+				break;
+			case 'd':
+#ifdef YYDEBUG
+				base_yydebug = 1;
+#else
+				fprintf(stderr, _("%s: parser debug support (-d) not available\n"),
+						progname);
+#endif
+				break;
+			case 'D':
+				add_preprocessor_define(optarg);
+				break;
+			case 'h':
+				header_mode = true;
+				/* this must include "-c" to make sense: */
+				auto_create_c = true;
+				break;
+			case 'i':
+				system_includes = true;
+				break;
+			case 'I':
+				add_include_path(optarg);
 				break;
 			case 'o':
 				output_filename = mm_strdup(optarg);
@@ -178,52 +234,12 @@ main(int argc, char *const argv[])
 				else
 					out_option = 1;
 				break;
-			case 'I':
-				add_include_path(optarg);
-				break;
-			case 't':
-				autocommit = true;
-				break;
-			case 'v':
-				verbose = true;
-				break;
-			case 'h':
-				header_mode = true;
-				/* this must include "-c" to make sense, so fall through */
-				/* FALLTHROUGH */
-			case 'c':
-				auto_create_c = true;
-				break;
-			case 'i':
-				system_includes = true;
-				break;
-			case 'C':
-				if (pg_strcasecmp(optarg, "INFORMIX") == 0 || pg_strcasecmp(optarg, "INFORMIX_SE") == 0)
-				{
-					char		pkginclude_path[MAXPGPATH];
-					char		informix_path[MAXPGPATH];
-
-					compat = (pg_strcasecmp(optarg, "INFORMIX") == 0) ? ECPG_COMPAT_INFORMIX : ECPG_COMPAT_INFORMIX_SE;
-					get_pkginclude_path(my_exec_path, pkginclude_path);
-					snprintf(informix_path, MAXPGPATH, "%s/informix/esql", pkginclude_path);
-					add_include_path(informix_path);
-				}
-				else if (strncmp(optarg, "ORACLE", strlen("ORACLE")) == 0)
-				{
-					compat = ECPG_COMPAT_ORACLE;
-				}
-				else
-				{
-					fprintf(stderr, _("Try \"%s --help\" for more information.\n"), argv[0]);
-					return ILLEGAL_OPTION;
-				}
-				break;
 			case 'r':
-				if (strcmp(optarg, "no_indicator") == 0)
+				if (pg_strcasecmp(optarg, "no_indicator") == 0)
 					force_indicator = false;
-				else if (strcmp(optarg, "prepare") == 0)
+				else if (pg_strcasecmp(optarg, "prepare") == 0)
 					auto_prepare = true;
-				else if (strcmp(optarg, "questionmarks") == 0)
+				else if (pg_strcasecmp(optarg, "questionmarks") == 0)
 					questionmarks = true;
 				else
 				{
@@ -231,16 +247,14 @@ main(int argc, char *const argv[])
 					return ILLEGAL_OPTION;
 				}
 				break;
-			case 'D':
-				add_preprocessor_define(optarg);
+			case 't':
+				autocommit = true;
 				break;
-			case 'd':
-#ifdef YYDEBUG
-				base_yydebug = 1;
-#else
-				fprintf(stderr, _("%s: parser debug support (-d) not available\n"),
-						progname);
-#endif
+			case 'v':
+				verbose = true;
+				break;
+			case ECPG_GETOPT_LONG_REGRESSION:
+				regression_mode = true;
 				break;
 			default:
 				fprintf(stderr, _("Try \"%s --help\" for more information.\n"), argv[0]);
@@ -345,7 +359,10 @@ main(int argc, char *const argv[])
 			{
 				struct cursor *ptr;
 				struct _defines *defptr;
+				struct _defines *prevdefptr;
+				struct _defines *nextdefptr;
 				struct typedefs *typeptr;
+				struct declared_list *list;
 
 				/* remove old cursor definitions if any are still there */
 				for (ptr = cur; ptr != NULL;)
@@ -372,28 +389,37 @@ main(int argc, char *const argv[])
 				}
 				cur = NULL;
 
-				/* remove non-pertinent old defines as well */
-				while (defines && !defines->pertinent)
+				/* remove old declared statements if any are still there */
+				for (list = g_declared_list; list != NULL;)
 				{
-					defptr = defines;
-					defines = defines->next;
+					struct declared_list *this = list;
 
-					free(defptr->new);
-					free(defptr->old);
-					free(defptr);
+					list = list->next;
+					free(this);
 				}
 
-				for (defptr = defines; defptr != NULL; defptr = defptr->next)
+				/* restore defines to their command-line state */
+				prevdefptr = NULL;
+				for (defptr = defines; defptr != NULL; defptr = nextdefptr)
 				{
-					struct _defines *this = defptr->next;
-
-					if (this && !this->pertinent)
+					nextdefptr = defptr->next;
+					if (defptr->cmdvalue != NULL)
 					{
-						defptr->next = this->next;
-
-						free(this->new);
-						free(this->old);
-						free(this);
+						/* keep it, resetting the value */
+						free(defptr->value);
+						defptr->value = mm_strdup(defptr->cmdvalue);
+						prevdefptr = defptr;
+					}
+					else
+					{
+						/* remove it */
+						if (prevdefptr != NULL)
+							prevdefptr->next = nextdefptr;
+						else
+							defines = nextdefptr;
+						free(defptr->name);
+						free(defptr->value);
+						free(defptr);
 					}
 				}
 

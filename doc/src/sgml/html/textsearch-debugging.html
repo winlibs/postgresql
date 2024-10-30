@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>12.8. Testing and Debugging Text Search</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="textsearch-configuration.html" title="12.7. Configuration Example" /><link rel="next" href="textsearch-indexes.html" title="12.9. GIN and GiST Index Types" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">12.8. Testing and Debugging Text Search</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="textsearch-configuration.html" title="12.7. Configuration Example">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><th width="60%" align="center">Chapter 12. Full Text Search</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="textsearch-indexes.html" title="12.9. GIN and GiST Index Types">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TEXTSEARCH-DEBUGGING"><div class="titlepage"><div><div><h2 class="title" style="clear: both">12.8. Testing and Debugging Text Search</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="textsearch-debugging.html#TEXTSEARCH-CONFIGURATION-TESTING">12.8.1. Configuration Testing</a></span></dt><dt><span class="sect2"><a href="textsearch-debugging.html#TEXTSEARCH-PARSER-TESTING">12.8.2. Parser Testing</a></span></dt><dt><span class="sect2"><a href="textsearch-debugging.html#TEXTSEARCH-DICTIONARY-TESTING">12.8.3. Dictionary Testing</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>12.8. Testing and Debugging Text Search</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="textsearch-configuration.html" title="12.7. Configuration Example" /><link rel="next" href="textsearch-indexes.html" title="12.9. Preferred Index Types for Text Search" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">12.8. Testing and Debugging Text Search</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="textsearch-configuration.html" title="12.7. Configuration Example">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><th width="60%" align="center">Chapter 12. Full Text Search</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="textsearch-indexes.html" title="12.9. Preferred Index Types for Text Search">Next</a></td></tr></table><hr /></div><div class="sect1" id="TEXTSEARCH-DEBUGGING"><div class="titlepage"><div><div><h2 class="title" style="clear: both">12.8. Testing and Debugging Text Search <a href="#TEXTSEARCH-DEBUGGING" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="textsearch-debugging.html#TEXTSEARCH-CONFIGURATION-TESTING">12.8.1. Configuration Testing</a></span></dt><dt><span class="sect2"><a href="textsearch-debugging.html#TEXTSEARCH-PARSER-TESTING">12.8.2. Parser Testing</a></span></dt><dt><span class="sect2"><a href="textsearch-debugging.html#TEXTSEARCH-DICTIONARY-TESTING">12.8.3. Dictionary Testing</a></span></dt></dl></div><p>
    The behavior of a custom text search configuration can easily become
    confusing.  The functions described
    in this section are useful for testing text search objects.  You can
    test a complete configuration, or test parsers and dictionaries separately.
-  </p><div class="sect2" id="TEXTSEARCH-CONFIGURATION-TESTING"><div class="titlepage"><div><div><h3 class="title">12.8.1. Configuration Testing</h3></div></div></div><p>
+  </p><div class="sect2" id="TEXTSEARCH-CONFIGURATION-TESTING"><div class="titlepage"><div><div><h3 class="title">12.8.1. Configuration Testing <a href="#TEXTSEARCH-CONFIGURATION-TESTING" class="id_link">#</a></h3></div></div></div><p>
    The function <code class="function">ts_debug</code> allows easy testing of a
    text search configuration.
   </p><a id="id-1.5.11.11.3.3" class="indexterm"></a><pre class="synopsis">
@@ -50,32 +50,32 @@ ts_debug([<span class="optional"> <em class="replaceable"><code>config</code></e
    Here is a simple example:
 
 </p><pre class="screen">
-SELECT * FROM ts_debug('english','a fat  cat sat on a mat - it ate a fat rats');
-   alias   |   description   | token |  dictionaries  |  dictionary  | lexemes 
+SELECT * FROM ts_debug('english', 'a fat  cat sat on a mat - it ate a fat rats');
+   alias   |   description   | token |  dictionaries  |  dictionary  | lexemes
 -----------+-----------------+-------+----------------+--------------+---------
  asciiword | Word, all ASCII | a     | {english_stem} | english_stem | {}
- blank     | Space symbols   |       | {}             |              | 
+ blank     | Space symbols   |       | {}             |              |
  asciiword | Word, all ASCII | fat   | {english_stem} | english_stem | {fat}
- blank     | Space symbols   |       | {}             |              | 
+ blank     | Space symbols   |       | {}             |              |
  asciiword | Word, all ASCII | cat   | {english_stem} | english_stem | {cat}
- blank     | Space symbols   |       | {}             |              | 
+ blank     | Space symbols   |       | {}             |              |
  asciiword | Word, all ASCII | sat   | {english_stem} | english_stem | {sat}
- blank     | Space symbols   |       | {}             |              | 
+ blank     | Space symbols   |       | {}             |              |
  asciiword | Word, all ASCII | on    | {english_stem} | english_stem | {}
- blank     | Space symbols   |       | {}             |              | 
+ blank     | Space symbols   |       | {}             |              |
  asciiword | Word, all ASCII | a     | {english_stem} | english_stem | {}
- blank     | Space symbols   |       | {}             |              | 
+ blank     | Space symbols   |       | {}             |              |
  asciiword | Word, all ASCII | mat   | {english_stem} | english_stem | {mat}
- blank     | Space symbols   |       | {}             |              | 
- blank     | Space symbols   | -     | {}             |              | 
+ blank     | Space symbols   |       | {}             |              |
+ blank     | Space symbols   | -     | {}             |              |
  asciiword | Word, all ASCII | it    | {english_stem} | english_stem | {}
- blank     | Space symbols   |       | {}             |              | 
+ blank     | Space symbols   |       | {}             |              |
  asciiword | Word, all ASCII | ate   | {english_stem} | english_stem | {ate}
- blank     | Space symbols   |       | {}             |              | 
+ blank     | Space symbols   |       | {}             |              |
  asciiword | Word, all ASCII | a     | {english_stem} | english_stem | {}
- blank     | Space symbols   |       | {}             |              | 
+ blank     | Space symbols   |       | {}             |              |
  asciiword | Word, all ASCII | fat   | {english_stem} | english_stem | {fat}
- blank     | Space symbols   |       | {}             |              | 
+ blank     | Space symbols   |       | {}             |              |
  asciiword | Word, all ASCII | rats  | {english_stem} | english_stem | {rat}
 </pre><p>
   </p><p>
@@ -95,13 +95,13 @@ CREATE TEXT SEARCH DICTIONARY english_ispell (
 ALTER TEXT SEARCH CONFIGURATION public.english
    ALTER MAPPING FOR asciiword WITH english_ispell, english_stem;
 </pre><pre class="screen">
-SELECT * FROM ts_debug('public.english','The Brightest supernovaes');
-   alias   |   description   |    token    |         dictionaries          |   dictionary   |   lexemes   
+SELECT * FROM ts_debug('public.english', 'The Brightest supernovaes');
+   alias   |   description   |    token    |         dictionaries          |   dictionary   |   lexemes
 -----------+-----------------+-------------+-------------------------------+----------------+-------------
  asciiword | Word, all ASCII | The         | {english_ispell,english_stem} | english_ispell | {}
- blank     | Space symbols   |             | {}                            |                | 
+ blank     | Space symbols   |             | {}                            |                |
  asciiword | Word, all ASCII | Brightest   | {english_ispell,english_stem} | english_ispell | {bright}
- blank     | Space symbols   |             | {}                            |                | 
+ blank     | Space symbols   |             | {}                            |                |
  asciiword | Word, all ASCII | supernovaes | {english_ispell,english_stem} | english_stem   | {supernova}
 </pre><p>
    In this example, the word <code class="literal">Brightest</code> was recognized by the
@@ -127,16 +127,16 @@ SELECT * FROM ts_debug('public.english','The Brightest supernovaes');
 
 </p><pre class="screen">
 SELECT alias, token, dictionary, lexemes
-FROM ts_debug('public.english','The Brightest supernovaes');
-   alias   |    token    |   dictionary   |   lexemes   
+FROM ts_debug('public.english', 'The Brightest supernovaes');
+   alias   |    token    |   dictionary   |   lexemes
 -----------+-------------+----------------+-------------
  asciiword | The         | english_ispell | {}
- blank     |             |                | 
+ blank     |             |                |
  asciiword | Brightest   | english_ispell | {bright}
- blank     |             |                | 
+ blank     |             |                |
  asciiword | supernovaes | english_stem   | {supernova}
 </pre><p>
-  </p></div><div class="sect2" id="TEXTSEARCH-PARSER-TESTING"><div class="titlepage"><div><div><h3 class="title">12.8.2. Parser Testing</h3></div></div></div><p>
+  </p></div><div class="sect2" id="TEXTSEARCH-PARSER-TESTING"><div class="titlepage"><div><div><h3 class="title">12.8.2. Parser Testing <a href="#TEXTSEARCH-PARSER-TESTING" class="id_link">#</a></h3></div></div></div><p>
    The following functions allow direct testing of a text search parser.
   </p><a id="id-1.5.11.11.4.3" class="indexterm"></a><pre class="synopsis">
 ts_parse(<em class="replaceable"><code>parser_name</code></em> <code class="type">text</code>, <em class="replaceable"><code>document</code></em> <code class="type">text</code>,
@@ -176,7 +176,7 @@ ts_token_type(<em class="replaceable"><code>parser_oid</code></em> <code class="
 
 </p><pre class="screen">
 SELECT * FROM ts_token_type('default');
- tokid |      alias      |               description                
+ tokid |      alias      |               description
 -------+-----------------+------------------------------------------
      1 | asciiword       | Word, all ASCII
      2 | word            | Word, all letters
@@ -202,7 +202,7 @@ SELECT * FROM ts_token_type('default');
     22 | uint            | Unsigned integer
     23 | entity          | XML entity
 </pre><p>
-   </p></div><div class="sect2" id="TEXTSEARCH-DICTIONARY-TESTING"><div class="titlepage"><div><div><h3 class="title">12.8.3. Dictionary Testing</h3></div></div></div><p>
+   </p></div><div class="sect2" id="TEXTSEARCH-DICTIONARY-TESTING"><div class="titlepage"><div><div><h3 class="title">12.8.3. Dictionary Testing <a href="#TEXTSEARCH-DICTIONARY-TESTING" class="id_link">#</a></h3></div></div></div><p>
     The <code class="function">ts_lexize</code> function facilitates dictionary testing.
    </p><a id="id-1.5.11.11.5.3" class="indexterm"></a><pre class="synopsis">
 ts_lexize(<em class="replaceable"><code>dict</code></em> <code class="type">regdictionary</code>, <em class="replaceable"><code>token</code></em> <code class="type">text</code>) returns <code class="type">text[]</code>
@@ -232,7 +232,7 @@ SELECT ts_lexize('english_stem', 'a');
      where this can be confusing:
 
 </p><pre class="screen">
-SELECT ts_lexize('thesaurus_astro','supernovae stars') is null;
+SELECT ts_lexize('thesaurus_astro', 'supernovae stars') is null;
  ?column?
 ----------
  t
@@ -250,4 +250,4 @@ SELECT plainto_tsquery('supernovae stars');
 -----------------
  'sn'
 </pre><p>
-    </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="textsearch-configuration.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="textsearch.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="textsearch-indexes.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">12.7. Configuration Example </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 12.9. GIN and GiST Index Types</td></tr></table></div></body></html>
+    </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="textsearch-configuration.html" title="12.7. Configuration Example">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="textsearch-indexes.html" title="12.9. Preferred Index Types for Text Search">Next</a></td></tr><tr><td width="40%" align="left" valign="top">12.7. Configuration Example </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 12.9. Preferred Index Types for Text Search</td></tr></table></div></body></html>

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER OPERATOR FAMILY
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER OPERATOR FAMILY" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER OPERATOR FAMILY" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -48,7 +48,7 @@ ALTER OPERATOR FAMILY \fIname\fR USING \fIindex_method\fR
     RENAME TO \fInew_name\fR
 
 ALTER OPERATOR FAMILY \fIname\fR USING \fIindex_method\fR
-    OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+    OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 
 ALTER OPERATOR FAMILY \fIname\fR USING \fIindex_method\fR
     SET SCHEMA \fInew_schema\fR
@@ -73,7 +73,7 @@ You must be a superuser to use
 does not presently check whether the operator family definition includes all the operators and functions required by the index method, nor whether the operators and functions form a self\-consistent set\&. It is the user\*(Aqs responsibility to define a valid operator family\&.
 .PP
 Refer to
-Section\ \&38.15
+Section\ \&38.16
 for further information\&.
 .SH "PARAMETERS"
 .PP
@@ -103,14 +103,14 @@ In an
 OPERATOR
 clause, the operand data type(s) of the operator, or
 NONE
-to signify a left\-unary or right\-unary operator\&. Unlike the comparable syntax in
+to signify a prefix operator\&. Unlike the comparable syntax in
 \fBCREATE OPERATOR CLASS\fR, the operand data types must always be specified\&.
 .sp
 In an
 ADD FUNCTION
 clause, the operand data type(s) the function is intended to support, if different from the input data type(s) of the function\&. For B\-tree comparison functions and hash functions it is not necessary to specify
 \fIop_type\fR
-since the function\*(Aqs input data type(s) are always the correct ones to use\&. For B\-tree sort support functions and all functions in GiST, SP\-GiST and GIN operator classes, it is necessary to specify the operand data type(s) the function is to be used with\&.
+since the function\*(Aqs input data type(s) are always the correct ones to use\&. For B\-tree sort support functions, B\-Tree equal image functions, and all functions in GiST, SP\-GiST and GIN operator classes, it is necessary to specify the operand data type(s) the function is to be used with\&.
 .sp
 In a
 DROP FUNCTION
@@ -179,7 +179,7 @@ the type(s) to specify are the input data type(s) the function is intended to su
 .PP
 Because the index machinery does not check access permissions on functions before using them, including a function or operator in an operator family is tantamount to granting public execute permission on it\&. This is usually not an issue for the sorts of functions that are useful in an operator family\&.
 .PP
-The operators should not be defined by SQL functions\&. A SQL function is likely to be inlined into the calling query, which will prevent the optimizer from recognizing that the query matches an index\&.
+The operators should not be defined by SQL functions\&. An SQL function is likely to be inlined into the calling query, which will prevent the optimizer from recognizing that the query matches an index\&.
 .PP
 Before
 PostgreSQL

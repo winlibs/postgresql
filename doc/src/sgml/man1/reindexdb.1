@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: reindexdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "REINDEXDB" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "REINDEXDB" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,11 +31,11 @@
 reindexdb \- reindex a PostgreSQL database
 .SH "SYNOPSIS"
 .HP \w'\fBreindexdb\fR\ 'u
-\fBreindexdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\ \fB\-\-schema\fR\ |\ \fB\-S\fR\ \fIschema\fR\ ]...  [\ \fB\-\-table\fR\ |\ \fB\-t\fR\ \fItable\fR\ ]...  [\ \fB\-\-index\fR\ |\ \fB\-i\fR\ \fIindex\fR\ ]...  [\fIdbname\fR]
+\fBreindexdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\ \fB\-S\fR\ |\ \fB\-\-schema\fR\ \fIschema\fR\ ]...  [\ \fB\-t\fR\ |\ \fB\-\-table\fR\ \fItable\fR\ ]...  [\ \fB\-i\fR\ |\ \fB\-\-index\fR\ \fIindex\fR\ ]...  [\fIdbname\fR]
 .HP \w'\fBreindexdb\fR\ 'u
-\fBreindexdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] \fB\-\-all\fR | \fB\-a\fR 
+\fBreindexdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] \fB\-a\fR | \fB\-\-all\fR 
 .HP \w'\fBreindexdb\fR\ 'u
-\fBreindexdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] \fB\-\-system\fR | \fB\-s\fR  [\fIdbname\fR]
+\fBreindexdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] \fB\-s\fR | \fB\-\-system\fR  [\fIdbname\fR]
 .SH "DESCRIPTION"
 .PP
 reindexdb
@@ -45,7 +45,7 @@ database\&.
 .PP
 reindexdb
 is a wrapper around the SQL command
-\fBREINDEX\fR(7)\&. There is no effective difference between reindexing databases via this utility and via other methods for accessing the server\&.
+\fBREINDEX\fR\&. There is no effective difference between reindexing databases via this utility and via other methods for accessing the server\&.
 .SH "OPTIONS"
 .PP
 reindexdb
@@ -58,15 +58,25 @@ accepts the following command\-line arguments:
 Reindex all databases\&.
 .RE
 .PP
+\fB\-\-concurrently\fR
+.RS 4
+Use the
+CONCURRENTLY
+option\&. See
+\fBREINDEX\fR(7), where all the caveats of this option are explained in detail\&.
+.RE
+.PP
 \fB[\-d]\fR\fB \fR\fB\fIdbname\fR\fR
 .br
 \fB[\-\-dbname=]\fR\fB\fIdbname\fR\fR
 .RS 4
-Specifies the name of the database to be reindexed\&. If this is not specified and
-\fB\-a\fR
-(or
-\fB\-\-all\fR) is not used, the database name is read from the environment variable
-\fBPGDATABASE\fR\&. If that is not set, the user name specified for the connection is used\&.
+Specifies the name of the database to be reindexed, when
+\fB\-a\fR/\fB\-\-all\fR
+is not used\&. If this is not specified, the database name is read from the environment variable
+\fBPGDATABASE\fR\&. If that is not set, the user name specified for the connection is used\&. The
+\fIdbname\fR
+can be a
+connection string\&. If so, connection string parameters will override any conflicting command line options\&.
 .RE
 .PP
 \fB\-e\fR
@@ -89,6 +99,28 @@ only\&. Multiple indexes can be recreated by writing multiple
 switches\&.
 .RE
 .PP
+\fB\-j \fR\fB\fInjobs\fR\fR
+.br
+\fB\-\-jobs=\fR\fB\fInjobs\fR\fR
+.RS 4
+Execute the reindex commands in parallel by running
+\fInjobs\fR
+commands simultaneously\&. This option may reduce the processing time but it also increases the load on the database server\&.
+.sp
+reindexdb
+will open
+\fInjobs\fR
+connections to the database, so make sure your
+max_connections
+setting is high enough to accommodate all connections\&.
+.sp
+Note that this option is incompatible with the
+\fB\-\-index\fR
+and
+\fB\-\-system\fR
+options\&.
+.RE
+.PP
 \fB\-q\fR
 .br
 \fB\-\-quiet\fR
@@ -100,7 +132,7 @@ Do not display progress messages\&.
 .br
 \fB\-\-system\fR
 .RS 4
-Reindex database\*(Aqs system catalogs\&.
+Reindex database\*(Aqs system catalogs only\&.
 .RE
 .PP
 \fB\-S \fR\fB\fIschema\fR\fR
@@ -123,6 +155,11 @@ Reindex
 only\&. Multiple tables can be reindexed by writing multiple
 \fB\-t\fR
 switches\&.
+.RE
+.PP
+\fB\-\-tablespace=\fR\fB\fItablespace\fR\fR
+.RS 4
+Specifies the tablespace where indexes are rebuilt\&. (This name is processed as a double\-quoted identifier\&.)
 .RE
 .PP
 \fB\-v\fR
@@ -202,11 +239,14 @@ to avoid the extra connection attempt\&.
 .PP
 \fB\-\-maintenance\-db=\fR\fB\fIdbname\fR\fR
 .RS 4
-Specifies the name of the database to connect to discover what other databases should be reindexed\&. If not specified, the
+Specifies the name of the database to connect to to discover which databases should be reindexed, when
+\fB\-a\fR/\fB\-\-all\fR
+is used\&. If not specified, the
 postgres
-database will be used, and if that does not exist,
+database will be used, or if that does not exist,
 template1
-will be used\&.
+will be used\&. This can be a
+connection string\&. If so, connection string parameters will override any conflicting command line options\&. Also, connection string parameters other than the database name itself will be re\-used when connecting to other databases\&.
 .RE
 .SH "ENVIRONMENT"
 .PP
@@ -221,12 +261,21 @@ will be used\&.
 Default connection parameters
 .RE
 .PP
+\fBPG_COLOR\fR
+.RS 4
+Specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.RE
+.PP
 This utility, like most other
 PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section\ \&34.14)\&.
+Section\ \&34.15)\&.
 .SH "DIAGNOSTICS"
 .PP
 In case of difficulty, see
@@ -244,7 +293,7 @@ PostgreSQL
 server, asking for a password each time\&. It is convenient to have a
 ~/\&.pgpass
 file in such cases\&. See
-Section\ \&34.15
+Section\ \&34.16
 for more information\&.
 .SH "EXAMPLES"
 .PP

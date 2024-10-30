@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE CONVERSION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATE CONVERSION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE CONVERSION" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,9 +38,11 @@ CREATE [ DEFAULT ] CONVERSION \fIname\fR
 .SH "DESCRIPTION"
 .PP
 \fBCREATE CONVERSION\fR
-defines a new conversion between character set encodings\&. Also, conversions that are marked
+defines a new conversion between two character set encodings\&.
+.PP
+Conversions that are marked
 DEFAULT
-can be used for automatic encoding conversion between client and server\&. For this purpose, two conversions, from encoding A to B
+can be used for automatic encoding conversion between client and server\&. To support that usage, two conversions, from encoding A to B
 \fIand\fR
 from encoding B to A, must be defined\&.
 .PP
@@ -88,14 +90,23 @@ conv_proc(
     integer,  \-\- destination encoding ID
     cstring,  \-\- source string (null terminated C string)
     internal, \-\- destination (fill with a null terminated C string)
-    integer   \-\- source string length
-) RETURNS void;
+    integer,  \-\- source string length
+    boolean   \-\- if true, don\*(Aqt throw an error if conversion fails
+) RETURNS integer;
 .fi
 .if n \{\
 .RE
 .\}
+.sp
+The return value is the number of source bytes that were successfully converted\&. If the last argument is false, the function must throw an error on invalid input, and the return value is always equal to the source string length\&.
 .RE
 .SH "NOTES"
+.PP
+Neither the source nor the destination encoding can be
+SQL_ASCII, as the server\*(Aqs behavior for cases involving the
+SQL_ASCII
+\(lqencoding\(rq
+is hard\-wired\&.
 .PP
 Use
 \fBDROP CONVERSION\fR

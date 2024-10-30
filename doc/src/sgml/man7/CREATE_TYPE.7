@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE TYPE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATE TYPE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE TYPE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -44,6 +44,7 @@ CREATE TYPE \fIname\fR AS RANGE (
     [ , COLLATION = \fIcollation\fR ]
     [ , CANONICAL = \fIcanonical_function\fR ]
     [ , SUBTYPE_DIFF = \fIsubtype_diff_function\fR ]
+    [ , MULTIRANGE_TYPE_NAME = \fImultirange_type_name\fR ]
 )
 
 CREATE TYPE \fIname\fR (
@@ -54,6 +55,7 @@ CREATE TYPE \fIname\fR (
     [ , TYPMOD_IN = \fItype_modifier_input_function\fR ]
     [ , TYPMOD_OUT = \fItype_modifier_output_function\fR ]
     [ , ANALYZE = \fIanalyze_function\fR ]
+    [ , SUBSCRIPT = \fIsubscript_function\fR ]
     [ , INTERNALLENGTH = { \fIinternallength\fR | VARIABLE } ]
     [ , PASSEDBYVALUE ]
     [ , ALIGNMENT = \fIalignment\fR ]
@@ -106,7 +108,7 @@ NAMEDATALEN
 bytes long (64 bytes in a standard
 PostgreSQL
 build)\&. (It is possible to create an enumerated type with zero labels, but such a type cannot be used to hold values before at least one label is added using
-ALTER TYPE (\fBALTER_TYPE\fR(7))\&.)
+\fBALTER TYPE\fR\&.)
 .SS "Range Types"
 .PP
 The third form of
@@ -139,6 +141,17 @@ double precision
 value representing the difference between the two given values\&. While this is optional, providing it allows much greater efficiency of GiST indexes on columns of the range type\&. See
 Section\ \&8.17.8
 for more information\&.
+.PP
+The optional
+\fImultirange_type_name\fR
+parameter specifies the name of the corresponding multirange type\&. If not specified, this name is chosen automatically as follows\&. If the range type name contains the substring
+range, then the multirange type name is formed by replacement of the
+range
+substring with
+multirange
+in the range type name\&. Otherwise, the multirange type name is formed by appending a
+_multirange
+suffix to the range type name\&.
 .SS "Base Types"
 .PP
 The fourth form of
@@ -154,9 +167,9 @@ are required, while the functions
 \fIreceive_function\fR,
 \fIsend_function\fR,
 \fItype_modifier_input_function\fR,
-\fItype_modifier_output_function\fR
-and
-\fIanalyze_function\fR
+\fItype_modifier_output_function\fR,
+\fIanalyze_function\fR, and
+\fIsubscript_function\fR
 are optional\&. Generally these functions have to be coded in C or another low\-level language\&.
 .PP
 The
@@ -231,6 +244,24 @@ boolean
 result\&. The detailed API for analysis functions appears in
 src/include/commands/vacuum\&.h\&.
 .PP
+The optional
+\fIsubscript_function\fR
+allows the data type to be subscripted in SQL commands\&. Specifying this function does not cause the type to be considered a
+\(lqtrue\(rq
+array type; for example, it will not be a candidate for the result type of
+ARRAY[]
+constructs\&. But if subscripting a value of the type is a natural notation for extracting data from it, then a
+\fIsubscript_function\fR
+can be written to define what that means\&. The subscript function must be declared to take a single argument of type
+internal, and return an
+internal
+result, which is a pointer to a struct of methods (functions) that implement subscripting\&. The detailed API for subscript functions appears in
+src/include/nodes/subscripting\&.h\&. It may also be useful to read the array implementation in
+src/backend/utils/adt/arraysubs\&.c, or the simpler code in
+contrib/hstore/hstore_subs\&.c\&. Additional information appears in
+Array Types
+below\&.
+.PP
 While the details of the new type\*(Aqs internal representation are only known to the I/O functions and other functions you create to work with the type, there are several properties of the internal representation that must be declared to
 PostgreSQL\&. Foremost of these is
 \fIinternallength\fR\&. Base data types can be fixed\-length, in which case
@@ -241,7 +272,7 @@ to
 VARIABLE\&. (Internally, this is represented by setting
 typlen
 to \-1\&.) The internal representation of all variable\-length types must start with a 4\-byte integer giving the total length of this value of the type\&. (Note that the length field is often encoded, as described in
-Section\ \&68.2; it\*(Aqs unwise to access it directly\&.)
+Section\ \&73.2; it\*(Aqs unwise to access it directly\&.)
 .PP
 The optional flag
 PASSEDBYVALUE
@@ -279,9 +310,9 @@ values other than
 plain
 imply that the functions of the data type can handle values that have been
 toasted, as described in
-Section\ \&68.2
+Section\ \&73.2
 and
-Section\ \&38.12.1\&. The specific other value given merely determines the default TOAST storage strategy for columns of a toastable data type; users can pick other strategies for individual columns using
+Section\ \&38.13.1\&. The specific other value given merely determines the default TOAST storage strategy for columns of a toastable data type; users can pick other strategies for individual columns using
 ALTER TABLE SET STORAGE\&.
 .PP
 The
@@ -316,10 +347,12 @@ key word\&. (Such a default can be overridden by an explicit
 DEFAULT
 clause attached to a particular column\&.)
 .PP
-To indicate that a type is an array, specify the type of the array elements using the
+To indicate that a type is a fixed\-length array type, specify the type of the array elements using the
 ELEMENT
 key word\&. For example, to define an array of 4\-byte integers (int4), specify
-ELEMENT = int4\&. More details about array types appear below\&.
+ELEMENT = int4\&. For more details, see
+Array Types
+below\&.
 .PP
 To indicate the delimiter to be used between values in the external representation of arrays of this type,
 \fIdelimiter\fR
@@ -339,21 +372,42 @@ NAMEDATALEN
 bytes long\&. (If the name so generated collides with an existing type name, the process is repeated until a non\-colliding name is found\&.) This implicitly\-created array type is variable length and uses the built\-in input and output functions
 array_in
 and
-array_out\&. The array type tracks any changes in its element type\*(Aqs owner or schema, and is dropped if the element type is\&.
+array_out\&. Furthermore, this type is what the system uses for constructs such as
+ARRAY[]
+over the user\-defined type\&. The array type tracks any changes in its element type\*(Aqs owner or schema, and is dropped if the element type is\&.
 .PP
 You might reasonably ask why there is an
 \fBELEMENT\fR
-option, if the system makes the correct array type automatically\&. The only case where it\*(Aqs useful to use
+option, if the system makes the correct array type automatically\&. The main case where it\*(Aqs useful to use
 \fBELEMENT\fR
 is when you are making a fixed\-length type that happens to be internally an array of a number of identical things, and you want to allow these things to be accessed directly by subscripting, in addition to whatever operations you plan to provide for the type as a whole\&. For example, type
 point
 is represented as just two floating\-point numbers, which can be accessed using
 point[0]
 and
-point[1]\&. Note that this facility only works for fixed\-length types whose internal form is exactly a sequence of identical fixed\-length fields\&. A subscriptable variable\-length type must have the generalized internal representation used by
-array_in
-and
-array_out\&. For historical reasons (i\&.e\&., this is clearly wrong but it\*(Aqs far too late to change it), subscripting of fixed\-length array types starts from zero, rather than from one as for variable\-length arrays\&.
+point[1]\&. Note that this facility only works for fixed\-length types whose internal form is exactly a sequence of identical fixed\-length fields\&. For historical reasons (i\&.e\&., this is clearly wrong but it\*(Aqs far too late to change it), subscripting of fixed\-length array types starts from zero, rather than from one as for variable\-length arrays\&.
+.PP
+Specifying the
+\fBSUBSCRIPT\fR
+option allows a data type to be subscripted, even though the system does not otherwise regard it as an array type\&. The behavior just described for fixed\-length arrays is actually implemented by the
+\fBSUBSCRIPT\fR
+handler function
+\fBraw_array_subscript_handler\fR, which is used automatically if you specify
+\fBELEMENT\fR
+for a fixed\-length type without also writing
+\fBSUBSCRIPT\fR\&.
+.PP
+When specifying a custom
+\fBSUBSCRIPT\fR
+function, it is not necessary to specify
+\fBELEMENT\fR
+unless the
+\fBSUBSCRIPT\fR
+handler function needs to consult
+typelem
+to find out what to return\&. Be aware that specifying
+\fBELEMENT\fR
+causes the system to assume that the new type contains, or is somehow physically dependent on, the element type; thus for example changing properties of the element type won\*(Aqt be allowed if there are any columns of the dependent type\&.
 .SH "PARAMETERS"
 .PP
 \fIname\fR
@@ -401,6 +455,11 @@ The name of the canonicalization function for the range type\&.
 The name of a difference function for the subtype\&.
 .RE
 .PP
+\fImultirange_type_name\fR
+.RS 4
+The name of the corresponding multirange type\&.
+.RE
+.PP
 \fIinput_function\fR
 .RS 4
 The name of a function that converts data from the type\*(Aqs external textual form to its internal form\&.
@@ -434,6 +493,11 @@ The name of a function that converts the internal form of the type\*(Aqs modifie
 \fIanalyze_function\fR
 .RS 4
 The name of a function that performs statistical analysis for the data type\&.
+.RE
+.PP
+\fIsubscript_function\fR
+.RS 4
+The name of a function that defines what subscripting a value of the data type does\&.
 .RE
 .PP
 \fIinternallength\fR
@@ -479,7 +543,7 @@ The category code (a single ASCII character) for this type\&. The default is
 \*(AqU\*(Aq
 for
 \(lquser\-defined type\(rq\&. Other standard category codes can be found in
-Table\ \&52.63\&. You may also choose other ASCII characters in order to create custom categories\&.
+Table\ \&53.65\&. You may also choose other ASCII characters in order to create custom categories\&.
 .RE
 .PP
 \fIpreferred\fR
@@ -514,7 +578,7 @@ information to be used while converting it to or from external form\&.
 .PP
 Before
 PostgreSQL
-version 8\&.3, the name of a generated array type was always exactly the element type\*(Aqs name with one underscore character (_) prepended\&. (Type names were therefore restricted in length to one less character than other names\&.) While this is still usually the case, the array type name may vary from this in case of maximum\-length names or collisions with user type names that begin with underscore\&. Writing code that depends on this convention is therefore deprecated\&. Instead, use
+version 8\&.3, the name of a generated array type was always exactly the element type\*(Aqs name with one underscore character (_) prepended\&. (Type names were therefore restricted in length to one fewer character than other names\&.) While this is still usually the case, the array type name may vary from this in case of maximum\-length names or collisions with user type names that begin with underscore\&. Writing code that depends on this convention is therefore deprecated\&. Instead, use
 pg_type\&.typarray
 to locate the array type associated with a given type\&.
 .PP
@@ -530,15 +594,15 @@ will first see the name of the new data type as the return type of the input fun
 .PP
 In
 PostgreSQL
-versions before 7\&.3, it was customary to avoid creating a shell type at all, by replacing the functions\*(Aq forward references to the type name with the placeholder pseudo\-type
-opaque\&. The
-cstring
-arguments and results also had to be declared as
-opaque
-before 7\&.3\&. To support loading of old dump files,
-\fBCREATE TYPE\fR
-will accept I/O functions declared using
-opaque, but it will issue a notice and change the function declarations to use the correct types\&.
+version 16 and later, it is desirable for base types\*(Aq input functions to return
+\(lqsoft\(rq
+errors using the new
+\fBerrsave()\fR/\fBereturn()\fR
+mechanism, rather than throwing
+\fBereport()\fR
+exceptions as in previous versions\&. See
+src/backend/utils/fmgr/README
+for more information\&.
 .SH "EXAMPLES"
 .PP
 This example creates a composite type and uses it in a function definition:
@@ -658,7 +722,7 @@ CREATE TABLE big_objs (
 .\}
 .PP
 More examples, including suitable input and output functions, are in
-Section\ \&38.12\&.
+Section\ \&38.13\&.
 .SH "COMPATIBILITY"
 .PP
 The first form of the

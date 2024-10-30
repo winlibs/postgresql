@@ -1,8 +1,9 @@
-# /usr/bin/perl -w
+# /usr/bin/perl
 
 # doc/src/sgml/mk_feature_tables.pl
 
 use strict;
+use warnings;
 
 my $yesno = $ARGV[0];
 
@@ -33,7 +34,7 @@ print "<tbody>\n";
 while (<$feat>)
 {
 	chomp;
-	my ($feature_id,      $feature_name, $subfeature_id,
+	my ($feature_id, $feature_name, $subfeature_id,
 		$subfeature_name, $is_supported, $comments) = split /\t/;
 
 	$is_supported eq $yesno || next;
@@ -53,7 +54,11 @@ while (<$feat>)
 	{
 		print "  <entry>$feature_id</entry>\n";
 	}
-	print "  <entry>" . $feature_packages{$feature_id} . "</entry>\n";
+	print "  <entry>",
+	  defined($feature_packages{$feature_id})
+	  ? $feature_packages{$feature_id}
+	  : "",
+	  "</entry>\n";
 	if ($subfeature_id)
 	{
 		print "  <entry>$subfeature_name</entry>\n";

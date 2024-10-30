@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_test_timing
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "PG_TEST_TIMING" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "PG_TEST_TIMING" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -68,7 +68,7 @@ pg_test_timing
 command line arguments, and exit\&.
 .RE
 .SH "USAGE"
-.SS "Interpreting results"
+.SS "Interpreting Results"
 .PP
 Good results will show most (>90%) individual timing calls take less than one microsecond\&. Average per loop overhead will be even lower, below 100 nanoseconds\&. This example from an Intel i7\-860 system using a TSC clock source shows excellent performance:
 .sp
@@ -91,7 +91,7 @@ Histogram of timing durations:
 .\}
 .PP
 Note that different units are used for the per loop time than the histogram\&. The loop can have resolution within a few nanoseconds (ns), while the individual timing calls can only resolve down to one microsecond (us)\&.
-.SS "Measuring executor timing overhead"
+.SS "Measuring Executor Timing Overhead"
 .PP
 When the query executor is running a statement using
 \fBEXPLAIN ANALYZE\fR, individual operations are timed as well as showing a summary\&. The overhead of your system can be checked by counting rows with the
@@ -114,7 +114,7 @@ EXPLAIN ANALYZE SELECT COUNT(*) FROM t;
 The i7\-860 system measured runs the count query in 9\&.8 ms while the
 \fBEXPLAIN ANALYZE\fR
 version takes 16\&.6 ms, each processing just over 100,000 rows\&. That 6\&.8 ms difference means the timing overhead per row is 68 ns, about twice what pg_test_timing estimated it would be\&. Even that relatively small amount of overhead is making the fully timed count statement take almost 70% longer\&. On more substantial queries, the timing overhead would be less problematic\&.
-.SS "Changing time sources"
+.SS "Changing Time Sources"
 .PP
 On some newer Linux systems, it\*(Aqs possible to change the clock source used to collect timing data at any time\&. A second example shows the slowdown possible from switching to the slower acpi_pm time source, on the same system used for the fast results above:
 .sp
@@ -189,7 +189,7 @@ Histogram of timing durations:
 .if n \{\
 .RE
 .\}
-.SS "Clock hardware and timing accuracy"
+.SS "Clock Hardware and Timing Accuracy"
 .PP
 Collecting accurate timing information is normally done on computers using hardware clocks with various levels of accuracy\&. With some hardware the operating systems can pass the system clock time almost directly to programs\&. A system clock can also be derived from a chip that simply provides timing interrupts, periodic ticks at some known time interval\&. In either case, operating system kernels provide a clock source that hides these details\&. But the accuracy of that clock source and how quickly it can return results varies based on the underlying hardware\&.
 .PP

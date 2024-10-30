@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE SEQUENCE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATE SEQUENCE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE SEQUENCE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ CREATE_SEQUENCE \- define a new sequence generator
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE [ TEMPORARY | TEMP ] SEQUENCE [ IF NOT EXISTS ] \fIname\fR
+CREATE [ { TEMPORARY | TEMP } | UNLOGGED ] SEQUENCE [ IF NOT EXISTS ] \fIname\fR
     [ AS \fIdata_type\fR ]
     [ INCREMENT [ BY ] \fIincrement\fR ]
     [ MINVALUE \fIminvalue\fR | NO MINVALUE ] [ MAXVALUE \fImaxvalue\fR | NO MAXVALUE ]
@@ -45,14 +45,14 @@ CREATE [ TEMPORARY | TEMP ] SEQUENCE [ IF NOT EXISTS ] \fIname\fR
 creates a new sequence number generator\&. This involves creating and initializing a new special single\-row table with the name
 \fIname\fR\&. The generator will be owned by the user issuing the command\&.
 .PP
-If a schema name is given then the sequence is created in the specified schema\&. Otherwise it is created in the current schema\&. Temporary sequences exist in a special schema, so a schema name cannot be given when creating a temporary sequence\&. The sequence name must be distinct from the name of any other sequence, table, index, view, or foreign table in the same schema\&.
+If a schema name is given then the sequence is created in the specified schema\&. Otherwise it is created in the current schema\&. Temporary sequences exist in a special schema, so a schema name cannot be given when creating a temporary sequence\&. The sequence name must be distinct from the name of any other relation (table, sequence, index, view, materialized view, or foreign table) in the same schema\&.
 .PP
 After a sequence is created, you use the functions
 \fBnextval\fR,
 \fBcurrval\fR, and
 \fBsetval\fR
 to operate on the sequence\&. These functions are documented in
-Section\ \&9.16\&.
+Section\ \&9.17\&.
 .PP
 Although you cannot update a sequence directly, you can use a query like:
 .sp
@@ -78,9 +78,16 @@ TEMPORARY or TEMP
 If specified, the sequence object is created only for this session, and is automatically dropped on session exit\&. Existing permanent sequences with the same name are not visible (in this session) while the temporary sequence exists, unless they are referenced with schema\-qualified names\&.
 .RE
 .PP
+UNLOGGED
+.RS 4
+If specified, the sequence is created as an unlogged sequence\&. Changes to unlogged sequences are not written to the write\-ahead log\&. They are not crash\-safe: an unlogged sequence is automatically reset to its initial state after a crash or unclean shutdown\&. Unlogged sequences are also not replicated to standby servers\&.
+.sp
+Unlike unlogged tables, unlogged sequences do not offer a significant performance advantage\&. This option is mainly intended for sequences associated with unlogged tables via identity columns or serial columns\&. In those cases, it usually wouldn\*(Aqt make sense to have the sequence WAL\-logged and replicated but not its associated table\&.
+.RE
+.PP
 IF NOT EXISTS
 .RS 4
-Do not throw an error if a relation with the same name already exists\&. A notice is issued in this case\&. Note that there is no guarantee that the existing relation is anything like the sequence that would have been created \- it might not even be a sequence\&.
+Do not throw an error if a relation with the same name already exists\&. A notice is issued in this case\&. Note that there is no guarantee that the existing relation is anything like the sequence that would have been created \(em it might not even be a sequence\&.
 .RE
 .PP
 \fIname\fR
@@ -218,7 +225,7 @@ Furthermore, although multiple sessions are guaranteed to allocate distinct sequ
 setting of 10, session A might reserve values 1\&.\&.10 and return
 \fBnextval\fR=1, then session B might reserve values 11\&.\&.20 and return
 \fBnextval\fR=11 before session A has generated
-nextval=2\&. Thus, with a
+\fBnextval\fR=2\&. Thus, with a
 \fIcache\fR
 setting of one it is safe to assume that
 \fBnextval\fR

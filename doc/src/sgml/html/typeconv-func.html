@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>10.3. Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="typeconv-oper.html" title="10.2. Operators" /><link rel="next" href="typeconv-query.html" title="10.4. Value Storage" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">10.3. Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="typeconv-oper.html" title="10.2. Operators">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="typeconv.html" title="Chapter 10. Type Conversion">Up</a></td><th width="60%" align="center">Chapter 10. Type Conversion</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="typeconv-query.html" title="10.4. Value Storage">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TYPECONV-FUNC"><div class="titlepage"><div><div><h2 class="title" style="clear: both">10.3. Functions</h2></div></div></div><a id="id-1.5.9.8.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>10.3. Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="typeconv-oper.html" title="10.2. Operators" /><link rel="next" href="typeconv-query.html" title="10.4. Value Storage" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">10.3. Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="typeconv-oper.html" title="10.2. Operators">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="typeconv.html" title="Chapter 10. Type Conversion">Up</a></td><th width="60%" align="center">Chapter 10. Type Conversion</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="typeconv-query.html" title="10.4. Value Storage">Next</a></td></tr></table><hr /></div><div class="sect1" id="TYPECONV-FUNC"><div class="titlepage"><div><div><h2 class="title" style="clear: both">10.3. Functions <a href="#TYPECONV-FUNC" class="id_link">#</a></h2></div></div></div><a id="id-1.5.9.8.2" class="indexterm"></a><p>
    The specific function that is referenced by a function call
    is determined using the following procedure.
   </p><div class="procedure" id="id-1.5.9.8.4"><p class="title"><strong>Function Type Resolution</strong></p><ol class="procedure" type="1"><li class="step"><p>
@@ -7,7 +7,7 @@ Select the functions to be considered from the
 <code class="classname">pg_proc</code> system catalog.  If a non-schema-qualified
 function name was used, the functions
 considered are those with the matching name and argument count that are
-visible in the current search path (see <a class="xref" href="ddl-schemas.html#DDL-SCHEMAS-PATH" title="5.8.3. The Schema Search Path">Section 5.8.3</a>).
+visible in the current search path (see <a class="xref" href="ddl-schemas.html#DDL-SCHEMAS-PATH" title="5.9.3. The Schema Search Path">Section 5.9.3</a>).
 If a qualified function name was given, only functions in the specified
 schema are considered.
 </p><ol type="a" class="substeps"><li class="step"><p>
@@ -26,7 +26,7 @@ used, or if the two functions are in the same schema, the non-variadic one is
 preferred.
 </p><p>
 This creates a security hazard when calling, via qualified name
-  <a href="#ftn.FUNC-QUALIFIED-SECURITY" class="footnote"><sup class="footnote" id="FUNC-QUALIFIED-SECURITY">[9]</sup></a>,
+  <a href="#ftn.FUNC-QUALIFIED-SECURITY" class="footnote"><sup class="footnote" id="FUNC-QUALIFIED-SECURITY">[10]</sup></a>,
 a variadic function found in a schema that permits untrusted users to create
 objects.  A malicious user can take control and execute arbitrary SQL
 functions as though you executed them.  Substitute a call bearing
@@ -47,7 +47,7 @@ function call</span>”</span> error will result if no better match to the call 
 found.
 </p><p>
 This creates an availability hazard when calling, via qualified
-name<a href="typeconv-func.html#ftn.FUNC-QUALIFIED-SECURITY" class="footnoteref"><sup class="footnoteref">[9]</sup></a>, any function found in a
+name<a href="typeconv-func.html#ftn.FUNC-QUALIFIED-SECURITY" class="footnoteref"><sup class="footnoteref">[10]</sup></a>, any function found in a
 schema that permits untrusted users to create objects.  A malicious user can
 create a function with the name of an existing function, replicating that
 function's parameters and appending novel parameters having default values.
@@ -58,7 +58,7 @@ Check for a function accepting exactly the input argument types.
 If one exists (there can be only one exact match in the set of
 functions considered), use it.  Lack of an exact match creates a security
 hazard when calling, via qualified
-name<a href="typeconv-func.html#ftn.FUNC-QUALIFIED-SECURITY" class="footnoteref"><sup class="footnoteref">[9]</sup></a>, a function found in a
+name<a href="typeconv-func.html#ftn.FUNC-QUALIFIED-SECURITY" class="footnoteref"><sup class="footnoteref">[10]</sup></a>, a function found in a
 schema that permits untrusted users to create objects.  In such situations,
 cast arguments to force an exact match.  (Cases involving <code class="type">unknown</code>
 will never find a match at this step.)
@@ -72,7 +72,7 @@ data type, or a type that could be converted to the named data type by
 applying that type's I/O functions (that is, the conversion is either to or
 from one of the standard string types).  When these conditions are met,
 the function call is treated as a form of <code class="literal">CAST</code> specification.
-  <a href="#ftn.id-1.5.9.8.4.4.1.2" class="footnote"><sup class="footnote" id="id-1.5.9.8.4.4.1.2">[10]</sup></a>
+  <a href="#ftn.id-1.5.9.8.4.4.1.2" class="footnote"><sup class="footnote" id="id-1.5.9.8.4.4.1.2">[11]</sup></a>
 </p></li><li class="step"><p>
 Look for the best match.
 </p><ol type="a" class="substeps"><li class="step"><p>
@@ -253,16 +253,16 @@ SELECT substr(CAST (1234 AS text), 3);
      34
 (1 row)
 </pre><p>
-</p></div></div><br class="example-break" /><div class="footnotes"><br /><hr style="width:100; text-align:left;margin-left: 0" /><div id="ftn.FUNC-QUALIFIED-SECURITY" class="footnote"><p><a href="#FUNC-QUALIFIED-SECURITY" class="para"><sup class="para">[9] </sup></a>
+</p></div></div><br class="example-break" /><div class="footnotes"><br /><hr style="width:100; text-align:left;margin-left: 0" /><div id="ftn.FUNC-QUALIFIED-SECURITY" class="footnote"><p><a href="#FUNC-QUALIFIED-SECURITY" class="para"><sup class="para">[10] </sup></a>
     The hazard does not arise with a non-schema-qualified name, because a
     search path containing schemas that permit untrusted users to create
-    objects is not a <a class="link" href="ddl-schemas.html#DDL-SCHEMAS-PATTERNS" title="5.8.6. Usage Patterns">secure schema usage
+    objects is not a <a class="link" href="ddl-schemas.html#DDL-SCHEMAS-PATTERNS" title="5.9.6. Usage Patterns">secure schema usage
     pattern</a>.
-   </p></div><div id="ftn.id-1.5.9.8.4.4.1.2" class="footnote"><p><a href="#id-1.5.9.8.4.4.1.2" class="para"><sup class="para">[10] </sup></a>
+   </p></div><div id="ftn.id-1.5.9.8.4.4.1.2" class="footnote"><p><a href="#id-1.5.9.8.4.4.1.2" class="para"><sup class="para">[11] </sup></a>
     The reason for this step is to support function-style cast specifications
     in cases where there is not an actual cast function.  If there is a cast
     function, it is conventionally named after its output type, and so there
     is no need to have a special case.  See
     <a class="xref" href="sql-createcast.html" title="CREATE CAST"><span class="refentrytitle">CREATE CAST</span></a>
     for additional commentary.
-   </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="typeconv-oper.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="typeconv.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="typeconv-query.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">10.2. Operators </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 10.4. Value Storage</td></tr></table></div></body></html>
+   </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="typeconv-oper.html" title="10.2. Operators">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="typeconv.html" title="Chapter 10. Type Conversion">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="typeconv-query.html" title="10.4. Value Storage">Next</a></td></tr><tr><td width="40%" align="left" valign="top">10.2. Operators </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 10.4. Value Storage</td></tr></table></div></body></html>

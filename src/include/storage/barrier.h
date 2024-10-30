@@ -3,7 +3,7 @@
  * barrier.h
  *	  Barriers for synchronizing cooperating processes.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/storage/barrier.h
@@ -34,9 +34,10 @@ typedef struct Barrier
 	ConditionVariable condition_variable;
 } Barrier;
 
-extern void BarrierInit(Barrier *barrier, int num_workers);
+extern void BarrierInit(Barrier *barrier, int participants);
 extern bool BarrierArriveAndWait(Barrier *barrier, uint32 wait_event_info);
 extern bool BarrierArriveAndDetach(Barrier *barrier);
+extern bool BarrierArriveAndDetachExceptLast(Barrier *barrier);
 extern int	BarrierAttach(Barrier *barrier);
 extern bool BarrierDetach(Barrier *barrier);
 extern int	BarrierPhase(Barrier *barrier);

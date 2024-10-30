@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DISCARD
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DISCARD" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DISCARD" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -70,15 +70,15 @@ Releases all temporary resources associated with the current session and resets 
 .RS 4
 .\}
 .nf
+CLOSE ALL;
 SET SESSION AUTHORIZATION DEFAULT;
 RESET ALL;
 DEALLOCATE ALL;
-CLOSE ALL;
 UNLISTEN *;
 SELECT pg_advisory_unlock_all();
 DISCARD PLANS;
-DISCARD SEQUENCES;
 DISCARD TEMP;
+DISCARD SEQUENCES;
 .fi
 .if n \{\
 .RE

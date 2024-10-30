@@ -1,27 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.11. PL/pgSQL Under the Hood</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plpgsql-trigger.html" title="43.10. Trigger Functions" /><link rel="next" href="plpgsql-development-tips.html" title="43.12. Tips for Developing in PL/pgSQL" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.11. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> Under the Hood</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-trigger.html" title="43.10. Trigger Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL - SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> - <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpgsql-development-tips.html" title="43.12. Tips for Developing in PL/pgSQL">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPGSQL-IMPLEMENTATION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.11. <span class="application">PL/pgSQL</span> Under the Hood</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-implementation.html#PLPGSQL-VAR-SUBST">43.11.1. Variable Substitution</a></span></dt><dt><span class="sect2"><a href="plpgsql-implementation.html#PLPGSQL-PLAN-CACHING">43.11.2. Plan Caching</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.11. PL/pgSQL under the Hood</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="plpgsql-trigger.html" title="43.10. Trigger Functions" /><link rel="next" href="plpgsql-development-tips.html" title="43.12. Tips for Developing in PL/pgSQL" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.11. <span class="application">PL/pgSQL</span> under the Hood</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-trigger.html" title="43.10. Trigger Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL — SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span class="application">PL/pgSQL</span> — <acronym class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpgsql-development-tips.html" title="43.12. Tips for Developing in PL/pgSQL">Next</a></td></tr></table><hr /></div><div class="sect1" id="PLPGSQL-IMPLEMENTATION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.11. <span class="application">PL/pgSQL</span> under the Hood <a href="#PLPGSQL-IMPLEMENTATION" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-implementation.html#PLPGSQL-VAR-SUBST">43.11.1. Variable Substitution</a></span></dt><dt><span class="sect2"><a href="plpgsql-implementation.html#PLPGSQL-PLAN-CACHING">43.11.2. Plan Caching</a></span></dt></dl></div><p>
     This section discusses some implementation details that are
     frequently important for <span class="application">PL/pgSQL</span> users to know.
-   </p><div class="sect2" id="PLPGSQL-VAR-SUBST"><div class="titlepage"><div><div><h3 class="title">43.11.1. Variable Substitution</h3></div></div></div><p>
+   </p><div class="sect2" id="PLPGSQL-VAR-SUBST"><div class="titlepage"><div><div><h3 class="title">43.11.1. Variable Substitution <a href="#PLPGSQL-VAR-SUBST" class="id_link">#</a></h3></div></div></div><p>
     SQL statements and expressions within a <span class="application">PL/pgSQL</span> function
     can refer to variables and parameters of the function.  Behind the scenes,
     <span class="application">PL/pgSQL</span> substitutes query parameters for such references.
-    Parameters will only be substituted in places where a parameter or
-    column reference is syntactically allowed.  As an extreme case, consider
+    Query parameters will only be substituted in places where they are
+    syntactically permissible.  As an extreme case, consider
     this example of poor programming style:
 </p><pre class="programlisting">
-INSERT INTO foo (foo) VALUES (foo);
+INSERT INTO foo (foo) VALUES (foo(foo));
 </pre><p>
     The first occurrence of <code class="literal">foo</code> must syntactically be a table
     name, so it will not be substituted, even if the function has a variable
     named <code class="literal">foo</code>.  The second occurrence must be the name of a
-    column of the table, so it will not be substituted either.  Only the
-    third occurrence is a candidate to be a reference to the function's
-    variable.
-   </p><div class="note"><h3 class="title">Note</h3><p>
-     <span class="productname">PostgreSQL</span> versions before 9.0 would try
-     to substitute the variable in all three cases, leading to syntax errors.
-    </p></div><p>
+    column of that table, so it will not be substituted either.  Likewise
+    the third occurrence must be a function name, so it also will not be
+    substituted for.  Only the last occurrence is a candidate to be a
+    reference to a variable of the <span class="application">PL/pgSQL</span>
+    function.
+   </p><p>
+    Another way to understand this is that variable substitution can only
+    insert data values into an SQL command; it cannot dynamically change which
+    database objects are referenced by the command.  (If you want to do
+    that, you must build a command string dynamically, as explained in
+    <a class="xref" href="plpgsql-statements.html#PLPGSQL-STATEMENTS-EXECUTING-DYN" title="43.5.4. Executing Dynamic Commands">Section 43.5.4</a>.)
+   </p><p>
     Since the names of variables are syntactically no different from the names
     of table columns, there can be ambiguity in statements that also refer to
     tables: is a given name meant to refer to a table column, or a variable?
@@ -35,7 +40,7 @@ INSERT INTO dest (col) SELECT foo + bar FROM src;
     or columns of <code class="literal">src</code>.
    </p><p>
     By default, <span class="application">PL/pgSQL</span> will report an error if a name
-    in a SQL statement could refer to either a variable or a table column.
+    in an SQL statement could refer to either a variable or a table column.
     You can fix such a problem by renaming the variable or column,
     or by qualifying the ambiguous reference, or by telling
     <span class="application">PL/pgSQL</span> which interpretation to prefer.
@@ -129,19 +134,22 @@ CREATE FUNCTION stamp_user(id int, comment text) RETURNS void AS $$
 $$ LANGUAGE plpgsql;
 </pre><p>
    </p><p>
-    Variable substitution does not happen in the command string given
+    Variable substitution does not happen in a command string given
     to <code class="command">EXECUTE</code> or one of its variants.  If you need to
     insert a varying value into such a command, do so as part of
     constructing the string value, or use <code class="literal">USING</code>, as illustrated in
     <a class="xref" href="plpgsql-statements.html#PLPGSQL-STATEMENTS-EXECUTING-DYN" title="43.5.4. Executing Dynamic Commands">Section 43.5.4</a>.
    </p><p>
     Variable substitution currently works only in <code class="command">SELECT</code>,
-    <code class="command">INSERT</code>, <code class="command">UPDATE</code>, and <code class="command">DELETE</code> commands,
+    <code class="command">INSERT</code>, <code class="command">UPDATE</code>,
+    <code class="command">DELETE</code>, and commands containing one of
+    these (such as <code class="command">EXPLAIN</code> and <code class="command">CREATE TABLE
+    ... AS SELECT</code>),
     because the main SQL engine allows query parameters only in these
     commands.  To use a non-constant name or value in other statement
     types (generically called utility statements), you must construct
     the utility statement as a string and <code class="command">EXECUTE</code> it.
-   </p></div><div class="sect2" id="PLPGSQL-PLAN-CACHING"><div class="titlepage"><div><div><h3 class="title">43.11.2. Plan Caching</h3></div></div></div><p>
+   </p></div><div class="sect2" id="PLPGSQL-PLAN-CACHING"><div class="titlepage"><div><div><h3 class="title">43.11.2. Plan Caching <a href="#PLPGSQL-PLAN-CACHING" class="id_link">#</a></h3></div></div></div><p>
     The <span class="application">PL/pgSQL</span> interpreter parses the function's source
     text and produces an internal binary instruction tree the first time the
     function is called (within each session).  The instruction tree
@@ -260,9 +268,9 @@ $$ LANGUAGE plpgsql;
      to the local variable <code class="varname">curtime</code>, the
      <span class="application">PL/pgSQL</span> interpreter casts this
      string to the <code class="type">timestamp</code> type by calling the
-     <code class="function">text_out</code> and <code class="function">timestamp_in</code>
+     <code class="function">textout</code> and <code class="function">timestamp_in</code>
      functions for the conversion.  So, the computed time stamp is updated
      on each execution as the programmer expects.  Even though this
      happens to work as expected, it's not terribly efficient, so
      use of the <code class="literal">now()</code> function would still be a better idea.
-    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-trigger.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpgsql-development-tips.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.10. Trigger Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 43.12. Tips for Developing in <span class="application">PL/pgSQL</span></td></tr></table></div></body></html>
+    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-trigger.html" title="43.10. Trigger Functions">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL — SQL Procedural Language">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpgsql-development-tips.html" title="43.12. Tips for Developing in PL/pgSQL">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.10. Trigger Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 43.12. Tips for Developing in <span class="application">PL/pgSQL</span></td></tr></table></div></body></html>

@@ -3,7 +3,7 @@
  * globals.c
  *	  global variable declarations
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -27,18 +27,23 @@
 
 ProtocolVersion FrontendProtocol;
 
-volatile bool InterruptPending = false;
-volatile bool QueryCancelPending = false;
-volatile bool ProcDiePending = false;
-volatile bool ClientConnectionLost = false;
-volatile bool IdleInTransactionSessionTimeoutPending = false;
-volatile sig_atomic_t ConfigReloadPending = false;
+volatile sig_atomic_t InterruptPending = false;
+volatile sig_atomic_t QueryCancelPending = false;
+volatile sig_atomic_t ProcDiePending = false;
+volatile sig_atomic_t CheckClientConnectionPending = false;
+volatile sig_atomic_t ClientConnectionLost = false;
+volatile sig_atomic_t IdleInTransactionSessionTimeoutPending = false;
+volatile sig_atomic_t IdleSessionTimeoutPending = false;
+volatile sig_atomic_t ProcSignalBarrierPending = false;
+volatile sig_atomic_t LogMemoryContextPending = false;
+volatile sig_atomic_t IdleStatsUpdateTimeoutPending = false;
 volatile uint32 InterruptHoldoffCount = 0;
 volatile uint32 QueryCancelHoldoffCount = 0;
 volatile uint32 CritSectionCount = 0;
 
 int			MyProcPid;
 pg_time_t	MyStartTime;
+TimestampTz MyStartTimestamp;
 struct Port *MyProcPort;
 int32		MyCancelKey;
 int			MyPMChildSlot;
@@ -79,7 +84,7 @@ char		postgres_exec_path[MAXPGPATH];	/* full path to backend */
 
 BackendId	MyBackendId = InvalidBackendId;
 
-BackendId	ParallelMasterBackendId = InvalidBackendId;
+BackendId	ParallelLeaderBackendId = InvalidBackendId;
 
 Oid			MyDatabaseId = InvalidOid;
 
@@ -117,8 +122,9 @@ int			IntervalStyle = INTSTYLE_POSTGRES;
 
 bool		enableFsync = true;
 bool		allowSystemTableMods = false;
-int			work_mem = 1024;
-int			maintenance_work_mem = 16384;
+int			work_mem = 4096;
+double		hash_mem_multiplier = 2.0;
+int			maintenance_work_mem = 65536;
 int			max_parallel_maintenance_workers = 2;
 
 /*
@@ -127,23 +133,24 @@ int			max_parallel_maintenance_workers = 2;
  * MaxBackends is computed by PostmasterMain after modules have had a chance to
  * register background workers.
  */
-int			NBuffers = 1000;
-int			MaxConnections = 90;
+int			NBuffers = 16384;
+int			MaxConnections = 100;
 int			max_worker_processes = 8;
 int			max_parallel_workers = 8;
 int			MaxBackends = 0;
 
-int			VacuumCostPageHit = 1;	/* GUC parameters for vacuum */
-int			VacuumCostPageMiss = 10;
+/* GUC parameters for vacuum */
+int			VacuumBufferUsageLimit = 256;
+
+int			VacuumCostPageHit = 1;
+int			VacuumCostPageMiss = 2;
 int			VacuumCostPageDirty = 20;
 int			VacuumCostLimit = 200;
-int			VacuumCostDelay = 0;
+double		VacuumCostDelay = 0;
 
-int			VacuumPageHit = 0;
-int			VacuumPageMiss = 0;
-int			VacuumPageDirty = 0;
+int64		VacuumPageHit = 0;
+int64		VacuumPageMiss = 0;
+int64		VacuumPageDirty = 0;
 
 int			VacuumCostBalance = 0;	/* working state for vacuum */
 bool		VacuumCostActive = false;
-
-double		vacuum_cleanup_index_scale_factor;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>10.2. Operators</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="typeconv-overview.html" title="10.1. Overview" /><link rel="next" href="typeconv-func.html" title="10.3. Functions" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">10.2. Operators</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="typeconv-overview.html" title="10.1. Overview">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="typeconv.html" title="Chapter 10. Type Conversion">Up</a></td><th width="60%" align="center">Chapter 10. Type Conversion</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="typeconv-func.html" title="10.3. Functions">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TYPECONV-OPER"><div class="titlepage"><div><div><h2 class="title" style="clear: both">10.2. Operators</h2></div></div></div><a id="id-1.5.9.7.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>10.2. Operators</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="typeconv-overview.html" title="10.1. Overview" /><link rel="next" href="typeconv-func.html" title="10.3. Functions" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">10.2. Operators</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="typeconv-overview.html" title="10.1. Overview">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="typeconv.html" title="Chapter 10. Type Conversion">Up</a></td><th width="60%" align="center">Chapter 10. Type Conversion</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="typeconv-func.html" title="10.3. Functions">Next</a></td></tr></table><hr /></div><div class="sect1" id="TYPECONV-OPER"><div class="titlepage"><div><div><h2 class="title" style="clear: both">10.2. Operators <a href="#TYPECONV-OPER" class="id_link">#</a></h2></div></div></div><a id="id-1.5.9.7.2" class="indexterm"></a><p>
    The specific operator that is referenced by an operator expression
    is determined using the following procedure.
    Note that this procedure is indirectly affected
@@ -11,7 +11,7 @@ Select the operators to be considered from the
 <code class="classname">pg_operator</code> system catalog.  If a non-schema-qualified
 operator name was used (the usual case), the operators
 considered are those with the matching name and argument count that are
-visible in the current search path (see <a class="xref" href="ddl-schemas.html#DDL-SCHEMAS-PATH" title="5.8.3. The Schema Search Path">Section 5.8.3</a>).
+visible in the current search path (see <a class="xref" href="ddl-schemas.html#DDL-SCHEMAS-PATH" title="5.9.3. The Schema Search Path">Section 5.9.3</a>).
 If a qualified operator name was given, only operators in the specified
 schema are considered.
 </p><ol type="a" class="substeps"><li class="step"><p>
@@ -24,13 +24,13 @@ Check for an operator accepting exactly the input argument types.
 If one exists (there can be only one exact match in the set of
 operators considered), use it.  Lack of an exact match creates a security
 hazard when calling, via qualified name
-  <a href="#ftn.OP-QUALIFIED-SECURITY" class="footnote"><sup class="footnote" id="OP-QUALIFIED-SECURITY">[8]</sup></a>
+  <a href="#ftn.OP-QUALIFIED-SECURITY" class="footnote"><sup class="footnote" id="OP-QUALIFIED-SECURITY">[9]</sup></a>
 (not typical), any operator found in a schema that permits untrusted users to
 create objects.  In such situations, cast arguments to force an exact match.
 </p><ol type="a" class="substeps"><li class="step" id="OP-RESOL-EXACT-UNKNOWN"><p>
 If one argument of a binary operator invocation is of the <code class="type">unknown</code> type,
 then assume it is the same type as the other argument for this check.
-Invocations involving two <code class="type">unknown</code> inputs, or a unary operator
+Invocations involving two <code class="type">unknown</code> inputs, or a prefix operator
 with an <code class="type">unknown</code> input, will never find a match at this step.
 </p></li><li class="step" id="OP-RESOL-EXACT-DOMAIN"><p>
 If one argument of a binary operator invocation is of the <code class="type">unknown</code>
@@ -82,18 +82,17 @@ positions.  If exactly one candidate passes this test, use it.
 Otherwise, fail.
 </p></li></ol></li></ol></div><p>
 Some examples follow.
-</p><div class="example" id="id-1.5.9.7.6"><p class="title"><strong>Example 10.1. Factorial Operator Type Resolution</strong></p><div class="example-contents"><p>
-There is only one factorial operator (postfix <code class="literal">!</code>)
+</p><div class="example" id="id-1.5.9.7.6"><p class="title"><strong>Example 10.1. Square Root Operator Type Resolution</strong></p><div class="example-contents"><p>
+There is only one square root operator (prefix <code class="literal">|/</code>)
 defined in the standard catalog, and it takes an argument of type
-<code class="type">bigint</code>.
+<code class="type">double precision</code>.
 The scanner assigns an initial type of <code class="type">integer</code> to the argument
 in this query expression:
 </p><pre class="screen">
-SELECT 40 ! AS "40 factorial";
-
-                   40 factorial
---------------------------------------------------
- 815915283247897734345611269596115894272000000000
+SELECT |/ 40 AS "square root of 40";
+ square root of 40
+-------------------
+ 6.324555320336759
 (1 row)
 </pre><p>
 
@@ -101,7 +100,7 @@ So the parser does a type conversion on the operand and the query
 is equivalent to:
 
 </p><pre class="screen">
-SELECT CAST(40 AS bigint) ! AS "40 factorial";
+SELECT |/ CAST(40 AS double precision) AS "square root of 40";
 </pre><p>
 </p></div></div><br class="example-break" /><div class="example" id="id-1.5.9.7.7"><p class="title"><strong>Example 10.2. String Concatenation Operator Type Resolution</strong></p><div class="example-contents"><p>
 A string-like syntax is used for working with string types and for
@@ -240,9 +239,9 @@ If they did not, such an operator would create too many ambiguous-operator
 failures, because the casting rules always consider a domain as castable
 to or from its base type, and so the domain operator would be considered
 usable in all the same cases as a similarly-named operator on the base type.
-</p></div></div><br class="example-break" /><div class="footnotes"><br /><hr style="width:100; text-align:left;margin-left: 0" /><div id="ftn.OP-QUALIFIED-SECURITY" class="footnote"><p><a href="#OP-QUALIFIED-SECURITY" class="para"><sup class="para">[8] </sup></a>
+</p></div></div><br class="example-break" /><div class="footnotes"><br /><hr style="width:100; text-align:left;margin-left: 0" /><div id="ftn.OP-QUALIFIED-SECURITY" class="footnote"><p><a href="#OP-QUALIFIED-SECURITY" class="para"><sup class="para">[9] </sup></a>
     The hazard does not arise with a non-schema-qualified name, because a
     search path containing schemas that permit untrusted users to create
-    objects is not a <a class="link" href="ddl-schemas.html#DDL-SCHEMAS-PATTERNS" title="5.8.6. Usage Patterns">secure schema usage
+    objects is not a <a class="link" href="ddl-schemas.html#DDL-SCHEMAS-PATTERNS" title="5.9.6. Usage Patterns">secure schema usage
     pattern</a>.
-   </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="typeconv-overview.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="typeconv.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="typeconv-func.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">10.1. Overview </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 10.3. Functions</td></tr></table></div></body></html>
+   </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="typeconv-overview.html" title="10.1. Overview">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="typeconv.html" title="Chapter 10. Type Conversion">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="typeconv-func.html" title="10.3. Functions">Next</a></td></tr><tr><td width="40%" align="left" valign="top">10.1. Overview </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 10.3. Functions</td></tr></table></div></body></html>

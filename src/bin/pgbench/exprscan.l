@@ -1,4 +1,4 @@
-%{
+%top{
 /*-------------------------------------------------------------------------
  *
  * exprscan.l
@@ -15,16 +15,26 @@
  *
  * Note that this lexer operates within the framework created by psqlscan.l,
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/bin/pgbench/exprscan.l
  *
  *-------------------------------------------------------------------------
  */
+#include "postgres_fe.h"
 
+/*
+ * NB: include exprparse.h only AFTER including pgbench.h, because pgbench.h
+ * contains definitions needed for YYSTYPE. Likewise, pgbench.h must come after
+ * psqlscan_int.h for yyscan_t.
+ */
 #include "fe_utils/psqlscan_int.h"
+#include "pgbench.h"
+#include "exprparse.h"
+}
 
+%{
 /* context information for reporting errors in expressions */
 static const char *expr_source = NULL;
 static int	expr_lineno = 0;
@@ -195,16 +205,31 @@ notnull			[Nn][Oo][Tt][Nn][Uu][Ll][Ll]
 					yylval->bval = false;
 					return BOOLEAN_CONST;
 				}
+"9223372036854775808" {
+					/*
+					 * Special handling for PG_INT64_MIN, which can't
+					 * accurately be represented here, as the minus sign is
+					 * lexed separately and INT64_MIN can't be represented as
+					 * a positive integer.
+					 */
+					return MAXINT_PLUS_ONE_CONST;
+				}
 {digit}+		{
-					yylval->ival = strtoint64(yytext);
+					if (!strtoint64(yytext, true, &yylval->ival))
+						expr_yyerror_more(yyscanner, "bigint constant overflow",
+										  strdup(yytext));
 					return INTEGER_CONST;
 				}
 {digit}+(\.{digit}*)?([eE][-+]?{digit}+)?	{
-					yylval->dval = atof(yytext);
+					if (!strtodouble(yytext, true, &yylval->dval))
+						expr_yyerror_more(yyscanner, "double constant overflow",
+										  strdup(yytext));
 					return DOUBLE_CONST;
 				}
 \.{digit}+([eE][-+]?{digit}+)?	{
-					yylval->dval = atof(yytext);
+					if (!strtodouble(yytext, true, &yylval->dval))
+						expr_yyerror_more(yyscanner, "double constant overflow",
+										  strdup(yytext));
 					return DOUBLE_CONST;
 				}
 {alpha}{alnum}*	{

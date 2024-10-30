@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: START TRANSACTION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "START TRANSACTION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "START TRANSACTION" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -43,9 +43,9 @@ where \fItransaction_mode\fR is one of:
 .SH "DESCRIPTION"
 .PP
 This command begins a new transaction block\&. If the isolation level, read/write mode, or deferrable mode is specified, the new transaction has those characteristics, as if
-SET TRANSACTION (\fBSET_TRANSACTION\fR(7))
+\fBSET TRANSACTION\fR
 was executed\&. This is the same as the
-\fBBEGIN\fR(7)
+\fBBEGIN\fR
 command\&.
 .SH "PARAMETERS"
 .PP

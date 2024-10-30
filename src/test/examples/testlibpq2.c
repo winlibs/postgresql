@@ -32,11 +32,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#ifdef HAVE_SYS_SELECT_H
-#include <sys/select.h>
-#endif
 
 #include "libpq-fe.h"
 
@@ -72,12 +70,11 @@ main(int argc, char **argv)
 	/* Check to see that the backend connection was successfully made */
 	if (PQstatus(conn) != CONNECTION_OK)
 	{
-		fprintf(stderr, "Connection to database failed: %s",
-				PQerrorMessage(conn));
+		fprintf(stderr, "%s", PQerrorMessage(conn));
 		exit_nicely(conn);
 	}
 
-	/* Set always-secure search path, so malicous users can't take control. */
+	/* Set always-secure search path, so malicious users can't take control. */
 	res = PQexec(conn,
 				 "SELECT pg_catalog.set_config('search_path', '', false)");
 	if (PQresultStatus(res) != PGRES_TUPLES_OK)

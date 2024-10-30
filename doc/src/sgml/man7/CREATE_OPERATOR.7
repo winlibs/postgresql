@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE OPERATOR
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATE OPERATOR" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE OPERATOR" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -115,9 +115,9 @@ to parse SQL\-compliant commands without requiring spaces between tokens\&.
 .sp -1
 .IP \(bu 2.3
 .\}
-The use of
+The symbol
 =>
-as an operator name is deprecated\&. It may be disallowed altogether in a future release\&.
+is reserved by the SQL grammar, so it cannot be used as an operator name\&.
 .RE
 .PP
 The operator
@@ -126,17 +126,13 @@ is mapped to
 <>
 on input, so these two names are always equivalent\&.
 .PP
-At least one of
+For binary operators, both
 LEFTARG
 and
 RIGHTARG
-must be defined\&. For binary operators, both must be defined\&. For right unary operators, only
-LEFTARG
-should be defined, while for left unary operators only
+must be defined\&. For prefix operators only
 RIGHTARG
-should be defined\&.
-.PP
-The
+should be defined\&. The
 \fIfunction_name\fR
 function must have been previously defined using
 \fBCREATE FUNCTION\fR
@@ -152,7 +148,7 @@ PROCEDURE
 here is historical and deprecated\&.
 .PP
 The other clauses specify optional operator optimization clauses\&. Their meaning is detailed in
-Section\ \&38.14\&.
+Section\ \&38.15\&.
 .PP
 To be able to create an operator, you must have
 USAGE
@@ -175,12 +171,12 @@ The function used to implement this operator\&.
 .PP
 \fIleft_type\fR
 .RS 4
-The data type of the operator\*(Aqs left operand, if any\&. This option would be omitted for a left\-unary operator\&.
+The data type of the operator\*(Aqs left operand, if any\&. This option would be omitted for a prefix operator\&.
 .RE
 .PP
 \fIright_type\fR
 .RS 4
-The data type of the operator\*(Aqs right operand, if any\&. This option would be omitted for a right\-unary operator\&.
+The data type of the operator\*(Aqs right operand\&.
 .RE
 .PP
 \fIcom_op\fR
@@ -231,7 +227,7 @@ COMMUTATOR = OPERATOR(myschema\&.===) ,
 .SH "NOTES"
 .PP
 Refer to
-Section\ \&38.13
+Section\ \&38.14
 for further information\&.
 .PP
 It is not possible to specify an operator\*(Aqs lexical precedence in
@@ -249,9 +245,9 @@ MERGES
 true\&.
 .PP
 Use
-DROP OPERATOR (\fBDROP_OPERATOR\fR(7))
+\fBDROP OPERATOR\fR
 to delete user\-defined operators from a database\&. Use
-ALTER OPERATOR (\fBALTER_OPERATOR\fR(7))
+\fBALTER OPERATOR\fR
 to modify operators in a database\&.
 .SH "EXAMPLES"
 .PP

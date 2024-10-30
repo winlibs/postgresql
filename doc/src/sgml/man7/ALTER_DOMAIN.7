@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER DOMAIN
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER DOMAIN" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER DOMAIN" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -45,7 +45,7 @@ ALTER DOMAIN \fIname\fR
 ALTER DOMAIN \fIname\fR
     VALIDATE CONSTRAINT \fIconstraint_name\fR
 ALTER DOMAIN \fIname\fR
-    OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+    OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 ALTER DOMAIN \fIname\fR
     RENAME TO \fInew_name\fR
 ALTER DOMAIN \fIname\fR
@@ -73,7 +73,7 @@ when the columns using the domain contain no null values\&.
 ADD \fIdomain_constraint\fR [ NOT VALID ]
 .RS 4
 This form adds a new constraint to a domain using the same syntax as
-CREATE DOMAIN (\fBCREATE_DOMAIN\fR(7))\&. When a new constraint is added to a domain, all columns using that domain will be checked against the newly added constraint\&. These checks can be suppressed by adding the new constraint using the
+\fBCREATE DOMAIN\fR\&. When a new constraint is added to a domain, all columns using that domain will be checked against the newly added constraint\&. These checks can be suppressed by adding the new constraint using the
 NOT VALID
 option; the constraint can later be made valid using
 \fBALTER DOMAIN \&.\&.\&. VALIDATE CONSTRAINT\fR\&. Newly inserted or updated rows are always checked against all constraints, even those marked
@@ -99,7 +99,7 @@ This form changes the name of a constraint on a domain\&.
 VALIDATE CONSTRAINT
 .RS 4
 This form validates a constraint previously added as
-NOT VALID, that is, verify that all data in columns using the domain satisfy the specified constraint\&.
+NOT VALID, that is, it verifies that all values in table columns of the domain type satisfy the specified constraint\&.
 .RE
 .PP
 OWNER
@@ -120,7 +120,9 @@ This form changes the schema of the domain\&. Any constraints associated with th
 You must own the domain to use
 \fBALTER DOMAIN\fR\&. To change the schema of a domain, you must also have
 CREATE
-privilege on the new schema\&. To alter the owner, you must also be a direct or indirect member of the new owning role, and that role must have
+privilege on the new schema\&. To alter the owner, you must be able to
+SET ROLE
+to the new owning role, and that role must have
 CREATE
 privilege on the domain\*(Aqs schema\&. (These restrictions enforce that altering the owner doesn\*(Aqt do anything you couldn\*(Aqt do by dropping and recreating the domain\&. However, a superuser can alter ownership of any domain anyway\&.)
 .SH "PARAMETERS"
@@ -143,13 +145,13 @@ Name of an existing constraint to drop or rename\&.
 .PP
 NOT VALID
 .RS 4
-Do not verify existing column data for constraint validity\&.
+Do not verify existing stored data for constraint validity\&.
 .RE
 .PP
 CASCADE
 .RS 4
 Automatically drop objects that depend on the constraint, and in turn all objects that depend on those objects (see
-Section\ \&5.13)\&.
+Section\ \&5.14)\&.
 .RE
 .PP
 RESTRICT
@@ -177,6 +179,16 @@ The user name of the new owner of the domain\&.
 The new schema for the domain\&.
 .RE
 .SH "NOTES"
+.PP
+Although
+\fBALTER DOMAIN ADD CONSTRAINT\fR
+attempts to verify that existing stored data satisfies the new constraint, this check is not bulletproof, because the command cannot
+\(lqsee\(rq
+table rows that are newly inserted or updated and not yet committed\&. If there is a hazard that concurrent operations might insert bad data, the way to proceed is to add the constraint using the
+NOT VALID
+option, commit that command, wait until all transactions started before that commit have finished, and then issue
+\fBALTER DOMAIN VALIDATE CONSTRAINT\fR
+to search for data violating the constraint\&. This method is reliable because once the constraint is committed, all new transactions are guaranteed to enforce it against new values of the domain type\&.
 .PP
 Currently,
 \fBALTER DOMAIN ADD CONSTRAINT\fR,

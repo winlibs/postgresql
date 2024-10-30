@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER OPERATOR CLASS
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER OPERATOR CLASS" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER OPERATOR CLASS" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,7 +36,7 @@ ALTER OPERATOR CLASS \fIname\fR USING \fIindex_method\fR
     RENAME TO \fInew_name\fR
 
 ALTER OPERATOR CLASS \fIname\fR USING \fIindex_method\fR
-    OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+    OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 
 ALTER OPERATOR CLASS \fIname\fR USING \fIindex_method\fR
     SET SCHEMA \fInew_schema\fR
@@ -47,7 +47,9 @@ ALTER OPERATOR CLASS \fIname\fR USING \fIindex_method\fR
 changes the definition of an operator class\&.
 .PP
 You must own the operator class to use
-\fBALTER OPERATOR CLASS\fR\&. To alter the owner, you must also be a direct or indirect member of the new owning role, and that role must have
+\fBALTER OPERATOR CLASS\fR\&. To alter the owner, you must be able to
+SET ROLE
+to the new owning role, and that role must have
 CREATE
 privilege on the operator class\*(Aqs schema\&. (These restrictions enforce that altering the owner doesn\*(Aqt do anything you couldn\*(Aqt do by dropping and recreating the operator class\&. However, a superuser can alter ownership of any operator class anyway\&.)
 .SH "PARAMETERS"

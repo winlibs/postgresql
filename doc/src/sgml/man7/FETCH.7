@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: FETCH
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "FETCH" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "FETCH" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,9 +32,9 @@ FETCH \- retrieve rows from a query using a cursor
 .SH "SYNOPSIS"
 .sp
 .nf
-FETCH [ \fIdirection\fR [ FROM | IN ] ] \fIcursor_name\fR
+FETCH [ \fIdirection\fR ] [ FROM | IN ] \fIcursor_name\fR
 
-where \fIdirection\fR can be empty or one of:
+where \fIdirection\fR can be one of:
 
     NEXT
     PRIOR
@@ -276,9 +276,9 @@ ABSOLUTE
 fetches are not any faster than navigating to the desired row with a relative move: the underlying implementation must traverse all the intermediate rows anyway\&. Negative absolute fetches are even worse: the query must be read to the end to find the last row, and then traversed backward from there\&. However, rewinding to the start of the query (as with
 FETCH ABSOLUTE 0) is fast\&.
 .PP
-\fBDECLARE\fR(7)
+\fBDECLARE\fR
 is used to define a cursor\&. Use
-\fBMOVE\fR(7)
+\fBMOVE\fR
 to change cursor position without retrieving data\&.
 .SH "EXAMPLES"
 .PP

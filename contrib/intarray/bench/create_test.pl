@@ -1,8 +1,12 @@
 #!/usr/bin/perl
 
+# Copyright (c) 2021-2023, PostgreSQL Global Development Group
+
 # contrib/intarray/bench/create_test.pl
 
 use strict;
+use warnings;
+
 print <<EOT;
 create table message (
 	mid	int not null,
@@ -15,7 +19,7 @@ create table message_section_map (
 
 EOT
 
-open(my $msg, '>', "message.tmp")             || die;
+open(my $msg, '>', "message.tmp") || die;
 open(my $map, '>', "message_section_map.tmp") || die;
 
 srand(1);
@@ -47,7 +51,7 @@ foreach my $i (1 .. 200000)
 	else
 	{
 		print $msg "$i\t{" . join(',', @sect) . "}\n";
-		map { print $map "$i\t$_\n" } @sect;
+		print $map "$i\t$_\n" foreach @sect;
 	}
 }
 close $map;

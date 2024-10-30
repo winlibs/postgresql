@@ -256,7 +256,18 @@ ALTER TABLE T ADD COLUMN c2 TIMESTAMP DEFAULT clock_timestamp();
 
 SELECT comp();
 
+-- check that we notice insertion of a volatile default argument
+CREATE FUNCTION foolme(timestamptz DEFAULT clock_timestamp())
+  RETURNS timestamptz
+  IMMUTABLE AS 'select $1' LANGUAGE sql;
+ALTER TABLE T ADD COLUMN c3 timestamptz DEFAULT foolme();
+
+SELECT attname, atthasmissing, attmissingval FROM pg_attribute
+  WHERE attrelid = 't'::regclass AND attnum > 0
+  ORDER BY attnum;
+
 DROP TABLE T;
+DROP FUNCTION foolme(timestamptz);
 
 -- Simple querie
 CREATE TABLE T (pk INT NOT NULL PRIMARY KEY);
@@ -524,8 +535,22 @@ SET LOCAL enable_seqscan = false;
 SELECT * FROM t WHERE a IS NULL;
 ROLLBACK;
 
+-- verify that a default set on a non-plain table doesn't set a missing
+-- value on the attribute
+CREATE FOREIGN DATA WRAPPER dummy;
+CREATE SERVER s0 FOREIGN DATA WRAPPER dummy;
+CREATE FOREIGN TABLE ft1 (c1 integer NOT NULL) SERVER s0;
+ALTER FOREIGN TABLE ft1 ADD COLUMN c8 integer DEFAULT 0;
+ALTER FOREIGN TABLE ft1 ALTER COLUMN c8 TYPE char(10);
+SELECT count(*)
+  FROM pg_attribute
+  WHERE attrelid = 'ft1'::regclass AND
+    (attmissingval IS NOT NULL OR atthasmissing);
 
 -- cleanup
+DROP FOREIGN TABLE ft1;
+DROP SERVER s0;
+DROP FOREIGN DATA WRAPPER dummy;
 DROP TABLE vtype;
 DROP TABLE vtype2;
 DROP TABLE follower;

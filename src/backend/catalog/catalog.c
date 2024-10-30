@@ -5,7 +5,7 @@
  *		bits of hard-wired knowledge
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -21,17 +21,19 @@
 #include <unistd.h>
 
 #include "access/genam.h"
+#include "access/htup_details.h"
 #include "access/sysattr.h"
+#include "access/table.h"
 #include "access/transam.h"
 #include "catalog/catalog.h"
-#include "catalog/indexing.h"
 #include "catalog/namespace.h"
 #include "catalog/pg_auth_members.h"
 #include "catalog/pg_authid.h"
 #include "catalog/pg_database.h"
-#include "catalog/pg_namespace.h"
-#include "catalog/pg_pltemplate.h"
 #include "catalog/pg_db_role_setting.h"
+#include "catalog/pg_largeobject.h"
+#include "catalog/pg_namespace.h"
+#include "catalog/pg_parameter_acl.h"
 #include "catalog/pg_replication_origin.h"
 #include "catalog/pg_shdepend.h"
 #include "catalog/pg_shdescription.h"
@@ -39,25 +41,35 @@
 #include "catalog/pg_subscription.h"
 #include "catalog/pg_tablespace.h"
 #include "catalog/pg_type.h"
-#include "catalog/toasting.h"
 #include "miscadmin.h"
 #include "storage/fd.h"
 #include "utils/fmgroids.h"
+#include "utils/fmgrprotos.h"
 #include "utils/rel.h"
-#include "utils/tqual.h"
+#include "utils/snapmgr.h"
+#include "utils/syscache.h"
 
+/*
+ * Parameters to determine when to emit a log message in
+ * GetNewOidWithIndex()
+ */
+#define GETNEWOID_LOG_THRESHOLD 1000000
+#define GETNEWOID_LOG_MAX_INTERVAL 128000000
 
 /*
  * IsSystemRelation
- *		True iff the relation is either a system catalog or toast table.
- *		By a system catalog, we mean one that created in the pg_catalog schema
- *		during initdb.  User-created relations in pg_catalog don't count as
- *		system catalogs.
+ *		True iff the relation is either a system catalog or a toast table.
+ *		See IsCatalogRelation for the exact definition of a system catalog.
  *
- *		NB: TOAST relations are considered system relations by this test
- *		for compatibility with the old IsSystemRelationName function.
- *		This is appropriate in many places but not all.  Where it's not,
- *		also check IsToastRelation or use IsCatalogRelation().
+ *		We treat toast tables of user relations as "system relations" for
+ *		protection purposes, e.g. you can't change their schemas without
+ *		special permissions.  Therefore, most uses of this function are
+ *		checking whether allow_system_table_mods restrictions apply.
+ *		For other purposes, consider whether you shouldn't be using
+ *		IsCatalogRelation instead.
+ *
+ *		This function does not perform any catalog accesses.
+ *		Some callers rely on that!
  */
 bool
 IsSystemRelation(Relation relation)
@@ -74,67 +86,95 @@ IsSystemRelation(Relation relation)
 bool
 IsSystemClass(Oid relid, Form_pg_class reltuple)
 {
-	return IsToastClass(reltuple) || IsCatalogClass(relid, reltuple);
+	/* IsCatalogRelationOid is a bit faster, so test that first */
+	return (IsCatalogRelationOid(relid) || IsToastClass(reltuple));
 }
 
 /*
  * IsCatalogRelation
- *		True iff the relation is a system catalog, or the toast table for
- *		a system catalog.  By a system catalog, we mean one that created
- *		in the pg_catalog schema during initdb.  As with IsSystemRelation(),
- *		user-created relations in pg_catalog don't count as system catalogs.
+ *		True iff the relation is a system catalog.
  *
- *		Note that IsSystemRelation() returns true for ALL toast relations,
- *		but this function returns true only for toast relations of system
- *		catalogs.
+ *		By a system catalog, we mean one that is created during the bootstrap
+ *		phase of initdb.  That includes not just the catalogs per se, but
+ *		also their indexes, and TOAST tables and indexes if any.
+ *
+ *		This function does not perform any catalog accesses.
+ *		Some callers rely on that!
  */
 bool
 IsCatalogRelation(Relation relation)
 {
-	return IsCatalogClass(RelationGetRelid(relation), relation->rd_rel);
+	return IsCatalogRelationOid(RelationGetRelid(relation));
 }
 
 /*
- * IsCatalogClass
- *		True iff the relation is a system catalog relation.
+ * IsCatalogRelationOid
+ *		True iff the relation identified by this OID is a system catalog.
  *
- * Check IsCatalogRelation() for details.
+ *		By a system catalog, we mean one that is created during the bootstrap
+ *		phase of initdb.  That includes not just the catalogs per se, but
+ *		also their indexes, and TOAST tables and indexes if any.
+ *
+ *		This function does not perform any catalog accesses.
+ *		Some callers rely on that!
  */
 bool
-IsCatalogClass(Oid relid, Form_pg_class reltuple)
+IsCatalogRelationOid(Oid relid)
 {
-	Oid			relnamespace = reltuple->relnamespace;
-
 	/*
-	 * Never consider relations outside pg_catalog/pg_toast to be catalog
-	 * relations.
-	 */
-	if (!IsSystemNamespace(relnamespace) && !IsToastNamespace(relnamespace))
-		return false;
-
-	/* ----
-	 * Check whether the oid was assigned during initdb, when creating the
-	 * initial template database. Minus the relations in information_schema
-	 * excluded above, these are integral part of the system.
-	 * We could instead check whether the relation is pinned in pg_depend, but
-	 * this is noticeably cheaper and doesn't require catalog access.
+	 * We consider a relation to be a system catalog if it has a pinned OID.
+	 * This includes all the defined catalogs, their indexes, and their TOAST
+	 * tables and indexes.
 	 *
-	 * This test is safe since even an oid wraparound will preserve this
-	 * property (cf. GetNewObjectId()) and it has the advantage that it works
-	 * correctly even if a user decides to create a relation in the pg_catalog
-	 * namespace.
-	 * ----
+	 * This rule excludes the relations in information_schema, which are not
+	 * integral to the system and can be treated the same as user relations.
+	 * (Since it's valid to drop and recreate information_schema, any rule
+	 * that did not act this way would be wrong.)
+	 *
+	 * This test is reliable since an OID wraparound will skip this range of
+	 * OIDs; see GetNewObjectId().
 	 */
-	return relid < FirstNormalObjectId;
+	return (relid < (Oid) FirstUnpinnedObjectId);
+}
+
+/*
+ * IsInplaceUpdateRelation
+ *		True iff core code performs inplace updates on the relation.
+ */
+bool
+IsInplaceUpdateRelation(Relation relation)
+{
+	return IsInplaceUpdateOid(RelationGetRelid(relation));
+}
+
+/*
+ * IsInplaceUpdateOid
+ *		Like the above, but takes an OID as argument.
+ */
+bool
+IsInplaceUpdateOid(Oid relid)
+{
+	return (relid == RelationRelationId ||
+			relid == DatabaseRelationId);
 }
 
 /*
  * IsToastRelation
  *		True iff relation is a TOAST support relation (or index).
+ *
+ *		Does not perform any catalog accesses.
  */
 bool
 IsToastRelation(Relation relation)
 {
+	/*
+	 * What we actually check is whether the relation belongs to a pg_toast
+	 * namespace.  This should be equivalent because of restrictions that are
+	 * enforced elsewhere against creating user relations in, or moving
+	 * relations into/out of, a pg_toast namespace.  Notice also that this
+	 * will not say "true" for toast tables belonging to other sessions' temp
+	 * tables; we expect that other mechanisms will prevent access to those.
+	 */
 	return IsToastNamespace(RelationGetNamespace(relation));
 }
 
@@ -153,14 +193,16 @@ IsToastClass(Form_pg_class reltuple)
 }
 
 /*
- * IsSystemNamespace
+ * IsCatalogNamespace
  *		True iff namespace is pg_catalog.
+ *
+ *		Does not perform any catalog accesses.
  *
  * NOTE: the reason this isn't a macro is to avoid having to include
  * catalog/pg_namespace.h in a lot of places.
  */
 bool
-IsSystemNamespace(Oid namespaceId)
+IsCatalogNamespace(Oid namespaceId)
 {
 	return namespaceId == PG_CATALOG_NAMESPACE;
 }
@@ -169,9 +211,13 @@ IsSystemNamespace(Oid namespaceId)
  * IsToastNamespace
  *		True iff namespace is pg_toast or my temporary-toast-table namespace.
  *
+ *		Does not perform any catalog accesses.
+ *
  * Note: this will return false for temporary-toast-table namespaces belonging
  * to other backends.  Those are treated the same as other backends' regular
  * temp table namespaces, and access is prevented where appropriate.
+ * If you need to check for those, you may be able to use isAnyTempNamespace,
+ * but beware that that does involve a catalog access.
  */
 bool
 IsToastNamespace(Oid namespaceId)
@@ -223,59 +269,127 @@ IsSharedRelation(Oid relationId)
 	if (relationId == AuthIdRelationId ||
 		relationId == AuthMemRelationId ||
 		relationId == DatabaseRelationId ||
-		relationId == PLTemplateRelationId ||
-		relationId == SharedDescriptionRelationId ||
-		relationId == SharedDependRelationId ||
-		relationId == SharedSecLabelRelationId ||
-		relationId == TableSpaceRelationId ||
 		relationId == DbRoleSettingRelationId ||
+		relationId == ParameterAclRelationId ||
 		relationId == ReplicationOriginRelationId ||
-		relationId == SubscriptionRelationId)
+		relationId == SharedDependRelationId ||
+		relationId == SharedDescriptionRelationId ||
+		relationId == SharedSecLabelRelationId ||
+		relationId == SubscriptionRelationId ||
+		relationId == TableSpaceRelationId)
 		return true;
-	/* These are their indexes (see indexing.h) */
-	if (relationId == AuthIdRolnameIndexId ||
-		relationId == AuthIdOidIndexId ||
-		relationId == AuthMemRoleMemIndexId ||
+	/* These are their indexes */
+	if (relationId == AuthIdOidIndexId ||
+		relationId == AuthIdRolnameIndexId ||
 		relationId == AuthMemMemRoleIndexId ||
+		relationId == AuthMemRoleMemIndexId ||
+		relationId == AuthMemOidIndexId ||
+		relationId == AuthMemGrantorIndexId ||
 		relationId == DatabaseNameIndexId ||
 		relationId == DatabaseOidIndexId ||
-		relationId == PLTemplateNameIndexId ||
-		relationId == SharedDescriptionObjIndexId ||
-		relationId == SharedDependDependerIndexId ||
-		relationId == SharedDependReferenceIndexId ||
-		relationId == SharedSecLabelObjectIndexId ||
-		relationId == TablespaceOidIndexId ||
-		relationId == TablespaceNameIndexId ||
 		relationId == DbRoleSettingDatidRolidIndexId ||
+		relationId == ParameterAclOidIndexId ||
+		relationId == ParameterAclParnameIndexId ||
 		relationId == ReplicationOriginIdentIndex ||
 		relationId == ReplicationOriginNameIndex ||
+		relationId == SharedDependDependerIndexId ||
+		relationId == SharedDependReferenceIndexId ||
+		relationId == SharedDescriptionObjIndexId ||
+		relationId == SharedSecLabelObjectIndexId ||
+		relationId == SubscriptionNameIndexId ||
 		relationId == SubscriptionObjectIndexId ||
-		relationId == SubscriptionNameIndexId)
+		relationId == TablespaceNameIndexId ||
+		relationId == TablespaceOidIndexId)
 		return true;
-	/* These are their toast tables and toast indexes (see toasting.h) */
-	if (relationId == PgShdescriptionToastTable ||
-		relationId == PgShdescriptionToastIndex ||
+	/* These are their toast tables and toast indexes */
+	if (relationId == PgAuthidToastTable ||
+		relationId == PgAuthidToastIndex ||
+		relationId == PgDatabaseToastTable ||
+		relationId == PgDatabaseToastIndex ||
 		relationId == PgDbRoleSettingToastTable ||
 		relationId == PgDbRoleSettingToastIndex ||
+		relationId == PgParameterAclToastTable ||
+		relationId == PgParameterAclToastIndex ||
+		relationId == PgReplicationOriginToastTable ||
+		relationId == PgReplicationOriginToastIndex ||
+		relationId == PgShdescriptionToastTable ||
+		relationId == PgShdescriptionToastIndex ||
 		relationId == PgShseclabelToastTable ||
-		relationId == PgShseclabelToastIndex)
+		relationId == PgShseclabelToastIndex ||
+		relationId == PgSubscriptionToastTable ||
+		relationId == PgSubscriptionToastIndex ||
+		relationId == PgTablespaceToastTable ||
+		relationId == PgTablespaceToastIndex)
 		return true;
 	return false;
 }
 
+/*
+ * IsPinnedObject
+ *		Given the class + OID identity of a database object, report whether
+ *		it is "pinned", that is not droppable because the system requires it.
+ *
+ * We used to represent this explicitly in pg_depend, but that proved to be
+ * an undesirable amount of overhead, so now we rely on an OID range test.
+ */
+bool
+IsPinnedObject(Oid classId, Oid objectId)
+{
+	/*
+	 * Objects with OIDs above FirstUnpinnedObjectId are never pinned.  Since
+	 * the OID generator skips this range when wrapping around, this check
+	 * guarantees that user-defined objects are never considered pinned.
+	 */
+	if (objectId >= FirstUnpinnedObjectId)
+		return false;
+
+	/*
+	 * Large objects are never pinned.  We need this special case because
+	 * their OIDs can be user-assigned.
+	 */
+	if (classId == LargeObjectRelationId)
+		return false;
+
+	/*
+	 * There are a few objects defined in the catalog .dat files that, as a
+	 * matter of policy, we prefer not to treat as pinned.  We used to handle
+	 * that by excluding them from pg_depend, but it's just as easy to
+	 * hard-wire their OIDs here.  (If the user does indeed drop and recreate
+	 * them, they'll have new but certainly-unpinned OIDs, so no problem.)
+	 *
+	 * Checking both classId and objectId is overkill, since OIDs below
+	 * FirstGenbkiObjectId should be globally unique, but do it anyway for
+	 * robustness.
+	 */
+
+	/* the public namespace is not pinned */
+	if (classId == NamespaceRelationId &&
+		objectId == PG_PUBLIC_NAMESPACE)
+		return false;
+
+	/*
+	 * Databases are never pinned.  It might seem that it'd be prudent to pin
+	 * at least template0; but we do this intentionally so that template0 and
+	 * template1 can be rebuilt from each other, thus letting them serve as
+	 * mutual backups (as long as you've not modified template1, anyway).
+	 */
+	if (classId == DatabaseRelationId)
+		return false;
+
+	/*
+	 * All other initdb-created objects are pinned.  This is overkill (the
+	 * system doesn't really depend on having every last weird datatype, for
+	 * instance) but generating only the minimum required set of dependencies
+	 * seems hard, and enforcing an accurate list would be much more expensive
+	 * than the simple range test used here.
+	 */
+	return true;
+}
+
 
 /*
- * GetNewOid
- *		Generate a new OID that is unique within the given relation.
- *
- * Caller must have a suitable lock on the relation.
- *
- * Uniqueness is promised only if the relation has a unique index on OID.
- * This is true for all system catalogs that have OIDs, but might not be
- * true for user tables.  Note that we are effectively assuming that the
- * table has a relatively small number of entries (much less than 2^32)
- * and there aren't very long runs of consecutive existing OIDs.  Again,
- * this is reasonable for system catalogs but less so for user tables.
+ * GetNewOidWithIndex
+ *		Generate a new OID that is unique within the system relation.
  *
  * Since the OID is not immediately inserted into the table, there is a
  * race condition here; but a problem could occur only if someone else
@@ -288,51 +402,11 @@ IsSharedRelation(Oid relationId)
  * of transient conflicts for as long as our own MVCC snapshots think a
  * recently-deleted row is live.  The risk is far higher when selecting TOAST
  * OIDs, because SnapshotToast considers dead rows as active indefinitely.)
- */
-Oid
-GetNewOid(Relation relation)
-{
-	Oid			oidIndex;
-
-	/* If relation doesn't have OIDs at all, caller is confused */
-	Assert(relation->rd_rel->relhasoids);
-
-	/* In bootstrap mode, we don't have any indexes to use */
-	if (IsBootstrapProcessingMode())
-		return GetNewObjectId();
-
-	/* The relcache will cache the identity of the OID index for us */
-	oidIndex = RelationGetOidIndex(relation);
-
-	/* If no OID index, just hand back the next OID counter value */
-	if (!OidIsValid(oidIndex))
-	{
-		/*
-		 * System catalogs that have OIDs should *always* have a unique OID
-		 * index; we should only take this path for user tables. Give a
-		 * warning if it looks like somebody forgot an index.
-		 */
-		if (IsSystemRelation(relation))
-			elog(WARNING, "generating possibly-non-unique OID for \"%s\"",
-				 RelationGetRelationName(relation));
-
-		return GetNewObjectId();
-	}
-
-	/* Otherwise, use the index to find a nonconflicting OID */
-	return GetNewOidWithIndex(relation, oidIndex, ObjectIdAttributeNumber);
-}
-
-/*
- * GetNewOidWithIndex
- *		Guts of GetNewOid: use the supplied index
  *
- * This is exported separately because there are cases where we want to use
- * an index that will not be recognized by RelationGetOidIndex: TOAST tables
- * have indexes that are usable, but have multiple columns and are on
- * ordinary columns rather than a true OID column.  This code will work
- * anyway, so long as the OID is the index's first column.  The caller must
- * pass in the actual heap attnum of the OID column, however.
+ * Note that we are effectively assuming that the table has a relatively small
+ * number of entries (much less than 2^32) and there aren't very long runs of
+ * consecutive existing OIDs.  This is a mostly reasonable assumption for
+ * system catalogs.
  *
  * Caller must have a suitable lock on the relation.
  */
@@ -343,6 +417,15 @@ GetNewOidWithIndex(Relation relation, Oid indexId, AttrNumber oidcolumn)
 	SysScanDesc scan;
 	ScanKeyData key;
 	bool		collides;
+	uint64		retries = 0;
+	uint64		retries_before_log = GETNEWOID_LOG_THRESHOLD;
+
+	/* Only system relations are supported */
+	Assert(IsSystemRelation(relation));
+
+	/* In bootstrap mode, we don't have any indexes to use */
+	if (IsBootstrapProcessingMode())
+		return GetNewObjectId();
 
 	/*
 	 * We should never be asked to generate a new pg_type OID during
@@ -371,39 +454,82 @@ GetNewOidWithIndex(Relation relation, Oid indexId, AttrNumber oidcolumn)
 		collides = HeapTupleIsValid(systable_getnext(scan));
 
 		systable_endscan(scan);
+
+		/*
+		 * Log that we iterate more than GETNEWOID_LOG_THRESHOLD but have not
+		 * yet found OID unused in the relation. Then repeat logging with
+		 * exponentially increasing intervals until we iterate more than
+		 * GETNEWOID_LOG_MAX_INTERVAL. Finally repeat logging every
+		 * GETNEWOID_LOG_MAX_INTERVAL unless an unused OID is found. This
+		 * logic is necessary not to fill up the server log with the similar
+		 * messages.
+		 */
+		if (retries >= retries_before_log)
+		{
+			ereport(LOG,
+					(errmsg("still searching for an unused OID in relation \"%s\"",
+							RelationGetRelationName(relation)),
+					 errdetail_plural("OID candidates have been checked %llu time, but no unused OID has been found yet.",
+									  "OID candidates have been checked %llu times, but no unused OID has been found yet.",
+									  retries,
+									  (unsigned long long) retries)));
+
+			/*
+			 * Double the number of retries to do before logging next until it
+			 * reaches GETNEWOID_LOG_MAX_INTERVAL.
+			 */
+			if (retries_before_log * 2 <= GETNEWOID_LOG_MAX_INTERVAL)
+				retries_before_log *= 2;
+			else
+				retries_before_log += GETNEWOID_LOG_MAX_INTERVAL;
+		}
+
+		retries++;
 	} while (collides);
+
+	/*
+	 * If at least one log message is emitted, also log the completion of OID
+	 * assignment.
+	 */
+	if (retries > GETNEWOID_LOG_THRESHOLD)
+	{
+		ereport(LOG,
+				(errmsg_plural("new OID has been assigned in relation \"%s\" after %llu retry",
+							   "new OID has been assigned in relation \"%s\" after %llu retries",
+							   retries,
+							   RelationGetRelationName(relation), (unsigned long long) retries)));
+	}
 
 	return newOid;
 }
 
 /*
- * GetNewRelFileNode
- *		Generate a new relfilenode number that is unique within the
+ * GetNewRelFileNumber
+ *		Generate a new relfilenumber that is unique within the
  *		database of the given tablespace.
  *
- * If the relfilenode will also be used as the relation's OID, pass the
+ * If the relfilenumber will also be used as the relation's OID, pass the
  * opened pg_class catalog, and this routine will guarantee that the result
  * is also an unused OID within pg_class.  If the result is to be used only
- * as a relfilenode for an existing relation, pass NULL for pg_class.
+ * as a relfilenumber for an existing relation, pass NULL for pg_class.
  *
- * As with GetNewOid, there is some theoretical risk of a race condition,
- * but it doesn't seem worth worrying about.
+ * As with GetNewOidWithIndex(), there is some theoretical risk of a race
+ * condition, but it doesn't seem worth worrying about.
  *
  * Note: we don't support using this in bootstrap mode.  All relations
  * created by bootstrap have preassigned OIDs, so there's no need.
  */
-Oid
-GetNewRelFileNode(Oid reltablespace, Relation pg_class, char relpersistence)
+RelFileNumber
+GetNewRelFileNumber(Oid reltablespace, Relation pg_class, char relpersistence)
 {
-	RelFileNodeBackend rnode;
+	RelFileLocatorBackend rlocator;
 	char	   *rpath;
-	int			fd;
 	bool		collides;
 	BackendId	backend;
 
 	/*
 	 * If we ever get here during pg_upgrade, there's something wrong; all
-	 * relfilenode assignments during a binary-upgrade run should be
+	 * relfilenumber assignments during a binary-upgrade run should be
 	 * determined by commands in the dump script.
 	 */
 	Assert(!IsBinaryUpgrade);
@@ -419,19 +545,21 @@ GetNewRelFileNode(Oid reltablespace, Relation pg_class, char relpersistence)
 			break;
 		default:
 			elog(ERROR, "invalid relpersistence: %c", relpersistence);
-			return InvalidOid;	/* placate compiler */
+			return InvalidRelFileNumber;	/* placate compiler */
 	}
 
 	/* This logic should match RelationInitPhysicalAddr */
-	rnode.node.spcNode = reltablespace ? reltablespace : MyDatabaseTableSpace;
-	rnode.node.dbNode = (rnode.node.spcNode == GLOBALTABLESPACE_OID) ? InvalidOid : MyDatabaseId;
+	rlocator.locator.spcOid = reltablespace ? reltablespace : MyDatabaseTableSpace;
+	rlocator.locator.dbOid =
+		(rlocator.locator.spcOid == GLOBALTABLESPACE_OID) ?
+		InvalidOid : MyDatabaseId;
 
 	/*
 	 * The relpath will vary based on the backend ID, so we must initialize
 	 * that properly here to make sure that any collisions based on filename
 	 * are properly detected.
 	 */
-	rnode.backend = backend;
+	rlocator.backend = backend;
 
 	do
 	{
@@ -439,18 +567,17 @@ GetNewRelFileNode(Oid reltablespace, Relation pg_class, char relpersistence)
 
 		/* Generate the OID */
 		if (pg_class)
-			rnode.node.relNode = GetNewOid(pg_class);
+			rlocator.locator.relNumber = GetNewOidWithIndex(pg_class, ClassOidIndexId,
+															Anum_pg_class_oid);
 		else
-			rnode.node.relNode = GetNewObjectId();
+			rlocator.locator.relNumber = GetNewObjectId();
 
 		/* Check for existing file of same name */
-		rpath = relpath(rnode, MAIN_FORKNUM);
-		fd = BasicOpenFile(rpath, O_RDONLY | PG_BINARY);
+		rpath = relpath(rlocator, MAIN_FORKNUM);
 
-		if (fd >= 0)
+		if (access(rpath, F_OK) == 0)
 		{
 			/* definite collision */
-			close(fd);
 			collides = true;
 		}
 		else
@@ -458,13 +585,9 @@ GetNewRelFileNode(Oid reltablespace, Relation pg_class, char relpersistence)
 			/*
 			 * Here we have a little bit of a dilemma: if errno is something
 			 * other than ENOENT, should we declare a collision and loop? In
-			 * particular one might think this advisable for, say, EPERM.
-			 * However there really shouldn't be any unreadable files in a
-			 * tablespace directory, and if the EPERM is actually complaining
-			 * that we can't read the directory itself, we'd be in an infinite
-			 * loop.  In practice it seems best to go ahead regardless of the
-			 * errno.  If there is a colliding file we will get an smgr
-			 * failure when we attempt to create the new relation file.
+			 * practice it seems best to go ahead regardless of the errno.  If
+			 * there is a colliding file we will get an smgr failure when we
+			 * attempt to create the new relation file.
 			 */
 			collides = false;
 		}
@@ -472,5 +595,109 @@ GetNewRelFileNode(Oid reltablespace, Relation pg_class, char relpersistence)
 		pfree(rpath);
 	} while (collides);
 
-	return rnode.node.relNode;
+	return rlocator.locator.relNumber;
+}
+
+/*
+ * SQL callable interface for GetNewOidWithIndex().  Outside of initdb's
+ * direct insertions into catalog tables, and recovering from corruption, this
+ * should rarely be needed.
+ *
+ * Function is intentionally not documented in the user facing docs.
+ */
+Datum
+pg_nextoid(PG_FUNCTION_ARGS)
+{
+	Oid			reloid = PG_GETARG_OID(0);
+	Name		attname = PG_GETARG_NAME(1);
+	Oid			idxoid = PG_GETARG_OID(2);
+	Relation	rel;
+	Relation	idx;
+	HeapTuple	atttuple;
+	Form_pg_attribute attform;
+	AttrNumber	attno;
+	Oid			newoid;
+
+	/*
+	 * As this function is not intended to be used during normal running, and
+	 * only supports system catalogs (which require superuser permissions to
+	 * modify), just checking for superuser ought to not obstruct valid
+	 * usecases.
+	 */
+	if (!superuser())
+		ereport(ERROR,
+				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+				 errmsg("must be superuser to call %s()",
+						"pg_nextoid")));
+
+	rel = table_open(reloid, RowExclusiveLock);
+	idx = index_open(idxoid, RowExclusiveLock);
+
+	if (!IsSystemRelation(rel))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("pg_nextoid() can only be used on system catalogs")));
+
+	if (idx->rd_index->indrelid != RelationGetRelid(rel))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("index \"%s\" does not belong to table \"%s\"",
+						RelationGetRelationName(idx),
+						RelationGetRelationName(rel))));
+
+	atttuple = SearchSysCacheAttName(reloid, NameStr(*attname));
+	if (!HeapTupleIsValid(atttuple))
+		ereport(ERROR,
+				(errcode(ERRCODE_UNDEFINED_COLUMN),
+				 errmsg("column \"%s\" of relation \"%s\" does not exist",
+						NameStr(*attname), RelationGetRelationName(rel))));
+
+	attform = ((Form_pg_attribute) GETSTRUCT(atttuple));
+	attno = attform->attnum;
+
+	if (attform->atttypid != OIDOID)
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("column \"%s\" is not of type oid",
+						NameStr(*attname))));
+
+	if (IndexRelationGetNumberOfKeyAttributes(idx) != 1 ||
+		idx->rd_index->indkey.values[0] != attno)
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("index \"%s\" is not the index for column \"%s\"",
+						RelationGetRelationName(idx),
+						NameStr(*attname))));
+
+	newoid = GetNewOidWithIndex(rel, idxoid, attno);
+
+	ReleaseSysCache(atttuple);
+	table_close(rel, RowExclusiveLock);
+	index_close(idx, RowExclusiveLock);
+
+	PG_RETURN_OID(newoid);
+}
+
+/*
+ * SQL callable interface for StopGeneratingPinnedObjectIds().
+ *
+ * This is only to be used by initdb, so it's intentionally not documented in
+ * the user facing docs.
+ */
+Datum
+pg_stop_making_pinned_objects(PG_FUNCTION_ARGS)
+{
+	/*
+	 * Belt-and-suspenders check, since StopGeneratingPinnedObjectIds will
+	 * fail anyway in non-single-user mode.
+	 */
+	if (!superuser())
+		ereport(ERROR,
+				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+				 errmsg("must be superuser to call %s()",
+						"pg_stop_making_pinned_objects")));
+
+	StopGeneratingPinnedObjectIds();
+
+	PG_RETURN_VOID();
 }

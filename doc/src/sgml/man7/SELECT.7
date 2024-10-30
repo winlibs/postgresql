@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SELECT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "SELECT" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "SELECT" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,24 +34,24 @@ SELECT, TABLE, WITH \- retrieve rows from a table or view
 .nf
 [ WITH [ RECURSIVE ] \fIwith_query\fR [, \&.\&.\&.] ]
 SELECT [ ALL | DISTINCT [ ON ( \fIexpression\fR [, \&.\&.\&.] ) ] ]
-    [ * | \fIexpression\fR [ [ AS ] \fIoutput_name\fR ] [, \&.\&.\&.] ]
+    [ { * | \fIexpression\fR [ [ AS ] \fIoutput_name\fR ] } [, \&.\&.\&.] ]
     [ FROM \fIfrom_item\fR [, \&.\&.\&.] ]
     [ WHERE \fIcondition\fR ]
-    [ GROUP BY \fIgrouping_element\fR [, \&.\&.\&.] ]
-    [ HAVING \fIcondition\fR [, \&.\&.\&.] ]
+    [ GROUP BY [ ALL | DISTINCT ] \fIgrouping_element\fR [, \&.\&.\&.] ]
+    [ HAVING \fIcondition\fR ]
     [ WINDOW \fIwindow_name\fR AS ( \fIwindow_definition\fR ) [, \&.\&.\&.] ]
     [ { UNION | INTERSECT | EXCEPT } [ ALL | DISTINCT ] \fIselect\fR ]
     [ ORDER BY \fIexpression\fR [ ASC | DESC | USING \fIoperator\fR ] [ NULLS { FIRST | LAST } ] [, \&.\&.\&.] ]
     [ LIMIT { \fIcount\fR | ALL } ]
     [ OFFSET \fIstart\fR [ ROW | ROWS ] ]
-    [ FETCH { FIRST | NEXT } [ \fIcount\fR ] { ROW | ROWS } ONLY ]
+    [ FETCH { FIRST | NEXT } [ \fIcount\fR ] { ROW | ROWS } { ONLY | WITH TIES } ]
     [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF \fItable_name\fR [, \&.\&.\&.] ] [ NOWAIT | SKIP LOCKED ] [\&.\&.\&.] ]
 
 where \fIfrom_item\fR can be one of:
 
     [ ONLY ] \fItable_name\fR [ * ] [ [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ] ]
                 [ TABLESAMPLE \fIsampling_method\fR ( \fIargument\fR [, \&.\&.\&.] ) [ REPEATABLE ( \fIseed\fR ) ] ]
-    [ LATERAL ] ( \fIselect\fR ) [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ]
+    [ LATERAL ] ( \fIselect\fR ) [ [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ] ]
     \fIwith_query_name\fR [ [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ] ]
     [ LATERAL ] \fIfunction_name\fR ( [ \fIargument\fR [, \&.\&.\&.] ] )
                 [ WITH ORDINALITY ] [ [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ] ]
@@ -59,7 +59,9 @@ where \fIfrom_item\fR can be one of:
     [ LATERAL ] \fIfunction_name\fR ( [ \fIargument\fR [, \&.\&.\&.] ] ) AS ( \fIcolumn_definition\fR [, \&.\&.\&.] )
     [ LATERAL ] ROWS FROM( \fIfunction_name\fR ( [ \fIargument\fR [, \&.\&.\&.] ] ) [ AS ( \fIcolumn_definition\fR [, \&.\&.\&.] ) ] [, \&.\&.\&.] )
                 [ WITH ORDINALITY ] [ [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ] ]
-    \fIfrom_item\fR [ NATURAL ] \fIjoin_type\fR \fIfrom_item\fR [ ON \fIjoin_condition\fR | USING ( \fIjoin_column\fR [, \&.\&.\&.] ) ]
+    \fIfrom_item\fR \fIjoin_type\fR \fIfrom_item\fR { ON \fIjoin_condition\fR | USING ( \fIjoin_column\fR [, \&.\&.\&.] ) [ AS \fIjoin_using_alias\fR ] }
+    \fIfrom_item\fR NATURAL \fIjoin_type\fR \fIfrom_item\fR
+    \fIfrom_item\fR CROSS JOIN \fIfrom_item\fR
 
 and \fIgrouping_element\fR can be one of:
 
@@ -72,7 +74,9 @@ and \fIgrouping_element\fR can be one of:
 
 and \fIwith_query\fR is:
 
-    \fIwith_query_name\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ] AS ( \fIselect\fR | \fIvalues\fR | \fIinsert\fR | \fIupdate\fR | \fIdelete\fR )
+    \fIwith_query_name\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ] AS [ [ NOT ] MATERIALIZED ] ( \fIselect\fR | \fIvalues\fR | \fIinsert\fR | \fIupdate\fR | \fIdelete\fR )
+        [ SEARCH { BREADTH | DEPTH } FIRST BY \fIcolumn_name\fR [, \&.\&.\&.] SET \fIsearch_seq_col_name\fR ]
+        [ CYCLE \fIcolumn_name\fR [, \&.\&.\&.] SET \fIcycle_mark_col_name\fR [ TO \fIcycle_mark_value\fR DEFAULT \fIcycle_mark_default\fR ] USING \fIcycle_path_col_name\fR ]
 
 TABLE [ ONLY ] \fItable_name\fR [ * ]
 .fi
@@ -99,7 +103,8 @@ list\&. A
 WITH
 query that is referenced more than once in
 FROM
-is computed only once\&. (See
+is computed only once, unless specified otherwise with
+NOT MATERIALIZED\&. (See
 WITH Clause
 below\&.)
 .RE
@@ -154,7 +159,9 @@ clause is present, it eliminates groups that do not satisfy the given condition\
 GROUP BY Clause
 and
 HAVING Clause
-below\&.)
+below\&.) Although query output columns are nominally computed in the next step, they can also be referenced (by name or ordinal number) in the
+GROUP BY
+clause\&.
 .RE
 .sp
 .RS 4
@@ -363,9 +370,72 @@ queries that are earlier in the
 WITH
 list\&.
 .PP
-A key property of
+When there are multiple queries in the
 WITH
-queries is that they are evaluated only once per execution of the primary query, even if the primary query refers to them more than once\&. In particular, data\-modifying statements are guaranteed to be executed once and only once, regardless of whether the primary query reads all or any of their output\&.
+clause,
+RECURSIVE
+should be written only once, immediately after
+WITH\&. It applies to all queries in the
+WITH
+clause, though it has no effect on queries that do not use recursion or forward references\&.
+.PP
+The optional
+SEARCH
+clause computes a
+search sequence column
+that can be used for ordering the results of a recursive query in either breadth\-first or depth\-first order\&. The supplied column name list specifies the row key that is to be used for keeping track of visited rows\&. A column named
+\fIsearch_seq_col_name\fR
+will be added to the result column list of the
+WITH
+query\&. This column can be ordered by in the outer query to achieve the respective ordering\&. See
+Section\ \&7.8.2.1
+for examples\&.
+.PP
+The optional
+CYCLE
+clause is used to detect cycles in recursive queries\&. The supplied column name list specifies the row key that is to be used for keeping track of visited rows\&. A column named
+\fIcycle_mark_col_name\fR
+will be added to the result column list of the
+WITH
+query\&. This column will be set to
+\fIcycle_mark_value\fR
+when a cycle has been detected, else to
+\fIcycle_mark_default\fR\&. Furthermore, processing of the recursive union will stop when a cycle has been detected\&.
+\fIcycle_mark_value\fR
+and
+\fIcycle_mark_default\fR
+must be constants and they must be coercible to a common data type, and the data type must have an inequality operator\&. (The SQL standard requires that they be Boolean constants or character strings, but PostgreSQL does not require that\&.) By default,
+TRUE
+and
+FALSE
+(of type
+boolean) are used\&. Furthermore, a column named
+\fIcycle_path_col_name\fR
+will be added to the result column list of the
+WITH
+query\&. This column is used internally for tracking visited rows\&. See
+Section\ \&7.8.2.2
+for examples\&.
+.PP
+Both the
+SEARCH
+and the
+CYCLE
+clause are only valid for recursive
+WITH
+queries\&. The
+\fIwith_query\fR
+must be a
+UNION
+(or
+UNION ALL) of two
+SELECT
+(or equivalent) commands (no nested
+UNIONs)\&. If both clauses are used, the column added by the
+SEARCH
+clause appears before the columns added by the
+CYCLE
+clause\&.
 .PP
 The primary query and the
 WITH
@@ -374,6 +444,48 @@ WITH
 cannot be seen from other parts of the query, other than by reading its
 RETURNING
 output\&. If two such data\-modifying statements attempt to modify the same row, the results are unspecified\&.
+.PP
+A key property of
+WITH
+queries is that they are normally evaluated only once per execution of the primary query, even if the primary query refers to them more than once\&. In particular, data\-modifying statements are guaranteed to be executed once and only once, regardless of whether the primary query reads all or any of their output\&.
+.PP
+However, a
+WITH
+query can be marked
+NOT MATERIALIZED
+to remove this guarantee\&. In that case, the
+WITH
+query can be folded into the primary query much as though it were a simple sub\-SELECT
+in the primary query\*(Aqs
+FROM
+clause\&. This results in duplicate computations if the primary query refers to that
+WITH
+query more than once; but if each such use requires only a few rows of the
+WITH
+query\*(Aqs total output,
+NOT MATERIALIZED
+can provide a net savings by allowing the queries to be optimized jointly\&.
+NOT MATERIALIZED
+is ignored if it is attached to a
+WITH
+query that is recursive or is not side\-effect\-free (i\&.e\&., is not a plain
+SELECT
+containing no volatile functions)\&.
+.PP
+By default, a side\-effect\-free
+WITH
+query is folded into the primary query if it is used exactly once in the primary query\*(Aqs
+FROM
+clause\&. This allows joint optimization of the two query levels in situations where that should be semantically invisible\&. However, such folding can be prevented by marking the
+WITH
+query as
+MATERIALIZED\&. That might be useful, for example, if the
+WITH
+query is being used as an optimization fence to prevent the planner from choosing a bad plan\&.
+PostgreSQL
+versions before v12 never did such folding, so queries written for older versions might rely on
+WITH
+to act as an optimization fence\&.
 .PP
 See
 Section\ \&7.8
@@ -470,10 +582,8 @@ FROM
 clause\&. This acts as though its output were created as a temporary table for the duration of this single
 \fBSELECT\fR
 command\&. Note that the sub\-\fBSELECT\fR
-must be surrounded by parentheses, and an alias
-\fImust\fR
-be provided for it\&. A
-\fBVALUES\fR(7)
+must be surrounded by parentheses, and an alias can be provided in the same way as for a table\&. A
+\fBVALUES\fR
 command can also be used here\&.
 .RE
 .PP
@@ -492,13 +602,18 @@ Function calls can appear in the
 FROM
 clause\&. (This is especially useful for functions that return result sets, but any function can be used\&.) This acts as though the function\*(Aqs output were created as a temporary table for the duration of this single
 \fBSELECT\fR
-command\&. When the optional
-\fBWITH ORDINALITY\fR
-clause is added to the function call, a new column is appended after all the function\*(Aqs output columns with numbering for each row\&.
+command\&. If the function\*(Aqs result type is composite (including the case of a function with multiple
+OUT
+parameters), each attribute becomes a separate column in the implicit table\&.
 .sp
-An alias can be provided in the same way as for a table\&. If an alias is written, a column alias list can also be written to provide substitute names for one or more attributes of the function\*(Aqs composite return type, including the column added by
-ORDINALITY
-if present\&.
+When the optional
+\fBWITH ORDINALITY\fR
+clause is added to the function call, an additional column of type
+bigint
+will be appended to the function\*(Aqs result column(s)\&. This column numbers the rows of the function\*(Aqs result set, starting from 1\&. By default, this column is named
+ordinality\&.
+.sp
+An alias can be provided in the same way as for a table\&. If an alias is written, a column alias list can also be written to provide substitute names for one or more attributes of the function\*(Aqs composite return type, including the ordinality column if present\&.
 .sp
 Multiple function calls can be combined into a single
 FROM\-clause item by surrounding them with
@@ -576,26 +691,14 @@ RIGHT [ OUTER ] JOIN
 FULL [ OUTER ] JOIN
 .RE
 .sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-CROSS JOIN
-.RE
-.sp
 For the
 INNER
 and
 OUTER
 join types, a join condition must be specified, namely exactly one of
-NATURAL,
-ON \fIjoin_condition\fR, or
-USING (\fIjoin_column\fR [, \&.\&.\&.])\&. See below for the meaning\&. For
-CROSS JOIN, none of these clauses can appear\&.
+ON \fIjoin_condition\fR,
+USING (\fIjoin_column\fR [, \&.\&.\&.]), or
+NATURAL\&. See below for the meaning\&.
 .sp
 A
 JOIN
@@ -608,16 +711,9 @@ item\&. Use parentheses if necessary to determine the order of nesting\&. In the
 JOINs nest left\-to\-right\&. In any case
 JOIN
 binds more tightly than the commas separating
-FROM\-list items\&.
-.sp
-CROSS JOIN
-and
-INNER JOIN
-produce a simple Cartesian product, the same result as you get from listing the two tables at the top level of
-FROM, but restricted by the join condition (if any)\&.
-CROSS JOIN
-is equivalent to
-INNER JOIN ON (TRUE), that is, no rows are removed by qualification\&. These join types are just a notational convenience, since they do nothing you couldn\*(Aqt do with plain
+FROM\-list items\&. All the
+JOIN
+options are just a notational convenience, since they do nothing you couldn\*(Aqt do with plain
 FROM
 and
 WHERE\&.
@@ -647,7 +743,7 @@ WHERE
 clause) that specifies which rows in a join are considered to match\&.
 .RE
 .PP
-USING ( \fIjoin_column\fR [, \&.\&.\&.] )
+USING ( \fIjoin_column\fR [, \&.\&.\&.] ) [ AS \fIjoin_using_alias\fR ]
 .RS 4
 A clause of the form
 USING ( a, b, \&.\&.\&. )
@@ -655,6 +751,16 @@ is shorthand for
 ON left_table\&.a = right_table\&.a AND left_table\&.b = right_table\&.b \&.\&.\&.\&. Also,
 USING
 implies that only one of each pair of equivalent columns will be included in the join output, not both\&.
+.sp
+If a
+\fIjoin_using_alias\fR
+name is specified, it provides a table alias for the join columns\&. Only the join columns listed in the
+USING
+clause are addressable by this name\&. Unlike a regular
+\fIalias\fR, this does not hide the names of the joined tables from the rest of the query\&. Also unlike a regular
+\fIalias\fR, you cannot write a column alias list \(em the output names of the join columns are the same as they appear in the
+USING
+list\&.
 .RE
 .PP
 NATURAL
@@ -666,6 +772,14 @@ list that mentions all columns in the two tables that have matching names\&. If 
 NATURAL
 is equivalent to
 ON TRUE\&.
+.RE
+.PP
+CROSS JOIN
+.RS 4
+CROSS JOIN
+is equivalent to
+INNER JOIN ON (TRUE), that is, no rows are removed by qualification\&. They produce a simple Cartesian product, the same result as you get from listing the two tables at the top level of
+FROM, but restricted by the join condition (if any)\&.
 .RE
 .PP
 LATERAL
@@ -759,7 +873,7 @@ clause has the general form
 .RS 4
 .\}
 .nf
-GROUP BY \fIgrouping_element\fR [, \&.\&.\&.]
+GROUP BY [ ALL | DISTINCT ] \fIgrouping_element\fR [, \&.\&.\&.]
 .fi
 .if n \{\
 .RE
@@ -787,7 +901,14 @@ clause as a whole defines some number of independent
 UNION ALL
 between subqueries with the individual grouping sets as their
 GROUP BY
-clauses\&. For further details on the handling of grouping sets see
+clauses\&. The optional
+DISTINCT
+clause removes duplicate sets before processing; it does
+\fInot\fR
+transform the
+UNION ALL
+into a
+UNION DISTINCT\&. For further details on the handling of grouping sets see
 Section\ \&7.2.4\&.
 .PP
 Aggregate functions, if any are used, are computed across all rows making up each group, producing a separate value for each group\&. (If there are aggregate functions but no
@@ -933,14 +1054,16 @@ only if the copied window does not have one\&. The new window always uses its ow
 The elements of the
 PARTITION BY
 list are interpreted in much the same fashion as elements of a
-GROUP BY Clause, except that they are always simple expressions and never the name or number of an output column\&. Another difference is that these expressions can contain aggregate function calls, which are not allowed in a regular
+GROUP BY
+clause, except that they are always simple expressions and never the name or number of an output column\&. Another difference is that these expressions can contain aggregate function calls, which are not allowed in a regular
 GROUP BY
 clause\&. They are allowed here because windowing occurs after grouping and aggregation\&.
 .PP
 Similarly, the elements of the
 ORDER BY
-list are interpreted in much the same fashion as elements of an
-ORDER BY Clause, except that the expressions are always taken as simple expressions and never the name or number of an output column\&.
+list are interpreted in much the same fashion as elements of a statement\-level
+ORDER BY
+clause, except that the expressions are always taken as simple expressions and never the name or number of an output column\&.
 .PP
 The optional
 \fIframe_clause\fR
@@ -1112,9 +1235,10 @@ WINDOW
 clause is to specify the behavior of
 window functions
 appearing in the query\*(Aqs
-SELECT List
+\fBSELECT\fR list
 or
-ORDER BY Clause\&. These functions can reference the
+ORDER BY
+clause\&. These functions can reference the
 WINDOW
 clause entries by name in their
 OVER
@@ -1596,7 +1720,7 @@ clause in the
 ORDER BY mycolumn COLLATE "en_US"\&. For more information see
 Section\ \&4.2.10
 and
-Section\ \&23.2\&.
+Section\ \&24.2\&.
 .SS "LIMIT Clause"
 .PP
 The
@@ -1614,7 +1738,7 @@ OFFSET \fIstart\fR
 .RE
 .\}
 .sp
-
+The parameter
 \fIcount\fR
 specifies the maximum number of rows to return, while
 \fIstart\fR
@@ -1641,7 +1765,7 @@ also supports\&. It is:
 .\}
 .nf
 OFFSET \fIstart\fR { ROW | ROWS }
-FETCH { FIRST | NEXT } [ \fIcount\fR ] { ROW | ROWS } ONLY
+FETCH { FIRST | NEXT } [ \fIcount\fR ] { ROW | ROWS } { ONLY | WITH TIES }
 .fi
 .if n \{\
 .RE
@@ -1657,7 +1781,15 @@ extension, other expressions are allowed, but will generally need to be enclosed
 \fIcount\fR
 is omitted in a
 FETCH
-clause, it defaults to 1\&.
+clause, it defaults to 1\&. The
+WITH TIES
+option is used to return any additional rows that tie for the last place in the result set according to the
+ORDER BY
+clause;
+ORDER BY
+is mandatory in this case, and
+SKIP LOCKED
+is not allowed\&.
 ROW
 and
 ROWS
@@ -1756,7 +1888,7 @@ apply only to the row\-level lock(s) \(em the required
 ROW SHARE
 table\-level lock is still taken in the ordinary way (see
 Chapter\ \&13)\&. You can use
-\fBLOCK\fR(7)
+\fBLOCK\fR
 with the
 NOWAIT
 option first, if you need to acquire the table\-level lock without waiting\&.
@@ -1872,7 +2004,7 @@ At the
 REPEATABLE READ
 or
 SERIALIZABLE
-transaction isolation level this would cause a serialization failure (with a
+transaction isolation level this would cause a serialization failure (with an
 SQLSTATE
 of
 \*(Aq40001\*(Aq), so there is no possibility of receiving rows out of order under these isolation levels\&.
@@ -1931,8 +2063,7 @@ distributors:
 .\}
 .nf
 SELECT f\&.title, f\&.did, d\&.name, f\&.date_prod, f\&.kind
-    FROM distributors d, films f
-    WHERE f\&.did = d\&.did
+    FROM distributors d JOIN films f USING (did);
 
        title       | did |     name     | date_prod  |   kind
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-
@@ -2124,9 +2255,8 @@ WITH t AS (
   )
 SELECT * FROM t
 UNION ALL
-SELECT * FROM t
-
-         x          
+SELECT * FROM t;
+         x
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
   0\&.534150459803641
   0\&.520092216785997
@@ -2232,26 +2362,6 @@ Some other
 SQL
 databases cannot do this except by introducing a dummy one\-row table from which to do the
 \fBSELECT\fR\&.
-.PP
-Note that if a
-FROM
-clause is not specified, the query cannot reference any database tables\&. For example, the following query is invalid:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-SELECT distributors\&.* WHERE distributors\&.name = \*(AqWestward\*(Aq;
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-
-PostgreSQL
-releases prior to 8\&.1 would accept queries of this form, and add an implicit entry to the query\*(Aqs
-FROM
-clause for each table referenced by the query\&. This is no longer allowed\&.
 .SS "Empty SELECT Lists"
 .PP
 The list of output expressions after
@@ -2280,6 +2390,13 @@ PostgreSQL
 allow
 AS
 to be omitted before an alias that is an unreserved keyword\&. But this is impractical for output column names, because of syntactic ambiguities\&.
+.SS "Omitting Sub\-SELECT Aliases in FROM"
+.PP
+According to the SQL standard, a sub\-\fBSELECT\fR
+in the
+FROM
+list must have an alias\&. In
+PostgreSQL, this alias may be omitted\&.
 .SS "ONLY and Inheritance"
 .PP
 The SQL standard requires parentheses around the table name when writing
@@ -2403,3 +2520,11 @@ is an extension of the SQL standard\&.
 .PP
 ROWS FROM( \&.\&.\&. )
 is an extension of the SQL standard\&.
+.PP
+The
+MATERIALIZED
+and
+NOT MATERIALIZED
+options of
+WITH
+are extensions of the SQL standard\&.

@@ -3,7 +3,7 @@
  * oid.c
  *	  Functions for the built-in type Oid ... also oidvector.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -19,6 +19,7 @@
 
 #include "catalog/pg_type.h"
 #include "libpq/pqformat.h"
+#include "nodes/miscnodes.h"
 #include "nodes/value.h"
 #include "utils/array.h"
 #include "utils/builtins.h"
@@ -31,95 +32,13 @@
  *	 USER I/O ROUTINES														 *
  *****************************************************************************/
 
-static Oid
-oidin_subr(const char *s, char **endloc)
-{
-	unsigned long cvt;
-	char	   *endptr;
-	Oid			result;
-
-	if (*s == '\0')
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type %s: \"%s\"",
-						"oid", s)));
-
-	errno = 0;
-	cvt = strtoul(s, &endptr, 10);
-
-	/*
-	 * strtoul() normally only sets ERANGE.  On some systems it also may set
-	 * EINVAL, which simply means it couldn't parse the input string. This is
-	 * handled by the second "if" consistent across platforms.
-	 */
-	if (errno && errno != ERANGE && errno != EINVAL)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type %s: \"%s\"",
-						"oid", s)));
-
-	if (endptr == s && *s != '\0')
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type %s: \"%s\"",
-						"oid", s)));
-
-	if (errno == ERANGE)
-		ereport(ERROR,
-				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("value \"%s\" is out of range for type %s",
-						s, "oid")));
-
-	if (endloc)
-	{
-		/* caller wants to deal with rest of string */
-		*endloc = endptr;
-	}
-	else
-	{
-		/* allow only whitespace after number */
-		while (*endptr && isspace((unsigned char) *endptr))
-			endptr++;
-		if (*endptr)
-			ereport(ERROR,
-					(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-					 errmsg("invalid input syntax for type %s: \"%s\"",
-							"oid", s)));
-	}
-
-	result = (Oid) cvt;
-
-	/*
-	 * Cope with possibility that unsigned long is wider than Oid, in which
-	 * case strtoul will not raise an error for some values that are out of
-	 * the range of Oid.
-	 *
-	 * For backwards compatibility, we want to accept inputs that are given
-	 * with a minus sign, so allow the input value if it matches after either
-	 * signed or unsigned extension to long.
-	 *
-	 * To ensure consistent results on 32-bit and 64-bit platforms, make sure
-	 * the error message is the same as if strtoul() had returned ERANGE.
-	 */
-#if OID_MAX != ULONG_MAX
-	if (cvt != (unsigned long) result &&
-		cvt != (unsigned long) ((int) result))
-		ereport(ERROR,
-				(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
-				 errmsg("value \"%s\" is out of range for type %s",
-						s, "oid")));
-#endif
-
-	return result;
-}
-
 Datum
 oidin(PG_FUNCTION_ARGS)
 {
 	char	   *s = PG_GETARG_CSTRING(0);
 	Oid			result;
 
-	result = oidin_subr(s, NULL);
+	result = uint32in_subr(s, NULL, "oid", fcinfo->context);
 	PG_RETURN_OID(result);
 }
 
@@ -194,25 +113,32 @@ Datum
 oidvectorin(PG_FUNCTION_ARGS)
 {
 	char	   *oidString = PG_GETARG_CSTRING(0);
+	Node	   *escontext = fcinfo->context;
 	oidvector  *result;
+	int			nalloc;
 	int			n;
 
-	result = (oidvector *) palloc0(OidVectorSize(FUNC_MAX_ARGS));
+	nalloc = 32;				/* arbitrary initial size guess */
+	result = (oidvector *) palloc0(OidVectorSize(nalloc));
 
-	for (n = 0; n < FUNC_MAX_ARGS; n++)
+	for (n = 0;; n++)
 	{
 		while (*oidString && isspace((unsigned char) *oidString))
 			oidString++;
 		if (*oidString == '\0')
 			break;
-		result->values[n] = oidin_subr(oidString, &oidString);
+
+		if (n >= nalloc)
+		{
+			nalloc *= 2;
+			result = (oidvector *) repalloc(result, OidVectorSize(nalloc));
+		}
+
+		result->values[n] = uint32in_subr(oidString, &oidString,
+										  "oid", escontext);
+		if (SOFT_ERROR_OCCURRED(escontext))
+			PG_RETURN_NULL();
 	}
-	while (*oidString && isspace((unsigned char) *oidString))
-		oidString++;
-	if (*oidString)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("oidvector has too many elements")));
 
 	SET_VARSIZE(result, OidVectorSize(n));
 	result->ndim = 1;
@@ -256,8 +182,8 @@ oidvectorout(PG_FUNCTION_ARGS)
 Datum
 oidvectorrecv(PG_FUNCTION_ARGS)
 {
+	LOCAL_FCINFO(locfcinfo, 3);
 	StringInfo	buf = (StringInfo) PG_GETARG_POINTER(0);
-	FunctionCallInfoData locfcinfo;
 	oidvector  *result;
 
 	/*
@@ -266,19 +192,19 @@ oidvectorrecv(PG_FUNCTION_ARGS)
 	 * fcinfo->flinfo->fn_extra.  So we need to pass it our own flinfo
 	 * parameter.
 	 */
-	InitFunctionCallInfoData(locfcinfo, fcinfo->flinfo, 3,
+	InitFunctionCallInfoData(*locfcinfo, fcinfo->flinfo, 3,
 							 InvalidOid, NULL, NULL);
 
-	locfcinfo.arg[0] = PointerGetDatum(buf);
-	locfcinfo.arg[1] = ObjectIdGetDatum(OIDOID);
-	locfcinfo.arg[2] = Int32GetDatum(-1);
-	locfcinfo.argnull[0] = false;
-	locfcinfo.argnull[1] = false;
-	locfcinfo.argnull[2] = false;
+	locfcinfo->args[0].value = PointerGetDatum(buf);
+	locfcinfo->args[0].isnull = false;
+	locfcinfo->args[1].value = ObjectIdGetDatum(OIDOID);
+	locfcinfo->args[1].isnull = false;
+	locfcinfo->args[2].value = Int32GetDatum(-1);
+	locfcinfo->args[2].isnull = false;
 
-	result = (oidvector *) DatumGetPointer(array_recv(&locfcinfo));
+	result = (oidvector *) DatumGetPointer(array_recv(locfcinfo));
 
-	Assert(!locfcinfo.isnull);
+	Assert(!locfcinfo->isnull);
 
 	/* sanity checks: oidvector must be 1-D, 0-based, no nulls */
 	if (ARR_NDIM(result) != 1 ||
@@ -288,12 +214,6 @@ oidvectorrecv(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_BINARY_REPRESENTATION),
 				 errmsg("invalid oidvector data")));
-
-	/* check length for consistency with oidvectorin() */
-	if (ARR_DIMS(result)[0] > FUNC_MAX_ARGS)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("oidvector has too many elements")));
 
 	PG_RETURN_POINTER(result);
 }
@@ -308,7 +228,7 @@ oidvectorsend(PG_FUNCTION_ARGS)
 }
 
 /*
- *		oidparse				- get OID from IConst/FConst node
+ *		oidparse				- get OID from ICONST/FCONST node
  */
 Oid
 oidparse(Node *node)
@@ -324,7 +244,8 @@ oidparse(Node *node)
 			 * constants by the lexer.  Accept these if they are valid OID
 			 * strings.
 			 */
-			return oidin_subr(strVal(node), NULL);
+			return uint32in_subr(castNode(Float, node)->fval, NULL,
+								 "oid", NULL);
 		default:
 			elog(ERROR, "unrecognized node type: %d", (int) nodeTag(node));
 	}

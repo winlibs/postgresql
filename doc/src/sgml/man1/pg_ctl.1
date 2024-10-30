@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_ctl
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "PG_CTL" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "PG_CTL" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -44,6 +44,8 @@ pg_ctl \- initialize, start, stop, or control a PostgreSQL server
 \fBpg_ctl\fR \fBstatus\fR [\fB\-D\fR\ \fIdatadir\fR]
 .HP \w'\fBpg_ctl\fR\ 'u
 \fBpg_ctl\fR \fBpromote\fR [\fB\-D\fR\ \fIdatadir\fR] [\fB\-W\fR] [\fB\-t\fR\ \fIseconds\fR] [\fB\-s\fR]
+.HP \w'\fBpg_ctl\fR\ 'u
+\fBpg_ctl\fR \fBlogrotate\fR [\fB\-D\fR\ \fIdatadir\fR] [\fB\-s\fR]
 .HP \w'\fBpg_ctl\fR\ 'u
 \fBpg_ctl\fR \fBkill\fR \fIsignal_name\fR \fIprocess_id\fR
 .PP
@@ -97,9 +99,9 @@ mode shuts down the server that is running in the specified data directory\&. Th
 \fB\-m\fR
 option\&.
 \(lqSmart\(rq
-mode waits for all active clients to disconnect and any online backup to finish\&. If the server is in hot standby, recovery and streaming replication will be terminated once all clients have disconnected\&.
+mode disallows new connections, then waits for all existing clients to disconnect\&. If the server is in hot standby, recovery and streaming replication will be terminated once all clients have disconnected\&.
 \(lqFast\(rq
-mode (the default) does not wait for clients to disconnect and will terminate an online backup in progress\&. All active transactions are rolled back and clients are forcibly disconnected, then the server is shut down\&.
+mode (the default) does not wait for clients to disconnect\&. All active transactions are rolled back and clients are forcibly disconnected, then the server is shut down\&.
 \(lqImmediate\(rq
 mode will abort all server processes immediately, without a clean shutdown\&. This choice will lead to a crash\-recovery cycle during the next server start\&.
 .PP
@@ -131,6 +133,10 @@ returns an exit status of 4\&.
 .PP
 \fBpromote\fR
 mode commands the standby server that is running in the specified data directory to end standby mode and begin read\-write operations\&.
+.PP
+\fBlogrotate\fR
+mode rotates the server log file\&. For details on how to use this mode with external log rotation tools, see
+Section\ \&25.3\&.
 .PP
 \fBkill\fR
 mode sends a signal to a specified process\&. This is primarily valuable on
@@ -390,13 +396,6 @@ modes require knowing the data directory location; therefore, the
 option is required unless
 \fBPGDATA\fR
 is set\&.
-.PP
-\fBpg_ctl\fR, like most other
-PostgreSQL
-utilities, also uses the environment variables supported by
-libpq
-(see
-Section\ \&34.14)\&.
 .PP
 For additional variables that affect the server, see
 \fBpostgres\fR(1)\&.

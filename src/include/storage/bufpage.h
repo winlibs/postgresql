@@ -4,7 +4,7 @@
  *	  Standard POSTGRES buffer page definitions.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/storage/bufpage.h
@@ -53,14 +53,18 @@
  *
  * NOTES:
  *
- * linp1..N form an ItemId array.  ItemPointers point into this array
- * rather than pointing directly to a tuple.  Note that OffsetNumbers
+ * linp1..N form an ItemId (line pointer) array.  ItemPointers point
+ * to a physical block number and a logical offset (line pointer
+ * number) within that block/page.  Note that OffsetNumbers
  * conventionally start at 1, not 0.
  *
- * tuple1..N are added "backwards" on the page.  because a tuple's
- * ItemPointer points to its ItemId entry rather than its actual
+ * tuple1..N are added "backwards" on the page.  Since an ItemPointer
+ * offset is used to access an ItemId entry rather than an actual
  * byte-offset position, tuples can be physically shuffled on a page
- * whenever the need arises.
+ * whenever the need arises.  This indirection also keeps crash recovery
+ * relatively simple, because the low-level details of page space
+ * management can be controlled by standard buffer page code during
+ * logging, and during recovery.
  *
  * AM-generic per-page information is kept in PageHeaderData.
  *
@@ -93,8 +97,12 @@ typedef struct
 	uint32		xrecoff;		/* low bits */
 } PageXLogRecPtr;
 
-#define PageXLogRecPtrGet(val) \
-	((uint64) (val).xlogid << 32 | (val).xrecoff)
+static inline XLogRecPtr
+PageXLogRecPtrGet(PageXLogRecPtr val)
+{
+	return (uint64) val.xlogid << 32 | val.xrecoff;
+}
+
 #define PageXLogRecPtrSet(ptr, lsn) \
 	((ptr).xlogid = (uint32) ((lsn) >> 32), (ptr).xrecoff = (uint32) (lsn))
 
@@ -196,15 +204,9 @@ typedef PageHeaderData *PageHeader;
 #define PG_DATA_CHECKSUM_VERSION	1
 
 /* ----------------------------------------------------------------
- *						page support macros
+ *						page support functions
  * ----------------------------------------------------------------
  */
-
-/*
- * PageIsValid
- *		True iff page is valid.
- */
-#define PageIsValid(page) PointerIsValid(page)
 
 /*
  * line pointer(s) do not count as part of header
@@ -215,43 +217,50 @@ typedef PageHeaderData *PageHeader;
  * PageIsEmpty
  *		returns true iff no itemid has been allocated on the page
  */
-#define PageIsEmpty(page) \
-	(((PageHeader) (page))->pd_lower <= SizeOfPageHeaderData)
+static inline bool
+PageIsEmpty(Page page)
+{
+	return ((PageHeader) page)->pd_lower <= SizeOfPageHeaderData;
+}
 
 /*
  * PageIsNew
  *		returns true iff page has not been initialized (by PageInit)
  */
-#define PageIsNew(page) (((PageHeader) (page))->pd_upper == 0)
+static inline bool
+PageIsNew(Page page)
+{
+	return ((PageHeader) page)->pd_upper == 0;
+}
 
 /*
  * PageGetItemId
  *		Returns an item identifier of a page.
  */
-#define PageGetItemId(page, offsetNumber) \
-	((ItemId) (&((PageHeader) (page))->pd_linp[(offsetNumber) - 1]))
+static inline ItemId
+PageGetItemId(Page page, OffsetNumber offsetNumber)
+{
+	return &((PageHeader) page)->pd_linp[offsetNumber - 1];
+}
 
 /*
  * PageGetContents
- *		To be used in case the page does not contain item pointers.
+ *		To be used in cases where the page does not contain line pointers.
  *
  * Note: prior to 8.3 this was not guaranteed to yield a MAXALIGN'd result.
  * Now it is.  Beware of old code that might think the offset to the contents
  * is just SizeOfPageHeaderData rather than MAXALIGN(SizeOfPageHeaderData).
  */
-#define PageGetContents(page) \
-	((char *) (page) + MAXALIGN(SizeOfPageHeaderData))
+static inline char *
+PageGetContents(Page page)
+{
+	return (char *) page + MAXALIGN(SizeOfPageHeaderData);
+}
 
 /* ----------------
- *		macros to access page size info
+ *		functions to access page size info
  * ----------------
  */
-
-/*
- * PageSizeIsValid
- *		True iff the page size is valid.
- */
-#define PageSizeIsValid(pageSize) ((pageSize) == BLCKSZ)
 
 /*
  * PageGetPageSize
@@ -261,15 +270,21 @@ typedef PageHeaderData *PageHeader;
  * BufferGetPageSize, which can be called on an unformatted page).
  * however, it can be called on a page that is not stored in a buffer.
  */
-#define PageGetPageSize(page) \
-	((Size) (((PageHeader) (page))->pd_pagesize_version & (uint16) 0xFF00))
+static inline Size
+PageGetPageSize(Page page)
+{
+	return (Size) (((PageHeader) page)->pd_pagesize_version & (uint16) 0xFF00);
+}
 
 /*
  * PageGetPageLayoutVersion
  *		Returns the page layout version of a page.
  */
-#define PageGetPageLayoutVersion(page) \
-	(((PageHeader) (page))->pd_pagesize_version & 0x00FF)
+static inline uint8
+PageGetPageLayoutVersion(Page page)
+{
+	return (((PageHeader) page)->pd_pagesize_version & 0x00FF);
+}
 
 /*
  * PageSetPageSizeAndVersion
@@ -278,52 +293,52 @@ typedef PageHeaderData *PageHeader;
  * We could support setting these two values separately, but there's
  * no real need for it at the moment.
  */
-#define PageSetPageSizeAndVersion(page, size, version) \
-( \
-	AssertMacro(((size) & 0xFF00) == (size)), \
-	AssertMacro(((version) & 0x00FF) == (version)), \
-	((PageHeader) (page))->pd_pagesize_version = (size) | (version) \
-)
+static inline void
+PageSetPageSizeAndVersion(Page page, Size size, uint8 version)
+{
+	Assert((size & 0xFF00) == size);
+	Assert((version & 0x00FF) == version);
+
+	((PageHeader) page)->pd_pagesize_version = size | version;
+}
 
 /* ----------------
- *		page special data macros
+ *		page special data functions
  * ----------------
  */
 /*
  * PageGetSpecialSize
  *		Returns size of special space on a page.
  */
-#define PageGetSpecialSize(page) \
-	((uint16) (PageGetPageSize(page) - ((PageHeader)(page))->pd_special))
+static inline uint16
+PageGetSpecialSize(Page page)
+{
+	return (PageGetPageSize(page) - ((PageHeader) page)->pd_special);
+}
 
 /*
  * Using assertions, validate that the page special pointer is OK.
  *
  * This is intended to catch use of the pointer before page initialization.
- * It is implemented as a function due to the limitations of the MSVC
- * compiler, which choked on doing all these tests within another macro.  We
- * return true so that MacroAssert() can be used while still getting the
- * specifics from the macro failure within this function.
  */
-static inline bool
+static inline void
 PageValidateSpecialPointer(Page page)
 {
-	Assert(PageIsValid(page));
-	Assert(((PageHeader) (page))->pd_special <= BLCKSZ);
-	Assert(((PageHeader) (page))->pd_special >= SizeOfPageHeaderData);
-
-	return true;
+	Assert(page);
+	Assert(((PageHeader) page)->pd_special <= BLCKSZ);
+	Assert(((PageHeader) page)->pd_special >= SizeOfPageHeaderData);
 }
 
 /*
  * PageGetSpecialPointer
  *		Returns pointer to special space on a page.
  */
-#define PageGetSpecialPointer(page) \
-( \
-	AssertMacro(PageValidateSpecialPointer(page)), \
-	(char *) ((char *) (page) + ((PageHeader) (page))->pd_special) \
-)
+static inline char *
+PageGetSpecialPointer(Page page)
+{
+	PageValidateSpecialPointer(page);
+	return (char *) page + ((PageHeader) page)->pd_special;
+}
 
 /*
  * PageGetItem
@@ -333,12 +348,14 @@ PageValidateSpecialPointer(Page page)
  *		This does not change the status of any of the resources passed.
  *		The semantics may change in the future.
  */
-#define PageGetItem(page, itemId) \
-( \
-	AssertMacro(PageIsValid(page)), \
-	AssertMacro(ItemIdHasStorage(itemId)), \
-	(Item)(((char *)(page)) + ItemIdGetOffset(itemId)) \
-)
+static inline Item
+PageGetItem(Page page, ItemId itemId)
+{
+	Assert(page);
+	Assert(ItemIdHasStorage(itemId));
+
+	return (Item) (((char *) page) + ItemIdGetOffset(itemId));
+}
 
 /*
  * PageGetMaxOffsetNumber
@@ -347,50 +364,84 @@ PageValidateSpecialPointer(Page page)
  *		of items on the page.
  *
  *		NOTE: if the page is not initialized (pd_lower == 0), we must
- *		return zero to ensure sane behavior.  Accept double evaluation
- *		of the argument so that we can ensure this.
+ *		return zero to ensure sane behavior.
  */
-#define PageGetMaxOffsetNumber(page) \
-	(((PageHeader) (page))->pd_lower <= SizeOfPageHeaderData ? 0 : \
-	 ((((PageHeader) (page))->pd_lower - SizeOfPageHeaderData) \
-	  / sizeof(ItemIdData)))
+static inline OffsetNumber
+PageGetMaxOffsetNumber(Page page)
+{
+	PageHeader	pageheader = (PageHeader) page;
+
+	if (pageheader->pd_lower <= SizeOfPageHeaderData)
+		return 0;
+	else
+		return (pageheader->pd_lower - SizeOfPageHeaderData) / sizeof(ItemIdData);
+}
 
 /*
- * Additional macros for access to page headers. (Beware multiple evaluation
- * of the arguments!)
+ * Additional functions for access to page headers.
  */
-#define PageGetLSN(page) \
-	PageXLogRecPtrGet(((PageHeader) (page))->pd_lsn)
-#define PageSetLSN(page, lsn) \
-	PageXLogRecPtrSet(((PageHeader) (page))->pd_lsn, lsn)
+static inline XLogRecPtr
+PageGetLSN(Page page)
+{
+	return PageXLogRecPtrGet(((PageHeader) page)->pd_lsn);
+}
+static inline void
+PageSetLSN(Page page, XLogRecPtr lsn)
+{
+	PageXLogRecPtrSet(((PageHeader) page)->pd_lsn, lsn);
+}
 
-#define PageHasFreeLinePointers(page) \
-	(((PageHeader) (page))->pd_flags & PD_HAS_FREE_LINES)
-#define PageSetHasFreeLinePointers(page) \
-	(((PageHeader) (page))->pd_flags |= PD_HAS_FREE_LINES)
-#define PageClearHasFreeLinePointers(page) \
-	(((PageHeader) (page))->pd_flags &= ~PD_HAS_FREE_LINES)
+static inline bool
+PageHasFreeLinePointers(Page page)
+{
+	return ((PageHeader) page)->pd_flags & PD_HAS_FREE_LINES;
+}
+static inline void
+PageSetHasFreeLinePointers(Page page)
+{
+	((PageHeader) page)->pd_flags |= PD_HAS_FREE_LINES;
+}
+static inline void
+PageClearHasFreeLinePointers(Page page)
+{
+	((PageHeader) page)->pd_flags &= ~PD_HAS_FREE_LINES;
+}
 
-#define PageIsFull(page) \
-	(((PageHeader) (page))->pd_flags & PD_PAGE_FULL)
-#define PageSetFull(page) \
-	(((PageHeader) (page))->pd_flags |= PD_PAGE_FULL)
-#define PageClearFull(page) \
-	(((PageHeader) (page))->pd_flags &= ~PD_PAGE_FULL)
+static inline bool
+PageIsFull(Page page)
+{
+	return ((PageHeader) page)->pd_flags & PD_PAGE_FULL;
+}
+static inline void
+PageSetFull(Page page)
+{
+	((PageHeader) page)->pd_flags |= PD_PAGE_FULL;
+}
+static inline void
+PageClearFull(Page page)
+{
+	((PageHeader) page)->pd_flags &= ~PD_PAGE_FULL;
+}
 
-#define PageIsAllVisible(page) \
-	(((PageHeader) (page))->pd_flags & PD_ALL_VISIBLE)
-#define PageSetAllVisible(page) \
-	(((PageHeader) (page))->pd_flags |= PD_ALL_VISIBLE)
-#define PageClearAllVisible(page) \
-	(((PageHeader) (page))->pd_flags &= ~PD_ALL_VISIBLE)
+static inline bool
+PageIsAllVisible(Page page)
+{
+	return ((PageHeader) page)->pd_flags & PD_ALL_VISIBLE;
+}
+static inline void
+PageSetAllVisible(Page page)
+{
+	((PageHeader) page)->pd_flags |= PD_ALL_VISIBLE;
+}
+static inline void
+PageClearAllVisible(Page page)
+{
+	((PageHeader) page)->pd_flags &= ~PD_ALL_VISIBLE;
+}
 
-#define PageIsPrunable(page, oldestxmin) \
-( \
-	AssertMacro(TransactionIdIsNormal(oldestxmin)), \
-	TransactionIdIsValid(((PageHeader) (page))->pd_prune_xid) && \
-	TransactionIdPrecedes(((PageHeader) (page))->pd_prune_xid, oldestxmin) \
-)
+/*
+ * These two require "access/transam.h", so left as macros.
+ */
 #define PageSetPrunable(page, xid) \
 do { \
 	Assert(TransactionIdIsNormal(xid)); \
@@ -406,32 +457,53 @@ do { \
  *		extern declarations
  * ----------------------------------------------------------------
  */
+
+/* flags for PageAddItemExtended() */
 #define PAI_OVERWRITE			(1 << 0)
 #define PAI_IS_HEAP				(1 << 1)
+
+/* flags for PageIsVerifiedExtended() */
+#define PIV_LOG_WARNING			(1 << 0)
+#define PIV_REPORT_STAT			(1 << 1)
 
 #define PageAddItem(page, item, size, offsetNumber, overwrite, is_heap) \
 	PageAddItemExtended(page, item, size, offsetNumber, \
 						((overwrite) ? PAI_OVERWRITE : 0) | \
 						((is_heap) ? PAI_IS_HEAP : 0))
 
+#define PageIsVerified(page, blkno) \
+	PageIsVerifiedExtended(page, blkno, \
+						   PIV_LOG_WARNING | PIV_REPORT_STAT)
+
+/*
+ * Check that BLCKSZ is a multiple of sizeof(size_t).  In
+ * PageIsVerifiedExtended(), it is much faster to check if a page is
+ * full of zeroes using the native word size.  Note that this assertion
+ * is kept within a header to make sure that StaticAssertDecl() works
+ * across various combinations of platforms and compilers.
+ */
+StaticAssertDecl(BLCKSZ == ((BLCKSZ / sizeof(size_t)) * sizeof(size_t)),
+				 "BLCKSZ has to be a multiple of sizeof(size_t)");
+
 extern void PageInit(Page page, Size pageSize, Size specialSize);
-extern bool PageIsVerified(Page page, BlockNumber blkno);
+extern bool PageIsVerifiedExtended(Page page, BlockNumber blkno, int flags);
 extern OffsetNumber PageAddItemExtended(Page page, Item item, Size size,
-					OffsetNumber offsetNumber, int flags);
+										OffsetNumber offsetNumber, int flags);
 extern Page PageGetTempPage(Page page);
 extern Page PageGetTempPageCopy(Page page);
 extern Page PageGetTempPageCopySpecial(Page page);
 extern void PageRestoreTempPage(Page tempPage, Page oldPage);
 extern void PageRepairFragmentation(Page page);
+extern void PageTruncateLinePointerArray(Page page);
 extern Size PageGetFreeSpace(Page page);
 extern Size PageGetFreeSpaceForMultipleTuples(Page page, int ntups);
 extern Size PageGetExactFreeSpace(Page page);
 extern Size PageGetHeapFreeSpace(Page page);
-extern void PageIndexTupleDelete(Page page, OffsetNumber offset);
+extern void PageIndexTupleDelete(Page page, OffsetNumber offnum);
 extern void PageIndexMultiDelete(Page page, OffsetNumber *itemnos, int nitems);
-extern void PageIndexTupleDeleteNoCompact(Page page, OffsetNumber offset);
+extern void PageIndexTupleDeleteNoCompact(Page page, OffsetNumber offnum);
 extern bool PageIndexTupleOverwrite(Page page, OffsetNumber offnum,
-						Item newtup, Size newsize);
+									Item newtup, Size newsize);
 extern char *PageSetChecksumCopy(Page page, BlockNumber blkno);
 extern void PageSetChecksumInplace(Page page, BlockNumber blkno);
 

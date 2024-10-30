@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>34.11. Miscellaneous Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="libpq-control.html" title="34.10. Control Functions" /><link rel="next" href="libpq-notice-processing.html" title="34.12. Notice Processing" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">34.11. Miscellaneous Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="libpq-control.html" title="34.10. Control Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="libpq.html" title="Chapter 34. libpq - C Library">Up</a></td><th width="60%" align="center">Chapter 34. <span xmlns="http://www.w3.org/1999/xhtml" class="application">libpq</span> - C Library</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="libpq-notice-processing.html" title="34.12. Notice Processing">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="LIBPQ-MISC"><div class="titlepage"><div><div><h2 class="title" style="clear: both">34.11. Miscellaneous Functions</h2></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>34.12. Miscellaneous Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="libpq-control.html" title="34.11. Control Functions" /><link rel="next" href="libpq-notice-processing.html" title="34.13. Notice Processing" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">34.12. Miscellaneous Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="libpq-control.html" title="34.11. Control Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="libpq.html" title="Chapter 34. libpq — C Library">Up</a></td><th width="60%" align="center">Chapter 34. <span class="application">libpq</span> — C Library</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="libpq-notice-processing.html" title="34.13. Notice Processing">Next</a></td></tr></table><hr /></div><div class="sect1" id="LIBPQ-MISC"><div class="titlepage"><div><div><h2 class="title" style="clear: both">34.12. Miscellaneous Functions <a href="#LIBPQ-MISC" class="id_link">#</a></h2></div></div></div><p>
    As always, there are some functions that just don't fit anywhere.
-  </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQFREEMEM"><span class="term">
-     <code class="function">PQfreemem</code>
-     <a id="id-1.7.3.18.3.1.1.2" class="indexterm"></a>
-    </span></dt><dd><p>
+  </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQFREEMEM"><span class="term"><code class="function">PQfreemem</code><a id="id-1.7.3.19.3.1.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQFREEMEM" class="id_link">#</a></dt><dd><p>
       Frees memory allocated by <span class="application">libpq</span>.
 </p><pre class="synopsis">
 void PQfreemem(void *ptr);
 </pre><p>
      </p><p>
       Frees memory allocated by <span class="application">libpq</span>, particularly
-      <code class="function">PQescapeByteaConn</code>,
-      <code class="function">PQescapeBytea</code>,
-      <code class="function">PQunescapeBytea</code>,
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEBYTEACONN"><code class="function">PQescapeByteaConn</code></a>,
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQESCAPEBYTEA"><code class="function">PQescapeBytea</code></a>,
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQUNESCAPEBYTEA"><code class="function">PQunescapeBytea</code></a>,
       and <code class="function">PQnotifies</code>.
       It is particularly important that this function, rather than
       <code class="function">free()</code>, be used on Microsoft Windows.  This is because
@@ -22,22 +19,18 @@ void PQfreemem(void *ptr);
       flags are the same for the DLL and the application.  On non-Microsoft
       Windows platforms, this function is the same as the standard library
       function <code class="function">free()</code>.
-     </p></dd><dt id="LIBPQ-PQCONNINFOFREE"><span class="term">
-     <code class="function">PQconninfoFree</code>
-     <a id="id-1.7.3.18.3.2.1.2" class="indexterm"></a>
-    </span></dt><dd><p>
+     </p></dd><dt id="LIBPQ-PQCONNINFOFREE"><span class="term"><code class="function">PQconninfoFree</code><a id="id-1.7.3.19.3.2.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQCONNINFOFREE" class="id_link">#</a></dt><dd><p>
       Frees the data structures allocated by
-      <code class="function">PQconndefaults</code> or <code class="function">PQconninfoParse</code>.
+      <a class="xref" href="libpq-connect.html#LIBPQ-PQCONNDEFAULTS"><code class="function">PQconndefaults</code></a> or <a class="xref" href="libpq-connect.html#LIBPQ-PQCONNINFOPARSE"><code class="function">PQconninfoParse</code></a>.
 </p><pre class="synopsis">
 void PQconninfoFree(PQconninfoOption *connOptions);
 </pre><p>
+      If the argument is a <code class="symbol">NULL</code> pointer, no operation is
+      performed.
      </p><p>
-      A simple <code class="function">PQfreemem</code> will not do for this, since
+      A simple <a class="xref" href="libpq-misc.html#LIBPQ-PQFREEMEM"><code class="function">PQfreemem</code></a> will not do for this, since
       the array contains references to subsidiary strings.
-     </p></dd><dt id="LIBPQ-PQENCRYPTPASSWORDCONN"><span class="term">
-     <code class="function">PQencryptPasswordConn</code>
-     <a id="id-1.7.3.18.3.3.1.2" class="indexterm"></a>
-    </span></dt><dd><p>
+     </p></dd><dt id="LIBPQ-PQENCRYPTPASSWORDCONN"><span class="term"><code class="function">PQencryptPasswordConn</code><a id="id-1.7.3.19.3.3.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQENCRYPTPASSWORDCONN" class="id_link">#</a></dt><dd><p>
       Prepares the encrypted form of a <span class="productname">PostgreSQL</span> password.
 </p><pre class="synopsis">
 char *PQencryptPasswordConn(PGconn *conn, const char *passwd, const char *user, const char *algorithm);
@@ -65,31 +58,25 @@ char *PQencryptPasswordConn(PGconn *conn, const char *passwd, const char *user, 
       is busy executing another query. If you wish to use the default
       algorithm for the server but want to avoid blocking, query
       <code class="varname">password_encryption</code> yourself before calling
-      <code class="function">PQencryptPasswordConn</code>, and pass that value as the
+      <a class="xref" href="libpq-misc.html#LIBPQ-PQENCRYPTPASSWORDCONN"><code class="function">PQencryptPasswordConn</code></a>, and pass that value as the
       <em class="parameter"><code>algorithm</code></em>.
      </p><p>
       The return value is a string allocated by <code class="function">malloc</code>.
       The caller can assume the string doesn't contain any special characters
-      that would require escaping.  Use <code class="function">PQfreemem</code> to free the
+      that would require escaping.  Use <a class="xref" href="libpq-misc.html#LIBPQ-PQFREEMEM"><code class="function">PQfreemem</code></a> to free the
       result when done with it. On error, returns <code class="symbol">NULL</code>, and
       a suitable message is stored in the connection object.
-     </p></dd><dt id="LIBPQ-PQENCRYPTPASSWORD"><span class="term">
-     <code class="function">PQencryptPassword</code>
-     <a id="id-1.7.3.18.3.4.1.2" class="indexterm"></a>
-    </span></dt><dd><p>
+     </p></dd><dt id="LIBPQ-PQENCRYPTPASSWORD"><span class="term"><code class="function">PQencryptPassword</code><a id="id-1.7.3.19.3.4.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQENCRYPTPASSWORD" class="id_link">#</a></dt><dd><p>
       Prepares the md5-encrypted form of a <span class="productname">PostgreSQL</span> password.
 </p><pre class="synopsis">
 char *PQencryptPassword(const char *passwd, const char *user);
 </pre><p>
-      <code class="function">PQencryptPassword</code> is an older, deprecated version of
-      <code class="function">PQencryptPasswordConn</code>. The difference is that
-      <code class="function">PQencryptPassword</code> does not
+      <a class="xref" href="libpq-misc.html#LIBPQ-PQENCRYPTPASSWORD"><code class="function">PQencryptPassword</code></a> is an older, deprecated version of
+      <a class="xref" href="libpq-misc.html#LIBPQ-PQENCRYPTPASSWORDCONN"><code class="function">PQencryptPasswordConn</code></a>. The difference is that
+      <a class="xref" href="libpq-misc.html#LIBPQ-PQENCRYPTPASSWORD"><code class="function">PQencryptPassword</code></a> does not
       require a connection object, and <code class="literal">md5</code> is always used as the
       encryption algorithm.
-     </p></dd><dt id="LIBPQ-PQMAKEEMPTYPGRESULT"><span class="term">
-     <code class="function">PQmakeEmptyPGresult</code>
-     <a id="id-1.7.3.18.3.5.1.2" class="indexterm"></a>
-    </span></dt><dd><p>
+     </p></dd><dt id="LIBPQ-PQMAKEEMPTYPGRESULT"><span class="term"><code class="function">PQmakeEmptyPGresult</code><a id="id-1.7.3.19.3.5.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQMAKEEMPTYPGRESULT" class="id_link">#</a></dt><dd><p>
       Constructs an empty <code class="structname">PGresult</code> object with the given status.
 </p><pre class="synopsis">
 PGresult *PQmakeEmptyPGresult(PGconn *conn, ExecStatusType status);
@@ -107,15 +94,12 @@ PGresult *PQmakeEmptyPGresult(PGconn *conn, ExecStatusType status);
       registered in the connection are copied into the
       <code class="structname">PGresult</code>.  (They do not get
       <code class="literal">PGEVT_RESULTCREATE</code> calls, but see
-      <code class="function">PQfireResultCreateEvents</code>.)
-      Note that <code class="function">PQclear</code> should eventually be called
+      <a class="xref" href="libpq-misc.html#LIBPQ-PQFIRERESULTCREATEEVENTS"><code class="function">PQfireResultCreateEvents</code></a>.)
+      Note that <a class="xref" href="libpq-exec.html#LIBPQ-PQCLEAR"><code class="function">PQclear</code></a> should eventually be called
       on the object, just as with a <code class="structname">PGresult</code>
       returned by <span class="application">libpq</span> itself.
-     </p></dd><dt id="LIBPQ-PQFIRERESULTCREATEEVENTS"><span class="term">
-     <code class="function">PQfireResultCreateEvents</code>
-     <a id="id-1.7.3.18.3.6.1.2" class="indexterm"></a>
-    </span></dt><dd><p>
-      Fires a <code class="literal">PGEVT_RESULTCREATE</code> event (see <a class="xref" href="libpq-events.html" title="34.13. Event System">Section 34.13</a>) for each event procedure registered in the
+     </p></dd><dt id="LIBPQ-PQFIRERESULTCREATEEVENTS"><span class="term"><code class="function">PQfireResultCreateEvents</code><a id="id-1.7.3.19.3.6.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQFIRERESULTCREATEEVENTS" class="id_link">#</a></dt><dd><p>
+      Fires a <code class="literal">PGEVT_RESULTCREATE</code> event (see <a class="xref" href="libpq-events.html" title="34.14. Event System">Section 34.14</a>) for each event procedure registered in the
       <code class="structname">PGresult</code> object.  Returns non-zero for success,
       zero if any event procedure fails.
 
@@ -132,16 +116,13 @@ int PQfireResultCreateEvents(PGconn *conn, PGresult *res);
       for this object are not fired again.
      </p><p>
       The main reason that this function is separate from
-      <code class="function">PQmakeEmptyPGresult</code> is that it is often appropriate
+      <a class="xref" href="libpq-misc.html#LIBPQ-PQMAKEEMPTYPGRESULT"><code class="function">PQmakeEmptyPGresult</code></a> is that it is often appropriate
       to create a <code class="structname">PGresult</code> and fill it with data
       before invoking the event procedures.
-     </p></dd><dt id="LIBPQ-PQCOPYRESULT"><span class="term">
-     <code class="function">PQcopyResult</code>
-     <a id="id-1.7.3.18.3.7.1.2" class="indexterm"></a>
-    </span></dt><dd><p>
+     </p></dd><dt id="LIBPQ-PQCOPYRESULT"><span class="term"><code class="function">PQcopyResult</code><a id="id-1.7.3.19.3.7.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQCOPYRESULT" class="id_link">#</a></dt><dd><p>
       Makes a copy of a <code class="structname">PGresult</code> object.  The copy is
       not linked to the source result in any way and
-      <code class="function">PQclear</code> must be called when the copy is no longer
+      <a class="xref" href="libpq-exec.html#LIBPQ-PQCLEAR"><code class="function">PQclear</code></a> must be called when the copy is no longer
       needed.  If the function fails, <code class="symbol">NULL</code> is returned.
 
 </p><pre class="synopsis">
@@ -162,10 +143,8 @@ PGresult *PQcopyResult(const PGresult *src, int flags);
       <code class="literal">PG_COPYRES_EVENTS</code> specifies copying the source
       result's events.  (But any instance data associated with the source
       is not copied.)
-     </p></dd><dt id="LIBPQ-PQSETRESULTATTRS"><span class="term">
-     <code class="function">PQsetResultAttrs</code>
-     <a id="id-1.7.3.18.3.8.1.2" class="indexterm"></a>
-    </span></dt><dd><p>
+      The event procedures receive <code class="literal">PGEVT_RESULTCOPY</code> events.
+     </p></dd><dt id="LIBPQ-PQSETRESULTATTRS"><span class="term"><code class="function">PQsetResultAttrs</code><a id="id-1.7.3.19.3.8.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQSETRESULTATTRS" class="id_link">#</a></dt><dd><p>
       Sets the attributes of a <code class="structname">PGresult</code> object.
 </p><pre class="synopsis">
 int PQsetResultAttrs(PGresult *res, int numAttributes, PGresAttDesc *attDescs);
@@ -178,10 +157,7 @@ int PQsetResultAttrs(PGresult *res, int numAttributes, PGresAttDesc *attDescs);
       already contains attributes, the function will fail.  If the function
       fails, the return value is zero.  If the function succeeds, the return
       value is non-zero.
-     </p></dd><dt id="LIBPQ-PQSETVALUE"><span class="term">
-     <code class="function">PQsetvalue</code>
-     <a id="id-1.7.3.18.3.9.1.2" class="indexterm"></a>
-    </span></dt><dd><p>
+     </p></dd><dt id="LIBPQ-PQSETVALUE"><span class="term"><code class="function">PQsetvalue</code><a id="id-1.7.3.19.3.9.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQSETVALUE" class="id_link">#</a></dt><dd><p>
       Sets a tuple field value of a <code class="structname">PGresult</code> object.
 </p><pre class="synopsis">
 int PQsetvalue(PGresult *res, int tup_num, int field_num, char *value, int len);
@@ -189,7 +165,7 @@ int PQsetvalue(PGresult *res, int tup_num, int field_num, char *value, int len);
      </p><p>
       The function will automatically grow the result's internal tuples array
       as needed.  However, the <em class="parameter"><code>tup_num</code></em> argument must be
-      less than or equal to <code class="function">PQntuples</code>, meaning this
+      less than or equal to <a class="xref" href="libpq-exec.html#LIBPQ-PQNTUPLES"><code class="function">PQntuples</code></a>, meaning this
       function can only grow the tuples array one tuple at a time.  But any
       field of any existing tuple can be modified in any order.  If a value at
       <em class="parameter"><code>field_num</code></em> already exists, it will be overwritten.
@@ -200,10 +176,7 @@ int PQsetvalue(PGresult *res, int tup_num, int field_num, char *value, int len);
       thus is no longer needed after the function
       returns.  If the function fails, the return value is zero.  If the
       function succeeds, the return value is non-zero.
-     </p></dd><dt id="LIBPQ-PQRESULTALLOC"><span class="term">
-     <code class="function">PQresultAlloc</code>
-     <a id="id-1.7.3.18.3.10.1.2" class="indexterm"></a>
-    </span></dt><dd><p>
+     </p></dd><dt id="LIBPQ-PQRESULTALLOC"><span class="term"><code class="function">PQresultAlloc</code><a id="id-1.7.3.19.3.10.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQRESULTALLOC" class="id_link">#</a></dt><dd><p>
       Allocate subsidiary storage for a <code class="structname">PGresult</code> object.
 </p><pre class="synopsis">
 void *PQresultAlloc(PGresult *res, size_t nBytes);
@@ -214,10 +187,18 @@ void *PQresultAlloc(PGresult *res, size_t nBytes);
       the return value is <code class="symbol">NULL</code>.  The result is
       guaranteed to be adequately aligned for any type of data,
       just as for <code class="function">malloc</code>.
-     </p></dd><dt id="LIBPQ-PQLIBVERSION"><span class="term">
-     <code class="function">PQlibVersion</code>
-     <a id="id-1.7.3.18.3.11.1.2" class="indexterm"></a>
-    </span></dt><dd><p>
+     </p></dd><dt id="LIBPQ-PQRESULTMEMORYSIZE"><span class="term"><code class="function">PQresultMemorySize</code><a id="id-1.7.3.19.3.11.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQRESULTMEMORYSIZE" class="id_link">#</a></dt><dd><p>
+      Retrieves the number of bytes allocated for
+      a <code class="structname">PGresult</code> object.
+</p><pre class="synopsis">
+size_t PQresultMemorySize(const PGresult *res);
+</pre><p>
+     </p><p>
+      This value is the sum of all <code class="function">malloc</code> requests
+      associated with the <code class="structname">PGresult</code> object, that is,
+      all the space that will be freed by <a class="xref" href="libpq-exec.html#LIBPQ-PQCLEAR"><code class="function">PQclear</code></a>.
+      This information can be useful for managing memory consumption.
+     </p></dd><dt id="LIBPQ-PQLIBVERSION"><span class="term"><code class="function">PQlibVersion</code><a id="id-1.7.3.19.3.12.1.2" class="indexterm"></a></span> <a href="#LIBPQ-PQLIBVERSION" class="id_link">#</a></dt><dd><p>
       Return the version of <span class="productname">libpq</span> that is being used.
 </p><pre class="synopsis">
 int PQlibVersion(void);
@@ -227,7 +208,7 @@ int PQlibVersion(void);
       run time, whether specific functionality is available in the currently
       loaded version of libpq. The function can be used, for example,
       to determine which connection options are available in
-      <code class="function">PQconnectdb</code>.
+      <a class="xref" href="libpq-connect.html#LIBPQ-PQCONNECTDB"><code class="function">PQconnectdb</code></a>.
      </p><p>
       The result is formed by multiplying the library's major version
       number by 10000 and adding the minor version number.  For example,
@@ -237,12 +218,12 @@ int PQlibVersion(void);
       Prior to major version 10, <span class="productname">PostgreSQL</span> used
       three-part version numbers in which the first two parts together
       represented the major version.  For those
-      versions, <code class="function">PQlibVersion</code> uses two digits for each
+      versions, <a class="xref" href="libpq-misc.html#LIBPQ-PQLIBVERSION"><code class="function">PQlibVersion</code></a> uses two digits for each
       part; for example version 9.1.5 will be returned as 90105, and
       version 9.2.0 will be returned as 90200.
      </p><p>
       Therefore, for purposes of determining feature compatibility,
-      applications should divide the result of <code class="function">PQlibVersion</code>
+      applications should divide the result of <a class="xref" href="libpq-misc.html#LIBPQ-PQLIBVERSION"><code class="function">PQlibVersion</code></a>
       by 100 not 10000 to determine a logical major version number.
       In all release series, only the last two digits differ between
       minor releases (bug-fix releases).
@@ -251,4 +232,4 @@ int PQlibVersion(void);
        it cannot be used to detect required functionality in earlier
        versions, since calling it will create a link dependency
        on version 9.1 or later.
-      </p></div></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="libpq-control.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="libpq.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="libpq-notice-processing.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">34.10. Control Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 34.12. Notice Processing</td></tr></table></div></body></html>
+      </p></div></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="libpq-control.html" title="34.11. Control Functions">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="libpq.html" title="Chapter 34. libpq — C Library">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="libpq-notice-processing.html" title="34.13. Notice Processing">Next</a></td></tr><tr><td width="40%" align="left" valign="top">34.11. Control Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 34.13. Notice Processing</td></tr></table></div></body></html>

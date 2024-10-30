@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>8.5. Date/Time Types</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="datatype-binary.html" title="8.4. Binary Data Types" /><link rel="next" href="datatype-boolean.html" title="8.6. Boolean Type" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">8.5. Date/Time Types</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="datatype-binary.html" title="8.4. Binary Data Types">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="datatype.html" title="Chapter 8. Data Types">Up</a></td><th width="60%" align="center">Chapter 8. Data Types</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="datatype-boolean.html" title="8.6. Boolean Type">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="DATATYPE-DATETIME"><div class="titlepage"><div><div><h2 class="title" style="clear: both">8.5. Date/Time Types</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="datatype-datetime.html#DATATYPE-DATETIME-INPUT">8.5.1. Date/Time Input</a></span></dt><dt><span class="sect2"><a href="datatype-datetime.html#DATATYPE-DATETIME-OUTPUT">8.5.2. Date/Time Output</a></span></dt><dt><span class="sect2"><a href="datatype-datetime.html#DATATYPE-TIMEZONES">8.5.3. Time Zones</a></span></dt><dt><span class="sect2"><a href="datatype-datetime.html#DATATYPE-INTERVAL-INPUT">8.5.4. Interval Input</a></span></dt><dt><span class="sect2"><a href="datatype-datetime.html#DATATYPE-INTERVAL-OUTPUT">8.5.5. Interval Output</a></span></dt></dl></div><a id="id-1.5.7.13.2" class="indexterm"></a><a id="id-1.5.7.13.3" class="indexterm"></a><a id="id-1.5.7.13.4" class="indexterm"></a><a id="id-1.5.7.13.5" class="indexterm"></a><a id="id-1.5.7.13.6" class="indexterm"></a><a id="id-1.5.7.13.7" class="indexterm"></a><a id="id-1.5.7.13.8" class="indexterm"></a><a id="id-1.5.7.13.9" class="indexterm"></a><a id="id-1.5.7.13.10" class="indexterm"></a><a id="id-1.5.7.13.11" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>8.5. Date/Time Types</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="datatype-binary.html" title="8.4. Binary Data Types" /><link rel="next" href="datatype-boolean.html" title="8.6. Boolean Type" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">8.5. Date/Time Types</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="datatype-binary.html" title="8.4. Binary Data Types">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="datatype.html" title="Chapter 8. Data Types">Up</a></td><th width="60%" align="center">Chapter 8. Data Types</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="datatype-boolean.html" title="8.6. Boolean Type">Next</a></td></tr></table><hr /></div><div class="sect1" id="DATATYPE-DATETIME"><div class="titlepage"><div><div><h2 class="title" style="clear: both">8.5. Date/Time Types <a href="#DATATYPE-DATETIME" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="datatype-datetime.html#DATATYPE-DATETIME-INPUT">8.5.1. Date/Time Input</a></span></dt><dt><span class="sect2"><a href="datatype-datetime.html#DATATYPE-DATETIME-OUTPUT">8.5.2. Date/Time Output</a></span></dt><dt><span class="sect2"><a href="datatype-datetime.html#DATATYPE-TIMEZONES">8.5.3. Time Zones</a></span></dt><dt><span class="sect2"><a href="datatype-datetime.html#DATATYPE-INTERVAL-INPUT">8.5.4. Interval Input</a></span></dt><dt><span class="sect2"><a href="datatype-datetime.html#DATATYPE-INTERVAL-OUTPUT">8.5.5. Interval Output</a></span></dt></dl></div><a id="id-1.5.7.13.2" class="indexterm"></a><a id="id-1.5.7.13.3" class="indexterm"></a><a id="id-1.5.7.13.4" class="indexterm"></a><a id="id-1.5.7.13.5" class="indexterm"></a><a id="id-1.5.7.13.6" class="indexterm"></a><a id="id-1.5.7.13.7" class="indexterm"></a><a id="id-1.5.7.13.8" class="indexterm"></a><a id="id-1.5.7.13.9" class="indexterm"></a><a id="id-1.5.7.13.10" class="indexterm"></a><a id="id-1.5.7.13.11" class="indexterm"></a><p>
     <span class="productname">PostgreSQL</span> supports the full set of
     <acronym class="acronym">SQL</acronym> date and time types, shown in <a class="xref" href="datatype-datetime.html#DATATYPE-DATETIME-TABLE" title="Table 8.9. Date/Time Types">Table 8.9</a>.  The operations available
     on these data types are described in
     <a class="xref" href="functions-datetime.html" title="9.9. Date/Time Functions and Operators">Section 9.9</a>.
     Dates are counted according to the Gregorian calendar, even in
-    years before that calendar was introduced (see <a class="xref" href="datetime-units-history.html" title="B.5. History of Units">Section B.5</a> for more information).
-   </p><div class="table" id="DATATYPE-DATETIME-TABLE"><p class="title"><strong>Table 8.9. Date/Time Types</strong></p><div class="table-contents"><table class="table" summary="Date/Time Types" border="1"><colgroup><col /><col /><col /><col /><col /><col /></colgroup><thead><tr><th>Name</th><th>Storage Size</th><th>Description</th><th>Low Value</th><th>High Value</th><th>Resolution</th></tr></thead><tbody><tr><td><code class="type">timestamp [ (<em class="replaceable"><code>p</code></em>) ] [ without time zone ]</code></td><td>8 bytes</td><td>both date and time (no time zone)</td><td>4713 BC</td><td>294276 AD</td><td>1 microsecond</td></tr><tr><td><code class="type">timestamp [ (<em class="replaceable"><code>p</code></em>) ] with time zone</code></td><td>8 bytes</td><td>both date and time, with time zone</td><td>4713 BC</td><td>294276 AD</td><td>1 microsecond</td></tr><tr><td><code class="type">date</code></td><td>4 bytes</td><td>date (no time of day)</td><td>4713 BC</td><td>5874897 AD</td><td>1 day</td></tr><tr><td><code class="type">time [ (<em class="replaceable"><code>p</code></em>) ] [ without time zone ]</code></td><td>8 bytes</td><td>time of day (no date)</td><td>00:00:00</td><td>24:00:00</td><td>1 microsecond</td></tr><tr><td><code class="type">time [ (<em class="replaceable"><code>p</code></em>) ] with time zone</code></td><td>12 bytes</td><td>time of day (no date), with time zone</td><td>00:00:00+1459</td><td>24:00:00-1459</td><td>1 microsecond</td></tr><tr><td><code class="type">interval [ <em class="replaceable"><code>fields</code></em> ] [ (<em class="replaceable"><code>p</code></em>) ]</code></td><td>16 bytes</td><td>time interval</td><td>-178000000 years</td><td>178000000 years</td><td>1 microsecond</td></tr></tbody></table></div></div><br class="table-break" /><div class="note"><h3 class="title">Note</h3><p>
+    years before that calendar was introduced (see <a class="xref" href="datetime-units-history.html" title="B.6. History of Units">Section B.6</a> for more information).
+   </p><div class="table" id="DATATYPE-DATETIME-TABLE"><p class="title"><strong>Table 8.9. Date/Time Types</strong></p><div class="table-contents"><table class="table" summary="Date/Time Types" border="1"><colgroup><col /><col /><col /><col /><col /><col /></colgroup><thead><tr><th>Name</th><th>Storage Size</th><th>Description</th><th>Low Value</th><th>High Value</th><th>Resolution</th></tr></thead><tbody><tr><td><code class="type">timestamp [ (<em class="replaceable"><code>p</code></em>) ] [ without time zone ]</code></td><td>8 bytes</td><td>both date and time (no time zone)</td><td>4713 BC</td><td>294276 AD</td><td>1 microsecond</td></tr><tr><td><code class="type">timestamp [ (<em class="replaceable"><code>p</code></em>) ] with time zone</code></td><td>8 bytes</td><td>both date and time, with time zone</td><td>4713 BC</td><td>294276 AD</td><td>1 microsecond</td></tr><tr><td><code class="type">date</code></td><td>4 bytes</td><td>date (no time of day)</td><td>4713 BC</td><td>5874897 AD</td><td>1 day</td></tr><tr><td><code class="type">time [ (<em class="replaceable"><code>p</code></em>) ] [ without time zone ]</code></td><td>8 bytes</td><td>time of day (no date)</td><td>00:00:00</td><td>24:00:00</td><td>1 microsecond</td></tr><tr><td><code class="type">time [ (<em class="replaceable"><code>p</code></em>) ] with time zone</code></td><td>12 bytes</td><td>time of day (no date), with time zone</td><td>00:00:00+1559</td><td>24:00:00-1559</td><td>1 microsecond</td></tr><tr><td><code class="type">interval [ <em class="replaceable"><code>fields</code></em> ] [ (<em class="replaceable"><code>p</code></em>) ]</code></td><td>16 bytes</td><td>time interval</td><td>-178000000 years</td><td>178000000 years</td><td>1 microsecond</td></tr></tbody></table></div></div><br class="table-break" /><div class="note"><h3 class="title">Note</h3><p>
      The SQL standard requires that writing just <code class="type">timestamp</code>
      be equivalent to <code class="type">timestamp without time
      zone</code>, and <span class="productname">PostgreSQL</span> honors that
@@ -50,13 +50,7 @@ MINUTE TO SECOND
     zone</code>, and <code class="type">timestamp with time zone</code> should
     provide a complete range of date/time functionality required by
     any application.
-   </p><p>
-    The types <code class="type">abstime</code>
-    and <code class="type">reltime</code> are lower precision types which are used internally.
-    You are discouraged from using these types in
-    applications;  these internal types
-    might disappear in a future release.
-   </p><div class="sect2" id="DATATYPE-DATETIME-INPUT"><div class="titlepage"><div><div><h3 class="title">8.5.1. Date/Time Input</h3></div></div></div><p>
+   </p><div class="sect2" id="DATATYPE-DATETIME-INPUT"><div class="titlepage"><div><div><h3 class="title">8.5.1. Date/Time Input <a href="#DATATYPE-DATETIME-INPUT" class="id_link">#</a></h3></div></div></div><p>
      Date and time input is accepted in almost any reasonable format, including
      ISO 8601, <acronym class="acronym">SQL</acronym>-compatible,
      traditional <span class="productname">POSTGRES</span>, and others.
@@ -91,16 +85,16 @@ MINUTE TO SECOND
      If no precision is specified in a constant specification,
      it defaults to the precision of the literal value (but not
      more than 6 digits).
-    </p><div class="sect3" id="id-1.5.7.13.19.5"><div class="titlepage"><div><div><h4 class="title">8.5.1.1. Dates</h4></div></div></div><a id="id-1.5.7.13.19.5.2" class="indexterm"></a><p>
+    </p><div class="sect3" id="DATATYPE-DATETIME-INPUT-DATES"><div class="titlepage"><div><div><h4 class="title">8.5.1.1. Dates <a href="#DATATYPE-DATETIME-INPUT-DATES" class="id_link">#</a></h4></div></div></div><a id="id-1.5.7.13.18.5.2" class="indexterm"></a><p>
      <a class="xref" href="datatype-datetime.html#DATATYPE-DATETIME-DATE-TABLE" title="Table 8.10. Date Input">Table 8.10</a> shows some possible
      inputs for the <code class="type">date</code> type.
-    </p><div class="table" id="DATATYPE-DATETIME-DATE-TABLE"><p class="title"><strong>Table 8.10. Date Input</strong></p><div class="table-contents"><table class="table" summary="Date Input" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Example</th><th>Description</th></tr></thead><tbody><tr><td>1999-01-08</td><td>ISO 8601; January 8 in any mode
+    </p><div class="table" id="DATATYPE-DATETIME-DATE-TABLE"><p class="title"><strong>Table 8.10. Date Input</strong></p><div class="table-contents"><table class="table" summary="Date Input" border="1"><colgroup><col class="col1" /><col class="col2" /></colgroup><thead><tr><th>Example</th><th>Description</th></tr></thead><tbody><tr><td>1999-01-08</td><td>ISO 8601; January 8 in any mode
          (recommended format)</td></tr><tr><td>January 8, 1999</td><td>unambiguous in any <code class="varname">datestyle</code> input mode</td></tr><tr><td>1/8/1999</td><td>January 8 in <code class="literal">MDY</code> mode;
           August 1 in <code class="literal">DMY</code> mode</td></tr><tr><td>1/18/1999</td><td>January 18 in <code class="literal">MDY</code> mode;
           rejected in other modes</td></tr><tr><td>01/02/03</td><td>January 2, 2003 in <code class="literal">MDY</code> mode;
           February 1, 2003 in <code class="literal">DMY</code> mode;
           February 3, 2001 in <code class="literal">YMD</code> mode
-         </td></tr><tr><td>1999-Jan-08</td><td>January 8 in any mode</td></tr><tr><td>Jan-08-1999</td><td>January 8 in any mode</td></tr><tr><td>08-Jan-1999</td><td>January 8 in any mode</td></tr><tr><td>99-Jan-08</td><td>January 8 in <code class="literal">YMD</code> mode, else error</td></tr><tr><td>08-Jan-99</td><td>January 8, except error in <code class="literal">YMD</code> mode</td></tr><tr><td>Jan-08-99</td><td>January 8, except error in <code class="literal">YMD</code> mode</td></tr><tr><td>19990108</td><td>ISO 8601; January 8, 1999 in any mode</td></tr><tr><td>990108</td><td>ISO 8601; January 8, 1999 in any mode</td></tr><tr><td>1999.008</td><td>year and day of year</td></tr><tr><td>J2451187</td><td>Julian date</td></tr><tr><td>January 8, 99 BC</td><td>year 99 BC</td></tr></tbody></table></div></div><br class="table-break" /></div><div class="sect3" id="id-1.5.7.13.19.6"><div class="titlepage"><div><div><h4 class="title">8.5.1.2. Times</h4></div></div></div><a id="id-1.5.7.13.19.6.2" class="indexterm"></a><a id="id-1.5.7.13.19.6.3" class="indexterm"></a><a id="id-1.5.7.13.19.6.4" class="indexterm"></a><p>
+         </td></tr><tr><td>1999-Jan-08</td><td>January 8 in any mode</td></tr><tr><td>Jan-08-1999</td><td>January 8 in any mode</td></tr><tr><td>08-Jan-1999</td><td>January 8 in any mode</td></tr><tr><td>99-Jan-08</td><td>January 8 in <code class="literal">YMD</code> mode, else error</td></tr><tr><td>08-Jan-99</td><td>January 8, except error in <code class="literal">YMD</code> mode</td></tr><tr><td>Jan-08-99</td><td>January 8, except error in <code class="literal">YMD</code> mode</td></tr><tr><td>19990108</td><td>ISO 8601; January 8, 1999 in any mode</td></tr><tr><td>990108</td><td>ISO 8601; January 8, 1999 in any mode</td></tr><tr><td>1999.008</td><td>year and day of year</td></tr><tr><td>J2451187</td><td>Julian date</td></tr><tr><td>January 8, 99 BC</td><td>year 99 BC</td></tr></tbody></table></div></div><br class="table-break" /></div><div class="sect3" id="DATATYPE-DATETIME-INPUT-TIMES"><div class="titlepage"><div><div><h4 class="title">8.5.1.2. Times <a href="#DATATYPE-DATETIME-INPUT-TIMES" class="id_link">#</a></h4></div></div></div><a id="id-1.5.7.13.18.6.2" class="indexterm"></a><a id="id-1.5.7.13.18.6.3" class="indexterm"></a><a id="id-1.5.7.13.18.6.4" class="indexterm"></a><p>
       The time-of-day types are <code class="type">time [
       (<em class="replaceable"><code>p</code></em>) ] without time zone</code> and
       <code class="type">time [ (<em class="replaceable"><code>p</code></em>) ] with time
@@ -117,11 +111,12 @@ MINUTE TO SECOND
       <code class="literal">America/New_York</code>. In this case specifying the date
       is required in order to determine whether standard or daylight-savings
       time applies.  The appropriate time zone offset is recorded in the
-      <code class="type">time with time zone</code> value.
-     </p><div class="table" id="DATATYPE-DATETIME-TIME-TABLE"><p class="title"><strong>Table 8.11. Time Input</strong></p><div class="table-contents"><table class="table" summary="Time Input" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Example</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">04:05:06.789</code></td><td>ISO 8601</td></tr><tr><td><code class="literal">04:05:06</code></td><td>ISO 8601</td></tr><tr><td><code class="literal">04:05</code></td><td>ISO 8601</td></tr><tr><td><code class="literal">040506</code></td><td>ISO 8601</td></tr><tr><td><code class="literal">04:05 AM</code></td><td>same as 04:05; AM does not affect value</td></tr><tr><td><code class="literal">04:05 PM</code></td><td>same as 16:05; input hour must be &lt;= 12</td></tr><tr><td><code class="literal">04:05:06.789-8</code></td><td>ISO 8601</td></tr><tr><td><code class="literal">04:05:06-08:00</code></td><td>ISO 8601</td></tr><tr><td><code class="literal">04:05-08:00</code></td><td>ISO 8601</td></tr><tr><td><code class="literal">040506-08</code></td><td>ISO 8601</td></tr><tr><td><code class="literal">04:05:06 PST</code></td><td>time zone specified by abbreviation</td></tr><tr><td><code class="literal">2003-04-12 04:05:06 America/New_York</code></td><td>time zone specified by full name</td></tr></tbody></table></div></div><br class="table-break" /><div class="table" id="DATATYPE-TIMEZONE-TABLE"><p class="title"><strong>Table 8.12. Time Zone Input</strong></p><div class="table-contents"><table class="table" summary="Time Zone Input" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Example</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">PST</code></td><td>Abbreviation (for Pacific Standard Time)</td></tr><tr><td><code class="literal">America/New_York</code></td><td>Full time zone name</td></tr><tr><td><code class="literal">PST8PDT</code></td><td>POSIX-style time zone specification</td></tr><tr><td><code class="literal">-8:00</code></td><td>ISO-8601 offset for PST</td></tr><tr><td><code class="literal">-800</code></td><td>ISO-8601 offset for PST</td></tr><tr><td><code class="literal">-8</code></td><td>ISO-8601 offset for PST</td></tr><tr><td><code class="literal">zulu</code></td><td>Military abbreviation for UTC</td></tr><tr><td><code class="literal">z</code></td><td>Short form of <code class="literal">zulu</code></td></tr></tbody></table></div></div><br class="table-break" /><p>
+      <code class="type">time with time zone</code> value and is output as stored;
+      it is not adjusted to the active time zone.
+     </p><div class="table" id="DATATYPE-DATETIME-TIME-TABLE"><p class="title"><strong>Table 8.11. Time Input</strong></p><div class="table-contents"><table class="table" summary="Time Input" border="1"><colgroup><col class="col1" /><col class="col2" /></colgroup><thead><tr><th>Example</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">04:05:06.789</code></td><td>ISO 8601</td></tr><tr><td><code class="literal">04:05:06</code></td><td>ISO 8601</td></tr><tr><td><code class="literal">04:05</code></td><td>ISO 8601</td></tr><tr><td><code class="literal">040506</code></td><td>ISO 8601</td></tr><tr><td><code class="literal">04:05 AM</code></td><td>same as 04:05; AM does not affect value</td></tr><tr><td><code class="literal">04:05 PM</code></td><td>same as 16:05; input hour must be &lt;= 12</td></tr><tr><td><code class="literal">04:05:06.789-8</code></td><td>ISO 8601, with time zone as UTC offset</td></tr><tr><td><code class="literal">04:05:06-08:00</code></td><td>ISO 8601, with time zone as UTC offset</td></tr><tr><td><code class="literal">04:05-08:00</code></td><td>ISO 8601, with time zone as UTC offset</td></tr><tr><td><code class="literal">040506-08</code></td><td>ISO 8601, with time zone as UTC offset</td></tr><tr><td><code class="literal">040506+0730</code></td><td>ISO 8601, with fractional-hour time zone as UTC offset</td></tr><tr><td><code class="literal">040506+07:30:00</code></td><td>UTC offset specified to seconds (not allowed in ISO 8601)</td></tr><tr><td><code class="literal">04:05:06 PST</code></td><td>time zone specified by abbreviation</td></tr><tr><td><code class="literal">2003-04-12 04:05:06 America/New_York</code></td><td>time zone specified by full name</td></tr></tbody></table></div></div><br class="table-break" /><div class="table" id="DATATYPE-TIMEZONE-TABLE"><p class="title"><strong>Table 8.12. Time Zone Input</strong></p><div class="table-contents"><table class="table" summary="Time Zone Input" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Example</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">PST</code></td><td>Abbreviation (for Pacific Standard Time)</td></tr><tr><td><code class="literal">America/New_York</code></td><td>Full time zone name</td></tr><tr><td><code class="literal">PST8PDT</code></td><td>POSIX-style time zone specification</td></tr><tr><td><code class="literal">-8:00:00</code></td><td>UTC offset for PST</td></tr><tr><td><code class="literal">-8:00</code></td><td>UTC offset for PST (ISO 8601 extended format)</td></tr><tr><td><code class="literal">-800</code></td><td>UTC offset for PST (ISO 8601 basic format)</td></tr><tr><td><code class="literal">-8</code></td><td>UTC offset for PST (ISO 8601 basic format)</td></tr><tr><td><code class="literal">zulu</code></td><td>Military abbreviation for UTC</td></tr><tr><td><code class="literal">z</code></td><td>Short form of <code class="literal">zulu</code> (also in ISO 8601)</td></tr></tbody></table></div></div><br class="table-break" /><p>
      Refer to <a class="xref" href="datatype-datetime.html#DATATYPE-TIMEZONES" title="8.5.3. Time Zones">Section 8.5.3</a> for more information on how
      to specify time zones.
-    </p></div><div class="sect3" id="id-1.5.7.13.19.7"><div class="titlepage"><div><div><h4 class="title">8.5.1.3. Time Stamps</h4></div></div></div><a id="id-1.5.7.13.19.7.2" class="indexterm"></a><a id="id-1.5.7.13.19.7.3" class="indexterm"></a><a id="id-1.5.7.13.19.7.4" class="indexterm"></a><p>
+    </p></div><div class="sect3" id="DATATYPE-DATETIME-INPUT-TIME-STAMPS"><div class="titlepage"><div><div><h4 class="title">8.5.1.3. Time Stamps <a href="#DATATYPE-DATETIME-INPUT-TIME-STAMPS" class="id_link">#</a></h4></div></div></div><a id="id-1.5.7.13.18.7.2" class="indexterm"></a><a id="id-1.5.7.13.18.7.3" class="indexterm"></a><a id="id-1.5.7.13.18.7.4" class="indexterm"></a><p>
       Valid input for the time stamp types consists of the concatenation
       of a date and a time, followed by an optional time zone,
       followed by an optional <code class="literal">AD</code> or <code class="literal">BC</code>.
@@ -150,11 +145,15 @@ January 8 04:05:06 1999 PST
       <span class="quote">“<span class="quote">+</span>”</span> or <span class="quote">“<span class="quote">-</span>”</span> symbol and time zone offset after
       the time.  Hence, according to the standard,
 
-      </p><pre class="programlisting">TIMESTAMP '2004-10-19 10:23:54'</pre><p>
+</p><pre class="programlisting">
+TIMESTAMP '2004-10-19 10:23:54'
+</pre><p>
 
       is a <code class="type">timestamp without time zone</code>, while
 
-      </p><pre class="programlisting">TIMESTAMP '2004-10-19 10:23:54+02'</pre><p>
+</p><pre class="programlisting">
+TIMESTAMP '2004-10-19 10:23:54+02'
+</pre><p>
 
       is a <code class="type">timestamp with time zone</code>.
       <span class="productname">PostgreSQL</span> never examines the content of a
@@ -163,7 +162,9 @@ January 8 04:05:06 1999 PST
       ensure that a literal is treated as <code class="type">timestamp with time
       zone</code>, give it the correct explicit type:
 
-      </p><pre class="programlisting">TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54+02'</pre><p>
+</p><pre class="programlisting">
+TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54+02'
+</pre><p>
 
       In a literal that has been determined to be <code class="type">timestamp without time
       zone</code>, <span class="productname">PostgreSQL</span> will silently ignore
@@ -186,14 +187,14 @@ January 8 04:05:06 1999 PST
       current <code class="varname">timezone</code> zone, and displayed as local time in that
       zone.  To see the time in another time zone, either change
       <code class="varname">timezone</code> or use the <code class="literal">AT TIME ZONE</code> construct
-      (see <a class="xref" href="functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT" title="9.9.3. AT TIME ZONE">Section 9.9.3</a>).
+      (see <a class="xref" href="functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT" title="9.9.4. AT TIME ZONE">Section 9.9.4</a>).
      </p><p>
       Conversions between <code class="type">timestamp without time zone</code> and
       <code class="type">timestamp with time zone</code> normally assume that the
       <code class="type">timestamp without time zone</code> value should be taken or given
       as <code class="varname">timezone</code> local time.  A different time zone can
       be specified for the conversion using <code class="literal">AT TIME ZONE</code>.
-     </p></div><div class="sect3" id="id-1.5.7.13.19.8"><div class="titlepage"><div><div><h4 class="title">8.5.1.4. Special Values</h4></div></div></div><a id="id-1.5.7.13.19.8.2" class="indexterm"></a><a id="id-1.5.7.13.19.8.3" class="indexterm"></a><p>
+     </p></div><div class="sect3" id="DATATYPE-DATETIME-SPECIAL-VALUES"><div class="titlepage"><div><div><h4 class="title">8.5.1.4. Special Values <a href="#DATATYPE-DATETIME-SPECIAL-VALUES" class="id_link">#</a></h4></div></div></div><a id="id-1.5.7.13.18.8.2" class="indexterm"></a><a id="id-1.5.7.13.18.8.3" class="indexterm"></a><p>
       <span class="productname">PostgreSQL</span> supports several
       special date/time input values for convenience, as shown in <a class="xref" href="datatype-datetime.html#DATATYPE-DATETIME-SPECIAL-TABLE" title="Table 8.13. Special Date/Time Inputs">Table 8.13</a>.  The values
       <code class="literal">infinity</code> and <code class="literal">-infinity</code>
@@ -204,16 +205,26 @@ January 8 04:05:06 1999 PST
       to a specific time value as soon as they are read.)
       All of these values need to be enclosed in single quotes when used
       as constants in SQL commands.
-     </p><div class="table" id="DATATYPE-DATETIME-SPECIAL-TABLE"><p class="title"><strong>Table 8.13. Special Date/Time Inputs</strong></p><div class="table-contents"><table class="table" summary="Special Date/Time Inputs" border="1"><colgroup><col /><col /><col /></colgroup><thead><tr><th>Input String</th><th>Valid Types</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">epoch</code></td><td><code class="type">date</code>, <code class="type">timestamp</code></td><td>1970-01-01 00:00:00+00 (Unix system time zero)</td></tr><tr><td><code class="literal">infinity</code></td><td><code class="type">date</code>, <code class="type">timestamp</code></td><td>later than all other time stamps</td></tr><tr><td><code class="literal">-infinity</code></td><td><code class="type">date</code>, <code class="type">timestamp</code></td><td>earlier than all other time stamps</td></tr><tr><td><code class="literal">now</code></td><td><code class="type">date</code>, <code class="type">time</code>, <code class="type">timestamp</code></td><td>current transaction's start time</td></tr><tr><td><code class="literal">today</code></td><td><code class="type">date</code>, <code class="type">timestamp</code></td><td>midnight today</td></tr><tr><td><code class="literal">tomorrow</code></td><td><code class="type">date</code>, <code class="type">timestamp</code></td><td>midnight tomorrow</td></tr><tr><td><code class="literal">yesterday</code></td><td><code class="type">date</code>, <code class="type">timestamp</code></td><td>midnight yesterday</td></tr><tr><td><code class="literal">allballs</code></td><td><code class="type">time</code></td><td>00:00:00.00 UTC</td></tr></tbody></table></div></div><br class="table-break" /><p>
+     </p><div class="table" id="DATATYPE-DATETIME-SPECIAL-TABLE"><p class="title"><strong>Table 8.13. Special Date/Time Inputs</strong></p><div class="table-contents"><table class="table" summary="Special Date/Time Inputs" border="1"><colgroup><col /><col /><col /></colgroup><thead><tr><th>Input String</th><th>Valid Types</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">epoch</code></td><td><code class="type">date</code>, <code class="type">timestamp</code></td><td>1970-01-01 00:00:00+00 (Unix system time zero)</td></tr><tr><td><code class="literal">infinity</code></td><td><code class="type">date</code>, <code class="type">timestamp</code></td><td>later than all other time stamps</td></tr><tr><td><code class="literal">-infinity</code></td><td><code class="type">date</code>, <code class="type">timestamp</code></td><td>earlier than all other time stamps</td></tr><tr><td><code class="literal">now</code></td><td><code class="type">date</code>, <code class="type">time</code>, <code class="type">timestamp</code></td><td>current transaction's start time</td></tr><tr><td><code class="literal">today</code></td><td><code class="type">date</code>, <code class="type">timestamp</code></td><td>midnight (<code class="literal">00:00</code>) today</td></tr><tr><td><code class="literal">tomorrow</code></td><td><code class="type">date</code>, <code class="type">timestamp</code></td><td>midnight (<code class="literal">00:00</code>) tomorrow</td></tr><tr><td><code class="literal">yesterday</code></td><td><code class="type">date</code>, <code class="type">timestamp</code></td><td>midnight (<code class="literal">00:00</code>) yesterday</td></tr><tr><td><code class="literal">allballs</code></td><td><code class="type">time</code></td><td>00:00:00.00 UTC</td></tr></tbody></table></div></div><br class="table-break" /><p>
       The following <acronym class="acronym">SQL</acronym>-compatible functions can also
       be used to obtain the current time value for the corresponding data
       type:
       <code class="literal">CURRENT_DATE</code>, <code class="literal">CURRENT_TIME</code>,
       <code class="literal">CURRENT_TIMESTAMP</code>, <code class="literal">LOCALTIME</code>,
-      <code class="literal">LOCALTIMESTAMP</code>.  The latter four accept an
-      optional subsecond precision specification.  (See <a class="xref" href="functions-datetime.html#FUNCTIONS-DATETIME-CURRENT" title="9.9.4. Current Date/Time">Section 9.9.4</a>.)  Note that these are
+      <code class="literal">LOCALTIMESTAMP</code>.  (See <a class="xref" href="functions-datetime.html#FUNCTIONS-DATETIME-CURRENT" title="9.9.5. Current Date/Time">Section 9.9.5</a>.)  Note that these are
       SQL functions and are <span class="emphasis"><em>not</em></span> recognized in data input strings.
-     </p></div></div><div class="sect2" id="DATATYPE-DATETIME-OUTPUT"><div class="titlepage"><div><div><h3 class="title">8.5.2. Date/Time Output</h3></div></div></div><a id="id-1.5.7.13.20.2" class="indexterm"></a><a id="id-1.5.7.13.20.3" class="indexterm"></a><p>
+     </p><div class="caution"><h3 class="title">Caution</h3><p>
+       While the input strings <code class="literal">now</code>,
+       <code class="literal">today</code>, <code class="literal">tomorrow</code>,
+       and <code class="literal">yesterday</code> are fine to use in interactive SQL
+       commands, they can have surprising behavior when the command is
+       saved to be executed later, for example in prepared statements,
+       views, and function definitions.  The string can be converted to a
+       specific time value that continues to be used long after it becomes
+       stale.  Use one of the SQL functions instead in such contexts.
+       For example, <code class="literal">CURRENT_DATE + 1</code> is safer than
+       <code class="literal">'tomorrow'::date</code>.
+      </p></div></div></div><div class="sect2" id="DATATYPE-DATETIME-OUTPUT"><div class="titlepage"><div><div><h3 class="title">8.5.2. Date/Time Output <a href="#DATATYPE-DATETIME-OUTPUT" class="id_link">#</a></h3></div></div></div><a id="id-1.5.7.13.19.2" class="indexterm"></a><a id="id-1.5.7.13.19.3" class="indexterm"></a><p>
      The output format of the date/time types can be set to one of the four
      styles ISO 8601,
      <acronym class="acronym">SQL</acronym> (Ingres), traditional <span class="productname">POSTGRES</span>
@@ -228,11 +239,12 @@ January 8 04:05:06 1999 PST
      in accordance with the given examples.  However, the
      <span class="productname">POSTGRES</span> style outputs date-only values in
      <acronym class="acronym">ISO</acronym> format.
-    </p><div class="table" id="DATATYPE-DATETIME-OUTPUT-TABLE"><p class="title"><strong>Table 8.14. Date/Time Output Styles</strong></p><div class="table-contents"><table class="table" summary="Date/Time Output Styles" border="1"><colgroup><col /><col /><col /></colgroup><thead><tr><th>Style Specification</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td><code class="literal">ISO</code></td><td>ISO 8601, SQL standard</td><td><code class="literal">1997-12-17 07:37:16-08</code></td></tr><tr><td><code class="literal">SQL</code></td><td>traditional style</td><td><code class="literal">12/17/1997 07:37:16.00 PST</code></td></tr><tr><td><code class="literal">Postgres</code></td><td>original style</td><td><code class="literal">Wed Dec 17 07:37:16 1997 PST</code></td></tr><tr><td><code class="literal">German</code></td><td>regional style</td><td><code class="literal">17.12.1997 07:37:16.00 PST</code></td></tr></tbody></table></div></div><br class="table-break" /><div class="note"><h3 class="title">Note</h3><p>
+    </p><div class="table" id="DATATYPE-DATETIME-OUTPUT-TABLE"><p class="title"><strong>Table 8.14. Date/Time Output Styles</strong></p><div class="table-contents"><table class="table" summary="Date/Time Output Styles" border="1"><colgroup><col class="col1" /><col class="col2" /><col class="col3" /></colgroup><thead><tr><th>Style Specification</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td><code class="literal">ISO</code></td><td>ISO 8601, SQL standard</td><td><code class="literal">1997-12-17 07:37:16-08</code></td></tr><tr><td><code class="literal">SQL</code></td><td>traditional style</td><td><code class="literal">12/17/1997 07:37:16.00 PST</code></td></tr><tr><td><code class="literal">Postgres</code></td><td>original style</td><td><code class="literal">Wed Dec 17 07:37:16 1997 PST</code></td></tr><tr><td><code class="literal">German</code></td><td>regional style</td><td><code class="literal">17.12.1997 07:37:16.00 PST</code></td></tr></tbody></table></div></div><br class="table-break" /><div class="note"><h3 class="title">Note</h3><p>
       ISO 8601 specifies the use of uppercase letter <code class="literal">T</code> to separate
       the date and time.  <span class="productname">PostgreSQL</span> accepts that format on
       input, but on output it uses a space rather than <code class="literal">T</code>, as shown
-      above.  This is for readability and for consistency with RFC 3339 as
+      above.  This is for readability and for consistency with
+      <a class="ulink" href="https://datatracker.ietf.org/doc/html/rfc3339" target="_top">RFC 3339</a> as
       well as some other database systems.
      </p></div><p>
      In the <acronym class="acronym">SQL</acronym> and POSTGRES styles, day appears before
@@ -241,7 +253,23 @@ January 8 04:05:06 1999 PST
      (See <a class="xref" href="datatype-datetime.html#DATATYPE-DATETIME-INPUT" title="8.5.1. Date/Time Input">Section 8.5.1</a>
      for how this setting also affects interpretation of input values.)
      <a class="xref" href="datatype-datetime.html#DATATYPE-DATETIME-OUTPUT2-TABLE" title="Table 8.15. Date Order Conventions">Table 8.15</a> shows examples.
-    </p><div class="table" id="DATATYPE-DATETIME-OUTPUT2-TABLE"><p class="title"><strong>Table 8.15. Date Order Conventions</strong></p><div class="table-contents"><table class="table" summary="Date Order Conventions" border="1"><colgroup><col /><col /><col /></colgroup><thead><tr><th><code class="varname">datestyle</code> Setting</th><th>Input Ordering</th><th>Example Output</th></tr></thead><tbody><tr><td><code class="literal">SQL, DMY</code></td><td><em class="replaceable"><code>day</code></em>/<em class="replaceable"><code>month</code></em>/<em class="replaceable"><code>year</code></em></td><td><code class="literal">17/12/1997 15:37:16.00 CET</code></td></tr><tr><td><code class="literal">SQL, MDY</code></td><td><em class="replaceable"><code>month</code></em>/<em class="replaceable"><code>day</code></em>/<em class="replaceable"><code>year</code></em></td><td><code class="literal">12/17/1997 07:37:16.00 PST</code></td></tr><tr><td><code class="literal">Postgres, DMY</code></td><td><em class="replaceable"><code>day</code></em>/<em class="replaceable"><code>month</code></em>/<em class="replaceable"><code>year</code></em></td><td><code class="literal">Wed 17 Dec 07:37:16 1997 PST</code></td></tr></tbody></table></div></div><br class="table-break" /><p>
+    </p><div class="table" id="DATATYPE-DATETIME-OUTPUT2-TABLE"><p class="title"><strong>Table 8.15. Date Order Conventions</strong></p><div class="table-contents"><table class="table" summary="Date Order Conventions" border="1"><colgroup><col class="col1" /><col class="col2" /><col class="col3" /></colgroup><thead><tr><th><code class="varname">datestyle</code> Setting</th><th>Input Ordering</th><th>Example Output</th></tr></thead><tbody><tr><td><code class="literal">SQL, DMY</code></td><td><em class="replaceable"><code>day</code></em>/<em class="replaceable"><code>month</code></em>/<em class="replaceable"><code>year</code></em></td><td><code class="literal">17/12/1997 15:37:16.00 CET</code></td></tr><tr><td><code class="literal">SQL, MDY</code></td><td><em class="replaceable"><code>month</code></em>/<em class="replaceable"><code>day</code></em>/<em class="replaceable"><code>year</code></em></td><td><code class="literal">12/17/1997 07:37:16.00 PST</code></td></tr><tr><td><code class="literal">Postgres, DMY</code></td><td><em class="replaceable"><code>day</code></em>/<em class="replaceable"><code>month</code></em>/<em class="replaceable"><code>year</code></em></td><td><code class="literal">Wed 17 Dec 07:37:16 1997 PST</code></td></tr></tbody></table></div></div><br class="table-break" /><p>
+     In the <acronym class="acronym">ISO</acronym> style, the time zone is always shown as
+     a signed numeric offset from UTC, with positive sign used for zones
+     east of Greenwich.  The offset will be shown
+     as <em class="replaceable"><code>hh</code></em> (hours only) if it is an integral
+     number of hours, else
+     as <em class="replaceable"><code>hh</code></em>:<em class="replaceable"><code>mm</code></em> if it
+     is an integral number of minutes, else as
+     <em class="replaceable"><code>hh</code></em>:<em class="replaceable"><code>mm</code></em>:<em class="replaceable"><code>ss</code></em>.
+     (The third case is not possible with any modern time zone standard,
+     but it can appear when working with timestamps that predate the
+     adoption of standardized time zones.)
+     In the other date styles, the time zone is shown as an alphabetic
+     abbreviation if one is in common use in the current zone.  Otherwise
+     it appears as a signed numeric offset in ISO 8601 basic format
+     (<em class="replaceable"><code>hh</code></em> or <em class="replaceable"><code>hhmm</code></em>).
+    </p><p>
      The date/time style can be selected by the user using the
      <code class="command">SET datestyle</code> command, the <a class="xref" href="runtime-config-client.html#GUC-DATESTYLE">DateStyle</a> parameter in the
      <code class="filename">postgresql.conf</code> configuration file, or the
@@ -251,7 +279,7 @@ January 8 04:05:06 1999 PST
      The formatting function <code class="function">to_char</code>
      (see <a class="xref" href="functions-formatting.html" title="9.8. Data Type Formatting Functions">Section 9.8</a>) is also available as
      a more flexible way to format date/time output.
-    </p></div><div class="sect2" id="DATATYPE-TIMEZONES"><div class="titlepage"><div><div><h3 class="title">8.5.3. Time Zones</h3></div></div></div><a id="id-1.5.7.13.21.2" class="indexterm"></a><p>
+    </p></div><div class="sect2" id="DATATYPE-TIMEZONES"><div class="titlepage"><div><div><h3 class="title">8.5.3. Time Zones <a href="#DATATYPE-TIMEZONES" class="id_link">#</a></h3></div></div></div><a id="id-1.5.7.13.20.2" class="indexterm"></a><p>
     Time zones, and time-zone conventions, are influenced by
     political decisions, not just earth geometry. Time zones around the
     world became somewhat standardized during the 1900s,
@@ -302,7 +330,7 @@ January 8 04:05:06 1999 PST
      </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
         A full time zone name, for example <code class="literal">America/New_York</code>.
         The recognized time zone names are listed in the
-        <code class="literal">pg_timezone_names</code> view (see <a class="xref" href="view-pg-timezone-names.html" title="52.90. pg_timezone_names">Section 52.90</a>).
+        <code class="literal">pg_timezone_names</code> view (see <a class="xref" href="view-pg-timezone-names.html" title="54.32. pg_timezone_names">Section 54.32</a>).
         <span class="productname">PostgreSQL</span> uses the widely-used IANA
         time zone data for this purpose, so the same time zone
         names are also recognized by other software.
@@ -310,8 +338,8 @@ January 8 04:05:06 1999 PST
         A time zone abbreviation, for example <code class="literal">PST</code>.  Such a
         specification merely defines a particular offset from UTC, in
         contrast to full time zone names which can imply a set of daylight
-        savings transition-date rules as well.  The recognized abbreviations
-        are listed in the <code class="literal">pg_timezone_abbrevs</code> view (see <a class="xref" href="view-pg-timezone-abbrevs.html" title="52.89. pg_timezone_abbrevs">Section 52.89</a>).  You cannot set the
+        savings transition rules as well.  The recognized abbreviations
+        are listed in the <code class="literal">pg_timezone_abbrevs</code> view (see <a class="xref" href="view-pg-timezone-abbrevs.html" title="54.31. pg_timezone_abbrevs">Section 54.31</a>).  You cannot set the
         configuration parameters <a class="xref" href="runtime-config-client.html#GUC-TIMEZONE">TimeZone</a> or
         <a class="xref" href="runtime-config-logging.html#GUC-LOG-TIMEZONE">log_timezone</a> to a time
         zone abbreviation, but you can use abbreviations in
@@ -320,25 +348,10 @@ January 8 04:05:06 1999 PST
        </p></li><li class="listitem"><p>
         In addition to the timezone names and abbreviations,
         <span class="productname">PostgreSQL</span> will accept POSIX-style time zone
-        specifications of the form <em class="replaceable"><code>STD</code></em><em class="replaceable"><code>offset</code></em> or
-        <em class="replaceable"><code>STD</code></em><em class="replaceable"><code>offset</code></em><em class="replaceable"><code>DST</code></em>, where
-        <em class="replaceable"><code>STD</code></em> is a zone abbreviation, <em class="replaceable"><code>offset</code></em> is a
-        numeric offset in hours west from UTC, and <em class="replaceable"><code>DST</code></em> is an
-        optional daylight-savings zone abbreviation, assumed to stand for one
-        hour ahead of the given offset. For example, if <code class="literal">EST5EDT</code>
-        were not already a recognized zone name, it would be accepted and would
-        be functionally equivalent to United States East Coast time.  In this
-        syntax, a zone abbreviation can be a string of letters, or an
-        arbitrary string surrounded by angle brackets (<code class="literal">&lt;&gt;</code>).
-        When a daylight-savings zone abbreviation is present,
-        it is assumed to be used
-        according to the same daylight-savings transition rules used in the
-        IANA time zone database's <code class="filename">posixrules</code> entry.
-        In a standard <span class="productname">PostgreSQL</span> installation,
-        <code class="filename">posixrules</code> is the same as <code class="literal">US/Eastern</code>, so
-        that POSIX-style time zone specifications follow USA daylight-savings
-        rules.  If needed, you can adjust this behavior by replacing the
-        <code class="filename">posixrules</code> file.
+        specifications, as described in
+        <a class="xref" href="datetime-posix-timezone-specs.html" title="B.5. POSIX Time Zone Specifications">Section B.5</a>.  This option is not
+        normally preferable to using a named time zone, but it may be
+        necessary if no suitable IANA time zone entry is available.
        </p></li></ul></div><p>
 
      In short, this is the difference between abbreviations
@@ -355,21 +368,10 @@ January 8 04:05:06 1999 PST
      To complicate matters, some jurisdictions have used the same timezone
      abbreviation to mean different UTC offsets at different times; for
      example, in Moscow <code class="literal">MSK</code> has meant UTC+3 in some years and
-     UTC+4 in others.  <span class="application">PostgreSQL</span> interprets such
+     UTC+4 in others.  <span class="productname">PostgreSQL</span> interprets such
      abbreviations according to whatever they meant (or had most recently
      meant) on the specified date; but, as with the <code class="literal">EST</code> example
      above, this is not necessarily the same as local civil time on that date.
-    </p><p>
-     One should be wary that the POSIX-style time zone feature can
-     lead to silently accepting bogus input, since there is no check on the
-     reasonableness of the zone abbreviations.  For example, <code class="literal">SET
-     TIMEZONE TO FOOBAR0</code> will work, leaving the system effectively using
-     a rather peculiar abbreviation for UTC.
-     Another issue to keep in mind is that in POSIX time zone names,
-     positive offsets are used for locations <span class="emphasis"><em>west</em></span> of Greenwich.
-     Everywhere else, <span class="productname">PostgreSQL</span> follows the
-     ISO-8601 convention that positive timezone offsets are <span class="emphasis"><em>east</em></span>
-     of Greenwich.
     </p><p>
      In all cases, timezone names and abbreviations are recognized
      case-insensitively.  (This is a change from <span class="productname">PostgreSQL</span>
@@ -384,7 +386,7 @@ January 8 04:05:06 1999 PST
     </p><p>
      The <a class="xref" href="runtime-config-client.html#GUC-TIMEZONE">TimeZone</a> configuration parameter can
      be set in the file <code class="filename">postgresql.conf</code>, or in any of the
-     other standard ways described in <a class="xref" href="runtime-config.html" title="Chapter 19. Server Configuration">Chapter 19</a>.
+     other standard ways described in <a class="xref" href="runtime-config.html" title="Chapter 20. Server Configuration">Chapter 20</a>.
      There are also some special ways to set it:
 
      </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
@@ -397,7 +399,7 @@ January 8 04:05:06 1999 PST
         to send a <code class="command">SET TIME ZONE</code>
         command to the server upon connection.
        </p></li></ul></div><p>
-    </p></div><div class="sect2" id="DATATYPE-INTERVAL-INPUT"><div class="titlepage"><div><div><h3 class="title">8.5.4. Interval Input</h3></div></div></div><a id="id-1.5.7.13.22.2" class="indexterm"></a><p>
+    </p></div><div class="sect2" id="DATATYPE-INTERVAL-INPUT"><div class="titlepage"><div><div><h3 class="title">8.5.4. Interval Input <a href="#DATATYPE-INTERVAL-INPUT" class="id_link">#</a></h3></div></div></div><a id="id-1.5.7.13.21.2" class="indexterm"></a><p>
       <code class="type">interval</code> values can be written using the following
       verbose syntax:
 
@@ -477,44 +479,54 @@ P [<span class="optional"> <em class="replaceable"><code>years</code></em>-<em c
      used.  To avoid ambiguity, it's recommended to attach an explicit sign
      to each field if any field is negative.
     </p><p>
-     In the verbose input format, and in some fields of the more compact
-     input formats, field values can have fractional parts; for example
-     <code class="literal">'1.5 week'</code> or <code class="literal">'01:02:03.45'</code>.  Such input is
-     converted to the appropriate number of months, days, and seconds
-     for storage.  When this would result in a fractional number of
-     months or days, the fraction is added to the lower-order fields
-     using the conversion factors 1 month = 30 days and 1 day = 24 hours.
-     For example, <code class="literal">'1.5 month'</code> becomes 1 month and 15 days.
-     Only seconds will ever be shown as fractional on output.
+     Internally, <code class="type">interval</code> values are stored as three integral
+     fields: months, days, and microseconds.  These fields are kept
+     separate because the number of days in a month varies, while a day
+     can have 23 or 25 hours if a daylight savings time transition is
+     involved.  An interval input string that uses other units is
+     normalized into this format, and then reconstructed in a standardized
+     way for output, for example:
+
+</p><pre class="programlisting">
+SELECT '2 years 15 months 100 weeks 99 hours 123456789 milliseconds'::interval;
+               interval
+---------------------------------------
+ 3 years 3 mons 700 days 133:17:36.789
+</pre><p>
+
+     Here weeks, which are understood as <span class="quote">“<span class="quote">7 days</span>”</span>, have been
+     kept separate, while the smaller and larger time units were
+     combined and normalized.
+    </p><p>
+     Input field values can have fractional parts, for example <code class="literal">'1.5
+     weeks'</code> or <code class="literal">'01:02:03.45'</code>.  However,
+     because <code class="type">interval</code> internally stores only integral fields,
+     fractional values must be converted into smaller
+     units.  Fractional parts of units greater than months are rounded to
+     be an integer number of months, e.g. <code class="literal">'1.5 years'</code>
+     becomes <code class="literal">'1 year 6 mons'</code>.  Fractional parts of
+     weeks and days are computed to be an integer number of days and
+     microseconds, assuming 30 days per month and 24 hours per day, e.g.,
+     <code class="literal">'1.75 months'</code> becomes <code class="literal">1 mon 22 days
+     12:00:00</code>.  Only seconds will ever be shown as fractional
+     on output.
     </p><p>
      <a class="xref" href="datatype-datetime.html#DATATYPE-INTERVAL-INPUT-EXAMPLES" title="Table 8.17. Interval Input">Table 8.17</a> shows some examples
      of valid <code class="type">interval</code> input.
-    </p><div class="table" id="DATATYPE-INTERVAL-INPUT-EXAMPLES"><p class="title"><strong>Table 8.17. Interval Input</strong></p><div class="table-contents"><table class="table" summary="Interval Input" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Example</th><th>Description</th></tr></thead><tbody><tr><td>1-2</td><td>SQL standard format: 1 year 2 months</td></tr><tr><td>3 4:05:06</td><td>SQL standard format: 3 days 4 hours 5 minutes 6 seconds</td></tr><tr><td>1 year 2 months 3 days 4 hours 5 minutes 6 seconds</td><td>Traditional Postgres format: 1 year 2 months 3 days 4 hours 5 minutes 6 seconds</td></tr><tr><td>P1Y2M3DT4H5M6S</td><td>ISO 8601 <span class="quote">“<span class="quote">format with designators</span>”</span>: same meaning as above</td></tr><tr><td>P0001-02-03T04:05:06</td><td>ISO 8601 <span class="quote">“<span class="quote">alternative format</span>”</span>: same meaning as above</td></tr></tbody></table></div></div><br class="table-break" /><p>
-     Internally <code class="type">interval</code> values are stored as months, days,
-     and seconds. This is done because the number of days in a month
-     varies, and a day can have 23 or 25 hours if a daylight savings
-     time adjustment is involved.  The months and days fields are integers
-     while the seconds field can store fractions.  Because intervals are
-     usually created from constant strings or <code class="type">timestamp</code> subtraction,
-     this storage method works well in most cases, but can cause unexpected
-     results:
-
-</p><pre class="programlisting">
-SELECT EXTRACT(hours from '80 minutes'::interval);
- date_part
------------
-         1
-
-SELECT EXTRACT(days from '80 hours'::interval);
- date_part
------------
-         0
-</pre><p>
-
-     Functions <code class="function">justify_days</code> and
-     <code class="function">justify_hours</code> are available for adjusting days
-     and hours that overflow their normal ranges.
-    </p></div><div class="sect2" id="DATATYPE-INTERVAL-OUTPUT"><div class="titlepage"><div><div><h3 class="title">8.5.5. Interval Output</h3></div></div></div><a id="id-1.5.7.13.23.2" class="indexterm"></a><p>
+    </p><div class="table" id="DATATYPE-INTERVAL-INPUT-EXAMPLES"><p class="title"><strong>Table 8.17. Interval Input</strong></p><div class="table-contents"><table class="table" summary="Interval Input" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Example</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">1-2</code></td><td>SQL standard format: 1 year 2 months</td></tr><tr><td><code class="literal">3 4:05:06</code></td><td>SQL standard format: 3 days 4 hours 5 minutes 6 seconds</td></tr><tr><td><code class="literal">1 year 2 months 3 days 4 hours 5 minutes 6 seconds</code></td><td>Traditional Postgres format: 1 year 2 months 3 days 4 hours 5 minutes 6 seconds</td></tr><tr><td><code class="literal">P1Y2M3DT4H5M6S</code></td><td>ISO 8601 <span class="quote">“<span class="quote">format with designators</span>”</span>: same meaning as above</td></tr><tr><td><code class="literal">P0001-02-03T04:05:06</code></td><td>ISO 8601 <span class="quote">“<span class="quote">alternative format</span>”</span>: same meaning as above</td></tr></tbody></table></div></div><br class="table-break" /></div><div class="sect2" id="DATATYPE-INTERVAL-OUTPUT"><div class="titlepage"><div><div><h3 class="title">8.5.5. Interval Output <a href="#DATATYPE-INTERVAL-OUTPUT" class="id_link">#</a></h3></div></div></div><a id="id-1.5.7.13.22.2" class="indexterm"></a><p>
+     As previously explained, <span class="productname">PostgreSQL</span>
+     stores <code class="type">interval</code> values as months, days, and
+     microseconds.  For output, the months field is converted to years and
+     months by dividing by 12.  The days field is shown as-is.  The
+     microseconds field is converted to hours, minutes, seconds, and
+     fractional seconds.  Thus months, minutes, and seconds will never be
+     shown as exceeding the ranges 0–11, 0–59, and 0–59
+     respectively, while the displayed years, days, and hours fields can
+     be quite large.  (The <a class="link" href="functions-datetime.html#FUNCTION-JUSTIFY-DAYS"><code class="function">justify_days</code></a>
+     and <a class="link" href="functions-datetime.html#FUNCTION-JUSTIFY-HOURS"><code class="function">justify_hours</code></a>
+     functions can be used if it is desirable to transpose large days or
+     hours values into the next higher field.)
+    </p><p>
      The output format of the interval type can be set to one of the
      four styles <code class="literal">sql_standard</code>, <code class="literal">postgres</code>,
      <code class="literal">postgres_verbose</code>, or <code class="literal">iso_8601</code>,
@@ -542,4 +554,4 @@ SELECT EXTRACT(days from '80 hours'::interval);
      The output of the <code class="literal">iso_8601</code> style matches the <span class="quote">“<span class="quote">format
      with designators</span>”</span> described in section 4.4.3.2 of the
      ISO 8601 standard.
-    </p><div class="table" id="INTERVAL-STYLE-OUTPUT-TABLE"><p class="title"><strong>Table 8.18. Interval Output Style Examples</strong></p><div class="table-contents"><table class="table" summary="Interval Output Style Examples" border="1"><colgroup><col /><col /><col /><col /></colgroup><thead><tr><th>Style Specification</th><th>Year-Month Interval</th><th>Day-Time Interval</th><th>Mixed Interval</th></tr></thead><tbody><tr><td><code class="literal">sql_standard</code></td><td>1-2</td><td>3 4:05:06</td><td>-1-2 +3 -4:05:06</td></tr><tr><td><code class="literal">postgres</code></td><td>1 year 2 mons</td><td>3 days 04:05:06</td><td>-1 year -2 mons +3 days -04:05:06</td></tr><tr><td><code class="literal">postgres_verbose</code></td><td>@ 1 year 2 mons</td><td>@ 3 days 4 hours 5 mins 6 secs</td><td>@ 1 year 2 mons -3 days 4 hours 5 mins 6 secs ago</td></tr><tr><td><code class="literal">iso_8601</code></td><td>P1Y2M</td><td>P3DT4H5M6S</td><td>P-1Y-2M3DT-4H-5M-6S</td></tr></tbody></table></div></div><br class="table-break" /></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="datatype-binary.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="datatype.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="datatype-boolean.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">8.4. Binary Data Types </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 8.6. Boolean Type</td></tr></table></div></body></html>
+    </p><div class="table" id="INTERVAL-STYLE-OUTPUT-TABLE"><p class="title"><strong>Table 8.18. Interval Output Style Examples</strong></p><div class="table-contents"><table class="table" summary="Interval Output Style Examples" border="1"><colgroup><col /><col /><col /><col /></colgroup><thead><tr><th>Style Specification</th><th>Year-Month Interval</th><th>Day-Time Interval</th><th>Mixed Interval</th></tr></thead><tbody><tr><td><code class="literal">sql_standard</code></td><td>1-2</td><td>3 4:05:06</td><td>-1-2 +3 -4:05:06</td></tr><tr><td><code class="literal">postgres</code></td><td>1 year 2 mons</td><td>3 days 04:05:06</td><td>-1 year -2 mons +3 days -04:05:06</td></tr><tr><td><code class="literal">postgres_verbose</code></td><td>@ 1 year 2 mons</td><td>@ 3 days 4 hours 5 mins 6 secs</td><td>@ 1 year 2 mons -3 days 4 hours 5 mins 6 secs ago</td></tr><tr><td><code class="literal">iso_8601</code></td><td>P1Y2M</td><td>P3DT4H5M6S</td><td>P-1Y-2M3D​T-4H-5M-6S</td></tr></tbody></table></div></div><br class="table-break" /></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="datatype-binary.html" title="8.4. Binary Data Types">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="datatype.html" title="Chapter 8. Data Types">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="datatype-boolean.html" title="8.6. Boolean Type">Next</a></td></tr><tr><td width="40%" align="left" valign="top">8.4. Binary Data Types </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 8.6. Boolean Type</td></tr></table></div></body></html>

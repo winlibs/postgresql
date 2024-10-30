@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>36.7. Using Descriptor Areas</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="ecpg-pgtypes.html" title="36.6. pgtypes Library" /><link rel="next" href="ecpg-errors.html" title="36.8. Error Handling" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">36.7. Using Descriptor Areas</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="ecpg-pgtypes.html" title="36.6. pgtypes Library">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="ecpg.html" title="Chapter 36. ECPG - Embedded SQL in C">Up</a></td><th width="60%" align="center">Chapter 36. <span xmlns="http://www.w3.org/1999/xhtml" class="application">ECPG</span> - Embedded <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> in C</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="ecpg-errors.html" title="36.8. Error Handling">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="ECPG-DESCRIPTORS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">36.7. Using Descriptor Areas</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="ecpg-descriptors.html#ECPG-NAMED-DESCRIPTORS">36.7.1. Named SQL Descriptor Areas</a></span></dt><dt><span class="sect2"><a href="ecpg-descriptors.html#ECPG-SQLDA-DESCRIPTORS">36.7.2. SQLDA Descriptor Areas</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>36.7. Using Descriptor Areas</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="ecpg-pgtypes.html" title="36.6. pgtypes Library" /><link rel="next" href="ecpg-errors.html" title="36.8. Error Handling" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">36.7. Using Descriptor Areas</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="ecpg-pgtypes.html" title="36.6. pgtypes Library">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="ecpg.html" title="Chapter 36. ECPG — Embedded SQL in C">Up</a></td><th width="60%" align="center">Chapter 36. <span class="application">ECPG</span> — Embedded <acronym class="acronym">SQL</acronym> in C</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="ecpg-errors.html" title="36.8. Error Handling">Next</a></td></tr></table><hr /></div><div class="sect1" id="ECPG-DESCRIPTORS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">36.7. Using Descriptor Areas <a href="#ECPG-DESCRIPTORS" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="ecpg-descriptors.html#ECPG-NAMED-DESCRIPTORS">36.7.1. Named SQL Descriptor Areas</a></span></dt><dt><span class="sect2"><a href="ecpg-descriptors.html#ECPG-SQLDA-DESCRIPTORS">36.7.2. SQLDA Descriptor Areas</a></span></dt></dl></div><p>
    An SQL descriptor area is a more sophisticated method for processing
    the result of a <code class="command">SELECT</code>, <code class="command">FETCH</code> or
    a <code class="command">DESCRIBE</code> statement. An SQL descriptor area groups
@@ -9,7 +9,7 @@
    not be known ahead of time. PostgreSQL provides two ways to use
    Descriptor Areas: the named SQL Descriptor Areas and the C-structure
    SQLDAs.
-  </p><div class="sect2" id="ECPG-NAMED-DESCRIPTORS"><div class="titlepage"><div><div><h3 class="title">36.7.1. Named SQL Descriptor Areas</h3></div></div></div><p>
+  </p><div class="sect2" id="ECPG-NAMED-DESCRIPTORS"><div class="titlepage"><div><div><h3 class="title">36.7.1. Named SQL Descriptor Areas <a href="#ECPG-NAMED-DESCRIPTORS" class="id_link">#</a></h3></div></div></div><p>
     A named SQL descriptor area consists of a header, which contains
     information concerning the entire descriptor, and one or more item
     descriptor areas, which basically each describe one column in the
@@ -33,7 +33,7 @@ EXEC SQL DEALLOCATE DESCRIPTOR <em class="replaceable"><code>identifier</code></
 EXEC SQL FETCH NEXT FROM mycursor INTO SQL DESCRIPTOR mydesc;
 </pre><p>
     If the result set is empty, the Descriptor Area will still contain
-    the metadata from the query, i.e. the field names.
+    the metadata from the query, i.e., the field names.
    </p><p>
     For not yet executed prepared queries, the <code class="command">DESCRIBE</code>
     statement can be used to get the metadata of the result set:
@@ -76,12 +76,12 @@ EXEC SQL GET DESCRIPTOR <em class="replaceable"><code>name</code></em> VALUE <em
     <em class="replaceable"><code>num</code></em> can be a literal integer or a host
     variable containing an integer. Possible fields are:
 
-    </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">CARDINALITY</code> (integer)</span></dt><dd><p>
+    </p><div class="variablelist"><dl class="variablelist"><dt id="ECPG-NAMED-DESCRIPTORS-CARDINALITY"><span class="term"><code class="literal">CARDINALITY</code> (integer)</span> <a href="#ECPG-NAMED-DESCRIPTORS-CARDINALITY" class="id_link">#</a></dt><dd><p>
         number of rows in the result set
-       </p></dd><dt><span class="term"><code class="literal">DATA</code></span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-DATA"><span class="term"><code class="literal">DATA</code></span> <a href="#ECPG-NAMED-DESCRIPTORS-DATA" class="id_link">#</a></dt><dd><p>
         actual data item (therefore, the data type of this field
         depends on the query)
-       </p></dd><dt><span class="term"><code class="literal">DATETIME_INTERVAL_CODE</code> (integer)</span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-DATETIME-INTERVAL-CODE"><span class="term"><code class="literal">DATETIME_INTERVAL_CODE</code> (integer)</span> <a href="#ECPG-NAMED-DESCRIPTORS-DATETIME-INTERVAL-CODE" class="id_link">#</a></dt><dd><p>
         When <code class="literal">TYPE</code> is <code class="literal">9</code>,
         <code class="literal">DATETIME_INTERVAL_CODE</code> will have a value of
         <code class="literal">1</code> for <code class="literal">DATE</code>,
@@ -89,29 +89,29 @@ EXEC SQL GET DESCRIPTOR <em class="replaceable"><code>name</code></em> VALUE <em
         <code class="literal">3</code> for <code class="literal">TIMESTAMP</code>,
         <code class="literal">4</code> for <code class="literal">TIME WITH TIME ZONE</code>, or
         <code class="literal">5</code> for <code class="literal">TIMESTAMP WITH TIME ZONE</code>.
-       </p></dd><dt><span class="term"><code class="literal">DATETIME_INTERVAL_PRECISION</code> (integer)</span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-DATETIME-INTERVAL-PRECISION"><span class="term"><code class="literal">DATETIME_INTERVAL_PRECISION</code> (integer)</span> <a href="#ECPG-NAMED-DESCRIPTORS-DATETIME-INTERVAL-PRECISION" class="id_link">#</a></dt><dd><p>
         not implemented
-       </p></dd><dt><span class="term"><code class="literal">INDICATOR</code> (integer)</span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-INDICATOR"><span class="term"><code class="literal">INDICATOR</code> (integer)</span> <a href="#ECPG-NAMED-DESCRIPTORS-INDICATOR" class="id_link">#</a></dt><dd><p>
         the indicator (indicating a null value or a value truncation)
-       </p></dd><dt><span class="term"><code class="literal">KEY_MEMBER</code> (integer)</span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-KEY-MEMBER"><span class="term"><code class="literal">KEY_MEMBER</code> (integer)</span> <a href="#ECPG-NAMED-DESCRIPTORS-KEY-MEMBER" class="id_link">#</a></dt><dd><p>
         not implemented
-       </p></dd><dt><span class="term"><code class="literal">LENGTH</code> (integer)</span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-LENGTH"><span class="term"><code class="literal">LENGTH</code> (integer)</span> <a href="#ECPG-NAMED-DESCRIPTORS-LENGTH" class="id_link">#</a></dt><dd><p>
         length of the datum in characters
-       </p></dd><dt><span class="term"><code class="literal">NAME</code> (string)</span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-NAME"><span class="term"><code class="literal">NAME</code> (string)</span> <a href="#ECPG-NAMED-DESCRIPTORS-NAME" class="id_link">#</a></dt><dd><p>
         name of the column
-       </p></dd><dt><span class="term"><code class="literal">NULLABLE</code> (integer)</span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-NULLABLE"><span class="term"><code class="literal">NULLABLE</code> (integer)</span> <a href="#ECPG-NAMED-DESCRIPTORS-NULLABLE" class="id_link">#</a></dt><dd><p>
         not implemented
-       </p></dd><dt><span class="term"><code class="literal">OCTET_LENGTH</code> (integer)</span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-OCTET-LENGTH"><span class="term"><code class="literal">OCTET_LENGTH</code> (integer)</span> <a href="#ECPG-NAMED-DESCRIPTORS-OCTET-LENGTH" class="id_link">#</a></dt><dd><p>
         length of the character representation of the datum in bytes
-       </p></dd><dt><span class="term"><code class="literal">PRECISION</code> (integer)</span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-PRECISION"><span class="term"><code class="literal">PRECISION</code> (integer)</span> <a href="#ECPG-NAMED-DESCRIPTORS-PRECISION" class="id_link">#</a></dt><dd><p>
         precision (for type <code class="type">numeric</code>)
-       </p></dd><dt><span class="term"><code class="literal">RETURNED_LENGTH</code> (integer)</span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-RETURNED-LENGTH"><span class="term"><code class="literal">RETURNED_LENGTH</code> (integer)</span> <a href="#ECPG-NAMED-DESCRIPTORS-RETURNED-LENGTH" class="id_link">#</a></dt><dd><p>
         length of the datum in characters
-       </p></dd><dt><span class="term"><code class="literal">RETURNED_OCTET_LENGTH</code> (integer)</span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-RETURNED-OCTET-LENGTH"><span class="term"><code class="literal">RETURNED_OCTET_LENGTH</code> (integer)</span> <a href="#ECPG-NAMED-DESCRIPTORS-RETURNED-OCTET-LENGTH" class="id_link">#</a></dt><dd><p>
         length of the character representation of the datum in bytes
-       </p></dd><dt><span class="term"><code class="literal">SCALE</code> (integer)</span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-SCALE"><span class="term"><code class="literal">SCALE</code> (integer)</span> <a href="#ECPG-NAMED-DESCRIPTORS-SCALE" class="id_link">#</a></dt><dd><p>
         scale (for type <code class="type">numeric</code>)
-       </p></dd><dt><span class="term"><code class="literal">TYPE</code> (integer)</span></dt><dd><p>
+       </p></dd><dt id="ECPG-NAMED-DESCRIPTORS-TYPE"><span class="term"><code class="literal">TYPE</code> (integer)</span> <a href="#ECPG-NAMED-DESCRIPTORS-TYPE" class="id_link">#</a></dt><dd><p>
         numeric code of the data type of the column
        </p></dd></dl></div><p>
    </p><p>
@@ -139,7 +139,7 @@ EXEC SQL FETCH 5 FROM mycursor INTO SQL DESCRIPTOR mydesc;
 EXEC SQL GET DESCRIPTOR mydesc VALUE 1 :id = DATA;
 </pre><p>
 
-   </p></div><div class="sect2" id="ECPG-SQLDA-DESCRIPTORS"><div class="titlepage"><div><div><h3 class="title">36.7.2. SQLDA Descriptor Areas</h3></div></div></div><p>
+   </p></div><div class="sect2" id="ECPG-SQLDA-DESCRIPTORS"><div class="titlepage"><div><div><h3 class="title">36.7.2. SQLDA Descriptor Areas <a href="#ECPG-SQLDA-DESCRIPTORS" class="id_link">#</a></h3></div></div></div><p>
     An SQLDA Descriptor Area is a C language structure which can be also used
     to get the result set and the metadata of a query. One structure stores one
     record from the result set.
@@ -159,7 +159,7 @@ EXEC SQL DESCRIBE prepared_statement INTO mysqlda;
 </pre><p>
    </p><div class="procedure"><p>
       The general flow of a program that uses SQLDA is:
-     </p><ol class="procedure" type="1"><li class="step"><p>Prepare a query, and declare a cursor for it.</p></li><li class="step"><p>Declare an SQLDA for the result rows.</p></li><li class="step"><p>Declare an SQLDA for the input parameters, and initialize them (memory allocation, parameter settings).</p></li><li class="step"><p>Open a cursor with the input SQLDA.</p></li><li class="step"><p>Fetch rows from the cursor, and store them into an output SQLDA.</p></li><li class="step"><p>Read values from the output SQLDA into the host variables (with conversion if necessary).</p></li><li class="step"><p>Close the cursor.</p></li><li class="step"><p>Free the memory area allocated for the input SQLDA.</p></li></ol></div><div class="sect3" id="id-1.7.5.13.4.4"><div class="titlepage"><div><div><h4 class="title">36.7.2.1. SQLDA Data Structure</h4></div></div></div><p>
+     </p><ol class="procedure" type="1"><li class="step"><p>Prepare a query, and declare a cursor for it.</p></li><li class="step"><p>Declare an SQLDA for the result rows.</p></li><li class="step"><p>Declare an SQLDA for the input parameters, and initialize them (memory allocation, parameter settings).</p></li><li class="step"><p>Open a cursor with the input SQLDA.</p></li><li class="step"><p>Fetch rows from the cursor, and store them into an output SQLDA.</p></li><li class="step"><p>Read values from the output SQLDA into the host variables (with conversion if necessary).</p></li><li class="step"><p>Close the cursor.</p></li><li class="step"><p>Free the memory area allocated for the input SQLDA.</p></li></ol></div><div class="sect3" id="ECPG-SQLDA-DESCRIPTORS-SQLDA"><div class="titlepage"><div><div><h4 class="title">36.7.2.1. SQLDA Data Structure <a href="#ECPG-SQLDA-DESCRIPTORS-SQLDA" class="id_link">#</a></h4></div></div></div><p>
      SQLDA uses three data structure
      types: <code class="type">sqlda_t</code>, <code class="type">sqlvar_t</code>,
      and <code class="type">struct sqlname</code>.
@@ -167,7 +167,7 @@ EXEC SQL DESCRIBE prepared_statement INTO mysqlda;
       PostgreSQL's SQLDA has a similar data structure to the one in
       IBM DB2 Universal Database, so some technical information on
       DB2's SQLDA could help understanding PostgreSQL's one better.
-     </p></div><div class="sect4" id="ECPG-SQLDA-SQLDA"><div class="titlepage"><div><div><h5 class="title">36.7.2.1.1. sqlda_t Structure</h5></div></div></div><p>
+     </p></div><div class="sect4" id="ECPG-SQLDA-SQLDA"><div class="titlepage"><div><div><h5 class="title">36.7.2.1.1. sqlda_t Structure <a href="#ECPG-SQLDA-SQLDA" class="id_link">#</a></h5></div></div></div><p>
       The structure type <code class="type">sqlda_t</code> is the type of the
       actual SQLDA.  It holds one record.  And two or
       more <code class="type">sqlda_t</code> structures can be connected in a
@@ -195,11 +195,11 @@ typedef struct sqlda_struct sqlda_t;
 
       The meaning of the fields is:
 
-    </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">sqldaid</code></span></dt><dd><p>
+    </p><div class="variablelist"><dl class="variablelist"><dt id="ECPG-SQLDA-SQLDA-SQLDAID"><span class="term"><code class="literal">sqldaid</code></span> <a href="#ECPG-SQLDA-SQLDA-SQLDAID" class="id_link">#</a></dt><dd><p>
         It contains the literal string <code class="literal">"SQLDA  "</code>.
-       </p></dd><dt><span class="term"><code class="literal">sqldabc</code></span></dt><dd><p>
+       </p></dd><dt id="ECPG-SQLDA-SQLDA-SQLDABC"><span class="term"><code class="literal">sqldabc</code></span> <a href="#ECPG-SQLDA-SQLDA-SQLDABC" class="id_link">#</a></dt><dd><p>
         It contains the size of the allocated space in bytes.
-       </p></dd><dt><span class="term"><code class="literal">sqln</code></span></dt><dd><p>
+       </p></dd><dt id="ECPG-SQLDA-SQLDA-SQLN"><span class="term"><code class="literal">sqln</code></span> <a href="#ECPG-SQLDA-SQLDA-SQLN" class="id_link">#</a></dt><dd><p>
         It contains the number of input parameters for a parameterized query in
         case it's passed into <code class="command">OPEN</code>, <code class="command">DECLARE</code> or
         <code class="command">EXECUTE</code> statements using the <code class="literal">USING</code>
@@ -207,16 +207,16 @@ typedef struct sqlda_struct sqlda_t;
         <code class="command">EXECUTE</code> or <code class="command">FETCH</code> statements,
         its value is the same as <code class="literal">sqld</code>
         statement
-       </p></dd><dt><span class="term"><code class="literal">sqld</code></span></dt><dd><p>
+       </p></dd><dt id="ECPG-SQLDA-SQLDA-SQLD"><span class="term"><code class="literal">sqld</code></span> <a href="#ECPG-SQLDA-SQLDA-SQLD" class="id_link">#</a></dt><dd><p>
         It contains the number of fields in a result set.
-       </p></dd><dt><span class="term"><code class="literal">desc_next</code></span></dt><dd><p>
+       </p></dd><dt id="ECPG-SQLDA-SQLDA-DESC-NEXT"><span class="term"><code class="literal">desc_next</code></span> <a href="#ECPG-SQLDA-SQLDA-DESC-NEXT" class="id_link">#</a></dt><dd><p>
         If the query returns more than one record, multiple linked
         SQLDA structures are returned, and <code class="literal">desc_next</code> holds
         a pointer to the next entry in the list.
-       </p></dd><dt><span class="term"><code class="literal">sqlvar</code></span></dt><dd><p>
+       </p></dd><dt id="ECPG-SQLDA-SQLDA-SQLVAR"><span class="term"><code class="literal">sqlvar</code></span> <a href="#ECPG-SQLDA-SQLDA-SQLVAR" class="id_link">#</a></dt><dd><p>
         This is the array of the columns in the result set.
        </p></dd></dl></div><p>
-     </p></div><div class="sect4" id="ECPG-SQLDA-SQLVAR"><div class="titlepage"><div><div><h5 class="title">36.7.2.1.2. sqlvar_t Structure</h5></div></div></div><p>
+     </p></div><div class="sect4" id="ECPG-SQLDA-SQLVAR"><div class="titlepage"><div><div><h5 class="title">36.7.2.1.2. sqlvar_t Structure <a href="#ECPG-SQLDA-SQLVAR" class="id_link">#</a></h5></div></div></div><p>
       The structure type <code class="type">sqlvar_t</code> holds a column value
       and metadata such as type and length. The definition of the type
       is:
@@ -236,21 +236,21 @@ typedef struct sqlvar_struct sqlvar_t;
 
       The meaning of the fields is:
 
-        </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">sqltype</code></span></dt><dd><p>
+        </p><div class="variablelist"><dl class="variablelist"><dt id="ECPG-SQLDA-SQLVAR-SQLTYPE"><span class="term"><code class="literal">sqltype</code></span> <a href="#ECPG-SQLDA-SQLVAR-SQLTYPE" class="id_link">#</a></dt><dd><p>
             Contains the type identifier of the field. For values,
             see <code class="literal">enum ECPGttype</code> in <code class="literal">ecpgtype.h</code>.
-           </p></dd><dt><span class="term"><code class="literal">sqllen</code></span></dt><dd><p>
-            Contains the binary length of the field. e.g. 4 bytes for <code class="type">ECPGt_int</code>.
-           </p></dd><dt><span class="term"><code class="literal">sqldata</code></span></dt><dd><p>
+           </p></dd><dt id="ECPG-SQLDA-SQLVAR-SQLLEN"><span class="term"><code class="literal">sqllen</code></span> <a href="#ECPG-SQLDA-SQLVAR-SQLLEN" class="id_link">#</a></dt><dd><p>
+            Contains the binary length of the field. e.g., 4 bytes for <code class="type">ECPGt_int</code>.
+           </p></dd><dt id="ECPG-SQLDA-SQLVAR-SQLDATA"><span class="term"><code class="literal">sqldata</code></span> <a href="#ECPG-SQLDA-SQLVAR-SQLDATA" class="id_link">#</a></dt><dd><p>
             Points to the data.  The format of the data is described
             in <a class="xref" href="ecpg-variables.html#ECPG-VARIABLES-TYPE-MAPPING" title="36.4.4. Type Mapping">Section 36.4.4</a>.
-           </p></dd><dt><span class="term"><code class="literal">sqlind</code></span></dt><dd><p>
+           </p></dd><dt id="ECPG-SQLDA-SQLVAR-SQLIND"><span class="term"><code class="literal">sqlind</code></span> <a href="#ECPG-SQLDA-SQLVAR-SQLIND" class="id_link">#</a></dt><dd><p>
             Points to the null indicator.  0 means not null, -1 means
             null.
-           </p></dd><dt><span class="term"><code class="literal">sqlname</code></span></dt><dd><p>
+           </p></dd><dt id="ECPG-SQLDA-SQLVAR-SQLNAME"><span class="term"><code class="literal">sqlname</code></span> <a href="#ECPG-SQLDA-SQLVAR-SQLNAME" class="id_link">#</a></dt><dd><p>
             The name of the field.
            </p></dd></dl></div><p>
-     </p></div><div class="sect4" id="ECPG-SQLDA-SQLNAME"><div class="titlepage"><div><div><h5 class="title">36.7.2.1.3. struct sqlname Structure</h5></div></div></div><p>
+     </p></div><div class="sect4" id="ECPG-SQLDA-SQLNAME"><div class="titlepage"><div><div><h5 class="title">36.7.2.1.3. struct sqlname Structure <a href="#ECPG-SQLDA-SQLNAME" class="id_link">#</a></h5></div></div></div><p>
       A <code class="type">struct sqlname</code> structure holds a column name.  It
       is used as a member of the <code class="type">sqlvar_t</code> structure.  The
       definition of the structure is:
@@ -264,12 +264,12 @@ struct sqlname
 };
 </pre><p>
       The meaning of the fields is:
-            </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">length</code></span></dt><dd><p>
+            </p><div class="variablelist"><dl class="variablelist"><dt id="ECPG-SQLDA-SQLNAME-LENGTH"><span class="term"><code class="literal">length</code></span> <a href="#ECPG-SQLDA-SQLNAME-LENGTH" class="id_link">#</a></dt><dd><p>
                  Contains the length of the field name.
-                </p></dd><dt><span class="term"><code class="literal">data</code></span></dt><dd><p>
+                </p></dd><dt id="ECPG-SQLDA-SQLNAME-DATA"><span class="term"><code class="literal">data</code></span> <a href="#ECPG-SQLDA-SQLNAME-DATA" class="id_link">#</a></dt><dd><p>
                  Contains the actual field name.
                 </p></dd></dl></div><p>
-     </p></div></div><div class="sect3" id="ECPG-SQLDA-OUTPUT"><div class="titlepage"><div><div><h4 class="title">36.7.2.2. Retrieving a Result Set Using an SQLDA</h4></div></div></div><div class="procedure"><p>
+     </p></div></div><div class="sect3" id="ECPG-SQLDA-OUTPUT"><div class="titlepage"><div><div><h4 class="title">36.7.2.2. Retrieving a Result Set Using an SQLDA <a href="#ECPG-SQLDA-OUTPUT" class="id_link">#</a></h4></div></div></div><div class="procedure"><p>
       The general steps to retrieve a query result set through an
       SQLDA are:
      </p><ol class="procedure" type="1"><li class="step"><p>Declare an <code class="type">sqlda_t</code> structure to receive the result set.</p></li><li class="step"><p>Execute <code class="command">FETCH</code>/<code class="command">EXECUTE</code>/<code class="command">DESCRIBE</code> commands to process a query specifying the declared SQLDA.</p></li><li class="step"><p>Check the number of records in the result set by looking at <code class="structfield">sqln</code>, a member of the <code class="type">sqlda_t</code> structure.</p></li><li class="step"><p>Get the values of each column from <code class="literal">sqlvar[0]</code>, <code class="literal">sqlvar[1]</code>, etc., members of the <code class="type">sqlda_t</code> structure.</p></li><li class="step"><p>Go to next row (<code class="type">sqlda_t</code> structure) by following the <code class="structfield">desc_next</code> pointer, a member of the <code class="type">sqlda_t</code> structure.</p></li><li class="step"><p>Repeat above as you need.</p></li></ol></div><p>
@@ -332,10 +332,10 @@ switch (v.sqltype)
     ...
 }
 </pre><p>
-    </p></div><div class="sect3" id="ECPG-SQLDA-INPUT"><div class="titlepage"><div><div><h4 class="title">36.7.2.3. Passing Query Parameters Using an SQLDA</h4></div></div></div><div class="procedure"><p>
+    </p></div><div class="sect3" id="ECPG-SQLDA-INPUT"><div class="titlepage"><div><div><h4 class="title">36.7.2.3. Passing Query Parameters Using an SQLDA <a href="#ECPG-SQLDA-INPUT" class="id_link">#</a></h4></div></div></div><div class="procedure"><p>
       The general steps to use an SQLDA to pass input
       parameters to a prepared query are:
-     </p><ol class="procedure" type="1"><li class="step"><p>Create a prepared query (prepared statement)</p></li><li class="step"><p>Declare a sqlda_t structure as an input SQLDA.</p></li><li class="step"><p>Allocate memory area (as sqlda_t structure) for the input SQLDA.</p></li><li class="step"><p>Set (copy) input values in the allocated memory.</p></li><li class="step"><p>Open a cursor with specifying the input SQLDA.</p></li></ol></div><p>
+     </p><ol class="procedure" type="1"><li class="step"><p>Create a prepared query (prepared statement)</p></li><li class="step"><p>Declare an sqlda_t structure as an input SQLDA.</p></li><li class="step"><p>Allocate memory area (as sqlda_t structure) for the input SQLDA.</p></li><li class="step"><p>Set (copy) input values in the allocated memory.</p></li><li class="step"><p>Open a cursor with specifying the input SQLDA.</p></li></ol></div><p>
      Here is an example.
     </p><p>
      First, create a prepared statement.
@@ -393,7 +393,7 @@ EXEC SQL OPEN cur1 USING DESCRIPTOR sqlda2;
 </p><pre class="programlisting">
 free(sqlda2);
 </pre><p>
-    </p></div><div class="sect3" id="ECPG-SQLDA-EXAMPLE"><div class="titlepage"><div><div><h4 class="title">36.7.2.4. A Sample Application Using SQLDA</h4></div></div></div><p>
+    </p></div><div class="sect3" id="ECPG-SQLDA-EXAMPLE"><div class="titlepage"><div><div><h4 class="title">36.7.2.4. A Sample Application Using SQLDA <a href="#ECPG-SQLDA-EXAMPLE" class="id_link">#</a></h4></div></div></div><p>
      Here is an example program, which describes how to fetch access
      statistics of the databases, specified by the input parameters,
      from the system catalogs.
@@ -569,7 +569,7 @@ main(void)
     EXEC SQL PREPARE stmt1 FROM :query;
     EXEC SQL DECLARE cur1 CURSOR FOR stmt1;
 
-    /* Create a SQLDA structure for an input parameter */
+    /* Create an SQLDA structure for an input parameter */
     sqlda2 = (sqlda_t *)malloc(sizeof(sqlda_t) + sizeof(sqlvar_t));
     memset(sqlda2, 0, sizeof(sqlda_t) + sizeof(sqlvar_t));
     sqlda2-&gt;sqln = 2; /* a number of input variables */
@@ -667,7 +667,6 @@ encoding = 0 (type: 5)
 datistemplate = t (type: 1)
 datallowconn = t (type: 1)
 datconnlimit = -1 (type: 5)
-datlastsysoid = 11510 (type: 1)
 datfrozenxid = 379 (type: 1)
 dattablespace = 1663 (type: 1)
 datconfig =  (type: 1)
@@ -692,7 +691,6 @@ encoding = 0 (type: 5)
 datistemplate = f (type: 1)
 datallowconn = t (type: 1)
 datconnlimit = -1 (type: 5)
-datlastsysoid = 11510 (type: 1)
 datfrozenxid = 379 (type: 1)
 dattablespace = 1663 (type: 1)
 datconfig =  (type: 1)
@@ -709,4 +707,4 @@ tup_fetched = 3253694 (type: 9)
 tup_inserted = 0 (type: 9)
 tup_updated = 0 (type: 9)
 tup_deleted = 0 (type: 9)
-</pre></div></div><br class="example-break" /></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ecpg-pgtypes.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ecpg.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ecpg-errors.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">36.6. pgtypes Library </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 36.8. Error Handling</td></tr></table></div></body></html>
+</pre></div></div><br class="example-break" /></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ecpg-pgtypes.html" title="36.6. pgtypes Library">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ecpg.html" title="Chapter 36. ECPG — Embedded SQL in C">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ecpg-errors.html" title="36.8. Error Handling">Next</a></td></tr><tr><td width="40%" align="left" valign="top">36.6. pgtypes Library </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 36.8. Error Handling</td></tr></table></div></body></html>

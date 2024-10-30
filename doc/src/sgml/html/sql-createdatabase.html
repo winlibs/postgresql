@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE DATABASE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-createconversion.html" title="CREATE CONVERSION" /><link rel="next" href="sql-createdomain.html" title="CREATE DOMAIN" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE DATABASE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createconversion.html" title="CREATE CONVERSION">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createdomain.html" title="CREATE DOMAIN">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-CREATEDATABASE"><div class="titlepage"></div><a id="id-1.9.3.61.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE DATABASE</span></h2><p>CREATE DATABASE — create a new database</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE DATABASE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-createconversion.html" title="CREATE CONVERSION" /><link rel="next" href="sql-createdomain.html" title="CREATE DOMAIN" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE DATABASE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createconversion.html" title="CREATE CONVERSION">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createdomain.html" title="CREATE DOMAIN">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-CREATEDATABASE"><div class="titlepage"></div><a id="id-1.9.3.61.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE DATABASE</span></h2><p>CREATE DATABASE — create a new database</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 CREATE DATABASE <em class="replaceable"><code>name</code></em>
-    [ [ WITH ] [ OWNER [=] <em class="replaceable"><code>user_name</code></em> ]
+    [ WITH ] [ OWNER [=] <em class="replaceable"><code>user_name</code></em> ]
            [ TEMPLATE [=] <em class="replaceable"><code>template</code></em> ]
            [ ENCODING [=] <em class="replaceable"><code>encoding</code></em> ]
+           [ STRATEGY [=] <em class="replaceable"><code>strategy</code></em> ]
+           [ LOCALE [=] <em class="replaceable"><code>locale</code></em> ]
            [ LC_COLLATE [=] <em class="replaceable"><code>lc_collate</code></em> ]
            [ LC_CTYPE [=] <em class="replaceable"><code>lc_ctype</code></em> ]
+           [ ICU_LOCALE [=] <em class="replaceable"><code>icu_locale</code></em> ]
+           [ ICU_RULES [=] <em class="replaceable"><code>icu_rules</code></em> ]
+           [ LOCALE_PROVIDER [=] <em class="replaceable"><code>locale_provider</code></em> ]
+           [ COLLATION_VERSION = <em class="replaceable"><code>collation_version</code></em> ]
            [ TABLESPACE [=] <em class="replaceable"><code>tablespace_name</code></em> ]
            [ ALLOW_CONNECTIONS [=] <em class="replaceable"><code>allowconn</code></em> ]
            [ CONNECTION LIMIT [=] <em class="replaceable"><code>connlimit</code></em> ]
-           [ IS_TEMPLATE [=] <em class="replaceable"><code>istemplate</code></em> ] ]
+           [ IS_TEMPLATE [=] <em class="replaceable"><code>istemplate</code></em> ]
+           [ OID [=] <em class="replaceable"><code>oid</code></em> ]
 </pre></div><div class="refsect1" id="id-1.9.3.61.5"><h2>Description</h2><p>
    <code class="command">CREATE DATABASE</code> creates a new
    <span class="productname">PostgreSQL</span> database.
@@ -22,45 +29,113 @@ CREATE DATABASE <em class="replaceable"><code>name</code></em>
    system database <code class="literal">template1</code>.  A different template can be
    specified by writing <code class="literal">TEMPLATE
    <em class="replaceable"><code>name</code></em></code>.  In particular,
-   by writing <code class="literal">TEMPLATE template0</code>, you can create a virgin
-   database containing only the standard objects predefined by your
+   by writing <code class="literal">TEMPLATE template0</code>, you can create a pristine
+   database (one where no user-defined objects exist and where the system
+   objects have not been altered)
+   containing only the standard objects predefined by your
    version of <span class="productname">PostgreSQL</span>.  This is useful
    if you wish to avoid copying
    any installation-local objects that might have been added to
    <code class="literal">template1</code>.
-  </p></div><div class="refsect1" id="id-1.9.3.61.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>name</code></em></span></dt><dd><p>
+  </p></div><div class="refsect1" id="id-1.9.3.61.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt id="CREATE-DATABASE-NAME"><span class="term"><em class="replaceable"><code>name</code></em></span> <a href="#CREATE-DATABASE-NAME" class="id_link">#</a></dt><dd><p>
         The name of a database to create.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>user_name</code></em></span></dt><dd><p>
+       </p></dd><dt id="CREATE-DATABASE-USER-NAME"><span class="term"><em class="replaceable"><code>user_name</code></em></span> <a href="#CREATE-DATABASE-USER-NAME" class="id_link">#</a></dt><dd><p>
         The role name of the user who will own the new database,
         or <code class="literal">DEFAULT</code> to use the default (namely, the
         user executing the command).  To create a database owned by another
-        role, you must be a direct or indirect member of that role,
-        or be a superuser.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>template</code></em></span></dt><dd><p>
+        role, you must be able to <code class="literal">SET ROLE</code> to that
+        role.
+       </p></dd><dt id="CREATE-DATABASE-TEMPLATE"><span class="term"><em class="replaceable"><code>template</code></em></span> <a href="#CREATE-DATABASE-TEMPLATE" class="id_link">#</a></dt><dd><p>
         The name of the template from which to create the new database,
         or <code class="literal">DEFAULT</code> to use the default template
         (<code class="literal">template1</code>).
-       </p></dd><dt><span class="term"><em class="replaceable"><code>encoding</code></em></span></dt><dd><p>
+       </p></dd><dt id="CREATE-DATABASE-ENCODING"><span class="term"><em class="replaceable"><code>encoding</code></em></span> <a href="#CREATE-DATABASE-ENCODING" class="id_link">#</a></dt><dd><p>
         Character set encoding to use in the new database.  Specify
         a string constant (e.g., <code class="literal">'SQL_ASCII'</code>),
         or an integer encoding number, or <code class="literal">DEFAULT</code>
         to use the default encoding (namely, the encoding of the
         template database). The character sets supported by the
         <span class="productname">PostgreSQL</span> server are described in
-        <a class="xref" href="multibyte.html#MULTIBYTE-CHARSET-SUPPORTED" title="23.3.1. Supported Character Sets">Section 23.3.1</a>. See below for
+        <a class="xref" href="multibyte.html#MULTIBYTE-CHARSET-SUPPORTED" title="24.3.1. Supported Character Sets">Section 24.3.1</a>. See below for
         additional restrictions.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>lc_collate</code></em></span></dt><dd><p>
-        Collation order (<code class="literal">LC_COLLATE</code>) to use in the new database.
-        This affects the sort order applied to strings, e.g. in queries with
-        ORDER BY, as well as the order used in indexes on text columns.
-        The default is to use the collation order of the template database.
-        See below for additional restrictions.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>lc_ctype</code></em></span></dt><dd><p>
-        Character classification (<code class="literal">LC_CTYPE</code>) to use in the new
-        database. This affects the categorization of characters, e.g. lower,
-        upper and digit. The default is to use the character classification of
-        the template database. See below for additional restrictions.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>tablespace_name</code></em></span></dt><dd><p>
+       </p></dd><dt id="CREATE-DATABASE-STRATEGY"><span class="term"><em class="replaceable"><code>strategy</code></em></span> <a href="#CREATE-DATABASE-STRATEGY" class="id_link">#</a></dt><dd><p>
+        Strategy to be used in creating the new database.  If
+        the <code class="literal">WAL_LOG</code> strategy is used, the database will be
+        copied block by block and each block will be separately written
+        to the write-ahead log. This is the most efficient strategy in
+        cases where the template database is small, and therefore it is the
+        default. The older <code class="literal">FILE_COPY</code> strategy is also
+        available. This strategy writes a small record to the write-ahead log
+        for each tablespace used by the target database. Each such record
+        represents copying an entire directory to a new location at the
+        filesystem level. While this does reduce the write-ahead
+        log volume substantially, especially if the template database is large,
+        it also forces the system to perform a checkpoint both before and
+        after the creation of the new database. In some situations, this may
+        have a noticeable negative impact on overall system performance.
+       </p></dd><dt id="CREATE-DATABASE-LOCALE"><span class="term"><em class="replaceable"><code>locale</code></em></span> <a href="#CREATE-DATABASE-LOCALE" class="id_link">#</a></dt><dd><p>
+        Sets the default collation order and character classification in the
+        new database.  Collation affects the sort order applied to strings,
+        e.g., in queries with <code class="literal">ORDER BY</code>, as well as the order used in indexes
+        on text columns.  Character classification affects the categorization
+        of characters, e.g., lower, upper, and digit.  Also sets the
+        associated aspects of the operating system environment,
+        <code class="literal">LC_COLLATE</code> and <code class="literal">LC_CTYPE</code>.  The
+        default is the same setting as the template database.  See <a class="xref" href="collation.html#COLLATION-MANAGING-CREATE-LIBC" title="24.2.2.3.1. libc Collations">Section 24.2.2.3.1</a> and <a class="xref" href="collation.html#COLLATION-MANAGING-CREATE-ICU" title="24.2.2.3.2. ICU Collations">Section 24.2.2.3.2</a> for details.
+       </p><p>
+        Can be overridden by setting <a class="xref" href="sql-createdatabase.html#CREATE-DATABASE-LC-COLLATE"><em class="replaceable"><code>lc_collate</code></em></a>, <a class="xref" href="sql-createdatabase.html#CREATE-DATABASE-LC-CTYPE"><em class="replaceable"><code>lc_ctype</code></em></a>, or <a class="xref" href="sql-createdatabase.html#CREATE-DATABASE-ICU-LOCALE"><em class="replaceable"><code>icu_locale</code></em></a> individually.
+       </p><div class="tip"><h3 class="title">Tip</h3><p>
+         The other locale settings <a class="xref" href="runtime-config-client.html#GUC-LC-MESSAGES">lc_messages</a>, <a class="xref" href="runtime-config-client.html#GUC-LC-MONETARY">lc_monetary</a>, <a class="xref" href="runtime-config-client.html#GUC-LC-NUMERIC">lc_numeric</a>, and
+         <a class="xref" href="runtime-config-client.html#GUC-LC-TIME">lc_time</a> are not fixed per database and are not
+         set by this command.  If you want to make them the default for a
+         specific database, you can use <code class="literal">ALTER DATABASE
+         ... SET</code>.
+        </p></div></dd><dt id="CREATE-DATABASE-LC-COLLATE"><span class="term"><em class="replaceable"><code>lc_collate</code></em></span> <a href="#CREATE-DATABASE-LC-COLLATE" class="id_link">#</a></dt><dd><p>
+        Sets <code class="literal">LC_COLLATE</code> in the database server's operating
+        system environment.  The default is the setting of <a class="xref" href="sql-createdatabase.html#CREATE-DATABASE-LOCALE"><em class="replaceable"><code>locale</code></em></a> if specified, otherwise the same
+        setting as the template database.  See below for additional
+        restrictions.
+       </p><p>
+        If <a class="xref" href="sql-createdatabase.html#CREATE-DATABASE-LOCALE-PROVIDER"><em class="replaceable"><code>locale_provider</code></em></a> is
+        <code class="literal">libc</code>, also sets the default collation order to use
+        in the new database, overriding the setting <a class="xref" href="sql-createdatabase.html#CREATE-DATABASE-LOCALE"><em class="replaceable"><code>locale</code></em></a>.
+       </p></dd><dt id="CREATE-DATABASE-LC-CTYPE"><span class="term"><em class="replaceable"><code>lc_ctype</code></em></span> <a href="#CREATE-DATABASE-LC-CTYPE" class="id_link">#</a></dt><dd><p>
+        Sets <code class="literal">LC_CTYPE</code> in the database server's operating
+        system environment.  The default is the setting of <a class="xref" href="sql-createdatabase.html#CREATE-DATABASE-LOCALE"><em class="replaceable"><code>locale</code></em></a> if specified, otherwise the same
+        setting as the template database.  See below for additional
+        restrictions.
+       </p><p>
+        If <a class="xref" href="sql-createdatabase.html#CREATE-DATABASE-LOCALE-PROVIDER"><em class="replaceable"><code>locale_provider</code></em></a> is
+        <code class="literal">libc</code>, also sets the default character
+        classification to use in the new database, overriding the setting
+        <a class="xref" href="sql-createdatabase.html#CREATE-DATABASE-LOCALE"><em class="replaceable"><code>locale</code></em></a>.
+       </p></dd><dt id="CREATE-DATABASE-ICU-LOCALE"><span class="term"><em class="replaceable"><code>icu_locale</code></em></span> <a href="#CREATE-DATABASE-ICU-LOCALE" class="id_link">#</a></dt><dd><p>
+        Specifies the ICU locale (see <a class="xref" href="collation.html#COLLATION-MANAGING-CREATE-ICU" title="24.2.2.3.2. ICU Collations">Section 24.2.2.3.2</a>) for the database default
+        collation order and character classification, overriding the setting
+        <a class="xref" href="sql-createdatabase.html#CREATE-DATABASE-LOCALE"><em class="replaceable"><code>locale</code></em></a>.  The <a class="link" href="sql-createdatabase.html#CREATE-DATABASE-LOCALE-PROVIDER">locale provider</a> must be ICU.  The default
+        is the setting of <a class="xref" href="sql-createdatabase.html#CREATE-DATABASE-LOCALE"><em class="replaceable"><code>locale</code></em></a> if
+        specified; otherwise the same setting as the template database.
+       </p></dd><dt id="CREATE-DATABASE-ICU-RULES"><span class="term"><em class="replaceable"><code>icu_rules</code></em></span> <a href="#CREATE-DATABASE-ICU-RULES" class="id_link">#</a></dt><dd><p>
+        Specifies additional collation rules to customize the behavior of the
+        default collation of this database.  This is supported for ICU only.
+        See <a class="xref" href="collation.html#ICU-TAILORING-RULES" title="24.2.3.4. ICU Tailoring Rules">Section 24.2.3.4</a> for details.
+       </p></dd><dt id="CREATE-DATABASE-LOCALE-PROVIDER"><span class="term"><em class="replaceable"><code>locale_provider</code></em></span> <a href="#CREATE-DATABASE-LOCALE-PROVIDER" class="id_link">#</a></dt><dd><p>
+        Specifies the provider to use for the default collation in this
+        database.  Possible values are
+        <code class="literal">icu</code><a id="id-1.9.3.61.6.2.11.2.1.2" class="indexterm"></a>
+        (if the server was built with ICU support) or <code class="literal">libc</code>.
+        By default, the provider is the same as that of the <a class="xref" href="sql-createdatabase.html#CREATE-DATABASE-TEMPLATE"><em class="replaceable"><code>template</code></em></a>. See <a class="xref" href="locale.html#LOCALE-PROVIDERS" title="24.1.4. Locale Providers">Section 24.1.4</a> for details.
+       </p></dd><dt id="CREATE-DATABASE-COLLATION-VERSION"><span class="term"><em class="replaceable"><code>collation_version</code></em></span> <a href="#CREATE-DATABASE-COLLATION-VERSION" class="id_link">#</a></dt><dd><p>
+        Specifies the collation version string to store with the database.
+        Normally, this should be omitted, which will cause the version to be
+        computed from the actual version of the database collation as provided
+        by the operating system.  This option is intended to be used by
+        <code class="command">pg_upgrade</code> for copying the version from an existing
+        installation.
+       </p><p>
+        See also <a class="xref" href="sql-alterdatabase.html" title="ALTER DATABASE"><span class="refentrytitle">ALTER DATABASE</span></a> for how to handle
+        database collation version mismatches.
+       </p></dd><dt id="CREATE-DATABASE-TABLESPACE-NAME"><span class="term"><em class="replaceable"><code>tablespace_name</code></em></span> <a href="#CREATE-DATABASE-TABLESPACE-NAME" class="id_link">#</a></dt><dd><p>
         The name of the tablespace that will be associated with the
         new database, or <code class="literal">DEFAULT</code> to use the
         template database's tablespace. This
@@ -68,17 +143,24 @@ CREATE DATABASE <em class="replaceable"><code>name</code></em>
         created in this database. See
         <a class="xref" href="sql-createtablespace.html" title="CREATE TABLESPACE"><span class="refentrytitle">CREATE TABLESPACE</span></a>
         for more information.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>allowconn</code></em></span></dt><dd><p>
+       </p></dd><dt id="CREATE-DATABASE-ALLOWCONN"><span class="term"><em class="replaceable"><code>allowconn</code></em></span> <a href="#CREATE-DATABASE-ALLOWCONN" class="id_link">#</a></dt><dd><p>
          If false then no one can connect to this database.  The default is
          true, allowing connections (except as restricted by other mechanisms,
          such as <code class="literal">GRANT</code>/<code class="literal">REVOKE CONNECT</code>).
-        </p></dd><dt><span class="term"><em class="replaceable"><code>connlimit</code></em></span></dt><dd><p>
+        </p></dd><dt id="CREATE-DATABASE-CONNLIMIT"><span class="term"><em class="replaceable"><code>connlimit</code></em></span> <a href="#CREATE-DATABASE-CONNLIMIT" class="id_link">#</a></dt><dd><p>
         How many concurrent connections can be made
         to this database.  -1 (the default) means no limit.
-       </p></dd><dt><span class="term"><em class="replaceable"><code>istemplate</code></em></span></dt><dd><p>
+       </p></dd><dt id="CREATE-DATABASE-ISTEMPLATE"><span class="term"><em class="replaceable"><code>istemplate</code></em></span> <a href="#CREATE-DATABASE-ISTEMPLATE" class="id_link">#</a></dt><dd><p>
          If true, then this database can be cloned by any user with <code class="literal">CREATEDB</code>
          privileges; if false (the default), then only superusers or the owner
          of the database can clone it.
+        </p></dd><dt id="CREATE-DATABASE-OID"><span class="term"><em class="replaceable"><code>oid</code></em></span> <a href="#CREATE-DATABASE-OID" class="id_link">#</a></dt><dd><p>
+         The object identifier to be used for the new database. If this
+         parameter is not specified, <span class="productname">PostgreSQL</span>
+         will choose a suitable OID automatically. This parameter is primarily
+         intended for internal use by <span class="application">pg_upgrade</span>,
+         and only <span class="application">pg_upgrade</span> can specify a value
+         less than 16384.
         </p></dd></dl></div><p>
    Optional parameters can be written in any order, not only the order
    illustrated above.
@@ -90,13 +172,13 @@ CREATE DATABASE <em class="replaceable"><code>name</code></em>
     are most likely related to insufficient permissions on the data
     directory, a full disk, or other file system problems.
    </p><p>
-    Use <a class="xref" href="sql-dropdatabase.html" title="DROP DATABASE"><span class="refentrytitle">DROP DATABASE</span></a> to remove a database.
+    Use <a class="link" href="sql-dropdatabase.html" title="DROP DATABASE"><code class="command">DROP DATABASE</code></a> to remove a database.
    </p><p>
     The program <a class="xref" href="app-createdb.html" title="createdb"><span class="refentrytitle"><span class="application">createdb</span></span></a> is a
     wrapper program around this command, provided for convenience.
    </p><p>
-    Database-level configuration parameters (set via <a class="xref" href="sql-alterdatabase.html" title="ALTER DATABASE"><span class="refentrytitle">ALTER DATABASE</span></a>) are not copied from the template
-    database.
+    Database-level configuration parameters (set via <a class="link" href="sql-alterdatabase.html" title="ALTER DATABASE"><code class="command">ALTER DATABASE</code></a>) and database-level permissions (set via
+    <a class="link" href="sql-grant.html" title="GRANT"><code class="command">GRANT</code></a>) are not copied from the template database.
    </p><p>
    Although it is possible to copy a database other than <code class="literal">template1</code>
    by specifying its name as the template, this is not (yet) intended as
@@ -106,7 +188,7 @@ CREATE DATABASE <em class="replaceable"><code>name</code></em>
    DATABASE</code> will fail if any other connection exists when it starts;
    otherwise, new connections to the template database are locked out
    until <code class="command">CREATE DATABASE</code> completes.
-   See <a class="xref" href="manage-ag-templatedbs.html" title="22.3. Template Databases">Section 22.3</a> for more information.
+   See <a class="xref" href="manage-ag-templatedbs.html" title="23.3. Template Databases">Section 23.3</a> for more information.
   </p><p>
    The character set encoding specified for the new database must be
    compatible with the chosen locale settings (<code class="literal">LC_COLLATE</code> and
@@ -128,6 +210,11 @@ CREATE DATABASE <em class="replaceable"><code>name</code></em>
    result in a database that is corrupt according to the new settings.
    <code class="literal">template0</code>, however, is known to not contain any data or
    indexes that would be affected.
+  </p><p>
+   There is currently no option to use a database locale with nondeterministic
+   comparisons (see <a class="link" href="sql-createcollation.html" title="CREATE COLLATION"><code class="command">CREATE
+   COLLATION</code></a> for an explanation).  If this is needed, then
+   per-column collations would need to be used.
   </p><p>
    The <code class="literal">CONNECTION LIMIT</code> option is only enforced approximately;
    if two new sessions start at about the same time when just one
@@ -151,7 +238,7 @@ CREATE DATABASE sales OWNER salesapp TABLESPACE salesspace;
    To create a database <code class="literal">music</code> with a different locale:
 </p><pre class="programlisting">
 CREATE DATABASE music
-    LC_COLLATE 'sv_SE.utf8' LC_CTYPE 'sv_SE.utf8'
+    LOCALE 'sv_SE.utf8'
     TEMPLATE template0;
 </pre><p>
     In this example, the <code class="literal">TEMPLATE template0</code> clause is required if
@@ -162,7 +249,7 @@ CREATE DATABASE music
    different character set encoding:
 </p><pre class="programlisting">
 CREATE DATABASE music2
-    LC_COLLATE 'sv_SE.iso885915' LC_CTYPE 'sv_SE.iso885915'
+    LOCALE 'sv_SE.iso885915'
     ENCODING LATIN9
     TEMPLATE template0;
 </pre><p>
@@ -175,4 +262,4 @@ CREATE DATABASE music2
    There is no <code class="command">CREATE DATABASE</code> statement in the SQL
    standard.  Databases are equivalent to catalogs, whose creation is
    implementation-defined.
-  </p></div><div class="refsect1" id="id-1.9.3.61.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-alterdatabase.html" title="ALTER DATABASE"><span class="refentrytitle">ALTER DATABASE</span></a>, <a class="xref" href="sql-dropdatabase.html" title="DROP DATABASE"><span class="refentrytitle">DROP DATABASE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createconversion.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createdomain.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE CONVERSION </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> CREATE DOMAIN</td></tr></table></div></body></html>
+  </p></div><div class="refsect1" id="id-1.9.3.61.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-alterdatabase.html" title="ALTER DATABASE"><span class="refentrytitle">ALTER DATABASE</span></a>, <a class="xref" href="sql-dropdatabase.html" title="DROP DATABASE"><span class="refentrytitle">DROP DATABASE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createconversion.html" title="CREATE CONVERSION">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createdomain.html" title="CREATE DOMAIN">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE CONVERSION </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> CREATE DOMAIN</td></tr></table></div></body></html>

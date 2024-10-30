@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE TABLESPACE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATE TABLESPACE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE TABLESPACE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,7 +33,7 @@ CREATE_TABLESPACE \- define a new tablespace
 .sp
 .nf
 CREATE TABLESPACE \fItablespace_name\fR
-    [ OWNER { \fInew_owner\fR | CURRENT_USER | SESSION_USER } ]
+    [ OWNER { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER } ]
     LOCATION \*(Aq\fIdirectory\fR\*(Aq
     [ WITH ( \fItablespace_option\fR = \fIvalue\fR [, \&.\&.\&. ] ) ]
 .fi
@@ -67,7 +67,7 @@ to have the data files for these objects stored within the specified tablespace\
 .br
 .PP
 A tablespace cannot be used independently of the cluster in which it is defined; see
-Section\ \&22.6\&.
+Section\ \&23.6\&.
 .sp .5v
 .RE
 .SH "PARAMETERS"
@@ -85,7 +85,8 @@ The name of the user who will own the tablespace\&. If omitted, defaults to the 
 .PP
 \fIdirectory\fR
 .RS 4
-The directory that will be used for the tablespace\&. The directory should be empty and must be owned by the
+The directory that will be used for the tablespace\&. The directory must exist (\fBCREATE TABLESPACE\fR
+will not create it), should be empty, and must be owned by the
 PostgreSQL
 system user\&. The directory must be specified by an absolute path name\&.
 .RE
@@ -94,25 +95,39 @@ system user\&. The directory must be specified by an absolute path name\&.
 .RS 4
 A tablespace parameter to be set or reset\&. Currently, the only available parameters are
 \fIseq_page_cost\fR,
-\fIrandom_page_cost\fR
+\fIrandom_page_cost\fR,
+\fIeffective_io_concurrency\fR
 and
-\fIeffective_io_concurrency\fR\&. Setting either value for a particular tablespace will override the planner\*(Aqs usual estimate of the cost of reading pages from tables in that tablespace, as established by the configuration parameters of the same name (see
+\fImaintenance_io_concurrency\fR\&. Setting these values for a particular tablespace will override the planner\*(Aqs usual estimate of the cost of reading pages from tables in that tablespace, and the executor\*(Aqs prefetching behavior, as established by the configuration parameters of the same name (see
 seq_page_cost,
 random_page_cost,
-effective_io_concurrency)\&. This may be useful if one tablespace is located on a disk which is faster or slower than the remainder of the I/O subsystem\&.
+effective_io_concurrency,
+maintenance_io_concurrency)\&. This may be useful if one tablespace is located on a disk which is faster or slower than the remainder of the I/O subsystem\&.
 .RE
 .SH "NOTES"
-.PP
-Tablespaces are only supported on systems that support symbolic links\&.
 .PP
 \fBCREATE TABLESPACE\fR
 cannot be executed inside a transaction block\&.
 .SH "EXAMPLES"
 .PP
-Create a tablespace
+To create a tablespace
 dbspace
-at
-/data/dbs:
+at file system location
+/data/dbs, first create the directory using operating system facilities and set the correct ownership:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+mkdir /data/dbs
+chown postgres:postgres /data/dbs
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Then issue the tablespace creation command inside
+PostgreSQL:
 .sp
 .if n \{\
 .RS 4
@@ -124,12 +139,7 @@ CREATE TABLESPACE dbspace LOCATION \*(Aq/data/dbs\*(Aq;
 .RE
 .\}
 .PP
-Create a tablespace
-indexspace
-at
-/data/indexes
-owned by user
-genevieve:
+To create a tablespace owned by a different database user, use a command like this:
 .sp
 .if n \{\
 .RS 4

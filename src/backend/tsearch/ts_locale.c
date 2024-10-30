@@ -3,7 +3,7 @@
  * ts_locale.c
  *		locale compatibility layer for tsearch
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  *
  *
  * IDENTIFICATION
@@ -14,6 +14,7 @@
 #include "postgres.h"
 
 #include "catalog/pg_collation.h"
+#include "common/string.h"
 #include "storage/fd.h"
 #include "tsearch/ts_locale.h"
 #include "tsearch/ts_public.h"
@@ -37,10 +38,9 @@ t_isdigit(const char *ptr)
 {
 	int			clen = pg_mblen(ptr);
 	wchar_t		character[WC_BUF_LEN];
-	Oid			collation = DEFAULT_COLLATION_OID;	/* TODO */
 	pg_locale_t mylocale = 0;	/* TODO */
 
-	if (clen == 1 || lc_ctype_is_c(collation))
+	if (clen == 1 || database_ctype_is_c)
 		return isdigit(TOUCHAR(ptr));
 
 	char2wchar(character, WC_BUF_LEN, ptr, clen, mylocale);
@@ -53,10 +53,9 @@ t_isspace(const char *ptr)
 {
 	int			clen = pg_mblen(ptr);
 	wchar_t		character[WC_BUF_LEN];
-	Oid			collation = DEFAULT_COLLATION_OID;	/* TODO */
 	pg_locale_t mylocale = 0;	/* TODO */
 
-	if (clen == 1 || lc_ctype_is_c(collation))
+	if (clen == 1 || database_ctype_is_c)
 		return isspace(TOUCHAR(ptr));
 
 	char2wchar(character, WC_BUF_LEN, ptr, clen, mylocale);
@@ -69,10 +68,9 @@ t_isalpha(const char *ptr)
 {
 	int			clen = pg_mblen(ptr);
 	wchar_t		character[WC_BUF_LEN];
-	Oid			collation = DEFAULT_COLLATION_OID;	/* TODO */
 	pg_locale_t mylocale = 0;	/* TODO */
 
-	if (clen == 1 || lc_ctype_is_c(collation))
+	if (clen == 1 || database_ctype_is_c)
 		return isalpha(TOUCHAR(ptr));
 
 	char2wchar(character, WC_BUF_LEN, ptr, clen, mylocale);
@@ -81,14 +79,28 @@ t_isalpha(const char *ptr)
 }
 
 int
+t_isalnum(const char *ptr)
+{
+	int			clen = pg_mblen(ptr);
+	wchar_t		character[WC_BUF_LEN];
+	pg_locale_t mylocale = 0;	/* TODO */
+
+	if (clen == 1 || database_ctype_is_c)
+		return isalnum(TOUCHAR(ptr));
+
+	char2wchar(character, WC_BUF_LEN, ptr, clen, mylocale);
+
+	return iswalnum((wint_t) character[0]);
+}
+
+int
 t_isprint(const char *ptr)
 {
 	int			clen = pg_mblen(ptr);
 	wchar_t		character[WC_BUF_LEN];
-	Oid			collation = DEFAULT_COLLATION_OID;	/* TODO */
 	pg_locale_t mylocale = 0;	/* TODO */
 
-	if (clen == 1 || lc_ctype_is_c(collation))
+	if (clen == 1 || database_ctype_is_c)
 		return isprint(TOUCHAR(ptr));
 
 	char2wchar(character, WC_BUF_LEN, ptr, clen, mylocale);
@@ -128,6 +140,7 @@ tsearch_readline_begin(tsearch_readline_state *stp,
 		return false;
 	stp->filename = filename;
 	stp->lineno = 0;
+	initStringInfo(&stp->buf);
 	stp->curline = NULL;
 	/* Setup error traceback support for ereport() */
 	stp->cb.callback = tsearch_readline_callback;
@@ -145,13 +158,43 @@ tsearch_readline_begin(tsearch_readline_state *stp,
 char *
 tsearch_readline(tsearch_readline_state *stp)
 {
-	char	   *result;
+	char	   *recoded;
 
+	/* Advance line number to use in error reports */
 	stp->lineno++;
-	stp->curline = NULL;
-	result = t_readline(stp->fp);
-	stp->curline = result;
-	return result;
+
+	/* Clear curline, it's no longer relevant */
+	if (stp->curline)
+	{
+		if (stp->curline != stp->buf.data)
+			pfree(stp->curline);
+		stp->curline = NULL;
+	}
+
+	/* Collect next line, if there is one */
+	if (!pg_get_line_buf(stp->fp, &stp->buf))
+		return NULL;
+
+	/* Validate the input as UTF-8, then convert to DB encoding if needed */
+	recoded = pg_any_to_server(stp->buf.data, stp->buf.len, PG_UTF8);
+
+	/* Save the correctly-encoded string for possible error reports */
+	stp->curline = recoded;		/* might be equal to buf.data */
+
+	/*
+	 * We always return a freshly pstrdup'd string.  This is clearly necessary
+	 * if pg_any_to_server() returned buf.data, and we need a second copy even
+	 * if encoding conversion did occur.  The caller is entitled to pfree the
+	 * returned string at any time, which would leave curline pointing to
+	 * recycled storage, causing problems if an error occurs after that point.
+	 * (It's preferable to return the result of pstrdup instead of the output
+	 * of pg_any_to_server, because the conversion result tends to be
+	 * over-allocated.  Since callers might save the result string directly
+	 * into a long-lived dictionary structure, we don't want it to be a larger
+	 * palloc chunk than necessary.  We'll reclaim the conversion result on
+	 * the next call.)
+	 */
+	return pstrdup(recoded);
 }
 
 /*
@@ -160,7 +203,18 @@ tsearch_readline(tsearch_readline_state *stp)
 void
 tsearch_readline_end(tsearch_readline_state *stp)
 {
+	/* Suppress use of curline in any error reported below */
+	if (stp->curline)
+	{
+		if (stp->curline != stp->buf.data)
+			pfree(stp->curline);
+		stp->curline = NULL;
+	}
+
+	/* Release other resources */
+	pfree(stp->buf.data);
 	FreeFile(stp->fp);
+
 	/* Pop the error context stack */
 	error_context_stack = stp->cb.previous;
 }
@@ -176,8 +230,7 @@ tsearch_readline_callback(void *arg)
 
 	/*
 	 * We can't include the text of the config line for errors that occur
-	 * during t_readline() itself.  This is only partly a consequence of our
-	 * arms-length use of that routine: the major cause of such errors is
+	 * during tsearch_readline() itself.  The major cause of such errors is
 	 * encoding violations, and we daren't try to print error messages
 	 * containing badly-encoded data.
 	 */
@@ -192,43 +245,6 @@ tsearch_readline_callback(void *arg)
 				   stp->filename);
 }
 
-
-/*
- * Read the next line from a tsearch data file (expected to be in UTF-8), and
- * convert it to database encoding if needed. The returned string is palloc'd.
- * NULL return means EOF.
- *
- * Note: direct use of this function is now deprecated.  Go through
- * tsearch_readline() to provide better error reporting.
- */
-char *
-t_readline(FILE *fp)
-{
-	int			len;
-	char	   *recoded;
-	char		buf[4096];		/* lines must not be longer than this */
-
-	if (fgets(buf, sizeof(buf), fp) == NULL)
-		return NULL;
-
-	len = strlen(buf);
-
-	/* Make sure the input is valid UTF-8 */
-	(void) pg_verify_mbstr(PG_UTF8, buf, len, false);
-
-	/* And convert */
-	recoded = pg_any_to_server(buf, len, PG_UTF8);
-	if (recoded == buf)
-	{
-		/*
-		 * conversion didn't pstrdup, so we must. We can use the length of the
-		 * original string, because no conversion was done.
-		 */
-		recoded = pnstrdup(recoded, len);
-	}
-
-	return recoded;
-}
 
 /*
  * lowerstr --- fold null-terminated string to lower case
@@ -252,7 +268,6 @@ char *
 lowerstr_with_len(const char *str, int len)
 {
 	char	   *out;
-	Oid			collation = DEFAULT_COLLATION_OID;	/* TODO */
 	pg_locale_t mylocale = 0;	/* TODO */
 
 	if (len == 0)
@@ -264,7 +279,7 @@ lowerstr_with_len(const char *str, int len)
 	 * Also, for a C locale there is no need to process as multibyte. From
 	 * backend/utils/adt/oracle_compat.c Teodor
 	 */
-	if (pg_database_encoding_max_length() > 1 && !lc_ctype_is_c(collation))
+	if (pg_database_encoding_max_length() > 1 && !database_ctype_is_c)
 	{
 		wchar_t    *wstr,
 				   *wptr;

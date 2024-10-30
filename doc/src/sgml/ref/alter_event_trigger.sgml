@@ -23,7 +23,7 @@ PostgreSQL documentation
 <synopsis>
 ALTER EVENT TRIGGER <replaceable class="parameter">name</replaceable> DISABLE
 ALTER EVENT TRIGGER <replaceable class="parameter">name</replaceable> ENABLE [ REPLICA | ALWAYS ]
-ALTER EVENT TRIGGER <replaceable class="parameter">name</replaceable> OWNER TO { <replaceable class="parameter">new_owner</replaceable> | CURRENT_USER | SESSION_USER }
+ALTER EVENT TRIGGER <replaceable class="parameter">name</replaceable> OWNER TO { <replaceable class="parameter">new_owner</replaceable> | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 ALTER EVENT TRIGGER <replaceable class="parameter">name</replaceable> RENAME TO <replaceable class="parameter">new_name</replaceable>
 </synopsis>
  </refsynopsisdiv>
@@ -73,7 +73,7 @@ ALTER EVENT TRIGGER <replaceable class="parameter">name</replaceable> RENAME TO 
    </varlistentry>
 
    <varlistentry>
-    <term><literal>DISABLE</literal>/<literal>ENABLE [ REPLICA | ALWAYS ] TRIGGER</literal></term>
+    <term><literal>DISABLE</literal>/<literal>ENABLE [ REPLICA | ALWAYS ]</literal></term>
     <listitem>
      <para>
       These forms configure the firing of event triggers.  A disabled trigger

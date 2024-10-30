@@ -4,7 +4,7 @@
  *	  POSTGRES memory context node definitions.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/nodes/memnodes.h
@@ -52,21 +52,24 @@ typedef struct MemoryContextCounters
  */
 
 typedef void (*MemoryStatsPrintFunc) (MemoryContext context, void *passthru,
-									  const char *stats_string);
+									  const char *stats_string,
+									  bool print_to_stderr);
 
 typedef struct MemoryContextMethods
 {
 	void	   *(*alloc) (MemoryContext context, Size size);
 	/* call this free_p in case someone #define's free() */
-	void		(*free_p) (MemoryContext context, void *pointer);
-	void	   *(*realloc) (MemoryContext context, void *pointer, Size size);
+	void		(*free_p) (void *pointer);
+	void	   *(*realloc) (void *pointer, Size size);
 	void		(*reset) (MemoryContext context);
 	void		(*delete_context) (MemoryContext context);
-	Size		(*get_chunk_space) (MemoryContext context, void *pointer);
+	MemoryContext (*get_chunk_context) (void *pointer);
+	Size		(*get_chunk_space) (void *pointer);
 	bool		(*is_empty) (MemoryContext context);
 	void		(*stats) (MemoryContext context,
 						  MemoryStatsPrintFunc printfunc, void *passthru,
-						  MemoryContextCounters *totals);
+						  MemoryContextCounters *totals,
+						  bool print_to_stderr);
 #ifdef MEMORY_CONTEXT_CHECKING
 	void		(*check) (MemoryContext context);
 #endif
@@ -75,10 +78,13 @@ typedef struct MemoryContextMethods
 
 typedef struct MemoryContextData
 {
+	pg_node_attr(abstract)		/* there are no nodes of this type */
+
 	NodeTag		type;			/* identifies exact kind of context */
 	/* these two fields are placed here to minimize alignment wastage: */
 	bool		isReset;		/* T = no space alloced since last reset */
 	bool		allowInCritSection; /* allow palloc in critical section */
+	Size		mem_allocated;	/* track memory allocated for this context */
 	const MemoryContextMethods *methods;	/* virtual function table */
 	MemoryContext parent;		/* NULL if no parent (toplevel context) */
 	MemoryContext firstchild;	/* head of linked list of children */

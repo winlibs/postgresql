@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>18.4. Managing Kernel Resources</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="server-start.html" title="18.3. Starting the Database Server" /><link rel="next" href="server-shutdown.html" title="18.5. Shutting Down the Server" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">18.4. Managing Kernel Resources</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="server-start.html" title="18.3. Starting the Database Server">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="runtime.html" title="Chapter 18. Server Setup and Operation">Up</a></td><th width="60%" align="center">Chapter 18. Server Setup and Operation</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="server-shutdown.html" title="18.5. Shutting Down the Server">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="KERNEL-RESOURCES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">18.4. Managing Kernel Resources</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="kernel-resources.html#SYSVIPC">18.4.1. Shared Memory and Semaphores</a></span></dt><dt><span class="sect2"><a href="kernel-resources.html#SYSTEMD-REMOVEIPC">18.4.2. systemd RemoveIPC</a></span></dt><dt><span class="sect2"><a href="kernel-resources.html#id-1.6.5.6.5">18.4.3. Resource Limits</a></span></dt><dt><span class="sect2"><a href="kernel-resources.html#LINUX-MEMORY-OVERCOMMIT">18.4.4. Linux Memory Overcommit</a></span></dt><dt><span class="sect2"><a href="kernel-resources.html#LINUX-HUGE-PAGES">18.4.5. Linux Huge Pages</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>19.4. Managing Kernel Resources</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="server-start.html" title="19.3. Starting the Database Server" /><link rel="next" href="server-shutdown.html" title="19.5. Shutting Down the Server" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">19.4. Managing Kernel Resources</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="server-start.html" title="19.3. Starting the Database Server">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="runtime.html" title="Chapter 19. Server Setup and Operation">Up</a></td><th width="60%" align="center">Chapter 19. Server Setup and Operation</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="server-shutdown.html" title="19.5. Shutting Down the Server">Next</a></td></tr></table><hr /></div><div class="sect1" id="KERNEL-RESOURCES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">19.4. Managing Kernel Resources <a href="#KERNEL-RESOURCES" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="kernel-resources.html#SYSVIPC">19.4.1. Shared Memory and Semaphores</a></span></dt><dt><span class="sect2"><a href="kernel-resources.html#SYSTEMD-REMOVEIPC">19.4.2. systemd RemoveIPC</a></span></dt><dt><span class="sect2"><a href="kernel-resources.html#KERNEL-RESOURCES-LIMITS">19.4.3. Resource Limits</a></span></dt><dt><span class="sect2"><a href="kernel-resources.html#LINUX-MEMORY-OVERCOMMIT">19.4.4. Linux Memory Overcommit</a></span></dt><dt><span class="sect2"><a href="kernel-resources.html#LINUX-HUGE-PAGES">19.4.5. Linux Huge Pages</a></span></dt></dl></div><p>
    <span class="productname">PostgreSQL</span> can sometimes exhaust various operating system
    resource limits, especially when multiple copies of the server are running
    on the same system, or in very large installations.  This section explains
    the kernel resources used by <span class="productname">PostgreSQL</span> and the steps you
    can take to resolve problems related to kernel resource consumption.
-  </p><div class="sect2" id="SYSVIPC"><div class="titlepage"><div><div><h3 class="title">18.4.1. Shared Memory and Semaphores</h3></div></div></div><a id="id-1.6.5.6.3.2" class="indexterm"></a><a id="id-1.6.5.6.3.3" class="indexterm"></a><p>
+  </p><div class="sect2" id="SYSVIPC"><div class="titlepage"><div><div><h3 class="title">19.4.1. Shared Memory and Semaphores <a href="#SYSVIPC" class="id_link">#</a></h3></div></div></div><a id="id-1.6.6.7.3.2" class="indexterm"></a><a id="id-1.6.6.7.3.3" class="indexterm"></a><p>
     <span class="productname">PostgreSQL</span> requires the operating system to provide
     inter-process communication (<acronym class="acronym">IPC</acronym>) features, specifically
     shared memory and semaphores.  Unix-derived systems typically provide
@@ -14,41 +14,34 @@
     <span class="systemitem">Windows</span> has its own implementation of
     these features and is not discussed here.
    </p><p>
-    The complete lack of these facilities is usually manifested by an
-    <span class="quote">“<span class="quote"><span class="errorname">Illegal system call</span></span>”</span> error upon server
-    start.  In that case there is no alternative but to reconfigure your
-    kernel.  <span class="productname">PostgreSQL</span> won't work without them.
-    This situation is rare, however, among modern operating systems.
-   </p><p>
-    Upon starting the server, <span class="productname">PostgreSQL</span> normally allocates
+    By default, <span class="productname">PostgreSQL</span> allocates
     a very small amount of System V shared memory, as well as a much larger
-    amount of POSIX (<code class="function">mmap</code>) shared memory.
+    amount of anonymous <code class="function">mmap</code> shared memory.
+    Alternatively, a single large System V shared memory region can be used
+    (see <a class="xref" href="runtime-config-resource.html#GUC-SHARED-MEMORY-TYPE">shared_memory_type</a>).
+
     In addition a significant number of semaphores, which can be either
     System V or POSIX style, are created at server startup.  Currently,
     POSIX semaphores are used on Linux and FreeBSD systems while other
     platforms use System V semaphores.
-   </p><div class="note"><h3 class="title">Note</h3><p>
-     Prior to <span class="productname">PostgreSQL</span> 9.3, only System V shared memory
-     was used, so the amount of System V shared memory required to start the
-     server was much larger.  If you are running an older version of the
-     server, please consult the documentation for your server version.
-    </p></div><p>
+   </p><p>
     System V <acronym class="acronym">IPC</acronym> features are typically constrained by
     system-wide allocation limits.
     When <span class="productname">PostgreSQL</span> exceeds one of these limits,
     the server will refuse to start and
     should leave an instructive error message describing the problem
-    and what to do about it. (See also <a class="xref" href="server-start.html#SERVER-START-FAILURES" title="18.3.1. Server Start-up Failures">Section 18.3.1</a>.) The relevant kernel
-    parameters are named consistently across different systems; <a class="xref" href="kernel-resources.html#SYSVIPC-PARAMETERS" title="Table 18.1. System V IPC Parameters">Table 18.1</a> gives an overview. The methods to set
+    and what to do about it. (See also <a class="xref" href="server-start.html#SERVER-START-FAILURES" title="19.3.1. Server Start-up Failures">Section 19.3.1</a>.) The relevant kernel
+    parameters are named consistently across different systems; <a class="xref" href="kernel-resources.html#SYSVIPC-PARAMETERS" title="Table 19.1. System V IPC Parameters">Table 19.1</a> gives an overview. The methods to set
     them, however, vary. Suggestions for some platforms are given below.
-   </p><div class="table" id="SYSVIPC-PARAMETERS"><p class="title"><strong>Table 18.1. <span class="systemitem">System V</span> <acronym class="acronym">IPC</acronym> Parameters</strong></p><div class="table-contents"><table class="table" summary="System V IPC Parameters" border="1"><colgroup><col /><col /><col /></colgroup><thead><tr><th>Name</th><th>Description</th><th>Values needed to run one <span class="productname">PostgreSQL</span> instance</th></tr></thead><tbody><tr><td><code class="varname">SHMMAX</code></td><td>Maximum size of shared memory segment (bytes)</td><td>at least 1kB, but the default is usually much higher</td></tr><tr><td><code class="varname">SHMMIN</code></td><td>Minimum size of shared memory segment (bytes)</td><td>1</td></tr><tr><td><code class="varname">SHMALL</code></td><td>Total amount of shared memory available (bytes or pages)</td><td>same as <code class="varname">SHMMAX</code> if bytes,
+   </p><div class="table" id="SYSVIPC-PARAMETERS"><p class="title"><strong>Table 19.1. <span class="systemitem">System V</span> <acronym class="acronym">IPC</acronym> Parameters</strong></p><div class="table-contents"><table class="table" summary="System V IPC Parameters" border="1"><colgroup><col class="col1" /><col class="col2" /><col class="col3" /></colgroup><thead><tr><th>Name</th><th>Description</th><th>Values needed to run one <span class="productname">PostgreSQL</span> instance</th></tr></thead><tbody><tr><td><code class="varname">SHMMAX</code></td><td>Maximum size of shared memory segment (bytes)</td><td>at least 1kB, but the default is usually much higher</td></tr><tr><td><code class="varname">SHMMIN</code></td><td>Minimum size of shared memory segment (bytes)</td><td>1</td></tr><tr><td><code class="varname">SHMALL</code></td><td>Total amount of shared memory available (bytes or pages)</td><td>same as <code class="varname">SHMMAX</code> if bytes,
         or <code class="literal">ceil(SHMMAX/PAGE_SIZE)</code> if pages,
-        plus room for other applications</td></tr><tr><td><code class="varname">SHMSEG</code></td><td>Maximum number of shared memory segments per process</td><td>only 1 segment is needed, but the default is much higher</td></tr><tr><td><code class="varname">SHMMNI</code></td><td>Maximum number of shared memory segments system-wide</td><td>like <code class="varname">SHMSEG</code> plus room for other applications</td></tr><tr><td><code class="varname">SEMMNI</code></td><td>Maximum number of semaphore identifiers (i.e., sets)</td><td>at least <code class="literal">ceil((max_connections + autovacuum_max_workers + max_worker_processes + 5) / 16)</code> plus room for other applications</td></tr><tr><td><code class="varname">SEMMNS</code></td><td>Maximum number of semaphores system-wide</td><td><code class="literal">ceil((max_connections + autovacuum_max_workers + max_worker_processes + 5) / 16) * 17</code> plus room for other applications</td></tr><tr><td><code class="varname">SEMMSL</code></td><td>Maximum number of semaphores per set</td><td>at least 17</td></tr><tr><td><code class="varname">SEMMAP</code></td><td>Number of entries in semaphore map</td><td>see text</td></tr><tr><td><code class="varname">SEMVMX</code></td><td>Maximum value of semaphore</td><td>at least 1000 (The default is often 32767; do not change unless necessary)</td></tr></tbody></table></div></div><br class="table-break" /><p>
+        plus room for other applications</td></tr><tr><td><code class="varname">SHMSEG</code></td><td>Maximum number of shared memory segments per process</td><td>only 1 segment is needed, but the default is much higher</td></tr><tr><td><code class="varname">SHMMNI</code></td><td>Maximum number of shared memory segments system-wide</td><td>like <code class="varname">SHMSEG</code> plus room for other applications</td></tr><tr><td><code class="varname">SEMMNI</code></td><td>Maximum number of semaphore identifiers (i.e., sets)</td><td>at least <code class="literal">ceil((max_connections + autovacuum_max_workers + max_wal_senders + max_worker_processes + 6) / 16)</code> plus room for other applications</td></tr><tr><td><code class="varname">SEMMNS</code></td><td>Maximum number of semaphores system-wide</td><td><code class="literal">ceil((max_connections + autovacuum_max_workers + max_wal_senders + max_worker_processes + 6) / 16) * 17</code> plus room for other applications</td></tr><tr><td><code class="varname">SEMMSL</code></td><td>Maximum number of semaphores per set</td><td>at least 17</td></tr><tr><td><code class="varname">SEMMAP</code></td><td>Number of entries in semaphore map</td><td>see text</td></tr><tr><td><code class="varname">SEMVMX</code></td><td>Maximum value of semaphore</td><td>at least 1000 (The default is often 32767; do not change unless necessary)</td></tr></tbody></table></div></div><br class="table-break" /><p>
     <span class="productname">PostgreSQL</span> requires a few bytes of System V shared memory
     (typically 48 bytes, on 64-bit platforms) for each copy of the server.
     On most modern operating systems, this amount can easily be allocated.
-    However, if you are running many copies of the server, or if other
-    applications are also using System V shared memory, it may be necessary to
+    However, if you are running many copies of the server or you explicitly
+    configure the server to use large amounts of System V shared memory (see
+    <a class="xref" href="runtime-config-resource.html#GUC-SHARED-MEMORY-TYPE">shared_memory_type</a> and <a class="xref" href="runtime-config-resource.html#GUC-DYNAMIC-SHARED-MEMORY-TYPE">dynamic_shared_memory_type</a>), it may be necessary to
     increase <code class="varname">SHMALL</code>, which is the total amount of System V shared
     memory system-wide.  Note that <code class="varname">SHMALL</code> is measured in pages
     rather than bytes on many systems.
@@ -63,7 +56,8 @@
     When using System V semaphores,
     <span class="productname">PostgreSQL</span> uses one semaphore per allowed connection
     (<a class="xref" href="runtime-config-connection.html#GUC-MAX-CONNECTIONS">max_connections</a>), allowed autovacuum worker process
-    (<a class="xref" href="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MAX-WORKERS">autovacuum_max_workers</a>) and allowed background
+    (<a class="xref" href="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MAX-WORKERS">autovacuum_max_workers</a>), allowed WAL sender process
+    (<a class="xref" href="runtime-config-replication.html#GUC-MAX-WAL-SENDERS">max_wal_senders</a>), and allowed background
     process (<a class="xref" href="runtime-config-resource.html#GUC-MAX-WORKER-PROCESSES">max_worker_processes</a>), in sets of 16.
     Each such set will
     also contain a 17th semaphore which contains a <span class="quote">“<span class="quote">magic
@@ -71,12 +65,12 @@
     other applications. The maximum number of semaphores in the system
     is set by <code class="varname">SEMMNS</code>, which consequently must be at least
     as high as <code class="varname">max_connections</code> plus
-    <code class="varname">autovacuum_max_workers</code> plus <code class="varname">max_worker_processes</code>,
-    plus one extra for each 16
-    allowed connections plus workers (see the formula in <a class="xref" href="kernel-resources.html#SYSVIPC-PARAMETERS" title="Table 18.1. System V IPC Parameters">Table 18.1</a>).  The parameter <code class="varname">SEMMNI</code>
+    <code class="varname">autovacuum_max_workers</code> plus <code class="varname">max_wal_senders</code>,
+    plus <code class="varname">max_worker_processes</code>, plus one extra for each 16
+    allowed connections plus workers (see the formula in <a class="xref" href="kernel-resources.html#SYSVIPC-PARAMETERS" title="Table 19.1. System V IPC Parameters">Table 19.1</a>).  The parameter <code class="varname">SEMMNI</code>
     determines the limit on the number of semaphore sets that can
     exist on the system at one time.  Hence this parameter must be at
-    least <code class="literal">ceil((max_connections + autovacuum_max_workers + max_worker_processes + 5) / 16)</code>.
+    least <code class="literal">ceil((max_connections + autovacuum_max_workers + max_wal_senders + max_worker_processes + 6) / 16)</code>.
     Lowering the number
     of allowed connections is a temporary workaround for failures,
     which are usually confusingly worded <span class="quote">“<span class="quote">No space
@@ -101,14 +95,15 @@
     When using POSIX semaphores, the number of semaphores needed is the
     same as for System V, that is one semaphore per allowed connection
     (<a class="xref" href="runtime-config-connection.html#GUC-MAX-CONNECTIONS">max_connections</a>), allowed autovacuum worker process
-    (<a class="xref" href="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MAX-WORKERS">autovacuum_max_workers</a>) and allowed background
+    (<a class="xref" href="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MAX-WORKERS">autovacuum_max_workers</a>), allowed WAL sender process
+    (<a class="xref" href="runtime-config-replication.html#GUC-MAX-WAL-SENDERS">max_wal_senders</a>), and allowed background
     process (<a class="xref" href="runtime-config-resource.html#GUC-MAX-WORKER-PROCESSES">max_worker_processes</a>).
     On the platforms where this option is preferred, there is no specific
     kernel limit on the number of POSIX semaphores.
    </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><span class="systemitem">AIX</span>
-      <a id="id-1.6.5.6.3.16.1.1.2" class="indexterm"></a>
+      <a id="id-1.6.6.7.3.14.1.1.2" class="indexterm"></a>
       </span></dt><dd><p>
-        At least as of version 5.1, it should not be necessary to do
+        It should not be necessary to do
         any special configuration for such parameters as
         <code class="varname">SHMMAX</code>, as it appears this is configured to
         allow all memory to be used as shared memory.  That is the
@@ -119,8 +114,12 @@
        limits for file sizes (<code class="varname">fsize</code>) and numbers of
        files (<code class="varname">nofiles</code>) might be too low.
        </p></dd><dt><span class="term"><span class="systemitem">FreeBSD</span>
-      <a id="id-1.6.5.6.3.16.2.1.2" class="indexterm"></a>
+      <a id="id-1.6.6.7.3.14.2.1.2" class="indexterm"></a>
       </span></dt><dd><p>
+        The default shared memory settings are usually good enough, unless
+        you have set <code class="literal">shared_memory_type</code> to <code class="literal">sysv</code>.
+        System V semaphores are not used on this platform.
+       </p><p>
         The default IPC settings can be changed using
         the <code class="command">sysctl</code> or
         <code class="command">loader</code> interfaces.  The following
@@ -132,37 +131,28 @@
         To make these settings persist over reboots, modify
         <code class="filename">/etc/sysctl.conf</code>.
        </p><p>
-        These semaphore-related settings are read-only as far as
-        <code class="command">sysctl</code> is concerned, but can be set in
-        <code class="filename">/boot/loader.conf</code>:
-</p><pre class="programlisting">
-kern.ipc.semmni=256
-kern.ipc.semmns=512
-</pre><p>
-        After modifying that file, a reboot is required for the new
-        settings to take effect.
-       </p><p>
-        You might also want to configure your kernel to lock shared
-        memory into RAM and prevent it from being paged out to swap.
-        This can be accomplished using the <code class="command">sysctl</code>
+        If you have set <code class="literal">shared_memory_type</code> to
+        <code class="literal">sysv</code>, you might also want to configure your kernel
+        to lock System V shared memory into RAM and prevent it from being paged
+        out to swap.  This can be accomplished using the <code class="command">sysctl</code>
         setting <code class="literal">kern.ipc.shm_use_phys</code>.
        </p><p>
-        If running in FreeBSD jails by enabling <span class="application">sysctl</span>'s
-        <code class="literal">security.jail.sysvipc_allowed</code>, <span class="application">postmaster</span>s
-        running in different jails should be run by different operating system
-        users.  This improves security because it prevents non-root users
-        from interfering with shared memory or semaphores in different jails,
-        and it allows the PostgreSQL IPC cleanup code to function properly.
-        (In FreeBSD 6.0 and later the IPC cleanup code does not properly detect
-        processes in other jails, preventing the running of postmasters on the
-        same port in different jails.)
-       </p><p>
-        <span class="systemitem">FreeBSD</span> versions before 4.0 work like
-        old <span class="systemitem">OpenBSD</span> (see below).
+        If running in a FreeBSD jail, you should set its
+        <code class="literal">sysvshm</code> parameter to <code class="literal">new</code>, so that
+        it has its own separate System V shared memory namespace.
+        (Before FreeBSD 11.0, it was necessary to enable shared access to
+        the host's IPC namespace from jails, and take measures to avoid
+        collisions.)
        </p></dd><dt><span class="term"><span class="systemitem">NetBSD</span>
-      <a id="id-1.6.5.6.3.16.3.1.2" class="indexterm"></a>
+      <a id="id-1.6.6.7.3.14.3.1.2" class="indexterm"></a>
       </span></dt><dd><p>
-        In <span class="systemitem">NetBSD</span> 5.0 and later,
+        The default shared memory settings are usually good enough, unless
+        you have set <code class="literal">shared_memory_type</code> to <code class="literal">sysv</code>.
+        You will usually want to increase <code class="literal">kern.ipc.semmni</code>
+        and <code class="literal">kern.ipc.semmns</code>,
+        as <span class="systemitem">NetBSD</span>'s default settings
+        for these are uncomfortably small.
+       </p><p>
         IPC parameters can be adjusted using <code class="command">sysctl</code>,
         for example:
 </p><pre class="screen">
@@ -171,24 +161,22 @@ kern.ipc.semmns=512
         To make these settings persist over reboots, modify
         <code class="filename">/etc/sysctl.conf</code>.
        </p><p>
-        You will usually want to increase <code class="literal">kern.ipc.semmni</code>
-        and <code class="literal">kern.ipc.semmns</code>,
-        as <span class="systemitem">NetBSD</span>'s default settings
+        If you have set <code class="literal">shared_memory_type</code> to
+        <code class="literal">sysv</code>, you might also want to configure your kernel
+        to lock System V shared memory into RAM and prevent it from being paged
+        out to swap.  This can be accomplished using the <code class="command">sysctl</code>
+        setting <code class="literal">kern.ipc.shm_use_phys</code>.
+       </p></dd><dt><span class="term"><span class="systemitem">OpenBSD</span>
+      <a id="id-1.6.6.7.3.14.4.1.2" class="indexterm"></a>
+      </span></dt><dd><p>
+        The default shared memory settings are usually good enough, unless
+        you have set <code class="literal">shared_memory_type</code> to <code class="literal">sysv</code>.
+        You will usually want to
+        increase <code class="literal">kern.seminfo.semmni</code>
+        and <code class="literal">kern.seminfo.semmns</code>,
+        as <span class="systemitem">OpenBSD</span>'s default settings
         for these are uncomfortably small.
        </p><p>
-        You might also want to configure your kernel to lock shared
-        memory into RAM and prevent it from being paged out to swap.
-        This can be accomplished using the <code class="command">sysctl</code>
-        setting <code class="literal">kern.ipc.shm_use_phys</code>.
-       </p><p>
-        <span class="systemitem">NetBSD</span> versions before 5.0
-        work like old <span class="systemitem">OpenBSD</span>
-        (see below), except that kernel parameters should be set with the
-        keyword <code class="literal">options</code> not <code class="literal">option</code>.
-       </p></dd><dt><span class="term"><span class="systemitem">OpenBSD</span>
-      <a id="id-1.6.5.6.3.16.4.1.2" class="indexterm"></a>
-      </span></dt><dd><p>
-        In <span class="systemitem">OpenBSD</span> 3.3 and later,
         IPC parameters can be adjusted using <code class="command">sysctl</code>,
         for example:
 </p><pre class="screen">
@@ -196,50 +184,13 @@ kern.ipc.semmns=512
 </pre><p>
         To make these settings persist over reboots, modify
         <code class="filename">/etc/sysctl.conf</code>.
-       </p><p>
-        You will usually want to
-        increase <code class="literal">kern.seminfo.semmni</code>
-        and <code class="literal">kern.seminfo.semmns</code>,
-        as <span class="systemitem">OpenBSD</span>'s default settings
-        for these are uncomfortably small.
-       </p><p>
-        In older <span class="systemitem">OpenBSD</span> versions,
-        you will need to build a custom kernel to change the IPC parameters.
-        Make sure that the options <code class="varname">SYSVSHM</code>
-        and <code class="varname">SYSVSEM</code> are enabled, too.  (They are by
-        default.)  The following shows an example of how to set the various
-        parameters in the kernel configuration file:
-</p><pre class="programlisting">
-option        SYSVSHM
-option        SHMMAXPGS=4096
-option        SHMSEG=256
-
-option        SYSVSEM
-option        SEMMNI=256
-option        SEMMNS=512
-option        SEMMNU=256
-</pre><p>
-       </p></dd><dt><span class="term"><span class="systemitem">HP-UX</span>
-      <a id="id-1.6.5.6.3.16.5.1.2" class="indexterm"></a>
-      </span></dt><dd><p>
-        The default settings tend to suffice for normal installations.
-        On <span class="productname">HP-UX</span> 10, the factory default for
-        <code class="varname">SEMMNS</code> is 128, which might be too low for larger
-        database sites.
-       </p><p>
-        <acronym class="acronym">IPC</acronym> parameters can be set in the <span class="application">System
-        Administration Manager</span> (<acronym class="acronym">SAM</acronym>) under
-        <span class="guimenu">Kernel
-        Configuration</span> → <span class="guimenuitem">Configurable Parameters</span>. Choose
-        <span class="guibutton">Create A New Kernel</span> when you're done.
        </p></dd><dt><span class="term"><span class="systemitem">Linux</span>
-      <a id="id-1.6.5.6.3.16.6.1.2" class="indexterm"></a>
+      <a id="id-1.6.6.7.3.14.5.1.2" class="indexterm"></a>
       </span></dt><dd><p>
-        The default maximum segment size is 32 MB, and the
-        default maximum total size is 2097152
-        pages.  A page is almost always 4096 bytes except in unusual
-        kernel configurations with <span class="quote">“<span class="quote">huge pages</span>”</span>
-        (use <code class="literal">getconf PAGE_SIZE</code> to verify).
+        The default shared memory settings are usually good enough, unless
+        you have set <code class="literal">shared_memory_type</code> to <code class="literal">sysv</code>,
+        and even then only on older kernel versions that shipped with low defaults.
+        System V semaphores are not used on this platform.
        </p><p>
         The shared memory size settings can be changed via the
         <code class="command">sysctl</code> interface.  For example, to allow 16 GB:
@@ -247,23 +198,14 @@ option        SEMMNU=256
 <code class="prompt">$</code> <strong class="userinput"><code>sysctl -w kernel.shmmax=17179869184</code></strong>
 <code class="prompt">$</code> <strong class="userinput"><code>sysctl -w kernel.shmall=4194304</code></strong>
 </pre><p>
-        In addition these settings can be preserved between reboots in
-        the file <code class="filename">/etc/sysctl.conf</code>.  Doing that is
-        highly recommended.
-       </p><p>
-        Ancient distributions might not have the <code class="command">sysctl</code> program,
-        but equivalent changes can be made by manipulating the
-        <code class="filename">/proc</code> file system:
-</p><pre class="screen">
-<code class="prompt">$</code> <strong class="userinput"><code>echo 17179869184 &gt;/proc/sys/kernel/shmmax</code></strong>
-<code class="prompt">$</code> <strong class="userinput"><code>echo 4194304 &gt;/proc/sys/kernel/shmall</code></strong>
-</pre><p>
-       </p><p>
-        The remaining defaults are quite generously sized, and usually
-        do not require changes.
+        To make these settings persist over reboots, see
+        <code class="filename">/etc/sysctl.conf</code>.
        </p></dd><dt><span class="term"><span class="systemitem">macOS</span>
-      <a id="id-1.6.5.6.3.16.7.1.2" class="indexterm"></a>
+      <a id="id-1.6.6.7.3.14.6.1.2" class="indexterm"></a>
       </span></dt><dd><p>
+        The default shared memory and semaphore settings are usually good enough, unless
+        you have set <code class="literal">shared_memory_type</code> to <code class="literal">sysv</code>.
+       </p><p>
         The recommended method for configuring shared memory in macOS
         is to create a file named <code class="filename">/etc/sysctl.conf</code>,
         containing variable assignments such as:
@@ -278,60 +220,17 @@ kern.sysv.shmall=1024
         <span class="emphasis"><em>all five</em></span> shared-memory parameters must be set in
         <code class="filename">/etc/sysctl.conf</code>, else the values will be ignored.
        </p><p>
-        Beware that recent releases of macOS ignore attempts to set
-        <code class="varname">SHMMAX</code> to a value that isn't an exact multiple of 4096.
+        <code class="varname">SHMMAX</code> can only be set to a multiple of 4096.
        </p><p>
         <code class="varname">SHMALL</code> is measured in 4 kB pages on this platform.
        </p><p>
-        In older macOS versions, you will need to reboot to have changes in the
-        shared memory parameters take effect.  As of 10.5 it is possible to
-        change all but <code class="varname">SHMMNI</code> on the fly, using
+        It is possible to change all but <code class="varname">SHMMNI</code> on the fly, using
         <span class="application">sysctl</span>.  But it's still best to set up your preferred
         values via <code class="filename">/etc/sysctl.conf</code>, so that the values will be
         kept across reboots.
-       </p><p>
-        The file <code class="filename">/etc/sysctl.conf</code> is only honored in macOS
-        10.3.9 and later.  If you are running a previous 10.3.x release,
-        you must edit the file <code class="filename">/etc/rc</code>
-        and change the values in the following commands:
-</p><pre class="programlisting">
-sysctl -w kern.sysv.shmmax
-sysctl -w kern.sysv.shmmin
-sysctl -w kern.sysv.shmmni
-sysctl -w kern.sysv.shmseg
-sysctl -w kern.sysv.shmall
-</pre><p>
-        Note that
-        <code class="filename">/etc/rc</code> is usually overwritten by macOS system updates,
-        so you should expect to have to redo these edits after each update.
-       </p><p>
-        In macOS 10.2 and earlier, instead edit these commands in the file
-        <code class="filename">/System/Library/StartupItems/SystemTuning/SystemTuning</code>.
-       </p></dd><dt><span class="term"><span class="systemitem">Solaris</span> 2.6 to 2.9 (Solaris
-      6 to Solaris 9)
-      <a id="id-1.6.5.6.3.16.8.1.2" class="indexterm"></a>
-      </span></dt><dd><p>
-        The relevant settings can be changed in
-        <code class="filename">/etc/system</code>, for example:
-</p><pre class="programlisting">
-set shmsys:shminfo_shmmax=0x2000000
-set shmsys:shminfo_shmmin=1
-set shmsys:shminfo_shmmni=256
-set shmsys:shminfo_shmseg=256
-
-set semsys:seminfo_semmap=256
-set semsys:seminfo_semmni=512
-set semsys:seminfo_semmns=512
-set semsys:seminfo_semmsl=32
-</pre><p>
-        You need to reboot for the changes to take effect.  See also
-        <a class="ulink" href="http://sunsite.uakom.sk/sunworldonline/swol-09-1997/swol-09-insidesolaris.html" target="_top">http://sunsite.uakom.sk/sunworldonline/swol-09-1997/swol-09-insidesolaris.html</a>
-        for information on shared memory under older versions of Solaris.
-       </p></dd><dt><span class="term"><span class="systemitem">Solaris</span> 2.10 (Solaris
-      10) and later<br /></span><span class="term"><span class="systemitem">OpenSolaris</span></span></dt><dd><p>
-        In Solaris 10 and later, and OpenSolaris, the default shared memory and
-        semaphore settings are good enough for most
-        <span class="productname">PostgreSQL</span> applications.  Solaris now defaults
+       </p></dd><dt><span class="term"><span class="systemitem">Solaris</span><br /></span><span class="term"><span class="systemitem">illumos</span></span></dt><dd><p>
+        The default shared memory and semaphore settings are usually good enough for most
+        <span class="productname">PostgreSQL</span> applications.  Solaris defaults
         to a <code class="varname">SHMMAX</code> of one-quarter of system <acronym class="acronym">RAM</acronym>.
         To further adjust this setting, use a project setting associated
         with the <code class="literal">postgres</code> user.  For example, run the
@@ -361,9 +260,9 @@ project.max-msg-ids=(priv,4096,deny)
         limits as well.  See "Chapter2:  Projects and Tasks" in the
         <em class="citetitle">System Administrator's Guide</em> for more
         information on <code class="literal">projects</code> and <code class="command">prctl</code>.
-       </p></dd></dl></div></div><div class="sect2" id="SYSTEMD-REMOVEIPC"><div class="titlepage"><div><div><h3 class="title">18.4.2. systemd RemoveIPC</h3></div></div></div><a id="id-1.6.5.6.4.2" class="indexterm"></a><p>
+       </p></dd></dl></div></div><div class="sect2" id="SYSTEMD-REMOVEIPC"><div class="titlepage"><div><div><h3 class="title">19.4.2. systemd RemoveIPC <a href="#SYSTEMD-REMOVEIPC" class="id_link">#</a></h3></div></div></div><a id="id-1.6.6.7.4.2" class="indexterm"></a><p>
     If <span class="productname">systemd</span> is in use, some care must be taken
-    that IPC resources (shared memory and semaphores) are not prematurely
+    that IPC resources (including shared memory) are not prematurely
     removed by the operating system.  This is especially of concern when
     installing PostgreSQL from source.  Users of distribution packages of
     PostgreSQL are less likely to be affected, as
@@ -376,11 +275,12 @@ project.max-msg-ids=(priv,4096,deny)
     setting defaults to on in stock <span class="productname">systemd</span>, but
     some operating system distributions default it to off.
    </p><p>
-    A typical observed effect when this setting is on is that the semaphore
-    objects used by a PostgreSQL server are removed at apparently random
-    times, leading to the server crashing with log messages like
+    A typical observed effect when this setting is on is that shared memory
+    objects used for parallel query execution are removed at apparently random
+    times, leading to errors and warnings while attempting to open and remove
+    them, like
 </p><pre class="screen">
-LOG: semctl(1234567890, 0, IPC_RMID, ...) failed: Invalid argument
+WARNING:  could not remove shared memory segment "/PostgreSQL.1450751626": No such file or directory
 </pre><p>
     Different types of IPC objects (shared memory vs. semaphores, System V
     vs. POSIX) are treated slightly differently
@@ -413,7 +313,7 @@ RemoveIPC=no
    </p><div class="caution"><h3 class="title">Caution</h3><p>
      At least one of these two things has to be ensured, or the PostgreSQL
      server will be very unreliable.
-    </p></div></div><div class="sect2" id="id-1.6.5.6.5"><div class="titlepage"><div><div><h3 class="title">18.4.3. Resource Limits</h3></div></div></div><p>
+    </p></div></div><div class="sect2" id="KERNEL-RESOURCES-LIMITS"><div class="titlepage"><div><div><h3 class="title">19.4.3. Resource Limits <a href="#KERNEL-RESOURCES-LIMITS" class="id_link">#</a></h3></div></div></div><p>
     Unix-like operating systems enforce various kinds of resource limits
     that might interfere with the operation of your
     <span class="productname">PostgreSQL</span> server. Of particular
@@ -446,11 +346,12 @@ default:\
    </p><p>
     Kernels can also have system-wide limits on some resources.
     </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
-      On <span class="productname">Linux</span>
-      <code class="filename">/proc/sys/fs/file-max</code> determines the
-      maximum number of open files that the kernel will support.  It can
-      be changed by writing a different number into the file or by
-      adding an assignment in <code class="filename">/etc/sysctl.conf</code>.
+      On <span class="productname">Linux</span> the kernel parameter
+      <code class="varname">fs.file-max</code> determines the maximum number of open
+      files that the kernel will support.  It can be changed with
+      <code class="literal">sysctl -w fs.file-max=<em class="replaceable"><code>N</code></em></code>.
+      To make the setting persist across reboots, add an assignment
+      in <code class="filename">/etc/sysctl.conf</code>.
       The maximum limit of files per process is fixed at the time the
       kernel is compiled; see
       <code class="filename">/usr/src/linux/Documentation/proc.txt</code> for
@@ -476,12 +377,26 @@ default:\
     If you find this happening, and you do not want to alter the
     system-wide limit, you can set <span class="productname">PostgreSQL</span>'s <a class="xref" href="runtime-config-resource.html#GUC-MAX-FILES-PER-PROCESS">max_files_per_process</a> configuration parameter to
     limit the consumption of open files.
-   </p></div><div class="sect2" id="LINUX-MEMORY-OVERCOMMIT"><div class="titlepage"><div><div><h3 class="title">18.4.4. Linux Memory Overcommit</h3></div></div></div><a id="id-1.6.5.6.6.2" class="indexterm"></a><a id="id-1.6.5.6.6.3" class="indexterm"></a><a id="id-1.6.5.6.6.4" class="indexterm"></a><p>
-    In Linux 2.4 and later, the default virtual memory behavior is not
+   </p><p>
+    Another kernel limit that may be of concern when supporting large
+    numbers of client connections is the maximum socket connection queue
+    length.  If more than that many connection requests arrive within a very
+    short period, some may get rejected before the <span class="productname">PostgreSQL</span> server can service
+    the requests, with those clients receiving unhelpful connection failure
+    errors such as <span class="quote">“<span class="quote">Resource temporarily unavailable</span>”</span> or
+    <span class="quote">“<span class="quote">Connection refused</span>”</span>.  The default queue length limit is 128
+    on many platforms.  To raise it, adjust the appropriate kernel parameter
+    via <span class="application">sysctl</span>, then restart the <span class="productname">PostgreSQL</span> server.
+    The parameter is variously named <code class="varname">net.core.somaxconn</code>
+    on Linux, <code class="varname">kern.ipc.soacceptqueue</code> on newer FreeBSD,
+    and <code class="varname">kern.ipc.somaxconn</code> on macOS and other BSD
+    variants.
+   </p></div><div class="sect2" id="LINUX-MEMORY-OVERCOMMIT"><div class="titlepage"><div><div><h3 class="title">19.4.4. Linux Memory Overcommit <a href="#LINUX-MEMORY-OVERCOMMIT" class="id_link">#</a></h3></div></div></div><a id="id-1.6.6.7.6.2" class="indexterm"></a><a id="id-1.6.6.7.6.3" class="indexterm"></a><a id="id-1.6.6.7.6.4" class="indexterm"></a><p>
+    The default virtual memory behavior on Linux is not
     optimal for <span class="productname">PostgreSQL</span>. Because of the
     way that the kernel implements memory overcommit, the kernel might
     terminate the <span class="productname">PostgreSQL</span> postmaster (the
-    master server process) if the memory demands of either
+    supervisor server process) if the memory demands of either
     <span class="productname">PostgreSQL</span> or another process cause the
     system to run out of virtual memory.
    </p><p>
@@ -509,14 +424,16 @@ Out of Memory: Killed process 12345 (postgres).
     system running out of memory, you can avoid the problem by changing
     your configuration.  In some cases, it may help to lower memory-related
     configuration parameters, particularly
-    <a class="link" href="runtime-config-resource.html#GUC-SHARED-BUFFERS"><code class="varname">shared_buffers</code></a>
-    and <a class="link" href="runtime-config-resource.html#GUC-WORK-MEM"><code class="varname">work_mem</code></a>.  In
-    other cases, the problem may be caused by allowing too many connections
-    to the database server itself.  In many cases, it may be better to reduce
+    <a class="link" href="runtime-config-resource.html#GUC-SHARED-BUFFERS"><code class="varname">shared_buffers</code></a>,
+    <a class="link" href="runtime-config-resource.html#GUC-WORK-MEM"><code class="varname">work_mem</code></a>, and
+    <a class="link" href="runtime-config-resource.html#GUC-HASH-MEM-MULTIPLIER"><code class="varname">hash_mem_multiplier</code></a>.
+    In other cases, the problem may be caused by allowing too many
+    connections to the database server itself.  In many cases, it may
+    be better to reduce
     <a class="link" href="runtime-config-connection.html#GUC-MAX-CONNECTIONS"><code class="varname">max_connections</code></a>
     and instead make use of external connection-pooling software.
    </p><p>
-    On Linux 2.6 and later, it is possible to modify the
+    It is possible to modify the
     kernel's behavior so that it will not <span class="quote">“<span class="quote">overcommit</span>”</span> memory.
     Although this setting will not prevent the <a class="ulink" href="https://lwn.net/Articles/104179/" target="_top">OOM killer</a> from being invoked
     altogether, it will lower the chances significantly and will therefore
@@ -538,11 +455,12 @@ sysctl -w vm.overcommit_memory=2
 </p><pre class="programlisting">
 echo -1000 &gt; /proc/self/oom_score_adj
 </pre><p>
-    in the postmaster's startup script just before invoking the postmaster.
+    in the <span class="productname">PostgreSQL</span> startup script just before
+    invoking <code class="filename">postgres</code>.
     Note that this action must be done as root, or it will have no effect;
     so a root-owned startup script is the easiest place to do it.  If you
     do this, you should also set these environment variables in the startup
-    script before invoking the postmaster:
+    script before invoking <code class="filename">postgres</code>:
 </p><pre class="programlisting">
 export PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj
 export PG_OOM_ADJUST_VALUE=0
@@ -556,63 +474,56 @@ export PG_OOM_ADJUST_VALUE=0
     set <code class="envar">PG_OOM_ADJUST_FILE</code>, the child processes will run with the
     same OOM score adjustment as the postmaster, which is unwise since the
     whole point is to ensure that the postmaster has a preferential setting.
-   </p><p>
-    Older Linux kernels do not offer <code class="filename">/proc/self/oom_score_adj</code>,
-    but may have a previous version of the same functionality called
-    <code class="filename">/proc/self/oom_adj</code>.  This works the same except the disable
-    value is <code class="literal">-17</code> not <code class="literal">-1000</code>.
-   </p><div class="note"><h3 class="title">Note</h3><p>
-    Some vendors' Linux 2.4 kernels are reported to have early versions
-    of the 2.6 overcommit <code class="command">sysctl</code> parameter.  However, setting
-    <code class="literal">vm.overcommit_memory</code> to 2
-    on a 2.4 kernel that does not have the relevant code will make
-    things worse, not better.  It is recommended that you inspect
-    the actual kernel source code (see the function
-    <code class="function">vm_enough_memory</code> in the file <code class="filename">mm/mmap.c</code>)
-    to verify what is supported in your kernel before you try this in a 2.4
-    installation.  The presence of the <code class="filename">overcommit-accounting</code>
-    documentation file should <span class="emphasis"><em>not</em></span> be taken as evidence that the
-    feature is there.  If in any doubt, consult a kernel expert or your
-    kernel vendor.
-   </p></div></div><div class="sect2" id="LINUX-HUGE-PAGES"><div class="titlepage"><div><div><h3 class="title">18.4.5. Linux Huge Pages</h3></div></div></div><p>
+   </p></div><div class="sect2" id="LINUX-HUGE-PAGES"><div class="titlepage"><div><div><h3 class="title">19.4.5. Linux Huge Pages <a href="#LINUX-HUGE-PAGES" class="id_link">#</a></h3></div></div></div><p>
     Using huge pages reduces overhead when using large contiguous chunks of
     memory, as <span class="productname">PostgreSQL</span> does, particularly when
     using large values of <a class="xref" href="runtime-config-resource.html#GUC-SHARED-BUFFERS">shared_buffers</a>.  To use this
     feature in <span class="productname">PostgreSQL</span> you need a kernel
     with <code class="varname">CONFIG_HUGETLBFS=y</code> and
-    <code class="varname">CONFIG_HUGETLB_PAGE=y</code>. You will also have to adjust
-    the kernel setting <code class="varname">vm.nr_hugepages</code>. To estimate the
-    number of huge pages needed, start <span class="productname">PostgreSQL</span>
-    without huge pages enabled and check the
-    postmaster's anonymous shared memory segment size, as well as the system's
-    huge page size, using the <code class="filename">/proc</code> file system.  This might
-    look like:
+    <code class="varname">CONFIG_HUGETLB_PAGE=y</code>. You will also have to configure
+    the operating system to provide enough huge pages of the desired size.
+    To determine the number of huge pages needed, use the
+    <code class="command">postgres</code> command to see the value of
+    <a class="xref" href="runtime-config-preset.html#GUC-SHARED-MEMORY-SIZE-IN-HUGE-PAGES">shared_memory_size_in_huge_pages</a>.  Note that the
+    server must be shut down to view this runtime-computed parameter.
+    This might look like:
 </p><pre class="programlisting">
-$ <strong class="userinput"><code>head -1 $PGDATA/postmaster.pid</code></strong>
-4170
-$ <strong class="userinput"><code>pmap 4170 | awk '/rw-s/ &amp;&amp; /zero/ {print $2}'</code></strong>
-6490428K
+$ <strong class="userinput"><code>postgres -D $PGDATA -C shared_memory_size_in_huge_pages</code></strong>
+3170
 $ <strong class="userinput"><code>grep ^Hugepagesize /proc/meminfo</code></strong>
 Hugepagesize:       2048 kB
+$ <strong class="userinput"><code>ls /sys/kernel/mm/hugepages</code></strong>
+hugepages-1048576kB  hugepages-2048kB
 </pre><p>
-     <code class="literal">6490428</code> / <code class="literal">2048</code> gives approximately
-     <code class="literal">3169.154</code>, so in this example we need at
-     least <code class="literal">3170</code> huge pages, which we can set with:
+
+     In this example the default is 2MB, but you can also explicitly request
+     either 2MB or 1GB with <a class="xref" href="runtime-config-resource.html#GUC-HUGE-PAGE-SIZE">huge_page_size</a> to adapt
+     the number of pages calculated by
+     <code class="varname">shared_memory_size_in_huge_pages</code>.
+
+     While we need at least <code class="literal">3170</code> huge pages in this example,
+     a larger setting would be appropriate if other programs on the machine
+     also need huge pages.
+     We can set this with:
 </p><pre class="programlisting">
-$ <strong class="userinput"><code>sysctl -w vm.nr_hugepages=3170</code></strong>
+# <strong class="userinput"><code>sysctl -w vm.nr_hugepages=3170</code></strong>
 </pre><p>
-    A larger setting would be appropriate if other programs on the machine
-    also need huge pages.  Don't forget to add this setting
-    to <code class="filename">/etc/sysctl.conf</code> so that it will be reapplied
-    after reboots.
+     Don't forget to add this setting to <code class="filename">/etc/sysctl.conf</code>
+     so that it is reapplied after reboots.  For non-default huge page sizes,
+     we can instead use:
+</p><pre class="programlisting">
+# <strong class="userinput"><code>echo 3170 &gt; /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages</code></strong>
+</pre><p>
+    It is also possible to provide these settings at boot time using
+    kernel parameters such as <code class="literal">hugepagesz=2M hugepages=3170</code>.
    </p><p>
     Sometimes the kernel is not able to allocate the desired number of huge
-    pages immediately, so it might be necessary to repeat the command or to
-    reboot.  (Immediately after a reboot, most of the machine's memory
-    should be available to convert into huge pages.)  To verify the huge
-    page allocation situation, use:
+    pages immediately due to fragmentation, so it might be necessary
+    to repeat the command or to reboot.  (Immediately after a reboot, most of
+    the machine's memory should be available to convert into huge pages.)
+    To verify the huge page allocation situation for a given size, use:
 </p><pre class="programlisting">
-$ <strong class="userinput"><code>grep Huge /proc/meminfo</code></strong>
+$ <strong class="userinput"><code>cat /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages</code></strong>
 </pre><p>
    </p><p>
     It may also be necessary to give the database server's operating system
@@ -621,8 +532,9 @@ $ <strong class="userinput"><code>grep Huge /proc/meminfo</code></strong>
     give permission to lock memory with <code class="command">ulimit -l</code>.
    </p><p>
     The default behavior for huge pages in
-    <span class="productname">PostgreSQL</span> is to use them when possible and
-    to fall back to normal pages when failing. To enforce the use of huge
+    <span class="productname">PostgreSQL</span> is to use them when possible, with
+    the system's default huge page size, and
+    to fall back to normal pages on failure. To enforce the use of huge
     pages, you can set <a class="xref" href="runtime-config-resource.html#GUC-HUGE-PAGES">huge_pages</a>
     to <code class="literal">on</code> in <code class="filename">postgresql.conf</code>.
     Note that with this setting <span class="productname">PostgreSQL</span> will fail to
@@ -631,4 +543,4 @@ $ <strong class="userinput"><code>grep Huge /proc/meminfo</code></strong>
     For a detailed description of the <span class="productname">Linux</span> huge
     pages feature have a look
     at <a class="ulink" href="https://www.kernel.org/doc/Documentation/vm/hugetlbpage.txt" target="_top">https://www.kernel.org/doc/Documentation/vm/hugetlbpage.txt</a>.
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="server-start.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="runtime.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="server-shutdown.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">18.3. Starting the Database Server </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 18.5. Shutting Down the Server</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="server-start.html" title="19.3. Starting the Database Server">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="runtime.html" title="Chapter 19. Server Setup and Operation">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="server-shutdown.html" title="19.5. Shutting Down the Server">Next</a></td></tr><tr><td width="40%" align="left" valign="top">19.3. Starting the Database Server </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 19.5. Shutting Down the Server</td></tr></table></div></body></html>

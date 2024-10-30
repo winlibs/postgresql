@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE AGGREGATE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-create-access-method.html" title="CREATE ACCESS METHOD" /><link rel="next" href="sql-createcast.html" title="CREATE CAST" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE AGGREGATE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-create-access-method.html" title="CREATE ACCESS METHOD">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createcast.html" title="CREATE CAST">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-CREATEAGGREGATE"><div class="titlepage"></div><a id="id-1.9.3.57.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE AGGREGATE</span></h2><p>CREATE AGGREGATE — define a new aggregate function</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
-CREATE AGGREGATE <em class="replaceable"><code>name</code></em> ( [ <em class="replaceable"><code>argmode</code></em> ] [ <em class="replaceable"><code>argname</code></em> ] <em class="replaceable"><code>arg_data_type</code></em> [ , ... ] ) (
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE AGGREGATE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-create-access-method.html" title="CREATE ACCESS METHOD" /><link rel="next" href="sql-createcast.html" title="CREATE CAST" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE AGGREGATE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-create-access-method.html" title="CREATE ACCESS METHOD">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createcast.html" title="CREATE CAST">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-CREATEAGGREGATE"><div class="titlepage"></div><a id="id-1.9.3.57.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE AGGREGATE</span></h2><p>CREATE AGGREGATE — define a new aggregate function</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+CREATE [ OR REPLACE ] AGGREGATE <em class="replaceable"><code>name</code></em> ( [ <em class="replaceable"><code>argmode</code></em> ] [ <em class="replaceable"><code>argname</code></em> ] <em class="replaceable"><code>arg_data_type</code></em> [ , ... ] ) (
     SFUNC = <em class="replaceable"><code>sfunc</code></em>,
     STYPE = <em class="replaceable"><code>state_data_type</code></em>
     [ , SSPACE = <em class="replaceable"><code>state_data_size</code></em> ]
@@ -23,7 +23,7 @@ CREATE AGGREGATE <em class="replaceable"><code>name</code></em> ( [ <em class="r
     [ , PARALLEL = { SAFE | RESTRICTED | UNSAFE } ]
 )
 
-CREATE AGGREGATE <em class="replaceable"><code>name</code></em> ( [ [ <em class="replaceable"><code>argmode</code></em> ] [ <em class="replaceable"><code>argname</code></em> ] <em class="replaceable"><code>arg_data_type</code></em> [ , ... ] ]
+CREATE [ OR REPLACE ] AGGREGATE <em class="replaceable"><code>name</code></em> ( [ [ <em class="replaceable"><code>argmode</code></em> ] [ <em class="replaceable"><code>argname</code></em> ] <em class="replaceable"><code>arg_data_type</code></em> [ , ... ] ]
                         ORDER BY [ <em class="replaceable"><code>argmode</code></em> ] [ <em class="replaceable"><code>argname</code></em> ] <em class="replaceable"><code>arg_data_type</code></em> [ , ... ] ) (
     SFUNC = <em class="replaceable"><code>sfunc</code></em>,
     STYPE = <em class="replaceable"><code>state_data_type</code></em>
@@ -38,7 +38,7 @@ CREATE AGGREGATE <em class="replaceable"><code>name</code></em> ( [ [ <em class=
 
 <span class="phrase">or the old syntax</span>
 
-CREATE AGGREGATE <em class="replaceable"><code>name</code></em> (
+CREATE [ OR REPLACE ] AGGREGATE <em class="replaceable"><code>name</code></em> (
     BASETYPE = <em class="replaceable"><code>base_type</code></em>,
     SFUNC = <em class="replaceable"><code>sfunc</code></em>,
     STYPE = <em class="replaceable"><code>state_data_type</code></em>
@@ -61,11 +61,19 @@ CREATE AGGREGATE <em class="replaceable"><code>name</code></em> (
     [ , SORTOP = <em class="replaceable"><code>sort_operator</code></em> ]
 )
 </pre></div><div class="refsect1" id="id-1.9.3.57.5"><h2>Description</h2><p>
-   <code class="command">CREATE AGGREGATE</code> defines a new aggregate
-   function. Some basic and commonly-used aggregate functions are
-   included with the distribution; they are documented in <a class="xref" href="functions-aggregate.html" title="9.20. Aggregate Functions">Section 9.20</a>. If one defines new types or needs
-   an aggregate function not already provided, then <code class="command">CREATE
-   AGGREGATE</code> can be used to provide the desired features.
+   <code class="command">CREATE AGGREGATE</code> defines a new aggregate function.
+   <code class="command">CREATE OR REPLACE AGGREGATE</code> will either define a new
+   aggregate function or replace an existing definition. Some basic and
+   commonly-used aggregate functions are included with the distribution; they
+   are documented in <a class="xref" href="functions-aggregate.html" title="9.21. Aggregate Functions">Section 9.21</a>. If one defines new
+   types or needs an aggregate function not already provided, then
+   <code class="command">CREATE AGGREGATE</code> can be used to provide the desired
+   features.
+  </p><p>
+   When replacing an existing definition, the argument types, result type,
+   and number of direct arguments may not be changed. Also, the new definition
+   must be of the same kind (ordinary aggregate, ordered-set aggregate, or
+   hypothetical-set aggregate) as the old one.
   </p><p>
    If a schema name is given (for example, <code class="literal">CREATE AGGREGATE
    myschema.myagg ...</code>) then the aggregate function is created in the
@@ -151,10 +159,10 @@ CREATE AGGREGATE <em class="replaceable"><code>name</code></em> (
    in the current call.
   </p><p>
    An aggregate can optionally support <em class="firstterm">moving-aggregate mode</em>,
-   as described in <a class="xref" href="xaggr.html#XAGGR-MOVING-AGGREGATES" title="38.11.1. Moving-Aggregate Mode">Section 38.11.1</a>.  This requires
+   as described in <a class="xref" href="xaggr.html#XAGGR-MOVING-AGGREGATES" title="38.12.1. Moving-Aggregate Mode">Section 38.12.1</a>.  This requires
    specifying the <code class="literal">MSFUNC</code>, <code class="literal">MINVFUNC</code>,
    and <code class="literal">MSTYPE</code> parameters, and optionally
-   the <code class="literal">MSPACE</code>, <code class="literal">MFINALFUNC</code>,
+   the <code class="literal">MSSPACE</code>, <code class="literal">MFINALFUNC</code>,
    <code class="literal">MFINALFUNC_EXTRA</code>, <code class="literal">MFINALFUNC_MODIFY</code>,
    and <code class="literal">MINITCOND</code> parameters.  Except for <code class="literal">MINVFUNC</code>,
    these parameters work like the corresponding simple-aggregate parameters
@@ -176,7 +184,7 @@ CREATE AGGREGATE <em class="replaceable"><code>name</code></em> (
    aggregate-input rows as an additional <span class="quote">“<span class="quote">hypothetical</span>”</span> row.
   </p><p>
    An aggregate can optionally support <em class="firstterm">partial aggregation</em>,
-   as described in <a class="xref" href="xaggr.html#XAGGR-PARTIAL-AGGREGATES" title="38.11.4. Partial Aggregation">Section 38.11.4</a>.
+   as described in <a class="xref" href="xaggr.html#XAGGR-PARTIAL-AGGREGATES" title="38.12.4. Partial Aggregation">Section 38.12.4</a>.
    This requires specifying the <code class="literal">COMBINEFUNC</code> parameter.
    If the <em class="replaceable"><code>state_data_type</code></em>
    is <code class="type">internal</code>, it's usually also appropriate to provide the
@@ -256,10 +264,7 @@ SELECT col FROM tab ORDER BY col USING sortop LIMIT 1;
       If this parameter is omitted or is zero, a default estimate is used
       based on the <em class="replaceable"><code>state_data_type</code></em>.
       The planner uses this value to estimate the memory required for a
-      grouped aggregate query.  The planner will consider using hash
-      aggregation for such a query only if the hash table is estimated to fit
-      in <a class="xref" href="runtime-config-resource.html#GUC-WORK-MEM">work_mem</a>; therefore, large values of this
-      parameter discourage use of hash aggregation.
+      grouped aggregate query.
      </p></dd><dt><span class="term"><em class="replaceable"><code>ffunc</code></em></span></dt><dd><p>
       The name of the final function called to compute the aggregate's
       result after all input rows have been traversed.
@@ -284,7 +289,8 @@ SELECT col FROM tab ORDER BY col USING sortop LIMIT 1;
       This option specifies whether the final function is a pure function
       that does not modify its arguments.  <code class="literal">READ_ONLY</code> indicates
       it does not; the other two values indicate that it may change the
-      transition state value.  See <a class="xref" href="sql-createaggregate.html#SQL-CREATEAGGREGATE-NOTES" title="Notes">Notes</a> below for more detail.  The
+      transition state value.  See <a class="xref" href="sql-createaggregate.html#SQL-CREATEAGGREGATE-NOTES" title="Notes">Notes</a>
+      below for more detail.  The
       default is <code class="literal">READ_ONLY</code>, except for ordered-set aggregates,
       for which the default is <code class="literal">READ_WRITE</code>.
      </p></dd><dt><span class="term"><em class="replaceable"><code>combinefunc</code></em></span></dt><dd><p>
@@ -385,7 +391,7 @@ SELECT col FROM tab ORDER BY col USING sortop LIMIT 1;
      </p></dd><dt><span class="term"><code class="literal">PARALLEL =</code> { <code class="literal">SAFE</code> | <code class="literal">RESTRICTED</code> | <code class="literal">UNSAFE</code> }</span></dt><dd><p>
       The meanings of <code class="literal">PARALLEL SAFE</code>, <code class="literal">PARALLEL
       RESTRICTED</code>, and <code class="literal">PARALLEL UNSAFE</code> are the same as
-      in <a class="xref" href="sql-createfunction.html" title="CREATE FUNCTION"><span class="refentrytitle">CREATE FUNCTION</span></a>.  An aggregate will not be
+      in <a class="link" href="sql-createfunction.html" title="CREATE FUNCTION"><code class="command">CREATE FUNCTION</code></a>.  An aggregate will not be
       considered for parallelization if it is marked <code class="literal">PARALLEL
       UNSAFE</code> (which is the default!) or <code class="literal">PARALLEL RESTRICTED</code>.
       Note that the parallel-safety markings of the aggregate's support
@@ -496,9 +502,9 @@ SELECT col FROM tab ORDER BY col USING sortop LIMIT 1;
     that include <code class="literal">DISTINCT</code> or <code class="literal">ORDER BY</code> clauses, since
     those semantics cannot be supported during partial aggregation.
   </p></div><div class="refsect1" id="id-1.9.3.57.8"><h2>Examples</h2><p>
-   See <a class="xref" href="xaggr.html" title="38.11. User-defined Aggregates">Section 38.11</a>.
+   See <a class="xref" href="xaggr.html" title="38.12. User-Defined Aggregates">Section 38.12</a>.
   </p></div><div class="refsect1" id="id-1.9.3.57.9"><h2>Compatibility</h2><p>
    <code class="command">CREATE AGGREGATE</code> is a
    <span class="productname">PostgreSQL</span> language extension.  The SQL
    standard does not provide for user-defined aggregate functions.
-  </p></div><div class="refsect1" id="id-1.9.3.57.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-alteraggregate.html" title="ALTER AGGREGATE"><span class="refentrytitle">ALTER AGGREGATE</span></a>, <a class="xref" href="sql-dropaggregate.html" title="DROP AGGREGATE"><span class="refentrytitle">DROP AGGREGATE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-create-access-method.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createcast.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE ACCESS METHOD </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> CREATE CAST</td></tr></table></div></body></html>
+  </p></div><div class="refsect1" id="id-1.9.3.57.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-alteraggregate.html" title="ALTER AGGREGATE"><span class="refentrytitle">ALTER AGGREGATE</span></a>, <a class="xref" href="sql-dropaggregate.html" title="DROP AGGREGATE"><span class="refentrytitle">DROP AGGREGATE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-create-access-method.html" title="CREATE ACCESS METHOD">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createcast.html" title="CREATE CAST">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE ACCESS METHOD </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> CREATE CAST</td></tr></table></div></body></html>

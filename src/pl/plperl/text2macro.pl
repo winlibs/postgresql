@@ -1,3 +1,6 @@
+
+# Copyright (c) 2021-2023, PostgreSQL Global Development Group
+
 # src/pl/plperl/text2macro.pl
 
 =head1 NAME
@@ -29,9 +32,9 @@ use warnings;
 use Getopt::Long;
 
 GetOptions(
-	'prefix=s'  => \my $opt_prefix,
-	'name=s'    => \my $opt_name,
-	'strip=s'   => \my $opt_strip,
+	'prefix=s' => \my $opt_prefix,
+	'name=s' => \my $opt_name,
+	'strip=s' => \my $opt_strip,
 	'selftest!' => sub { exit selftest() },) or exit 1;
 
 die "No text files specified"
@@ -77,7 +80,7 @@ exit 0;
 
 sub selftest
 {
-	my $tmp    = "text2macro_tmp";
+	my $tmp = "text2macro_tmp";
 	my $string = q{a '' '\\'' "" "\\"" "\\\\" "\\\\n" b};
 
 	open my $fh, '>', "$tmp.pl" or die;

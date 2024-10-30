@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>12.1. Introduction</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="textsearch.html" title="Chapter 12. Full Text Search" /><link rel="next" href="textsearch-tables.html" title="12.2. Tables and Indexes" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">12.1. Introduction</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="textsearch.html" title="Chapter 12. Full Text Search">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><th width="60%" align="center">Chapter 12. Full Text Search</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="textsearch-tables.html" title="12.2. Tables and Indexes">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TEXTSEARCH-INTRO"><div class="titlepage"><div><div><h2 class="title" style="clear: both">12.1. Introduction</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="textsearch-intro.html#TEXTSEARCH-DOCUMENT">12.1.1. What Is a Document?</a></span></dt><dt><span class="sect2"><a href="textsearch-intro.html#TEXTSEARCH-MATCHING">12.1.2. Basic Text Matching</a></span></dt><dt><span class="sect2"><a href="textsearch-intro.html#TEXTSEARCH-INTRO-CONFIGURATIONS">12.1.3. Configurations</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>12.1. Introduction</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="textsearch.html" title="Chapter 12. Full Text Search" /><link rel="next" href="textsearch-tables.html" title="12.2. Tables and Indexes" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">12.1. Introduction</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="textsearch.html" title="Chapter 12. Full Text Search">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><th width="60%" align="center">Chapter 12. Full Text Search</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="textsearch-tables.html" title="12.2. Tables and Indexes">Next</a></td></tr></table><hr /></div><div class="sect1" id="TEXTSEARCH-INTRO"><div class="titlepage"><div><div><h2 class="title" style="clear: both">12.1. Introduction <a href="#TEXTSEARCH-INTRO" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="textsearch-intro.html#TEXTSEARCH-DOCUMENT">12.1.1. What Is a Document?</a></span></dt><dt><span class="sect2"><a href="textsearch-intro.html#TEXTSEARCH-MATCHING">12.1.2. Basic Text Matching</a></span></dt><dt><span class="sect2"><a href="textsearch-intro.html#TEXTSEARCH-INTRO-CONFIGURATIONS">12.1.3. Configurations</a></span></dt></dl></div><p>
    Full Text Searching (or just <em class="firstterm">text search</em>) provides
    the capability to identify natural-language <em class="firstterm">documents</em> that
    satisfy a <em class="firstterm">query</em>, and optionally to sort them by
@@ -92,8 +92,8 @@
    (<a class="xref" href="functions-textsearch.html" title="9.13. Text Search Functions and Operators">Section 9.13</a>), the most important of which is
    the match operator <code class="literal">@@</code>, which we introduce in
    <a class="xref" href="textsearch-intro.html#TEXTSEARCH-MATCHING" title="12.1.2. Basic Text Matching">Section 12.1.2</a>.  Full text searches can be accelerated
-   using indexes (<a class="xref" href="textsearch-indexes.html" title="12.9. GIN and GiST Index Types">Section 12.9</a>).
-  </p><div class="sect2" id="TEXTSEARCH-DOCUMENT"><div class="titlepage"><div><div><h3 class="title">12.1.1. What Is a Document?</h3></div></div></div><a id="id-1.5.11.4.10.2" class="indexterm"></a><p>
+   using indexes (<a class="xref" href="textsearch-indexes.html" title="12.9. Preferred Index Types for Text Search">Section 12.9</a>).
+  </p><div class="sect2" id="TEXTSEARCH-DOCUMENT"><div class="titlepage"><div><div><h3 class="title">12.1.1. What Is a Document? <a href="#TEXTSEARCH-DOCUMENT" class="id_link">#</a></h3></div></div></div><a id="id-1.5.11.4.10.2" class="indexterm"></a><p>
     A <em class="firstterm">document</em> is the unit of searching in a full text search
     system; for example, a magazine article or email message.  The text search
     engine must be able to parse documents and store associations of lexemes
@@ -114,7 +114,7 @@ WHERE mid = 12;
 
 SELECT m.title || ' ' || m.author || ' ' || m.abstract || ' ' || d.body AS document
 FROM messages m, docs d
-WHERE mid = did AND mid = 12;
+WHERE m.mid = d.did AND m.mid = 12;
 </pre><p>
    </p><div class="note"><h3 class="title">Note</h3><p>
      Actually, in these example queries, <code class="function">coalesce</code>
@@ -139,7 +139,7 @@ WHERE mid = did AND mid = 12;
     We therefore often speak of the <code class="type">tsvector</code> as being the
     document, but of course it is only a compact representation of
     the full document.
-   </p></div><div class="sect2" id="TEXTSEARCH-MATCHING"><div class="titlepage"><div><div><h3 class="title">12.1.2. Basic Text Matching</h3></div></div></div><p>
+   </p></div><div class="sect2" id="TEXTSEARCH-MATCHING"><div class="titlepage"><div><div><h3 class="title">12.1.2. Basic Text Matching <a href="#TEXTSEARCH-MATCHING" class="id_link">#</a></h3></div></div></div><p>
     Full text searching in <span class="productname">PostgreSQL</span> is based on
     the match operator <code class="literal">@@</code>, which returns
     <code class="literal">true</code> if a <code class="type">tsvector</code>
@@ -173,7 +173,7 @@ SELECT 'fat &amp; cow'::tsquery @@ 'a fat cat sat on a mat and ate a fat rat'::t
 
 </p><pre class="programlisting">
 SELECT to_tsvector('fat cats ate fat rats') @@ to_tsquery('fat &amp; rat');
- ?column? 
+ ?column?
 ----------
  t
 </pre><p>
@@ -182,7 +182,7 @@ SELECT to_tsvector('fat cats ate fat rats') @@ to_tsquery('fat &amp; rat');
 
 </p><pre class="programlisting">
 SELECT 'fat cats ate fat rats'::tsvector @@ to_tsquery('fat &amp; rat');
- ?column? 
+ ?column?
 ----------
  f
 </pre><p>
@@ -225,12 +225,12 @@ text @@ text
 
 </p><pre class="programlisting">
 SELECT to_tsvector('fatal error') @@ to_tsquery('fatal &lt;-&gt; error');
- ?column? 
+ ?column?
 ----------
  t
 
 SELECT to_tsvector('error is not fatal') @@ to_tsquery('fatal &lt;-&gt; error');
- ?column? 
+ ?column?
 ----------
  f
 </pre><p>
@@ -247,12 +247,12 @@ SELECT to_tsvector('error is not fatal') @@ to_tsquery('fatal &lt;-&gt; error');
 
 </p><pre class="programlisting">
 SELECT phraseto_tsquery('cats ate rats');
-       phraseto_tsquery        
+       phraseto_tsquery
 -------------------------------
  'cat' &lt;-&gt; 'ate' &lt;-&gt; 'rat'
 
 SELECT phraseto_tsquery('the cats ate the rats');
-       phraseto_tsquery        
+       phraseto_tsquery
 -------------------------------
  'cat' &lt;-&gt; 'ate' &lt;2&gt; 'rat'
 </pre><p>
@@ -284,7 +284,7 @@ SELECT phraseto_tsquery('the cats ate the rats');
     since <code class="literal">x</code> and <code class="literal">y</code> could not match at the same place;
     but with more complex situations such as prefix-match patterns, a query
     of this form could be useful.)
-   </p></div><div class="sect2" id="TEXTSEARCH-INTRO-CONFIGURATIONS"><div class="titlepage"><div><div><h3 class="title">12.1.3. Configurations</h3></div></div></div><p>
+   </p></div><div class="sect2" id="TEXTSEARCH-INTRO-CONFIGURATIONS"><div class="titlepage"><div><div><h3 class="title">12.1.3. Configurations <a href="#TEXTSEARCH-INTRO-CONFIGURATIONS" class="id_link">#</a></h3></div></div></div><p>
     The above are all simple text search examples.  As mentioned before, full
     text search functionality includes the ability to do many more things:
     skip indexing certain words (stop words), process synonyms, and use
@@ -336,4 +336,4 @@ SELECT phraseto_tsquery('the cats ate the rats');
     parsers and templates, no special privilege is needed to create a new
     dictionary or configuration.  Examples of creating custom dictionaries and
     configurations appear later in this chapter.
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="textsearch.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="textsearch.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="textsearch-tables.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 12. Full Text Search </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 12.2. Tables and Indexes</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="textsearch.html" title="Chapter 12. Full Text Search">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="textsearch-tables.html" title="12.2. Tables and Indexes">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 12. Full Text Search </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 12.2. Tables and Indexes</td></tr></table></div></body></html>

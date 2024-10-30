@@ -39,7 +39,7 @@
  * empty and be returned to the free page manager, and whole segments can
  * become empty and be returned to the operating system.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -51,6 +51,7 @@
 #include "postgres.h"
 
 #include "port/atomics.h"
+#include "port/pg_bitutils.h"
 #include "storage/dsm.h"
 #include "storage/ipc.h"
 #include "storage/lwlock.h"
@@ -74,7 +75,7 @@
  * dsm.c's limits on total number of segments), or limiting the total size
  * an area can manage when using small pointers.
  */
-#define DSA_NUM_SEGMENTS_AT_EACH_SIZE 4
+#define DSA_NUM_SEGMENTS_AT_EACH_SIZE 2
 
 /*
  * The number of bits used to represent the offset part of a dsa_pointer.
@@ -137,7 +138,18 @@ typedef size_t dsa_segment_index;
  * free pages?	There is no point in looking in segments in lower bins; they
  * definitely can't service a request for n free pages.
  */
-#define contiguous_pages_to_segment_bin(n) Min(fls(n), DSA_NUM_SEGMENT_BINS - 1)
+static inline size_t
+contiguous_pages_to_segment_bin(size_t n)
+{
+	size_t		bin;
+
+	if (n == 0)
+		bin = 0;
+	else
+		bin = pg_leftmost_one_pos_size_t(n) + 1;
+
+	return Min(bin, DSA_NUM_SEGMENT_BINS - 1);
+}
 
 /* Macros for access to locks. */
 #define DSA_AREA_LOCK(area) (&area->control->lock)
@@ -256,7 +268,7 @@ static const uint16 dsa_size_classes[] = {
  * round the size of the object up to the next multiple of 8 bytes, and then
  * index into this array.
  */
-static char dsa_size_class_map[] = {
+static const uint8 dsa_size_class_map[] = {
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13,
 	14, 14, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 17, 17, 17, 17,
 	18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19,
@@ -382,30 +394,31 @@ struct dsa_area
 	(segment_map_ptr - &area->segment_maps[0])
 
 static void init_span(dsa_area *area, dsa_pointer span_pointer,
-		  dsa_area_pool *pool, dsa_pointer start, size_t npages,
-		  uint16 size_class);
+					  dsa_area_pool *pool, dsa_pointer start, size_t npages,
+					  uint16 size_class);
 static bool transfer_first_span(dsa_area *area, dsa_area_pool *pool,
-					int fromclass, int toclass);
+								int fromclass, int toclass);
 static inline dsa_pointer alloc_object(dsa_area *area, int size_class);
 static bool ensure_active_superblock(dsa_area *area, dsa_area_pool *pool,
-						 int size_class);
+									 int size_class);
 static dsa_segment_map *get_segment_by_index(dsa_area *area,
-					 dsa_segment_index index);
+											 dsa_segment_index index);
 static void destroy_superblock(dsa_area *area, dsa_pointer span_pointer);
 static void unlink_span(dsa_area *area, dsa_area_span *span);
 static void add_span_to_fullness_class(dsa_area *area, dsa_area_span *span,
-						   dsa_pointer span_pointer, int fclass);
+									   dsa_pointer span_pointer, int fclass);
 static void unlink_segment(dsa_area *area, dsa_segment_map *segment_map);
 static dsa_segment_map *get_best_segment(dsa_area *area, size_t npages);
 static dsa_segment_map *make_new_segment(dsa_area *area, size_t requested_pages);
 static dsa_area *create_internal(void *place, size_t size,
-				int tranche_id,
-				dsm_handle control_handle,
-				dsm_segment *control_segment);
+								 int tranche_id,
+								 dsm_handle control_handle,
+								 dsm_segment *control_segment);
 static dsa_area *attach_internal(void *place, dsm_segment *segment,
-				dsa_handle handle);
+								 dsa_handle handle);
 static void check_for_freed_segments(dsa_area *area);
 static void check_for_freed_segments_locked(dsa_area *area);
+static void rebin_segment(dsa_area *area, dsa_segment_map *segment_map);
 
 /*
  * Create a new shared area in a new DSM segment.  Further DSM segments will
@@ -493,7 +506,7 @@ dsa_create_in_place(void *place, size_t size,
 dsa_handle
 dsa_get_handle(dsa_area *area)
 {
-	Assert(area->control->handle != DSM_HANDLE_INVALID);
+	Assert(area->control->handle != DSA_HANDLE_INVALID);
 	return area->control->handle;
 }
 
@@ -542,7 +555,7 @@ dsa_attach_in_place(void *place, dsm_segment *segment)
 {
 	dsa_area   *area;
 
-	area = attach_internal(place, NULL, DSM_HANDLE_INVALID);
+	area = attach_internal(place, NULL, DSA_HANDLE_INVALID);
 
 	/*
 	 * Clean up when the control segment detaches, if a containing DSM segment
@@ -857,7 +870,11 @@ dsa_free(dsa_area *area, dsa_pointer dp)
 		FreePageManagerPut(segment_map->fpm,
 						   DSA_EXTRACT_OFFSET(span->start) / FPM_PAGE_SIZE,
 						   span->npages);
+
+		/* Move segment to appropriate bin if necessary. */
+		rebin_segment(area, segment_map);
 		LWLockRelease(DSA_AREA_LOCK(area));
+
 		/* Unlink span. */
 		LWLockAcquire(DSA_SCLASS_LOCK(area, DSA_SCLASS_SPAN_LARGE),
 					  LW_EXCLUSIVE);
@@ -1088,9 +1105,13 @@ dsa_dump(dsa_area *area)
 		{
 			dsa_segment_index segment_index;
 
-			fprintf(stderr,
-					"    segment bin %zu (at least %d contiguous pages free):\n",
-					i, 1 << (i - 1));
+			if (i == 0)
+				fprintf(stderr,
+						"    segment bin %zu (no contiguous free pages):\n", i);
+			else
+				fprintf(stderr,
+						"    segment bin %zu (at least %d contiguous pages free):\n",
+						i, 1 << (i - 1));
 			segment_index = area->control->segment_bins[i];
 			while (segment_index != DSA_SEGMENT_INDEX_NONE)
 			{
@@ -1223,6 +1244,7 @@ create_internal(void *place, size_t size,
 	 * space.
 	 */
 	control = (dsa_area_control *) place;
+	memset(place, 0, sizeof(*control));
 	control->segment_header.magic =
 		DSA_SEGMENT_HEADER_MAGIC ^ control_handle ^ 0;
 	control->segment_header.next = DSA_SEGMENT_INDEX_NONE;
@@ -1233,14 +1255,10 @@ create_internal(void *place, size_t size,
 	control->handle = control_handle;
 	control->max_total_segment_size = (size_t) -1;
 	control->total_segment_size = size;
-	memset(&control->segment_handles[0], 0,
-		   sizeof(dsm_handle) * DSA_MAX_SEGMENTS);
 	control->segment_handles[0] = control_handle;
 	for (i = 0; i < DSA_NUM_SEGMENT_BINS; ++i)
 		control->segment_bins[i] = DSA_SEGMENT_INDEX_NONE;
-	control->high_segment_index = 0;
 	control->refcnt = 1;
-	control->freed_segment_counter = 0;
 	control->lwlock_tranche_id = tranche_id;
 
 	/*
@@ -1360,7 +1378,7 @@ init_span(dsa_area *area,
 	if (DsaPointerIsValid(pool->spans[1]))
 	{
 		dsa_area_span *head = (dsa_area_span *)
-		dsa_get_address(area, pool->spans[1]);
+			dsa_get_address(area, pool->spans[1]);
 
 		head->prevspan = span_pointer;
 	}
@@ -1676,6 +1694,7 @@ ensure_active_superblock(dsa_area *area, dsa_area_pool *pool,
 			return false;
 		}
 	}
+
 	/*
 	 * This shouldn't happen: get_best_segment() or make_new_segment()
 	 * promised that we can successfully allocate npages.
@@ -1848,6 +1867,11 @@ destroy_superblock(dsa_area *area, dsa_pointer span_pointer)
 			segment_map->mapped_address = NULL;
 		}
 	}
+
+	/* Move segment to appropriate bin if necessary. */
+	if (segment_map->header != NULL)
+		rebin_segment(area, segment_map);
+
 	LWLockRelease(DSA_AREA_LOCK(area));
 
 	/*
@@ -2011,28 +2035,7 @@ get_best_segment(dsa_area *area, size_t npages)
 			/* Re-bin it if it's no longer in the appropriate bin. */
 			if (contiguous_pages < threshold)
 			{
-				size_t		new_bin;
-
-				new_bin = contiguous_pages_to_segment_bin(contiguous_pages);
-
-				/* Remove it from its current bin. */
-				unlink_segment(area, segment_map);
-
-				/* Push it onto the front of its new bin. */
-				segment_map->header->prev = DSA_SEGMENT_INDEX_NONE;
-				segment_map->header->next =
-					area->control->segment_bins[new_bin];
-				segment_map->header->bin = new_bin;
-				area->control->segment_bins[new_bin] = segment_index;
-				if (segment_map->header->next != DSA_SEGMENT_INDEX_NONE)
-				{
-					dsa_segment_map *next;
-
-					next = get_segment_by_index(area,
-												segment_map->header->next);
-					Assert(next->header->bin == new_bin);
-					next->header->prev = segment_index;
-				}
+				rebin_segment(area, segment_map);
 
 				/*
 				 * But fall through to see if it's enough to satisfy this
@@ -2205,7 +2208,7 @@ make_new_segment(dsa_area *area, size_t requested_pages)
 	if (segment_map->header->next != DSA_SEGMENT_INDEX_NONE)
 	{
 		dsa_segment_map *next =
-		get_segment_by_index(area, segment_map->header->next);
+			get_segment_by_index(area, segment_map->header->next);
 
 		Assert(next->header->bin == segment_map->header->bin);
 		next->header->prev = new_index;
@@ -2234,8 +2237,8 @@ check_for_freed_segments(dsa_area *area)
 
 	/*
 	 * Any other process that has freed a segment has incremented
-	 * free_segment_counter while holding an LWLock, and that must precede any
-	 * backend creating a new segment in the same slot while holding an
+	 * freed_segment_counter while holding an LWLock, and that must precede
+	 * any backend creating a new segment in the same slot while holding an
 	 * LWLock, and that must precede the creation of any dsa_pointer pointing
 	 * into the new segment which might reach us here, and the caller must
 	 * have sent the dsa_pointer to this process using appropriate memory
@@ -2257,7 +2260,7 @@ check_for_freed_segments(dsa_area *area)
 }
 
 /*
- * Workhorse for check_for_free_segments(), and also used directly in path
+ * Workhorse for check_for_freed_segments(), and also used directly in path
  * where the area lock is already held.  This should be called after acquiring
  * the lock but before looking up any segment by index number, to make sure we
  * unmap any stale segments that might have previously had the same index as a
@@ -2267,7 +2270,7 @@ static void
 check_for_freed_segments_locked(dsa_area *area)
 {
 	size_t		freed_segment_counter;
-	int		i;
+	int			i;
 
 	Assert(LWLockHeldByMe(DSA_AREA_LOCK(area)));
 	freed_segment_counter = area->control->freed_segment_counter;
@@ -2285,5 +2288,37 @@ check_for_freed_segments_locked(dsa_area *area)
 			}
 		}
 		area->freed_segment_counter = freed_segment_counter;
+	}
+}
+
+/*
+ * Re-bin segment if it's no longer in the appropriate bin.
+ */
+static void
+rebin_segment(dsa_area *area, dsa_segment_map *segment_map)
+{
+	size_t		new_bin;
+	dsa_segment_index segment_index;
+
+	new_bin = contiguous_pages_to_segment_bin(fpm_largest(segment_map->fpm));
+	if (segment_map->header->bin == new_bin)
+		return;
+
+	/* Remove it from its current bin. */
+	unlink_segment(area, segment_map);
+
+	/* Push it onto the front of its new bin. */
+	segment_index = get_segment_index(area, segment_map);
+	segment_map->header->prev = DSA_SEGMENT_INDEX_NONE;
+	segment_map->header->next = area->control->segment_bins[new_bin];
+	segment_map->header->bin = new_bin;
+	area->control->segment_bins[new_bin] = segment_index;
+	if (segment_map->header->next != DSA_SEGMENT_INDEX_NONE)
+	{
+		dsa_segment_map *next;
+
+		next = get_segment_by_index(area, segment_map->header->next);
+		Assert(next->header->bin == new_bin);
+		next->header->prev = segment_index;
 	}
 }

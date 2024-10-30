@@ -5,13 +5,11 @@
  *
  * A bitmap set can represent any set of nonnegative integers, although
  * it is mainly intended for sets where the maximum value is not large,
- * say at most a few hundred.  By convention, a NULL pointer is always
- * accepted by all operations to represent the empty set.  (But beware
- * that this is not the only representation of the empty set.  Use
- * bms_is_empty() in preference to testing for NULL.)
+ * say at most a few hundred.  By convention, we always represent the
+ * empty set by a NULL pointer.
  *
  *
- * Copyright (c) 2003-2018, PostgreSQL Global Development Group
+ * Copyright (c) 2003-2023, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/backend/nodes/bitmapset.c
@@ -20,8 +18,10 @@
  */
 #include "postgres.h"
 
-#include "access/hash.h"
+#include "common/hashfn.h"
+#include "nodes/bitmapset.h"
 #include "nodes/pg_list.h"
+#include "port/pg_bitutils.h"
 
 
 #define WORDNUM(x)	((x) / BITS_PER_BITMAPWORD)
@@ -51,79 +51,20 @@
 
 #define HAS_MULTIPLE_ONES(x)	((bitmapword) RIGHTMOST_ONE(x) != (x))
 
+/* Select appropriate bit-twiddling functions for bitmap word size */
+#if BITS_PER_BITMAPWORD == 32
+#define bmw_leftmost_one_pos(w)		pg_leftmost_one_pos32(w)
+#define bmw_rightmost_one_pos(w)	pg_rightmost_one_pos32(w)
+#define bmw_popcount(w)				pg_popcount32(w)
+#elif BITS_PER_BITMAPWORD == 64
+#define bmw_leftmost_one_pos(w)		pg_leftmost_one_pos64(w)
+#define bmw_rightmost_one_pos(w)	pg_rightmost_one_pos64(w)
+#define bmw_popcount(w)				pg_popcount64(w)
+#else
+#error "invalid BITS_PER_BITMAPWORD"
+#endif
 
-/*
- * Lookup tables to avoid need for bit-by-bit groveling
- *
- * rightmost_one_pos[x] gives the bit number (0-7) of the rightmost one bit
- * in a nonzero byte value x.  The entry for x=0 is never used.
- *
- * leftmost_one_pos[x] gives the bit number (0-7) of the leftmost one bit in a
- * nonzero byte value x.  The entry for x=0 is never used.
- *
- * number_of_ones[x] gives the number of one-bits (0-8) in a byte value x.
- *
- * We could make these tables larger and reduce the number of iterations
- * in the functions that use them, but bytewise shifts and masks are
- * especially fast on many machines, so working a byte at a time seems best.
- */
-
-static const uint8 rightmost_one_pos[256] = {
-	0, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-	4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0
-};
-
-static const uint8 leftmost_one_pos[256] = {
-	0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
-	4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-	5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-	5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-	6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-	6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-	6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-	6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-	7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7
-};
-
-static const uint8 number_of_ones[256] = {
-	0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
-	1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
-	1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
-	2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
-	1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
-	2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
-	2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
-	3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
-	1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
-	2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
-	2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
-	3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
-	2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
-	3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
-	3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
-	4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8
-};
+static bool bms_is_empty_internal(const Bitmapset *a);
 
 
 /*
@@ -163,10 +104,10 @@ bms_equal(const Bitmapset *a, const Bitmapset *b)
 	{
 		if (b == NULL)
 			return true;
-		return bms_is_empty(b);
+		return false;
 	}
 	else if (b == NULL)
-		return bms_is_empty(a);
+		return false;
 	/* Identify shorter and longer input */
 	if (a->nwords <= b->nwords)
 	{
@@ -210,9 +151,9 @@ bms_compare(const Bitmapset *a, const Bitmapset *b)
 
 	/* Handle cases where either input is NULL */
 	if (a == NULL)
-		return bms_is_empty(b) ? 0 : -1;
+		return (b == NULL) ? 0 : -1;
 	else if (b == NULL)
-		return bms_is_empty(a) ? 0 : +1;
+		return +1;
 	/* Handle cases where one input is longer than the other */
 	shortlen = Min(a->nwords, b->nwords);
 	for (i = shortlen; i < a->nwords; i++)
@@ -253,6 +194,7 @@ bms_make_singleton(int x)
 	wordnum = WORDNUM(x);
 	bitnum = BITNUM(x);
 	result = (Bitmapset *) palloc0(BITMAPSET_SIZE(wordnum + 1));
+	result->type = T_Bitmapset;
 	result->nwords = wordnum + 1;
 	result->words[wordnum] = ((bitmapword) 1 << bitnum);
 	return result;
@@ -340,6 +282,12 @@ bms_intersect(const Bitmapset *a, const Bitmapset *b)
 	resultlen = result->nwords;
 	for (i = 0; i < resultlen; i++)
 		result->words[i] &= other->words[i];
+	/* If we computed an empty result, we must return NULL */
+	if (bms_is_empty_internal(result))
+	{
+		pfree(result);
+		return NULL;
+	}
 	return result;
 }
 
@@ -358,12 +306,22 @@ bms_difference(const Bitmapset *a, const Bitmapset *b)
 		return NULL;
 	if (b == NULL)
 		return bms_copy(a);
+
+	/*
+	 * In Postgres' usage, an empty result is a very common case, so it's
+	 * worth optimizing for that by testing bms_nonempty_difference().  This
+	 * saves us a palloc/pfree cycle compared to checking after-the-fact.
+	 */
+	if (!bms_nonempty_difference(a, b))
+		return NULL;
+
 	/* Copy the left input */
 	result = bms_copy(a);
 	/* And remove b's bits from result */
 	shortlen = Min(a->nwords, b->nwords);
 	for (i = 0; i < shortlen; i++)
 		result->words[i] &= ~b->words[i];
+	/* Need not check for empty result, since we handled that case above */
 	return result;
 }
 
@@ -381,7 +339,7 @@ bms_is_subset(const Bitmapset *a, const Bitmapset *b)
 	if (a == NULL)
 		return true;			/* empty set is a subset of anything */
 	if (b == NULL)
-		return bms_is_empty(a);
+		return false;
 	/* Check common words */
 	shortlen = Min(a->nwords, b->nwords);
 	for (i = 0; i < shortlen; i++)
@@ -420,10 +378,10 @@ bms_subset_compare(const Bitmapset *a, const Bitmapset *b)
 	{
 		if (b == NULL)
 			return BMS_EQUAL;
-		return bms_is_empty(b) ? BMS_EQUAL : BMS_SUBSET1;
+		return BMS_SUBSET1;
 	}
 	if (b == NULL)
-		return bms_is_empty(a) ? BMS_EQUAL : BMS_SUBSET2;
+		return BMS_SUBSET2;
 	/* Check common words */
 	result = BMS_EQUAL;			/* status so far */
 	shortlen = Min(a->nwords, b->nwords);
@@ -503,6 +461,50 @@ bms_is_member(int x, const Bitmapset *a)
 }
 
 /*
+ * bms_member_index
+ *		determine 0-based index of member x in the bitmap
+ *
+ * Returns (-1) when x is not a member.
+ */
+int
+bms_member_index(Bitmapset *a, int x)
+{
+	int			i;
+	int			bitnum;
+	int			wordnum;
+	int			result = 0;
+	bitmapword	mask;
+
+	/* return -1 if not a member of the bitmap */
+	if (!bms_is_member(x, a))
+		return -1;
+
+	wordnum = WORDNUM(x);
+	bitnum = BITNUM(x);
+
+	/* count bits in preceding words */
+	for (i = 0; i < wordnum; i++)
+	{
+		bitmapword	w = a->words[i];
+
+		/* No need to count the bits in a zero word */
+		if (w != 0)
+			result += bmw_popcount(w);
+	}
+
+	/*
+	 * Now add bits of the last word, but only those before the item. We can
+	 * do that by applying a mask and then using popcount again. To get
+	 * 0-based index, we want to count only preceding bits, not the item
+	 * itself, so we subtract 1.
+	 */
+	mask = ((bitmapword) 1 << bitnum) - 1;
+	result += bmw_popcount(a->words[wordnum] & mask);
+
+	return result;
+}
+
+/*
  * bms_overlap - do sets overlap (ie, have a nonempty intersection)?
  */
 bool
@@ -555,6 +557,8 @@ bms_overlap_list(const Bitmapset *a, const List *b)
 
 /*
  * bms_nonempty_difference - do sets have a nonempty difference?
+ *
+ * i.e., are any members set in 'a' that are not also set in 'b'.
  */
 bool
 bms_nonempty_difference(const Bitmapset *a, const Bitmapset *b)
@@ -566,7 +570,7 @@ bms_nonempty_difference(const Bitmapset *a, const Bitmapset *b)
 	if (a == NULL)
 		return false;
 	if (b == NULL)
-		return !bms_is_empty(a);
+		return true;
 	/* Check words in common */
 	shortlen = Min(a->nwords, b->nwords);
 	for (i = 0; i < shortlen; i++)
@@ -607,12 +611,7 @@ bms_singleton_member(const Bitmapset *a)
 			if (result >= 0 || HAS_MULTIPLE_ONES(w))
 				elog(ERROR, "bitmapset has multiple members");
 			result = wordnum * BITS_PER_BITMAPWORD;
-			while ((w & 255) == 0)
-			{
-				w >>= 8;
-				result += 8;
-			}
-			result += rightmost_one_pos[w & 255];
+			result += bmw_rightmost_one_pos(w);
 		}
 	}
 	if (result < 0)
@@ -650,12 +649,7 @@ bms_get_singleton_member(const Bitmapset *a, int *member)
 			if (result >= 0 || HAS_MULTIPLE_ONES(w))
 				return false;
 			result = wordnum * BITS_PER_BITMAPWORD;
-			while ((w & 255) == 0)
-			{
-				w >>= 8;
-				result += 8;
-			}
-			result += rightmost_one_pos[w & 255];
+			result += bmw_rightmost_one_pos(w);
 		}
 	}
 	if (result < 0)
@@ -681,12 +675,9 @@ bms_num_members(const Bitmapset *a)
 	{
 		bitmapword	w = a->words[wordnum];
 
-		/* we assume here that bitmapword is an unsigned type */
-		while (w != 0)
-		{
-			result += number_of_ones[w & 255];
-			w >>= 8;
-		}
+		/* No need to count the bits in a zero word */
+		if (w != 0)
+			result += bmw_popcount(w);
 	}
 	return result;
 }
@@ -721,18 +712,18 @@ bms_membership(const Bitmapset *a)
 }
 
 /*
- * bms_is_empty - is a set empty?
+ * bms_is_empty_internal - is a set empty?
  *
- * This is even faster than bms_membership().
+ * This is now used only locally, to detect cases where a function has
+ * computed an empty set that we must now get rid of.  Hence, we can
+ * assume the input isn't NULL.
  */
-bool
-bms_is_empty(const Bitmapset *a)
+static bool
+bms_is_empty_internal(const Bitmapset *a)
 {
 	int			nwords;
 	int			wordnum;
 
-	if (a == NULL)
-		return true;
 	nwords = a->nwords;
 	for (wordnum = 0; wordnum < nwords; wordnum++)
 	{
@@ -811,6 +802,12 @@ bms_del_member(Bitmapset *a, int x)
 	bitnum = BITNUM(x);
 	if (wordnum < a->nwords)
 		a->words[wordnum] &= ~((bitmapword) 1 << bitnum);
+	/* If we computed an empty result, we must return NULL */
+	if (bms_is_empty_internal(a))
+	{
+		pfree(a);
+		return NULL;
+	}
 	return a;
 }
 
@@ -878,6 +875,7 @@ bms_add_range(Bitmapset *a, int lower, int upper)
 	if (a == NULL)
 	{
 		a = (Bitmapset *) palloc0(BITMAPSET_SIZE(uwordnum + 1));
+		a->type = T_Bitmapset;
 		a->nwords = uwordnum + 1;
 	}
 	else if (uwordnum >= a->nwords)
@@ -946,6 +944,12 @@ bms_int_members(Bitmapset *a, const Bitmapset *b)
 		a->words[i] &= b->words[i];
 	for (; i < a->nwords; i++)
 		a->words[i] = 0;
+	/* If we computed an empty result, we must return NULL */
+	if (bms_is_empty_internal(a))
+	{
+		pfree(a);
+		return NULL;
+	}
 	return a;
 }
 
@@ -967,6 +971,12 @@ bms_del_members(Bitmapset *a, const Bitmapset *b)
 	shortlen = Min(a->nwords, b->nwords);
 	for (i = 0; i < shortlen; i++)
 		a->words[i] &= ~b->words[i];
+	/* If we computed an empty result, we must return NULL */
+	if (bms_is_empty_internal(a))
+	{
+		pfree(a);
+		return NULL;
+	}
 	return a;
 }
 
@@ -1004,53 +1014,6 @@ bms_join(Bitmapset *a, Bitmapset *b)
 	if (other != result)		/* pure paranoia */
 		pfree(other);
 	return result;
-}
-
-/*
- * bms_first_member - find and remove first member of a set
- *
- * Returns -1 if set is empty.  NB: set is destructively modified!
- *
- * This is intended as support for iterating through the members of a set.
- * The typical pattern is
- *
- *			while ((x = bms_first_member(inputset)) >= 0)
- *				process member x;
- *
- * CAUTION: this destroys the content of "inputset".  If the set must
- * not be modified, use bms_next_member instead.
- */
-int
-bms_first_member(Bitmapset *a)
-{
-	int			nwords;
-	int			wordnum;
-
-	if (a == NULL)
-		return -1;
-	nwords = a->nwords;
-	for (wordnum = 0; wordnum < nwords; wordnum++)
-	{
-		bitmapword	w = a->words[wordnum];
-
-		if (w != 0)
-		{
-			int			result;
-
-			w = RIGHTMOST_ONE(w);
-			a->words[wordnum] &= ~w;
-
-			result = wordnum * BITS_PER_BITMAPWORD;
-			while ((w & 255) == 0)
-			{
-				w >>= 8;
-				result += 8;
-			}
-			result += rightmost_one_pos[w & 255];
-			return result;
-		}
-	}
-	return -1;
 }
 
 /*
@@ -1096,12 +1059,7 @@ bms_next_member(const Bitmapset *a, int prevbit)
 			int			result;
 
 			result = wordnum * BITS_PER_BITMAPWORD;
-			while ((w & 255) == 0)
-			{
-				w >>= 8;
-				result += 8;
-			}
-			result += rightmost_one_pos[w & 255];
+			result += bmw_rightmost_one_pos(w);
 			return result;
 		}
 
@@ -1168,14 +1126,9 @@ bms_prev_member(const Bitmapset *a, int prevbit)
 		if (w != 0)
 		{
 			int			result;
-			int			shift = BITS_PER_BITMAPWORD - 8;
 
 			result = wordnum * BITS_PER_BITMAPWORD;
-
-			while ((w >> shift) == 0)
-				shift -= 8;
-
-			result += shift + leftmost_one_pos[(w >> shift) & 255];
+			result += bmw_leftmost_one_pos(w);
 			return result;
 		}
 
@@ -1209,4 +1162,27 @@ bms_hash_value(const Bitmapset *a)
 		return 0;				/* All empty sets hash to 0 */
 	return DatumGetUInt32(hash_any((const unsigned char *) a->words,
 								   (lastword + 1) * sizeof(bitmapword)));
+}
+
+/*
+ * bitmap_hash - hash function for keys that are (pointers to) Bitmapsets
+ *
+ * Note: don't forget to specify bitmap_match as the match function!
+ */
+uint32
+bitmap_hash(const void *key, Size keysize)
+{
+	Assert(keysize == sizeof(Bitmapset *));
+	return bms_hash_value(*((const Bitmapset *const *) key));
+}
+
+/*
+ * bitmap_match - match function to use with bitmap_hash
+ */
+int
+bitmap_match(const void *key1, const void *key2, Size keysize)
+{
+	Assert(keysize == sizeof(Bitmapset *));
+	return !bms_equal(*((const Bitmapset *const *) key1),
+					  *((const Bitmapset *const *) key2));
 }

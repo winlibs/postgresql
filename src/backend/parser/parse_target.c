@@ -3,7 +3,7 @@
  * parse_target.c
  *	  handle target lists
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -20,51 +20,42 @@
 #include "miscadmin.h"
 #include "nodes/makefuncs.h"
 #include "nodes/nodeFuncs.h"
-#include "parser/parsetree.h"
 #include "parser/parse_coerce.h"
 #include "parser/parse_expr.h"
 #include "parser/parse_func.h"
 #include "parser/parse_relation.h"
 #include "parser/parse_target.h"
 #include "parser/parse_type.h"
+#include "parser/parsetree.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
 #include "utils/typcache.h"
 
-
 static void markTargetListOrigin(ParseState *pstate, TargetEntry *tle,
-					 Var *var, int levelsup);
-static Node *transformAssignmentIndirection(ParseState *pstate,
-							   Node *basenode,
-							   const char *targetName,
-							   bool targetIsArray,
-							   Oid targetTypeId,
-							   int32 targetTypMod,
-							   Oid targetCollation,
-							   ListCell *indirection,
-							   Node *rhs,
-							   int location);
+								 Var *var, int levelsup);
 static Node *transformAssignmentSubscripts(ParseState *pstate,
-							  Node *basenode,
-							  const char *targetName,
-							  Oid targetTypeId,
-							  int32 targetTypMod,
-							  Oid targetCollation,
-							  List *subscripts,
-							  bool isSlice,
-							  ListCell *next_indirection,
-							  Node *rhs,
-							  int location);
+										   Node *basenode,
+										   const char *targetName,
+										   Oid targetTypeId,
+										   int32 targetTypMod,
+										   Oid targetCollation,
+										   List *subscripts,
+										   List *indirection,
+										   ListCell *next_indirection,
+										   Node *rhs,
+										   CoercionContext ccontext,
+										   int location);
 static List *ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
-					bool make_target_entry);
+								 bool make_target_entry);
 static List *ExpandAllTables(ParseState *pstate, int location);
 static List *ExpandIndirectionStar(ParseState *pstate, A_Indirection *ind,
-					  bool make_target_entry, ParseExprKind exprKind);
-static List *ExpandSingleTable(ParseState *pstate, RangeTblEntry *rte,
-				  int location, bool make_target_entry);
+								   bool make_target_entry, ParseExprKind exprKind);
+static List *ExpandSingleTable(ParseState *pstate, ParseNamespaceItem *nsitem,
+							   int sublevels_up, int location,
+							   bool make_target_entry);
 static List *ExpandRowReference(ParseState *pstate, Node *expr,
-				   bool make_target_entry);
+								bool make_target_entry);
 static int	FigureColnameInternal(Node *node, char **name);
 
 
@@ -219,7 +210,9 @@ transformTargetList(ParseState *pstate, List *targetlist,
  * This is the identical transformation to transformTargetList, except that
  * the input list elements are bare expressions without ResTarget decoration,
  * and the output elements are likewise just expressions without TargetEntry
- * decoration.  We use this for ROW() and VALUES() constructs.
+ * decoration.  Also, we don't expect any multiassign constructs within the
+ * list, so there's nothing to do for that.  We use this for ROW() and
+ * VALUES() constructs.
  *
  * exprKind is not enough to tell us whether to allow SetToDefault, so
  * an additional flag is needed for that.
@@ -281,9 +274,6 @@ transformExpressionList(ParseState *pstate, List *exprlist,
 		result = lappend(result, e);
 	}
 
-	/* Shouldn't have any multiassign items here */
-	Assert(pstate->p_multiassign_exprs == NIL);
-
 	return result;
 }
 
@@ -344,8 +334,11 @@ markTargetListOrigins(ParseState *pstate, List *targetlist)
  *
  * levelsup is an extra offset to interpret the Var's varlevelsup correctly.
  *
- * This is split out so it can recurse for join references.  Note that we
- * do not drill down into views, but report the view as the column owner.
+ * Note that we do not drill down into views, but report the view as the
+ * column owner.  There's also no need to drill down into joins: if we see
+ * a join alias Var, it must be a merged JOIN USING column (or possibly a
+ * whole-row Var); that is not a direct reference to any plain table column,
+ * so we don't report it.
  */
 static void
 markTargetListOrigin(ParseState *pstate, TargetEntry *tle,
@@ -383,21 +376,11 @@ markTargetListOrigin(ParseState *pstate, TargetEntry *tle,
 			}
 			break;
 		case RTE_JOIN:
-			/* Join RTE --- recursively inspect the alias variable */
-			if (attnum != InvalidAttrNumber)
-			{
-				Var		   *aliasvar;
-
-				Assert(attnum > 0 && attnum <= list_length(rte->joinaliasvars));
-				aliasvar = (Var *) list_nth(rte->joinaliasvars, attnum - 1);
-				/* We intentionally don't strip implicit coercions here */
-				markTargetListOrigin(pstate, tle, aliasvar, netlevelsup);
-			}
-			break;
 		case RTE_FUNCTION:
 		case RTE_VALUES:
 		case RTE_TABLEFUNC:
 		case RTE_NAMEDTUPLESTORE:
+		case RTE_RESULT:
 			/* not a simple relation, leave it unmarked */
 			break;
 		case RTE_CTE:
@@ -414,10 +397,25 @@ markTargetListOrigin(ParseState *pstate, TargetEntry *tle,
 			{
 				CommonTableExpr *cte = GetCTEForRTE(pstate, rte, netlevelsup);
 				TargetEntry *ste;
+				List	   *tl = GetCTETargetList(cte);
+				int			extra_cols = 0;
 
-				ste = get_tle_by_resno(GetCTETargetList(cte), attnum);
+				/*
+				 * RTE for CTE will already have the search and cycle columns
+				 * added, but the subquery won't, so skip looking those up.
+				 */
+				if (cte->search_clause)
+					extra_cols += 1;
+				if (cte->cycle_clause)
+					extra_cols += 2;
+				if (extra_cols &&
+					attnum > list_length(tl) &&
+					attnum <= list_length(tl) + extra_cols)
+					break;
+
+				ste = get_tle_by_resno(tl, attnum);
 				if (ste == NULL || ste->resjunk)
-					elog(ERROR, "subquery %s does not have attribute %d",
+					elog(ERROR, "CTE %s does not have attribute %d",
 						 rte->eref->aliasname, attnum);
 				tle->resorigtbl = ste->resorigtbl;
 				tle->resorigcol = ste->resorigcol;
@@ -546,10 +544,13 @@ transformAssignedExpr(ParseState *pstate,
 			/*
 			 * Build a Var for the column to be updated.
 			 */
-			colVar = (Node *) make_var(pstate,
-									   pstate->p_target_rangetblentry,
-									   attrno,
-									   location);
+			Var		   *var;
+
+			var = makeVar(pstate->p_target_nsitem->p_rtindex, attrno,
+						  attrtype, attrtypmod, attrcollation, 0);
+			var->location = location;
+
+			colVar = (Node *) var;
 		}
 
 		expr = (Expr *)
@@ -560,8 +561,10 @@ transformAssignedExpr(ParseState *pstate,
 										   attrtype,
 										   attrtypmod,
 										   attrcollation,
+										   indirection,
 										   list_head(indirection),
 										   (Node *) expr,
+										   COERCION_ASSIGNMENT,
 										   location);
 	}
 	else
@@ -643,60 +646,66 @@ updateTargetListEntry(ParseState *pstate,
 
 /*
  * Process indirection (field selection or subscripting) of the target
- * column in INSERT/UPDATE.  This routine recurses for multiple levels
- * of indirection --- but note that several adjacent A_Indices nodes in
- * the indirection list are treated as a single multidimensional subscript
+ * column in INSERT/UPDATE/assignment.  This routine recurses for multiple
+ * levels of indirection --- but note that several adjacent A_Indices nodes
+ * in the indirection list are treated as a single multidimensional subscript
  * operation.
  *
  * In the initial call, basenode is a Var for the target column in UPDATE,
- * or a null Const of the target's type in INSERT.  In recursive calls,
- * basenode is NULL, indicating that a substitute node should be consed up if
- * needed.
+ * or a null Const of the target's type in INSERT, or a Param for the target
+ * variable in PL/pgSQL assignment.  In recursive calls, basenode is NULL,
+ * indicating that a substitute node should be consed up if needed.
  *
  * targetName is the name of the field or subfield we're assigning to, and
- * targetIsArray is true if we're subscripting it.  These are just for
+ * targetIsSubscripting is true if we're subscripting it.  These are just for
  * error reporting.
  *
  * targetTypeId, targetTypMod, targetCollation indicate the datatype and
  * collation of the object to be assigned to (initially the target column,
  * later some subobject).
  *
- * indirection is the sublist remaining to process.  When it's NULL, we're
- * done recursing and can just coerce and return the RHS.
+ * indirection is the list of indirection nodes, and indirection_cell is the
+ * start of the sublist remaining to process.  When it's NULL, we're done
+ * recursing and can just coerce and return the RHS.
  *
  * rhs is the already-transformed value to be assigned; note it has not been
  * coerced to any particular type.
+ *
+ * ccontext is the coercion level to use while coercing the rhs.  For
+ * normal statements it'll be COERCION_ASSIGNMENT, but PL/pgSQL uses
+ * a special value.
  *
  * location is the cursor error position for any errors.  (Note: this points
  * to the head of the target clause, eg "foo" in "foo.bar[baz]".  Later we
  * might want to decorate indirection cells with their own location info,
  * in which case the location argument could probably be dropped.)
  */
-static Node *
+Node *
 transformAssignmentIndirection(ParseState *pstate,
 							   Node *basenode,
 							   const char *targetName,
-							   bool targetIsArray,
+							   bool targetIsSubscripting,
 							   Oid targetTypeId,
 							   int32 targetTypMod,
 							   Oid targetCollation,
-							   ListCell *indirection,
+							   List *indirection,
+							   ListCell *indirection_cell,
 							   Node *rhs,
+							   CoercionContext ccontext,
 							   int location)
 {
 	Node	   *result;
 	List	   *subscripts = NIL;
-	bool		isSlice = false;
 	ListCell   *i;
 
-	if (indirection && !basenode)
+	if (indirection_cell && !basenode)
 	{
 		/*
 		 * Set up a substitution.  We abuse CaseTestExpr for this.  It's safe
 		 * to do so because the only nodes that will be above the CaseTestExpr
-		 * in the finished expression will be FieldStore and ArrayRef nodes.
-		 * (There could be other stuff in the tree, but it will be within
-		 * other child fields of those node types.)
+		 * in the finished expression will be FieldStore and SubscriptingRef
+		 * nodes. (There could be other stuff in the tree, but it will be
+		 * within other child fields of those node types.)
 		 */
 		CaseTestExpr *ctest = makeNode(CaseTestExpr);
 
@@ -711,16 +720,12 @@ transformAssignmentIndirection(ParseState *pstate,
 	 * subscripting.  Adjacent A_Indices nodes have to be treated as a single
 	 * multidimensional subscript operation.
 	 */
-	for_each_cell(i, indirection)
+	for_each_cell(i, indirection, indirection_cell)
 	{
 		Node	   *n = lfirst(i);
 
 		if (IsA(n, A_Indices))
-		{
 			subscripts = lappend(subscripts, n);
-			if (((A_Indices *) n)->is_slice)
-				isSlice = true;
-		}
 		else if (IsA(n, A_Star))
 		{
 			ereport(ERROR,
@@ -752,9 +757,10 @@ transformAssignmentIndirection(ParseState *pstate,
 													 targetTypMod,
 													 targetCollation,
 													 subscripts,
-													 isSlice,
+													 indirection,
 													 i,
 													 rhs,
+													 ccontext,
 													 location);
 			}
 
@@ -802,8 +808,10 @@ transformAssignmentIndirection(ParseState *pstate,
 												 fieldTypeId,
 												 fieldTypMod,
 												 fieldCollation,
-												 lnext(i),
+												 indirection,
+												 lnext(indirection, i),
 												 rhs,
+												 ccontext,
 												 location);
 
 			/* and build a FieldStore node */
@@ -813,7 +821,16 @@ transformAssignmentIndirection(ParseState *pstate,
 			fstore->fieldnums = list_make1_int(attnum);
 			fstore->resulttype = baseTypeId;
 
-			/* If target is a domain, apply constraints */
+			/*
+			 * If target is a domain, apply constraints.  Notice that this
+			 * isn't totally right: the expression tree we build would check
+			 * the domain's constraints on a composite value with only this
+			 * one field populated or updated, possibly leading to an unwanted
+			 * failure.  The rewriter will merge together any subfield
+			 * assignments to the same table column, resulting in the domain's
+			 * constraints being checked only once after we've assigned to all
+			 * the fields that the INSERT or UPDATE means to.
+			 */
 			if (baseTypeId != targetTypeId)
 				return coerce_to_domain((Node *) fstore,
 										baseTypeId, baseTypeMod,
@@ -838,9 +855,10 @@ transformAssignmentIndirection(ParseState *pstate,
 											 targetTypMod,
 											 targetCollation,
 											 subscripts,
-											 isSlice,
+											 indirection,
 											 NULL,
 											 rhs,
+											 ccontext,
 											 location);
 	}
 
@@ -849,15 +867,15 @@ transformAssignmentIndirection(ParseState *pstate,
 	result = coerce_to_target_type(pstate,
 								   rhs, exprType(rhs),
 								   targetTypeId, targetTypMod,
-								   COERCION_ASSIGNMENT,
+								   ccontext,
 								   COERCE_IMPLICIT_CAST,
 								   -1);
 	if (result == NULL)
 	{
-		if (targetIsArray)
+		if (targetIsSubscripting)
 			ereport(ERROR,
 					(errcode(ERRCODE_DATATYPE_MISMATCH),
-					 errmsg("array assignment to \"%s\" requires type %s"
+					 errmsg("subscripted assignment to \"%s\" requires type %s"
 							" but expression is of type %s",
 							targetName,
 							format_type_be(targetTypeId),
@@ -880,7 +898,7 @@ transformAssignmentIndirection(ParseState *pstate,
 }
 
 /*
- * helper for transformAssignmentIndirection: process array assignment
+ * helper for transformAssignmentIndirection: process container assignment
  */
 static Node *
 transformAssignmentSubscripts(ParseState *pstate,
@@ -890,68 +908,88 @@ transformAssignmentSubscripts(ParseState *pstate,
 							  int32 targetTypMod,
 							  Oid targetCollation,
 							  List *subscripts,
-							  bool isSlice,
+							  List *indirection,
 							  ListCell *next_indirection,
 							  Node *rhs,
+							  CoercionContext ccontext,
 							  int location)
 {
 	Node	   *result;
-	Oid			arrayType;
-	int32		arrayTypMod;
-	Oid			elementTypeId;
+	SubscriptingRef *sbsref;
+	Oid			containerType;
+	int32		containerTypMod;
 	Oid			typeNeeded;
+	int32		typmodNeeded;
 	Oid			collationNeeded;
 
 	Assert(subscripts != NIL);
 
-	/* Identify the actual array type and element type involved */
-	arrayType = targetTypeId;
-	arrayTypMod = targetTypMod;
-	elementTypeId = transformArrayType(&arrayType, &arrayTypMod);
+	/* Identify the actual container type involved */
+	containerType = targetTypeId;
+	containerTypMod = targetTypMod;
+	transformContainerType(&containerType, &containerTypMod);
 
-	/* Identify type that RHS must provide */
-	typeNeeded = isSlice ? arrayType : elementTypeId;
+	/* Process subscripts and identify required type for RHS */
+	sbsref = transformContainerSubscripts(pstate,
+										  basenode,
+										  containerType,
+										  containerTypMod,
+										  subscripts,
+										  true);
+
+	typeNeeded = sbsref->refrestype;
+	typmodNeeded = sbsref->reftypmod;
 
 	/*
-	 * Array normally has same collation as elements, but there's an
-	 * exception: we might be subscripting a domain over an array type. In
-	 * that case use collation of the base type.
+	 * Container normally has same collation as its elements, but there's an
+	 * exception: we might be subscripting a domain over a container type.  In
+	 * that case use collation of the base type.  (This is shaky for arbitrary
+	 * subscripting semantics, but it doesn't matter all that much since we
+	 * only use this to label the collation of a possible CaseTestExpr.)
 	 */
-	if (arrayType == targetTypeId)
+	if (containerType == targetTypeId)
 		collationNeeded = targetCollation;
 	else
-		collationNeeded = get_typcollation(arrayType);
+		collationNeeded = get_typcollation(containerType);
 
-	/* recurse to create appropriate RHS for array assign */
+	/* recurse to create appropriate RHS for container assign */
 	rhs = transformAssignmentIndirection(pstate,
 										 NULL,
 										 targetName,
 										 true,
 										 typeNeeded,
-										 arrayTypMod,
+										 typmodNeeded,
 										 collationNeeded,
+										 indirection,
 										 next_indirection,
 										 rhs,
+										 ccontext,
 										 location);
 
-	/* process subscripts */
-	result = (Node *) transformArraySubscripts(pstate,
-											   basenode,
-											   arrayType,
-											   elementTypeId,
-											   arrayTypMod,
-											   subscripts,
-											   rhs);
+	/*
+	 * Insert the already-properly-coerced RHS into the SubscriptingRef.  Then
+	 * set refrestype and reftypmod back to the container type's values.
+	 */
+	sbsref->refassgnexpr = (Expr *) rhs;
+	sbsref->refrestype = containerType;
+	sbsref->reftypmod = containerTypMod;
 
-	/* If target was a domain over array, need to coerce up to the domain */
-	if (arrayType != targetTypeId)
+	result = (Node *) sbsref;
+
+	/*
+	 * If target was a domain over container, need to coerce up to the domain.
+	 * As in transformAssignmentIndirection, this coercion is premature if the
+	 * query assigns to multiple elements of the container; but we'll fix that
+	 * during query rewrite.
+	 */
+	if (containerType != targetTypeId)
 	{
 		Oid			resulttype = exprType(result);
 
 		result = coerce_to_target_type(pstate,
 									   result, resulttype,
 									   targetTypeId, targetTypMod,
-									   COERCION_ASSIGNMENT,
+									   ccontext,
 									   COERCE_IMPLICIT_CAST,
 									   -1);
 		/* can fail if we had int2vector/oidvector, but not for true domains */
@@ -1108,7 +1146,7 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 		 *
 		 * Note: this code is a lot like transformColumnRef; it's tempting to
 		 * call that instead and then replace the resulting whole-row Var with
-		 * a list of Vars.  However, that would leave us with the RTE's
+		 * a list of Vars.  However, that would leave us with the relation's
 		 * selectedCols bitmap showing the whole row as needing select
 		 * permission, as well as the individual columns.  That would be
 		 * incorrect (since columns added later shouldn't need select
@@ -1117,7 +1155,7 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 		 */
 		char	   *nspname = NULL;
 		char	   *relname = NULL;
-		RangeTblEntry *rte = NULL;
+		ParseNamespaceItem *nsitem = NULL;
 		int			levels_up;
 		enum
 		{
@@ -1143,16 +1181,16 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 		{
 			case 2:
 				relname = strVal(linitial(fields));
-				rte = refnameRangeTblEntry(pstate, nspname, relname,
-										   cref->location,
-										   &levels_up);
+				nsitem = refnameNamespaceItem(pstate, nspname, relname,
+											  cref->location,
+											  &levels_up);
 				break;
 			case 3:
 				nspname = strVal(linitial(fields));
 				relname = strVal(lsecond(fields));
-				rte = refnameRangeTblEntry(pstate, nspname, relname,
-										   cref->location,
-										   &levels_up);
+				nsitem = refnameNamespaceItem(pstate, nspname, relname,
+											  cref->location,
+											  &levels_up);
 				break;
 			case 4:
 				{
@@ -1168,9 +1206,9 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 					}
 					nspname = strVal(lsecond(fields));
 					relname = strVal(lthird(fields));
-					rte = refnameRangeTblEntry(pstate, nspname, relname,
-											   cref->location,
-											   &levels_up);
+					nsitem = refnameNamespaceItem(pstate, nspname, relname,
+												  cref->location,
+												  &levels_up);
 					break;
 				}
 			default:
@@ -1183,17 +1221,19 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 		 * bit by passing the RangeTblEntry, not a Var, as the planned
 		 * translation.  (A single Var wouldn't be strictly correct anyway.
 		 * This convention allows hooks that really care to know what is
-		 * happening.)
+		 * happening.  It might be better to pass the nsitem, but we'd have to
+		 * promote that struct to a full-fledged Node type so that callees
+		 * could identify its type.)
 		 */
 		if (pstate->p_post_columnref_hook != NULL)
 		{
 			Node	   *node;
 
 			node = pstate->p_post_columnref_hook(pstate, cref,
-												 (Node *) rte);
+												 (Node *) (nsitem ? nsitem->p_rte : NULL));
 			if (node != NULL)
 			{
-				if (rte != NULL)
+				if (nsitem != NULL)
 					ereport(ERROR,
 							(errcode(ERRCODE_AMBIGUOUS_COLUMN),
 							 errmsg("column reference \"%s\" is ambiguous",
@@ -1206,7 +1246,7 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 		/*
 		 * Throw error if no translation found.
 		 */
-		if (rte == NULL)
+		if (nsitem == NULL)
 		{
 			switch (crserr)
 			{
@@ -1232,9 +1272,10 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 		}
 
 		/*
-		 * OK, expand the RTE into fields.
+		 * OK, expand the nsitem into fields.
 		 */
-		return ExpandSingleTable(pstate, rte, cref->location, make_target_entry);
+		return ExpandSingleTable(pstate, nsitem, levels_up, cref->location,
+								 make_target_entry);
 	}
 }
 
@@ -1259,7 +1300,6 @@ ExpandAllTables(ParseState *pstate, int location)
 	foreach(l, pstate->p_namespace)
 	{
 		ParseNamespaceItem *nsitem = (ParseNamespaceItem *) lfirst(l);
-		RangeTblEntry *rte = nsitem->p_rte;
 
 		/* Ignore table-only items */
 		if (!nsitem->p_cols_visible)
@@ -1270,12 +1310,11 @@ ExpandAllTables(ParseState *pstate, int location)
 		found_table = true;
 
 		target = list_concat(target,
-							 expandRelAttrs(pstate,
-											rte,
-											RTERangeTablePosn(pstate, rte,
-															  NULL),
-											0,
-											location));
+							 expandNSItemAttrs(pstate,
+											   nsitem,
+											   0,
+											   true,
+											   location));
 	}
 
 	/*
@@ -1331,41 +1370,43 @@ ExpandIndirectionStar(ParseState *pstate, A_Indirection *ind,
  * The referenced columns are marked as requiring SELECT access.
  */
 static List *
-ExpandSingleTable(ParseState *pstate, RangeTblEntry *rte,
-				  int location, bool make_target_entry)
+ExpandSingleTable(ParseState *pstate, ParseNamespaceItem *nsitem,
+				  int sublevels_up, int location, bool make_target_entry)
 {
-	int			sublevels_up;
-	int			rtindex;
-
-	rtindex = RTERangeTablePosn(pstate, rte, &sublevels_up);
-
 	if (make_target_entry)
 	{
-		/* expandRelAttrs handles permissions marking */
-		return expandRelAttrs(pstate, rte, rtindex, sublevels_up,
-							  location);
+		/* expandNSItemAttrs handles permissions marking */
+		return expandNSItemAttrs(pstate, nsitem, sublevels_up, true, location);
 	}
 	else
 	{
+		RangeTblEntry *rte = nsitem->p_rte;
+		RTEPermissionInfo *perminfo = nsitem->p_perminfo;
 		List	   *vars;
 		ListCell   *l;
 
-		expandRTE(rte, rtindex, sublevels_up, location, false,
-				  NULL, &vars);
+		vars = expandNSItemVars(pstate, nsitem, sublevels_up, location, NULL);
 
 		/*
 		 * Require read access to the table.  This is normally redundant with
 		 * the markVarForSelectPriv calls below, but not if the table has zero
-		 * columns.
+		 * columns.  We need not do anything if the nsitem is for a join: its
+		 * component tables will have been marked ACL_SELECT when they were
+		 * added to the rangetable.  (This step changes things only for the
+		 * target relation of UPDATE/DELETE, which cannot be under a join.)
 		 */
-		rte->requiredPerms |= ACL_SELECT;
+		if (rte->rtekind == RTE_RELATION)
+		{
+			Assert(perminfo != NULL);
+			perminfo->requiredPerms |= ACL_SELECT;
+		}
 
 		/* Require read access to each column */
 		foreach(l, vars)
 		{
 			Var		   *var = (Var *) lfirst(l);
 
-			markVarForSelectPriv(pstate, var, rte);
+			markVarForSelectPriv(pstate, var);
 		}
 
 		return vars;
@@ -1391,20 +1432,20 @@ ExpandRowReference(ParseState *pstate, Node *expr,
 	/*
 	 * If the rowtype expression is a whole-row Var, we can expand the fields
 	 * as simple Vars.  Note: if the RTE is a relation, this case leaves us
-	 * with the RTE's selectedCols bitmap showing the whole row as needing
-	 * select permission, as well as the individual columns.  However, we can
-	 * only get here for weird notations like (table.*).*, so it's not worth
-	 * trying to clean up --- arguably, the permissions marking is correct
-	 * anyway for such cases.
+	 * with its RTEPermissionInfo's selectedCols bitmap showing the whole row
+	 * as needing select permission, as well as the individual columns.
+	 * However, we can only get here for weird notations like (table.*).*, so
+	 * it's not worth trying to clean up --- arguably, the permissions marking
+	 * is correct anyway for such cases.
 	 */
 	if (IsA(expr, Var) &&
 		((Var *) expr)->varattno == InvalidAttrNumber)
 	{
 		Var		   *var = (Var *) expr;
-		RangeTblEntry *rte;
+		ParseNamespaceItem *nsitem;
 
-		rte = GetRTEByRangeTablePosn(pstate, var->varno, var->varlevelsup);
-		return ExpandSingleTable(pstate, rte, var->location, make_target_entry);
+		nsitem = GetNSItemByRangeTablePosn(pstate, var->varno, var->varlevelsup);
+		return ExpandSingleTable(pstate, nsitem, var->varlevelsup, var->location, make_target_entry);
 	}
 
 	/*
@@ -1472,7 +1513,8 @@ ExpandRowReference(ParseState *pstate, Node *expr,
  * drill down to find the ultimate defining expression and attempt to infer
  * the tupdesc from it.  We ereport if we can't determine the tupdesc.
  *
- * levelsup is an extra offset to interpret the Var's varlevelsup correctly.
+ * levelsup is an extra offset to interpret the Var's varlevelsup correctly
+ * when recursing.  Outside callers should pass zero.
  */
 TupleDesc
 expandRecordVariable(ParseState *pstate, Var *var, int levelsup)
@@ -1487,6 +1529,12 @@ expandRecordVariable(ParseState *pstate, Var *var, int levelsup)
 	Assert(IsA(var, Var));
 	Assert(var->vartype == RECORDOID);
 
+	/*
+	 * Note: it's tempting to use GetNSItemByRangeTablePosn here so that we
+	 * can use expandNSItemVars instead of expandRTE; but that does not work
+	 * for some of the recursion cases below, where we have consed up a
+	 * ParseState that lacks p_namespace data.
+	 */
 	netlevelsup = var->varlevelsup + levelsup;
 	rte = GetRTEByRangeTablePosn(pstate, var->varno, netlevelsup);
 	attnum = var->varattno;
@@ -1503,7 +1551,7 @@ expandRecordVariable(ParseState *pstate, Var *var, int levelsup)
 		expandRTE(rte, var->varno, 0, var->location, false,
 				  &names, &vars);
 
-		tupleDesc = CreateTemplateTupleDesc(list_length(vars), false);
+		tupleDesc = CreateTemplateTupleDesc(list_length(vars));
 		i = 1;
 		forboth(lname, names, lvar, vars)
 		{
@@ -1531,6 +1579,7 @@ expandRecordVariable(ParseState *pstate, Var *var, int levelsup)
 		case RTE_RELATION:
 		case RTE_VALUES:
 		case RTE_NAMEDTUPLESTORE:
+		case RTE_RESULT:
 
 			/*
 			 * This case should not occur: a column of a table, values list,
@@ -1553,11 +1602,17 @@ expandRecordVariable(ParseState *pstate, Var *var, int levelsup)
 					/*
 					 * Recurse into the sub-select to see what its Var refers
 					 * to.  We have to build an additional level of ParseState
-					 * to keep in step with varlevelsup in the subselect.
+					 * to keep in step with varlevelsup in the subselect;
+					 * furthermore, the subquery RTE might be from an outer
+					 * query level, in which case the ParseState for the
+					 * subselect must have that outer level as parent.
 					 */
-					ParseState	mypstate;
+					ParseState	mypstate = {0};
+					Index		levelsup;
 
-					MemSet(&mypstate, 0, sizeof(mypstate));
+					/* this loop must work, since GetRTEByRangeTablePosn did */
+					for (levelsup = 0; levelsup < netlevelsup; levelsup++)
+						pstate = pstate->parentParseState;
 					mypstate.parentParseState = pstate;
 					mypstate.p_rtable = rte->subquery->rtable;
 					/* don't bother filling the rest of the fake pstate */
@@ -1599,7 +1654,7 @@ expandRecordVariable(ParseState *pstate, Var *var, int levelsup)
 
 				ste = get_tle_by_resno(GetCTETargetList(cte), attnum);
 				if (ste == NULL || ste->resjunk)
-					elog(ERROR, "subquery %s does not have attribute %d",
+					elog(ERROR, "CTE %s does not have attribute %d",
 						 rte->eref->aliasname, attnum);
 				expr = (Node *) ste->expr;
 				if (IsA(expr, Var))
@@ -1608,12 +1663,11 @@ expandRecordVariable(ParseState *pstate, Var *var, int levelsup)
 					 * Recurse into the CTE to see what its Var refers to. We
 					 * have to build an additional level of ParseState to keep
 					 * in step with varlevelsup in the CTE; furthermore it
-					 * could be an outer CTE.
+					 * could be an outer CTE (compare SUBQUERY case above).
 					 */
-					ParseState	mypstate;
+					ParseState	mypstate = {0};
 					Index		levelsup;
 
-					MemSet(&mypstate, 0, sizeof(mypstate));
 					/* this loop must work, since GetCTEForRTE did */
 					for (levelsup = 0;
 						 levelsup < rte->ctelevelsup + netlevelsup;
@@ -1747,11 +1801,6 @@ FigureColnameInternal(Node *node, char **name)
 				/* make nullif() act like a regular function */
 				*name = "nullif";
 				return 2;
-			}
-			if (((A_Expr *) node)->kind == AEXPR_PAREN)
-			{
-				/* look through dummy parenthesis node */
-				return FigureColnameInternal(((A_Expr *) node)->lexpr, name);
 			}
 			break;
 		case T_TypeCast:
@@ -1922,7 +1971,25 @@ FigureColnameInternal(Node *node, char **name)
 			}
 			break;
 		case T_XmlSerialize:
+			/* make XMLSERIALIZE act like a regular function */
 			*name = "xmlserialize";
+			return 2;
+		case T_JsonObjectConstructor:
+			/* make JSON_OBJECT act like a regular function */
+			*name = "json_object";
+			return 2;
+		case T_JsonArrayConstructor:
+		case T_JsonArrayQueryConstructor:
+			/* make JSON_ARRAY act like a regular function */
+			*name = "json_array";
+			return 2;
+		case T_JsonObjectAgg:
+			/* make JSON_OBJECTAGG act like a regular function */
+			*name = "json_objectagg";
+			return 2;
+		case T_JsonArrayAgg:
+			/* make JSON_ARRAYAGG act like a regular function */
+			*name = "json_arrayagg";
 			return 2;
 		default:
 			break;

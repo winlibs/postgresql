@@ -3,7 +3,7 @@
  * dict_thesaurus.c
  *		Thesaurus dictionary: phrase to phrase substitution
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  *
  *
  * IDENTIFICATION
@@ -286,11 +286,6 @@ thesaurusRead(const char *filename, DictThesaurus *d)
 					(errcode(ERRCODE_CONFIG_FILE_ERROR),
 					 errmsg("unexpected end of line")));
 
-		/*
-		 * Note: currently, tsearch_readline can't return lines exceeding 4KB,
-		 * so overflow of the word counts is impossible.  But that may not
-		 * always be true, so let's check.
-		 */
 		if (nwrd != (uint16) nwrd || posinsubst != (uint16) posinsubst)
 			ereport(ERROR,
 					(errcode(ERRCODE_CONFIG_FILE_ERROR),
@@ -533,15 +528,11 @@ compileTheSubstitute(DictThesaurus *d)
 			}
 			else
 			{
-				lexized = (TSLexeme *) DatumGetPointer(
-													   FunctionCall4(
-																	 &(d->subdict->lexize),
+				lexized = (TSLexeme *) DatumGetPointer(FunctionCall4(&(d->subdict->lexize),
 																	 PointerGetDatum(d->subdict->dictData),
 																	 PointerGetDatum(inptr->lexeme),
 																	 Int32GetDatum(strlen(inptr->lexeme)),
-																	 PointerGetDatum(NULL)
-																	 )
-					);
+																	 PointerGetDatum(NULL)));
 			}
 
 			if (lexized && lexized->lexeme)
@@ -608,6 +599,7 @@ thesaurus_init(PG_FUNCTION_ARGS)
 	DictThesaurus *d;
 	char	   *subdictname = NULL;
 	bool		fileloaded = false;
+	List	   *namelist;
 	ListCell   *l;
 
 	d = (DictThesaurus *) palloc0(sizeof(DictThesaurus));
@@ -651,7 +643,8 @@ thesaurus_init(PG_FUNCTION_ARGS)
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				 errmsg("missing Dictionary parameter")));
 
-	d->subdictOid = get_ts_dict_oid(stringToQualifiedNameList(subdictname), false);
+	namelist = stringToQualifiedNameList(subdictname, NULL);
+	d->subdictOid = get_ts_dict_oid(namelist, false);
 	d->subdict = lookup_ts_dictionary_cache(d->subdictOid);
 
 	compileTheLexeme(d);

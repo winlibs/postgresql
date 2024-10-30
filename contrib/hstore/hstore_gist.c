@@ -4,29 +4,36 @@
 #include "postgres.h"
 
 #include "access/gist.h"
+#include "access/reloptions.h"
 #include "access/stratnum.h"
 #include "catalog/pg_type.h"
+#include "hstore.h"
 #include "utils/pg_crc.h"
 
-#include "hstore.h"
+/* gist_hstore_ops opclass options */
+typedef struct
+{
+	int32		vl_len_;		/* varlena header (do not touch directly!) */
+	int			siglen;			/* signature length in bytes */
+} GistHstoreOptions;
 
 /* bigint defines */
 #define BITBYTE 8
-#define SIGLENINT  4			/* >122 => key will toast, so very slow!!! */
-#define SIGLEN	( sizeof(int)*SIGLENINT )
-#define SIGLENBIT (SIGLEN*BITBYTE)
+#define SIGLEN_DEFAULT	(sizeof(int32) * 4)
+#define SIGLEN_MAX		GISTMaxIndexKeySize
+#define SIGLENBIT(siglen) ((siglen) * BITBYTE)
+#define GET_SIGLEN()	(PG_HAS_OPCLASS_OPTIONS() ? \
+						 ((GistHstoreOptions *) PG_GET_OPCLASS_OPTIONS())->siglen : \
+						 SIGLEN_DEFAULT)
 
-typedef char BITVEC[SIGLEN];
+
 typedef char *BITVECP;
 
-#define SIGPTR(x)  ( (BITVECP) ARR_DATA_PTR(x) )
+#define LOOPBYTE(siglen) \
+			for (i = 0; i < (siglen); i++)
 
-
-#define LOOPBYTE \
-			for(i=0;i<SIGLEN;i++)
-
-#define LOOPBIT \
-			for(i=0;i<SIGLENBIT;i++)
+#define LOOPBIT(siglen) \
+			for (i = 0; i < SIGLENBIT(siglen); i++)
 
 /* beware of multiple evaluation of arguments to these macros! */
 #define GETBYTE(x,i) ( *( (BITVECP)(x) + (int)( (i) / BITBYTE ) ) )
@@ -34,8 +41,8 @@ typedef char *BITVECP;
 #define CLRBIT(x,i)   GETBYTE(x,i) &= ~( 0x01 << ( (i) % BITBYTE ) )
 #define SETBIT(x,i)   GETBYTE(x,i) |=  ( 0x01 << ( (i) % BITBYTE ) )
 #define GETBIT(x,i) ( (GETBYTE(x,i) >> ( (i) % BITBYTE )) & 0x01 )
-#define HASHVAL(val) (((unsigned int)(val)) % SIGLENBIT)
-#define HASH(sign, val) SETBIT((sign), HASHVAL(val))
+#define HASHVAL(val, siglen) (((unsigned int)(val)) % SIGLENBIT(siglen))
+#define HASH(sign, val, siglen) SETBIT((sign), HASHVAL(val, siglen))
 
 typedef struct
 {
@@ -49,7 +56,7 @@ typedef struct
 #define ISALLTRUE(x)	( ((GISTTYPE*)x)->flag & ALLISTRUE )
 
 #define GTHDRSIZE		(VARHDRSZ + sizeof(int32))
-#define CALCGTSIZE(flag) ( GTHDRSIZE+(((flag) & ALLISTRUE) ? 0 : SIGLEN) )
+#define CALCGTSIZE(flag, siglen) ( GTHDRSIZE+(((flag) & ALLISTRUE) ? 0 : (siglen)) )
 
 #define GETSIGN(x)		( (BITVECP)( (char*)x+GTHDRSIZE ) )
 
@@ -89,15 +96,42 @@ PG_FUNCTION_INFO_V1(ghstore_out);
 Datum
 ghstore_in(PG_FUNCTION_ARGS)
 {
-	elog(ERROR, "Not implemented");
-	PG_RETURN_DATUM(0);
+	ereport(ERROR,
+			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+			 errmsg("cannot accept a value of type %s", "ghstore")));
+
+	PG_RETURN_VOID();			/* keep compiler quiet */
 }
 
 Datum
 ghstore_out(PG_FUNCTION_ARGS)
 {
-	elog(ERROR, "Not implemented");
-	PG_RETURN_DATUM(0);
+	ereport(ERROR,
+			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+			 errmsg("cannot display a value of type %s", "ghstore")));
+
+	PG_RETURN_VOID();			/* keep compiler quiet */
+}
+
+static GISTTYPE *
+ghstore_alloc(bool allistrue, int siglen, BITVECP sign)
+{
+	int			flag = allistrue ? ALLISTRUE : 0;
+	int			size = CALCGTSIZE(flag, siglen);
+	GISTTYPE   *res = palloc(size);
+
+	SET_VARSIZE(res, size);
+	res->flag = flag;
+
+	if (!allistrue)
+	{
+		if (sign)
+			memcpy(GETSIGN(res), sign, siglen);
+		else
+			memset(GETSIGN(res), 0, siglen);
+	}
+
+	return res;
 }
 
 PG_FUNCTION_INFO_V1(ghstore_consistent);
@@ -107,23 +141,23 @@ PG_FUNCTION_INFO_V1(ghstore_penalty);
 PG_FUNCTION_INFO_V1(ghstore_picksplit);
 PG_FUNCTION_INFO_V1(ghstore_union);
 PG_FUNCTION_INFO_V1(ghstore_same);
+PG_FUNCTION_INFO_V1(ghstore_options);
 
 Datum
 ghstore_compress(PG_FUNCTION_ARGS)
 {
 	GISTENTRY  *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+	int			siglen = GET_SIGLEN();
 	GISTENTRY  *retval = entry;
 
 	if (entry->leafkey)
 	{
-		GISTTYPE   *res = (GISTTYPE *) palloc0(CALCGTSIZE(0));
+		GISTTYPE   *res = ghstore_alloc(false, siglen, NULL);
 		HStore	   *val = DatumGetHStoreP(entry->key);
 		HEntry	   *hsent = ARRPTR(val);
 		char	   *ptr = STRPTR(val);
 		int			count = HS_COUNT(val);
 		int			i;
-
-		SET_VARSIZE(res, CALCGTSIZE(0));
 
 		for (i = 0; i < count; ++i)
 		{
@@ -131,12 +165,12 @@ ghstore_compress(PG_FUNCTION_ARGS)
 
 			h = crc32_sz((char *) HSTORE_KEY(hsent, ptr, i),
 						 HSTORE_KEYLEN(hsent, i));
-			HASH(GETSIGN(res), h);
+			HASH(GETSIGN(res), h, siglen);
 			if (!HSTORE_VALISNULL(hsent, i))
 			{
 				h = crc32_sz((char *) HSTORE_VAL(hsent, ptr, i),
 							 HSTORE_VALLEN(hsent, i));
-				HASH(GETSIGN(res), h);
+				HASH(GETSIGN(res), h, siglen);
 			}
 		}
 
@@ -152,15 +186,13 @@ ghstore_compress(PG_FUNCTION_ARGS)
 		GISTTYPE   *res;
 		BITVECP		sign = GETSIGN(DatumGetPointer(entry->key));
 
-		LOOPBYTE
+		LOOPBYTE(siglen)
 		{
 			if ((sign[i] & 0xff) != 0xff)
 				PG_RETURN_POINTER(retval);
 		}
 
-		res = (GISTTYPE *) palloc(CALCGTSIZE(ALLISTRUE));
-		SET_VARSIZE(res, CALCGTSIZE(ALLISTRUE));
-		res->flag = ALLISTRUE;
+		res = ghstore_alloc(true, siglen, NULL);
 
 		retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
 		gistentryinit(*retval, PointerGetDatum(res),
@@ -188,6 +220,8 @@ ghstore_same(PG_FUNCTION_ARGS)
 	GISTTYPE   *a = (GISTTYPE *) PG_GETARG_POINTER(0);
 	GISTTYPE   *b = (GISTTYPE *) PG_GETARG_POINTER(1);
 	bool	   *result = (bool *) PG_GETARG_POINTER(2);
+	int			siglen = GET_SIGLEN();
+
 
 	if (ISALLTRUE(a) && ISALLTRUE(b))
 		*result = true;
@@ -202,7 +236,7 @@ ghstore_same(PG_FUNCTION_ARGS)
 					sb = GETSIGN(b);
 
 		*result = true;
-		LOOPBYTE
+		LOOPBYTE(siglen)
 		{
 			if (sa[i] != sb[i])
 			{
@@ -215,12 +249,12 @@ ghstore_same(PG_FUNCTION_ARGS)
 }
 
 static int32
-sizebitvec(BITVECP sign)
+sizebitvec(BITVECP sign, int siglen)
 {
 	int32		size = 0,
 				i;
 
-	LOOPBYTE
+	LOOPBYTE(siglen)
 	{
 		size += SUMBIT(sign);
 		sign = (BITVECP) (((char *) sign) + 1);
@@ -229,12 +263,12 @@ sizebitvec(BITVECP sign)
 }
 
 static int
-hemdistsign(BITVECP a, BITVECP b)
+hemdistsign(BITVECP a, BITVECP b, int siglen)
 {
 	int			i,
 				dist = 0;
 
-	LOOPBIT
+	LOOPBIT(siglen)
 	{
 		if (GETBIT(a, i) != GETBIT(b, i))
 			dist++;
@@ -243,30 +277,30 @@ hemdistsign(BITVECP a, BITVECP b)
 }
 
 static int
-hemdist(GISTTYPE *a, GISTTYPE *b)
+hemdist(GISTTYPE *a, GISTTYPE *b, int siglen)
 {
 	if (ISALLTRUE(a))
 	{
 		if (ISALLTRUE(b))
 			return 0;
 		else
-			return SIGLENBIT - sizebitvec(GETSIGN(b));
+			return SIGLENBIT(siglen) - sizebitvec(GETSIGN(b), siglen);
 	}
 	else if (ISALLTRUE(b))
-		return SIGLENBIT - sizebitvec(GETSIGN(a));
+		return SIGLENBIT(siglen) - sizebitvec(GETSIGN(a), siglen);
 
-	return hemdistsign(GETSIGN(a), GETSIGN(b));
+	return hemdistsign(GETSIGN(a), GETSIGN(b), siglen);
 }
 
 static int32
-unionkey(BITVECP sbase, GISTTYPE *add)
+unionkey(BITVECP sbase, GISTTYPE *add, int siglen)
 {
 	int32		i;
 	BITVECP		sadd = GETSIGN(add);
 
 	if (ISALLTRUE(add))
 		return 1;
-	LOOPBYTE
+	LOOPBYTE(siglen)
 		sbase[i] |= sadd[i];
 	return 0;
 }
@@ -278,28 +312,22 @@ ghstore_union(PG_FUNCTION_ARGS)
 	int32		len = entryvec->n;
 
 	int		   *size = (int *) PG_GETARG_POINTER(1);
-	BITVEC		base;
+	int			siglen = GET_SIGLEN();
 	int32		i;
-	int32		flag = 0;
-	GISTTYPE   *result;
+	GISTTYPE   *result = ghstore_alloc(false, siglen, NULL);
+	BITVECP		base = GETSIGN(result);
 
-	MemSet((void *) base, 0, sizeof(BITVEC));
 	for (i = 0; i < len; i++)
 	{
-		if (unionkey(base, GETENTRY(entryvec, i)))
+		if (unionkey(base, GETENTRY(entryvec, i), siglen))
 		{
-			flag = ALLISTRUE;
+			result->flag |= ALLISTRUE;
+			SET_VARSIZE(result, CALCGTSIZE(ALLISTRUE, siglen));
 			break;
 		}
 	}
 
-	len = CALCGTSIZE(flag);
-	result = (GISTTYPE *) palloc(len);
-	SET_VARSIZE(result, len);
-	result->flag = flag;
-	if (!ISALLTRUE(result))
-		memcpy((void *) GETSIGN(result), (void *) base, sizeof(BITVEC));
-	*size = len;
+	*size = VARSIZE(result);
 
 	PG_RETURN_POINTER(result);
 }
@@ -310,10 +338,11 @@ ghstore_penalty(PG_FUNCTION_ARGS)
 	GISTENTRY  *origentry = (GISTENTRY *) PG_GETARG_POINTER(0); /* always ISSIGNKEY */
 	GISTENTRY  *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
 	float	   *penalty = (float *) PG_GETARG_POINTER(2);
+	int			siglen = GET_SIGLEN();
 	GISTTYPE   *origval = (GISTTYPE *) DatumGetPointer(origentry->key);
 	GISTTYPE   *newval = (GISTTYPE *) DatumGetPointer(newentry->key);
 
-	*penalty = hemdist(origval, newval);
+	*penalty = hemdist(origval, newval, siglen);
 	PG_RETURN_POINTER(penalty);
 }
 
@@ -338,6 +367,7 @@ ghstore_picksplit(PG_FUNCTION_ARGS)
 	OffsetNumber maxoff = entryvec->n - 2;
 
 	GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
+	int			siglen = GET_SIGLEN();
 	OffsetNumber k,
 				j;
 	GISTTYPE   *datum_l,
@@ -368,7 +398,7 @@ ghstore_picksplit(PG_FUNCTION_ARGS)
 		_k = GETENTRY(entryvec, k);
 		for (j = OffsetNumberNext(k); j <= maxoff; j = OffsetNumberNext(j))
 		{
-			size_waste = hemdist(_k, GETENTRY(entryvec, j));
+			size_waste = hemdist(_k, GETENTRY(entryvec, j), siglen);
 			if (size_waste > waste)
 			{
 				waste = size_waste;
@@ -390,33 +420,10 @@ ghstore_picksplit(PG_FUNCTION_ARGS)
 	}
 
 	/* form initial .. */
-	if (ISALLTRUE(GETENTRY(entryvec, seed_1)))
-	{
-		datum_l = (GISTTYPE *) palloc(GTHDRSIZE);
-		SET_VARSIZE(datum_l, GTHDRSIZE);
-		datum_l->flag = ALLISTRUE;
-	}
-	else
-	{
-		datum_l = (GISTTYPE *) palloc(GTHDRSIZE + SIGLEN);
-		SET_VARSIZE(datum_l, GTHDRSIZE + SIGLEN);
-		datum_l->flag = 0;
-		memcpy((void *) GETSIGN(datum_l), (void *) GETSIGN(GETENTRY(entryvec, seed_1)), sizeof(BITVEC))
-			;
-	}
-	if (ISALLTRUE(GETENTRY(entryvec, seed_2)))
-	{
-		datum_r = (GISTTYPE *) palloc(GTHDRSIZE);
-		SET_VARSIZE(datum_r, GTHDRSIZE);
-		datum_r->flag = ALLISTRUE;
-	}
-	else
-	{
-		datum_r = (GISTTYPE *) palloc(GTHDRSIZE + SIGLEN);
-		SET_VARSIZE(datum_r, GTHDRSIZE + SIGLEN);
-		datum_r->flag = 0;
-		memcpy((void *) GETSIGN(datum_r), (void *) GETSIGN(GETENTRY(entryvec, seed_2)), sizeof(BITVEC));
-	}
+	datum_l = ghstore_alloc(ISALLTRUE(GETENTRY(entryvec, seed_1)), siglen,
+							GETSIGN(GETENTRY(entryvec, seed_1)));
+	datum_r = ghstore_alloc(ISALLTRUE(GETENTRY(entryvec, seed_2)), siglen,
+							GETSIGN(GETENTRY(entryvec, seed_2)));
 
 	maxoff = OffsetNumberNext(maxoff);
 	/* sort before ... */
@@ -425,11 +432,11 @@ ghstore_picksplit(PG_FUNCTION_ARGS)
 	{
 		costvector[j - 1].pos = j;
 		_j = GETENTRY(entryvec, j);
-		size_alpha = hemdist(datum_l, _j);
-		size_beta = hemdist(datum_r, _j);
+		size_alpha = hemdist(datum_l, _j, siglen);
+		size_beta = hemdist(datum_r, _j, siglen);
 		costvector[j - 1].cost = abs(size_alpha - size_beta);
 	}
-	qsort((void *) costvector, maxoff, sizeof(SPLITCOST), comparecost);
+	qsort(costvector, maxoff, sizeof(SPLITCOST), comparecost);
 
 	union_l = GETSIGN(datum_l);
 	union_r = GETSIGN(datum_r);
@@ -450,20 +457,20 @@ ghstore_picksplit(PG_FUNCTION_ARGS)
 			continue;
 		}
 		_j = GETENTRY(entryvec, j);
-		size_alpha = hemdist(datum_l, _j);
-		size_beta = hemdist(datum_r, _j);
+		size_alpha = hemdist(datum_l, _j, siglen);
+		size_beta = hemdist(datum_r, _j, siglen);
 
 		if (size_alpha < size_beta + WISH_F(v->spl_nleft, v->spl_nright, 0.0001))
 		{
 			if (ISALLTRUE(datum_l) || ISALLTRUE(_j))
 			{
 				if (!ISALLTRUE(datum_l))
-					MemSet((void *) union_l, 0xff, sizeof(BITVEC));
+					memset(union_l, 0xff, siglen);
 			}
 			else
 			{
 				ptr = GETSIGN(_j);
-				LOOPBYTE
+				LOOPBYTE(siglen)
 					union_l[i] |= ptr[i];
 			}
 			*left++ = j;
@@ -474,12 +481,12 @@ ghstore_picksplit(PG_FUNCTION_ARGS)
 			if (ISALLTRUE(datum_r) || ISALLTRUE(_j))
 			{
 				if (!ISALLTRUE(datum_r))
-					MemSet((void *) union_r, 0xff, sizeof(BITVEC));
+					memset(union_r, 0xff, siglen);
 			}
 			else
 			{
 				ptr = GETSIGN(_j);
-				LOOPBYTE
+				LOOPBYTE(siglen)
 					union_r[i] |= ptr[i];
 			}
 			*right++ = j;
@@ -504,6 +511,7 @@ ghstore_consistent(PG_FUNCTION_ARGS)
 
 	/* Oid		subtype = PG_GETARG_OID(3); */
 	bool	   *recheck = (bool *) PG_GETARG_POINTER(4);
+	int			siglen = GET_SIGLEN();
 	bool		res = true;
 	BITVECP		sign;
 
@@ -529,13 +537,13 @@ ghstore_consistent(PG_FUNCTION_ARGS)
 			int			crc = crc32_sz((char *) HSTORE_KEY(qe, qv, i),
 									   HSTORE_KEYLEN(qe, i));
 
-			if (GETBIT(sign, HASHVAL(crc)))
+			if (GETBIT(sign, HASHVAL(crc, siglen)))
 			{
 				if (!HSTORE_VALISNULL(qe, i))
 				{
 					crc = crc32_sz((char *) HSTORE_VAL(qe, qv, i),
 								   HSTORE_VALLEN(qe, i));
-					if (!GETBIT(sign, HASHVAL(crc)))
+					if (!GETBIT(sign, HASHVAL(crc, siglen)))
 						res = false;
 				}
 			}
@@ -548,7 +556,7 @@ ghstore_consistent(PG_FUNCTION_ARGS)
 		text	   *query = PG_GETARG_TEXT_PP(1);
 		int			crc = crc32_sz(VARDATA_ANY(query), VARSIZE_ANY_EXHDR(query));
 
-		res = (GETBIT(sign, HASHVAL(crc))) ? true : false;
+		res = (GETBIT(sign, HASHVAL(crc, siglen))) ? true : false;
 	}
 	else if (strategy == HStoreExistsAllStrategyNumber)
 	{
@@ -558,9 +566,7 @@ ghstore_consistent(PG_FUNCTION_ARGS)
 		int			key_count;
 		int			i;
 
-		deconstruct_array(query,
-						  TEXTOID, -1, false, 'i',
-						  &key_datums, &key_nulls, &key_count);
+		deconstruct_array_builtin(query, TEXTOID, &key_datums, &key_nulls, &key_count);
 
 		for (i = 0; res && i < key_count; ++i)
 		{
@@ -569,7 +575,7 @@ ghstore_consistent(PG_FUNCTION_ARGS)
 			if (key_nulls[i])
 				continue;
 			crc = crc32_sz(VARDATA(key_datums[i]), VARSIZE(key_datums[i]) - VARHDRSZ);
-			if (!(GETBIT(sign, HASHVAL(crc))))
+			if (!(GETBIT(sign, HASHVAL(crc, siglen))))
 				res = false;
 		}
 	}
@@ -581,9 +587,7 @@ ghstore_consistent(PG_FUNCTION_ARGS)
 		int			key_count;
 		int			i;
 
-		deconstruct_array(query,
-						  TEXTOID, -1, false, 'i',
-						  &key_datums, &key_nulls, &key_count);
+		deconstruct_array_builtin(query, TEXTOID, &key_datums, &key_nulls, &key_count);
 
 		res = false;
 
@@ -594,7 +598,7 @@ ghstore_consistent(PG_FUNCTION_ARGS)
 			if (key_nulls[i])
 				continue;
 			crc = crc32_sz(VARDATA(key_datums[i]), VARSIZE(key_datums[i]) - VARHDRSZ);
-			if (GETBIT(sign, HASHVAL(crc)))
+			if (GETBIT(sign, HASHVAL(crc, siglen)))
 				res = true;
 		}
 	}
@@ -602,4 +606,18 @@ ghstore_consistent(PG_FUNCTION_ARGS)
 		elog(ERROR, "Unsupported strategy number: %d", strategy);
 
 	PG_RETURN_BOOL(res);
+}
+
+Datum
+ghstore_options(PG_FUNCTION_ARGS)
+{
+	local_relopts *relopts = (local_relopts *) PG_GETARG_POINTER(0);
+
+	init_local_reloptions(relopts, sizeof(GistHstoreOptions));
+	add_local_int_reloption(relopts, "siglen",
+							"signature length in bytes",
+							SIGLEN_DEFAULT, 1, SIGLEN_MAX,
+							offsetof(GistHstoreOptions, siglen));
+
+	PG_RETURN_VOID();
 }

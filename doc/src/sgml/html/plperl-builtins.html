@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>45.3. Built-in Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plperl-data.html" title="45.2. Data Values in PL/Perl" /><link rel="next" href="plperl-global.html" title="45.4. Global Values in PL/Perl" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">45.3. Built-in Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plperl-data.html" title="45.2. Data Values in PL/Perl">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plperl.html" title="Chapter 45. PL/Perl - Perl Procedural Language">Up</a></td><th width="60%" align="center">Chapter 45. PL/Perl - Perl Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plperl-global.html" title="45.4. Global Values in PL/Perl">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPERL-BUILTINS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">45.3. Built-in Functions</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plperl-builtins.html#PLPERL-DATABASE">45.3.1. Database Access from PL/Perl</a></span></dt><dt><span class="sect2"><a href="plperl-builtins.html#PLPERL-UTILITY-FUNCTIONS">45.3.2. Utility Functions in PL/Perl</a></span></dt></dl></div><div class="sect2" id="PLPERL-DATABASE"><div class="titlepage"><div><div><h3 class="title">45.3.1. Database Access from PL/Perl</h3></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>45.3. Built-in Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="plperl-data.html" title="45.2. Data Values in PL/Perl" /><link rel="next" href="plperl-global.html" title="45.4. Global Values in PL/Perl" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">45.3. Built-in Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plperl-data.html" title="45.2. Data Values in PL/Perl">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plperl.html" title="Chapter 45. PL/Perl — Perl Procedural Language">Up</a></td><th width="60%" align="center">Chapter 45. PL/Perl — Perl Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plperl-global.html" title="45.4. Global Values in PL/Perl">Next</a></td></tr></table><hr /></div><div class="sect1" id="PLPERL-BUILTINS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">45.3. Built-in Functions <a href="#PLPERL-BUILTINS" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plperl-builtins.html#PLPERL-DATABASE">45.3.1. Database Access from PL/Perl</a></span></dt><dt><span class="sect2"><a href="plperl-builtins.html#PLPERL-UTILITY-FUNCTIONS">45.3.2. Utility Functions in PL/Perl</a></span></dt></dl></div><div class="sect2" id="PLPERL-DATABASE"><div class="titlepage"><div><div><h3 class="title">45.3.1. Database Access from PL/Perl <a href="#PLPERL-DATABASE" class="id_link">#</a></h3></div></div></div><p>
    Access to the database itself from your Perl function can be done
    via the following functions:
   </p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
-      <code class="literal"><code class="function">spi_exec_query</code>(<em class="replaceable"><code>query</code></em> [, <em class="replaceable"><code>max-rows</code></em>])</code>
+      <code class="literal"><code class="function">spi_exec_query</code>(<em class="replaceable"><code>query</code></em> [, <em class="replaceable"><code>limit</code></em>])</code>
       <a id="id-1.8.10.11.2.3.1.1.2" class="indexterm"></a>
      </span></dt><dd><p>
-       <code class="literal">spi_exec_query</code> executes an SQL command and
-returns the entire row set as a reference to an array of hash
-references.  <span class="emphasis"><em>You should only use this command when you know
+       <code class="function">spi_exec_query</code> executes an SQL command and
+returns the entire row set as a reference to an array of hash references.
+If <em class="replaceable"><code>limit</code></em> is specified and is greater than zero,
+then <code class="function">spi_exec_query</code> retrieves at
+most <em class="replaceable"><code>limit</code></em> rows, much as if the query included
+a <code class="literal">LIMIT</code> clause.  Omitting <em class="replaceable"><code>limit</code></em>
+or specifying it as zero results in no row limit.
+      </p><p>
+<span class="emphasis"><em>You should only use this command when you know
 that the result set will be relatively small.</em></span>  Here is an
 example of a query (<code class="command">SELECT</code> command) with the
 optional maximum number of rows:
@@ -140,7 +146,7 @@ SELECT * from lotsa_md5(500);
      </span></dt><dd><p>
     <code class="literal">spi_prepare</code>, <code class="literal">spi_query_prepared</code>, <code class="literal">spi_exec_prepared</code>,
     and <code class="literal">spi_freeplan</code> implement the same functionality but for prepared queries.
-    <code class="literal">spi_prepare</code> accepts a query string with numbered argument placeholders ($1, $2, etc)
+    <code class="literal">spi_prepare</code> accepts a query string with numbered argument placeholders ($1, $2, etc.)
     and a string list of argument types:
 </p><pre class="programlisting">
 $plan = spi_prepare('SELECT * FROM test WHERE id &gt; $1 AND name = $2',
@@ -151,7 +157,10 @@ $plan = spi_prepare('SELECT * FROM test WHERE id &gt; $1 AND name = $2',
     by <code class="literal">spi_exec_query</code>, or in <code class="literal">spi_query_prepared</code> which returns a cursor
     exactly as <code class="literal">spi_query</code> does, which can be later passed to <code class="literal">spi_fetchrow</code>.
     The optional second parameter to <code class="literal">spi_exec_prepared</code> is a hash reference of attributes;
-    the only attribute currently supported is <code class="literal">limit</code>, which sets the maximum number of rows returned by a query.
+    the only attribute currently supported is <code class="literal">limit</code>, which
+    sets the maximum number of rows returned from the query.
+    Omitting <code class="literal">limit</code> or specifying it as zero results in no
+    row limit.
     </p><p>
     The advantage of prepared queries is that is it possible to use one prepared plan for more
     than one query execution. After the plan is not needed anymore, it can be freed with
@@ -183,7 +192,7 @@ SELECT done();
  2005-12-10 | 2005-12-11 | 2005-12-12
 </pre><p>
     Note that the parameter subscript in <code class="literal">spi_prepare</code> is defined via
-    $1, $2, $3, etc, so avoid declaring query strings in double quotes that might easily
+    $1, $2, $3, etc., so avoid declaring query strings in double quotes that might easily
     lead to hard-to-catch bugs.
     </p><p>
     Another example illustrates usage of an optional parameter in <code class="literal">spi_exec_prepared</code>:
@@ -213,7 +222,7 @@ SELECT init_hosts_query();
 SELECT query_hosts('192.168.1.0/30');
 SELECT release_hosts_query();
 
-    query_hosts    
+    query_hosts
 -----------------
  (1,192.168.1.1)
  (2,192.168.1.2)
@@ -252,7 +261,7 @@ $$;
 
 CALL transaction_test1();
 </pre><p>
-      </p></dd></dl></div></div><div class="sect2" id="PLPERL-UTILITY-FUNCTIONS"><div class="titlepage"><div><div><h3 class="title">45.3.2. Utility Functions in PL/Perl</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+      </p></dd></dl></div></div><div class="sect2" id="PLPERL-UTILITY-FUNCTIONS"><div class="titlepage"><div><div><h3 class="title">45.3.2. Utility Functions in PL/Perl <a href="#PLPERL-UTILITY-FUNCTIONS" class="id_link">#</a></h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
       <code class="literal"><code class="function">elog(<em class="replaceable"><code>level</code></em>, <em class="replaceable"><code>msg</code></em>)</code></code>
       <a id="id-1.8.10.11.3.2.1.1.2" class="indexterm"></a>
      </span></dt><dd><p>
@@ -270,7 +279,7 @@ CALL transaction_test1();
         written to the server log, or both is controlled by the
         <a class="xref" href="runtime-config-logging.html#GUC-LOG-MIN-MESSAGES">log_min_messages</a> and
         <a class="xref" href="runtime-config-client.html#GUC-CLIENT-MIN-MESSAGES">client_min_messages</a> configuration
-        variables. See <a class="xref" href="runtime-config.html" title="Chapter 19. Server Configuration">Chapter 19</a> for more
+        variables. See <a class="xref" href="runtime-config.html" title="Chapter 20. Server Configuration">Chapter 20</a> for more
         information.
       </p></dd><dt><span class="term">
       <code class="literal"><code class="function">quote_literal(<em class="replaceable"><code>string</code></em>)</code></code>
@@ -348,4 +357,4 @@ CALL transaction_test1();
         Returns a true value if the given argument may be treated as an
         array reference, that is, if ref of the argument is <code class="literal">ARRAY</code> or
         <code class="literal">PostgreSQL::InServer::ARRAY</code>.  Returns false otherwise.
-      </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plperl-data.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plperl.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plperl-global.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">45.2. Data Values in PL/Perl </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 45.4. Global Values in PL/Perl</td></tr></table></div></body></html>
+      </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plperl-data.html" title="45.2. Data Values in PL/Perl">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plperl.html" title="Chapter 45. PL/Perl — Perl Procedural Language">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plperl-global.html" title="45.4. Global Values in PL/Perl">Next</a></td></tr><tr><td width="40%" align="left" valign="top">45.2. Data Values in PL/Perl </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 45.4. Global Values in PL/Perl</td></tr></table></div></body></html>

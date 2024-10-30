@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>57.2. Foreign Data Wrapper Callback Routines</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="fdw-functions.html" title="57.1. Foreign Data Wrapper Functions" /><link rel="next" href="fdw-helpers.html" title="57.3. Foreign Data Wrapper Helper Functions" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">57.2. Foreign Data Wrapper Callback Routines</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="fdw-functions.html" title="57.1. Foreign Data Wrapper Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="fdwhandler.html" title="Chapter 57. Writing A Foreign Data Wrapper">Up</a></td><th width="60%" align="center">Chapter 57. Writing A Foreign Data Wrapper</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="fdw-helpers.html" title="57.3. Foreign Data Wrapper Helper Functions">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="FDW-CALLBACKS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">57.2. Foreign Data Wrapper Callback Routines</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-SCAN">57.2.1. FDW Routines For Scanning Foreign Tables</a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-JOIN-SCAN">57.2.2. FDW Routines For Scanning Foreign Joins</a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-UPPER-PLANNING">57.2.3. FDW Routines For Planning Post-Scan/Join Processing</a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-UPDATE">57.2.4. FDW Routines For Updating Foreign Tables</a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-ROW-LOCKING">57.2.5. FDW Routines For Row Locking</a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-EXPLAIN">57.2.6. FDW Routines for <code class="command">EXPLAIN</code></a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-ANALYZE">57.2.7. FDW Routines for <code class="command">ANALYZE</code></a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-IMPORT">57.2.8. FDW Routines For <code class="command">IMPORT FOREIGN SCHEMA</code></a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-PARALLEL">57.2.9. FDW Routines for Parallel Execution</a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-REPARAMETERIZE-PATHS">57.2.10. FDW Routines For reparameterization of paths</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>59.2. Foreign Data Wrapper Callback Routines</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="fdw-functions.html" title="59.1. Foreign Data Wrapper Functions" /><link rel="next" href="fdw-helpers.html" title="59.3. Foreign Data Wrapper Helper Functions" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">59.2. Foreign Data Wrapper Callback Routines</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="fdw-functions.html" title="59.1. Foreign Data Wrapper Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="fdwhandler.html" title="Chapter 59. Writing a Foreign Data Wrapper">Up</a></td><th width="60%" align="center">Chapter 59. Writing a Foreign Data Wrapper</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="fdw-helpers.html" title="59.3. Foreign Data Wrapper Helper Functions">Next</a></td></tr></table><hr /></div><div class="sect1" id="FDW-CALLBACKS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">59.2. Foreign Data Wrapper Callback Routines <a href="#FDW-CALLBACKS" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-SCAN">59.2.1. FDW Routines for Scanning Foreign Tables</a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-JOIN-SCAN">59.2.2. FDW Routines for Scanning Foreign Joins</a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-UPPER-PLANNING">59.2.3. FDW Routines for Planning Post-Scan/Join Processing</a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-UPDATE">59.2.4. FDW Routines for Updating Foreign Tables</a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-TRUNCATE">59.2.5. FDW Routines for <code class="command">TRUNCATE</code></a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-ROW-LOCKING">59.2.6. FDW Routines for Row Locking</a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-EXPLAIN">59.2.7. FDW Routines for <code class="command">EXPLAIN</code></a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-ANALYZE">59.2.8. FDW Routines for <code class="command">ANALYZE</code></a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-IMPORT">59.2.9. FDW Routines for <code class="command">IMPORT FOREIGN SCHEMA</code></a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-PARALLEL">59.2.10. FDW Routines for Parallel Execution</a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-ASYNC">59.2.11. FDW Routines for Asynchronous Execution</a></span></dt><dt><span class="sect2"><a href="fdw-callbacks.html#FDW-CALLBACKS-REPARAMETERIZE-PATHS">59.2.12. FDW Routines for Reparameterization of Paths</a></span></dt></dl></div><p>
      The FDW handler function returns a palloc'd <code class="structname">FdwRoutine</code>
      struct containing pointers to the callback functions described below.
      The scan-related functions are required, the rest are optional.
@@ -7,7 +7,7 @@
      The <code class="structname">FdwRoutine</code> struct type is declared in
      <code class="filename">src/include/foreign/fdwapi.h</code>, which see for additional
      details.
-    </p><div class="sect2" id="FDW-CALLBACKS-SCAN"><div class="titlepage"><div><div><h3 class="title">57.2.1. FDW Routines For Scanning Foreign Tables</h3></div></div></div><p>
+    </p><div class="sect2" id="FDW-CALLBACKS-SCAN"><div class="titlepage"><div><div><h3 class="title">59.2.1. FDW Routines for Scanning Foreign Tables <a href="#FDW-CALLBACKS-SCAN" class="id_link">#</a></h3></div></div></div><p>
 </p><pre class="programlisting">
 void
 GetForeignRelSize(PlannerInfo *root,
@@ -30,8 +30,17 @@ GetForeignRelSize(PlannerInfo *root,
      should be replaced if at all possible.  The function may also choose to
      update <code class="literal">baserel-&gt;width</code> if it can compute a better estimate
      of the average result row width.
+     (The initial value is based on column data types and on column
+     average-width values measured by the last <code class="command">ANALYZE</code>.)
+     Also, this function may update <code class="literal">baserel-&gt;tuples</code> if
+     it can compute a better estimate of the foreign table's total row count.
+     (The initial value is
+     from <code class="structname">pg_class</code>.<code class="structfield">reltuples</code>
+     which represents the total row count seen by the
+     last <code class="command">ANALYZE</code>; it will be <code class="literal">-1</code> if
+     no <code class="command">ANALYZE</code> has been done on this foreign table.)
     </p><p>
-     See <a class="xref" href="fdw-planning.html" title="57.4. Foreign Data Wrapper Query Planning">Section 57.4</a> for additional information.
+     See <a class="xref" href="fdw-planning.html" title="59.4. Foreign Data Wrapper Query Planning">Section 59.4</a> for additional information.
     </p><p>
 </p><pre class="programlisting">
 void
@@ -56,7 +65,7 @@ GetForeignPaths(PlannerInfo *root,
      estimates, and can contain any FDW-private information that is needed to
      identify the specific scan method intended.
     </p><p>
-     See <a class="xref" href="fdw-planning.html" title="57.4. Foreign Data Wrapper Query Planning">Section 57.4</a> for additional information.
+     See <a class="xref" href="fdw-planning.html" title="59.4. Foreign Data Wrapper Query Planning">Section 59.4</a> for additional information.
     </p><p>
 </p><pre class="programlisting">
 ForeignScan *
@@ -86,7 +95,7 @@ GetForeignPlan(PlannerInfo *root,
      node; it's recommended to use <code class="function">make_foreignscan</code> to build the
      <code class="structname">ForeignScan</code> node.
     </p><p>
-     See <a class="xref" href="fdw-planning.html" title="57.4. Foreign Data Wrapper Query Planning">Section 57.4</a> for additional information.
+     See <a class="xref" href="fdw-planning.html" title="59.4. Foreign Data Wrapper Query Planning">Section 59.4</a> for additional information.
     </p><p>
 </p><pre class="programlisting">
 void
@@ -160,7 +169,7 @@ EndForeignScan(ForeignScanState *node);
      End the scan and release resources.  It is normally not important
      to release palloc'd memory, but for example open files and connections
      to remote servers should be cleaned up.
-    </p></div><div class="sect2" id="FDW-CALLBACKS-JOIN-SCAN"><div class="titlepage"><div><div><h3 class="title">57.2.2. FDW Routines For Scanning Foreign Joins</h3></div></div></div><p>
+    </p></div><div class="sect2" id="FDW-CALLBACKS-JOIN-SCAN"><div class="titlepage"><div><div><h3 class="title">59.2.2. FDW Routines for Scanning Foreign Joins <a href="#FDW-CALLBACKS-JOIN-SCAN" class="id_link">#</a></h3></div></div></div><p>
      If an FDW supports performing foreign joins remotely (rather than
      by fetching both tables' data and doing the join locally), it should
      provide this callback function:
@@ -179,7 +188,9 @@ GetForeignJoinPaths(PlannerInfo *root,
      function is called during query planning.  As
      with <code class="function">GetForeignPaths</code>, this function should
      generate <code class="structname">ForeignPath</code> path(s) for the
-     supplied <code class="literal">joinrel</code>, and call <code class="function">add_path</code> to add these
+     supplied <code class="literal">joinrel</code>
+     (use <code class="function">create_foreign_join_path</code> to build them),
+     and call <code class="function">add_path</code> to add these
      paths to the set of paths considered for the join.  But unlike
      <code class="function">GetForeignPaths</code>, it is not necessary that this function
      succeed in creating at least one path, since paths involving local
@@ -204,9 +215,16 @@ GetForeignJoinPaths(PlannerInfo *root,
      fill <code class="structfield">fdw_scan_tlist</code> with an appropriate list
      of <code class="structfield">TargetEntry</code> nodes, representing the set of columns
      it will supply at run time in the tuples it returns.
-    </p><p>
-     See <a class="xref" href="fdw-planning.html" title="57.4. Foreign Data Wrapper Query Planning">Section 57.4</a> for additional information.
-    </p></div><div class="sect2" id="FDW-CALLBACKS-UPPER-PLANNING"><div class="titlepage"><div><div><h3 class="title">57.2.3. FDW Routines For Planning Post-Scan/Join Processing</h3></div></div></div><p>
+    </p><div class="note"><h3 class="title">Note</h3><p>
+      Beginning with <span class="productname">PostgreSQL</span> 16,
+      <code class="structfield">fs_relids</code> includes the rangetable indexes
+      of outer joins, if any were involved in this join.  The new field
+      <code class="structfield">fs_base_relids</code> includes only base
+      relation indexes, and thus
+      mimics <code class="structfield">fs_relids</code>'s old semantics.
+     </p></div><p>
+     See <a class="xref" href="fdw-planning.html" title="59.4. Foreign Data Wrapper Query Planning">Section 59.4</a> for additional information.
+    </p></div><div class="sect2" id="FDW-CALLBACKS-UPPER-PLANNING"><div class="titlepage"><div><div><h3 class="title">59.2.3. FDW Routines for Planning Post-Scan/Join Processing <a href="#FDW-CALLBACKS-UPPER-PLANNING" class="id_link">#</a></h3></div></div></div><p>
      If an FDW supports performing remote post-scan/join processing, such as
      remote aggregation, it should provide this callback function:
     </p><p>
@@ -225,7 +243,9 @@ GetForeignUpperPaths(PlannerInfo *root,
      called only if all base relation(s) involved in the query belong to the
      same FDW.  This function should generate <code class="structname">ForeignPath</code>
      path(s) for any post-scan/join processing that the FDW knows how to
-     perform remotely, and call <code class="function">add_path</code> to add these paths to
+     perform remotely
+     (use <code class="function">create_foreign_upper_path</code> to build them),
+     and call <code class="function">add_path</code> to add these paths to
      the indicated upper relation.  As with <code class="function">GetForeignJoinPaths</code>,
      it is not necessary that this function succeed in creating any paths,
      since paths involving local processing are always possible.
@@ -237,7 +257,9 @@ GetForeignUpperPaths(PlannerInfo *root,
      step.  The <code class="literal">extra</code> parameter provides additional details,
      currently, it is set only for <code class="literal">UPPERREL_PARTIAL_GROUP_AGG</code>
      or <code class="literal">UPPERREL_GROUP_AGG</code>, in which case it points to a
-     <code class="literal">GroupPathExtraData</code> structure.
+     <code class="literal">GroupPathExtraData</code> structure;
+     or for <code class="literal">UPPERREL_FINAL</code>, in which case it points to a
+     <code class="literal">FinalPathExtraData</code> structure.
      (Note that <code class="structname">ForeignPath</code> paths added
      to <code class="literal">output_rel</code> would typically not have any direct dependency
      on paths of the <code class="literal">input_rel</code>, since their processing is expected
@@ -245,15 +267,16 @@ GetForeignUpperPaths(PlannerInfo *root,
      the previous processing step can be useful to avoid redundant planning
      work.)
     </p><p>
-     See <a class="xref" href="fdw-planning.html" title="57.4. Foreign Data Wrapper Query Planning">Section 57.4</a> for additional information.
-    </p></div><div class="sect2" id="FDW-CALLBACKS-UPDATE"><div class="titlepage"><div><div><h3 class="title">57.2.4. FDW Routines For Updating Foreign Tables</h3></div></div></div><p>
+     See <a class="xref" href="fdw-planning.html" title="59.4. Foreign Data Wrapper Query Planning">Section 59.4</a> for additional information.
+    </p></div><div class="sect2" id="FDW-CALLBACKS-UPDATE"><div class="titlepage"><div><div><h3 class="title">59.2.4. FDW Routines for Updating Foreign Tables <a href="#FDW-CALLBACKS-UPDATE" class="id_link">#</a></h3></div></div></div><p>
      If an FDW supports writable foreign tables, it should provide
      some or all of the following callback functions depending on
      the needs and capabilities of the FDW:
     </p><p>
 </p><pre class="programlisting">
 void
-AddForeignUpdateTargets(Query *parsetree,
+AddForeignUpdateTargets(PlannerInfo *root,
+                        Index rtindex,
                         RangeTblEntry *target_rte,
                         Relation target_relation);
 </pre><p>
@@ -267,25 +290,31 @@ AddForeignUpdateTargets(Query *parsetree,
      retrieved from the foreign table during an <code class="command">UPDATE</code> or
      <code class="command">DELETE</code>.
     </p><p>
-     To do that, add <code class="structname">TargetEntry</code> items to
-     <code class="literal">parsetree-&gt;targetList</code>, containing expressions for the
-     extra values to be fetched.  Each such entry must be marked
-     <code class="structfield">resjunk</code> = <code class="literal">true</code>, and must have a distinct
-     <code class="structfield">resname</code> that will identify it at execution time.
-     Avoid using names matching <code class="literal">ctid<em class="replaceable"><code>N</code></em></code>,
-     <code class="literal">wholerow</code>, or
-     <code class="literal">wholerow<em class="replaceable"><code>N</code></em></code>, as the core system can
-     generate junk columns of these names.
-     If the extra expressions are more complex than simple Vars, they
-     must be run through <code class="function">eval_const_expressions</code>
-     before adding them to the targetlist.
-    </p><p>
-     Although this function is called during planning, the
-     information provided is a bit different from that available to other
-     planning routines.
-     <code class="literal">parsetree</code> is the parse tree for the <code class="command">UPDATE</code> or
-     <code class="command">DELETE</code> command, while <code class="literal">target_rte</code> and
-     <code class="literal">target_relation</code> describe the target foreign table.
+     To do that, construct a <code class="structname">Var</code> representing
+     an extra value you need, and pass it
+     to <code class="function">add_row_identity_var</code>, along with a name for
+     the junk column.  (You can do this more than once if several columns
+     are needed.)  You must choose a distinct junk column name for each
+     different <code class="structname">Var</code> you need, except
+     that <code class="structname">Var</code>s that are identical except for
+     the <code class="structfield">varno</code> field can and should share a
+     column name.
+     The core system uses the junk column names
+     <code class="literal">tableoid</code> for a
+     table's <code class="structfield">tableoid</code> column,
+     <code class="literal">ctid</code>
+     or <code class="literal">ctid<em class="replaceable"><code>N</code></em></code>
+     for <code class="structfield">ctid</code>,
+     <code class="literal">wholerow</code>
+     for a whole-row <code class="structname">Var</code> marked with
+     <code class="structfield">vartype</code> = <code class="type">RECORD</code>,
+     and <code class="literal">wholerow<em class="replaceable"><code>N</code></em></code>
+     for a whole-row <code class="structname">Var</code> with
+     <code class="structfield">vartype</code> equal to the table's declared row type.
+     Re-use these names when you can (the planner will combine duplicate
+     requests for identical junk columns).  If you need another kind of
+     junk column besides these, it might be wise to choose a name prefixed
+     with your extension name, to avoid conflicts against other FDWs.
     </p><p>
      If the <code class="function">AddForeignUpdateTargets</code> pointer is set to
      <code class="literal">NULL</code>, no extra target expressions are added.
@@ -314,10 +343,10 @@ PlanForeignModify(PlannerInfo *root,
      <code class="literal">resultRelation</code> identifies the target foreign table by its
      range table index.  <code class="literal">subplan_index</code> identifies which target of
      the <code class="structname">ModifyTable</code> plan node this is, counting from zero;
-     use this if you want to index into <code class="literal">plan-&gt;plans</code> or other
-     substructure of the <code class="literal">plan</code> node.
+     use this if you want to index into per-target-relation substructures of the
+     <code class="literal">plan</code> node.
     </p><p>
-     See <a class="xref" href="fdw-planning.html" title="57.4. Foreign Data Wrapper Query Planning">Section 57.4</a> for additional information.
+     See <a class="xref" href="fdw-planning.html" title="59.4. Foreign Data Wrapper Query Planning">Section 59.4</a> for additional information.
     </p><p>
      If the <code class="function">PlanForeignModify</code> pointer is set to
      <code class="literal">NULL</code>, no additional plan-time actions are taken, and the
@@ -336,8 +365,9 @@ BeginForeignModify(ModifyTableState *mtstate,
      Begin executing a foreign table modification operation.  This routine is
      called during executor startup.  It should perform any initialization
      needed prior to the actual table modifications.  Subsequently,
-     <code class="function">ExecForeignInsert</code>, <code class="function">ExecForeignUpdate</code> or
-     <code class="function">ExecForeignDelete</code> will be called for each tuple to be
+     <code class="function">ExecForeignInsert/ExecForeignBatchInsert</code>,
+     <code class="function">ExecForeignUpdate</code> or
+     <code class="function">ExecForeignDelete</code> will be called for tuple(s) to be
      inserted, updated, or deleted.
     </p><p>
      <code class="literal">mtstate</code> is the overall state of the
@@ -389,12 +419,14 @@ ExecForeignInsert(EState *estate,
      <code class="literal">slot</code> can be re-used for this purpose.
     </p><p>
      The data in the returned slot is used only if the <code class="command">INSERT</code>
-     query has a <code class="literal">RETURNING</code> clause or the foreign table has
-     an <code class="literal">AFTER ROW</code> trigger.  Triggers require all columns, but the
-     FDW could choose to optimize away returning some or all columns depending
-     on the contents of the <code class="literal">RETURNING</code> clause.  Regardless, some
-     slot must be returned to indicate success, or the query's reported row
-     count will be wrong.
+     statement has a <code class="literal">RETURNING</code> clause or involves a view
+     <code class="literal">WITH CHECK OPTION</code>; or if the foreign table has
+     an <code class="literal">AFTER ROW</code> trigger.  Triggers require all columns,
+     but the FDW could choose to optimize away returning some or all columns
+     depending on the contents of the <code class="literal">RETURNING</code> clause or
+     <code class="literal">WITH CHECK OPTION</code> constraints.  Regardless, some slot
+     must be returned to indicate success, or the query's reported row count
+     will be wrong.
     </p><p>
      If the <code class="function">ExecForeignInsert</code> pointer is set to
      <code class="literal">NULL</code>, attempts to insert into the foreign table will fail
@@ -405,6 +437,68 @@ ExecForeignInsert(EState *estate,
      a foreign table, in which case it is called in a different way than it
      is in the <code class="command">INSERT</code> case.  See the callback functions
      described below that allow the FDW to support that.
+    </p><p>
+</p><pre class="programlisting">
+TupleTableSlot **
+ExecForeignBatchInsert(EState *estate,
+                       ResultRelInfo *rinfo,
+                       TupleTableSlot **slots,
+                       TupleTableSlot **planSlots,
+                       int *numSlots);
+</pre><p>
+
+     Insert multiple tuples in bulk into the foreign table.
+     The parameters are the same for <code class="function">ExecForeignInsert</code>
+     except <code class="literal">slots</code> and <code class="literal">planSlots</code> contain
+     multiple tuples and <code class="literal">*numSlots</code> specifies the number of
+     tuples in those arrays.
+    </p><p>
+     The return value is an array of slots containing the data that was
+     actually inserted (this might differ from the data supplied, for
+     example as a result of trigger actions.)
+     The passed-in <code class="literal">slots</code> can be re-used for this purpose.
+     The number of successfully inserted tuples is returned in
+     <code class="literal">*numSlots</code>.
+    </p><p>
+     The data in the returned slot is used only if the <code class="command">INSERT</code>
+     statement involves a view
+     <code class="literal">WITH CHECK OPTION</code>; or if the foreign table has
+     an <code class="literal">AFTER ROW</code> trigger.  Triggers require all columns,
+     but the FDW could choose to optimize away returning some or all columns
+     depending on the contents of the
+     <code class="literal">WITH CHECK OPTION</code> constraints.
+    </p><p>
+     If the <code class="function">ExecForeignBatchInsert</code> or
+     <code class="function">GetForeignModifyBatchSize</code> pointer is set to
+     <code class="literal">NULL</code>, attempts to insert into the foreign table will
+     use <code class="function">ExecForeignInsert</code>.
+     This function is not used if the <code class="command">INSERT</code> has the
+     <code class="literal">RETURNING</code> clause.
+    </p><p>
+     Note that this function is also called when inserting routed tuples into
+     a foreign-table partition or executing <code class="command">COPY FROM</code> on
+     a foreign table, in which case it is called in a different way than it
+     is in the <code class="command">INSERT</code> case.  See the callback functions
+     described below that allow the FDW to support that.
+    </p><p>
+</p><pre class="programlisting">
+int
+GetForeignModifyBatchSize(ResultRelInfo *rinfo);
+</pre><p>
+
+     Report the maximum number of tuples that a single
+     <code class="function">ExecForeignBatchInsert</code> call can handle for
+     the specified foreign table.  The executor passes at most
+     the given number of tuples to <code class="function">ExecForeignBatchInsert</code>.
+     <code class="literal">rinfo</code> is the <code class="structname">ResultRelInfo</code> struct describing
+     the target foreign table.
+     The FDW is expected to provide a foreign server and/or foreign
+     table option for the user to set this value, or some hard-coded value.
+    </p><p>
+     If the <code class="function">ExecForeignBatchInsert</code> or
+     <code class="function">GetForeignModifyBatchSize</code> pointer is set to
+     <code class="literal">NULL</code>, attempts to insert into the foreign table will
+     use <code class="function">ExecForeignInsert</code>.
     </p><p>
 </p><pre class="programlisting">
 TupleTableSlot *
@@ -421,10 +515,14 @@ ExecForeignUpdate(EState *estate,
      <code class="literal">slot</code> contains the new data for the tuple; it will match the
      row-type definition of the foreign table.
      <code class="literal">planSlot</code> contains the tuple that was generated by the
-     <code class="structname">ModifyTable</code> plan node's subplan; it differs from
-     <code class="literal">slot</code> in possibly containing additional <span class="quote">“<span class="quote">junk</span>”</span>
-     columns.  In particular, any junk columns that were requested by
-     <code class="function">AddForeignUpdateTargets</code> will be available from this slot.
+     <code class="structname">ModifyTable</code> plan node's subplan.  Unlike
+     <code class="literal">slot</code>, this tuple contains only the new values for
+     columns changed by the query, so do not rely on attribute numbers of the
+     foreign table to index into <code class="literal">planSlot</code>.
+     Also, <code class="literal">planSlot</code> typically contains
+     additional <span class="quote">“<span class="quote">junk</span>”</span> columns.  In particular, any junk columns
+     that were requested by <code class="function">AddForeignUpdateTargets</code> will
+     be available from this slot.
     </p><p>
      The return value is either a slot containing the row as it was actually
      updated (this might differ from the data supplied, for example as a
@@ -433,12 +531,14 @@ ExecForeignUpdate(EState *estate,
      <code class="literal">slot</code> can be re-used for this purpose.
     </p><p>
      The data in the returned slot is used only if the <code class="command">UPDATE</code>
-     query has a <code class="literal">RETURNING</code> clause or the foreign table has
-     an <code class="literal">AFTER ROW</code> trigger.  Triggers require all columns, but the
-     FDW could choose to optimize away returning some or all columns depending
-     on the contents of the <code class="literal">RETURNING</code> clause.  Regardless, some
-     slot must be returned to indicate success, or the query's reported row
-     count will be wrong.
+     statement has a <code class="literal">RETURNING</code> clause or involves a view
+     <code class="literal">WITH CHECK OPTION</code>; or if the foreign table has
+     an <code class="literal">AFTER ROW</code> trigger.  Triggers require all columns,
+     but the FDW could choose to optimize away returning some or all columns
+     depending on the contents of the <code class="literal">RETURNING</code> clause or
+     <code class="literal">WITH CHECK OPTION</code> constraints.  Regardless, some slot
+     must be returned to indicate success, or the query's reported row count
+     will be wrong.
     </p><p>
      If the <code class="function">ExecForeignUpdate</code> pointer is set to
      <code class="literal">NULL</code>, attempts to update the foreign table will fail
@@ -510,8 +610,9 @@ BeginForeignInsert(ModifyTableState *mtstate,
      in both cases when it is the partition chosen for tuple routing and the
      target specified in a <code class="command">COPY FROM</code> command.  It should
      perform any initialization needed prior to the actual insertion.
-     Subsequently, <code class="function">ExecForeignInsert</code> will be called for
-     each tuple to be inserted into the foreign table.
+     Subsequently, <code class="function">ExecForeignInsert</code> or
+     <code class="function">ExecForeignBatchInsert</code> will be called for
+     tuple(s) to be inserted into the foreign table.
     </p><p>
      <code class="literal">mtstate</code> is the overall state of the
      <code class="structname">ModifyTable</code> plan node being executed; global data about
@@ -534,8 +635,8 @@ BeginForeignInsert(ModifyTableState *mtstate,
     </p><p>
      Note that if the FDW does not support routable foreign-table partitions
      and/or executing <code class="command">COPY FROM</code> on foreign tables, this
-     function or <code class="function">ExecForeignInsert</code> subsequently called
-     must throw error as needed.
+     function or <code class="function">ExecForeignInsert/ExecForeignBatchInsert</code>
+     subsequently called must throw error as needed.
     </p><p>
 </p><pre class="programlisting">
 void
@@ -580,9 +681,11 @@ IsForeignRelUpdatable(Relation rel);
      row-by-row approach is necessary, but it can be inefficient.  If it is
      possible for the foreign server to determine which rows should be
      modified without actually retrieving them, and if there are no local
-     triggers which would affect the operation, then it is possible to
-     arrange things so that the entire operation is performed on the remote
-     server.  The interfaces described below make this possible.
+     structures which would affect the operation (row-level local triggers,
+     stored generated columns, or <code class="literal">WITH CHECK OPTION</code>
+     constraints from parent views), then it is possible to arrange things
+     so that the entire operation is performed on the remote server.  The
+     interfaces described below make this possible.
     </p><p>
 </p><pre class="programlisting">
 bool
@@ -606,13 +709,17 @@ PlanDirectModify(PlannerInfo *root,
      To execute the direct modification on the remote server, this function
      must rewrite the target subplan with a <code class="structname">ForeignScan</code> plan
      node that executes the direct modification on the remote server.  The
-     <code class="structfield">operation</code> field of the <code class="structname">ForeignScan</code> must
-     be set to the <code class="literal">CmdType</code> enumeration appropriately; that is,
+     <code class="structfield">operation</code> and <code class="structfield">resultRelation</code> fields
+     of the <code class="structname">ForeignScan</code> must be set appropriately.
+     <code class="structfield">operation</code> must be set to the <code class="literal">CmdType</code>
+     enumeration corresponding to the statement kind (that is,
      <code class="literal">CMD_UPDATE</code> for <code class="command">UPDATE</code>,
      <code class="literal">CMD_INSERT</code> for <code class="command">INSERT</code>, and
-     <code class="literal">CMD_DELETE</code> for <code class="command">DELETE</code>.
+     <code class="literal">CMD_DELETE</code> for <code class="command">DELETE</code>), and the
+     <code class="literal">resultRelation</code> argument must be copied to the
+     <code class="structfield">resultRelation</code> field.
     </p><p>
-     See <a class="xref" href="fdw-planning.html" title="57.4. Foreign Data Wrapper Query Planning">Section 57.4</a> for additional information.
+     See <a class="xref" href="fdw-planning.html" title="59.4. Foreign Data Wrapper Query Planning">Section 59.4</a> for additional information.
     </p><p>
      If the <code class="function">PlanDirectModify</code> pointer is set to
      <code class="literal">NULL</code>, no attempts to execute a direct modification on the
@@ -658,9 +765,8 @@ IterateDirectModify(ForeignScanState *node);
      needed for the <code class="literal">RETURNING</code> calculation, returning it in a
      tuple table slot (the node's <code class="structfield">ScanTupleSlot</code> should be
      used for this purpose).  The data that was actually inserted, updated
-     or deleted must be stored in the
-     <code class="literal">es_result_relation_info-&gt;ri_projectReturning-&gt;pi_exprContext-&gt;ecxt_scantuple</code>
-     of the node's <code class="structname">EState</code>.
+     or deleted must be stored in
+     <code class="literal">node-&gt;resultRelInfo-&gt;ri_projectReturning-&gt;pi_exprContext-&gt;ecxt_scantuple</code>.
      Return NULL if no more rows are available.
      Note that this is called in a short-lived memory context that will be
      reset between invocations.  Create a memory context in
@@ -696,9 +802,48 @@ EndDirectModify(ForeignScanState *node);
      If the <code class="function">EndDirectModify</code> pointer is set to
      <code class="literal">NULL</code>, no attempts to execute a direct modification on the
      remote server are taken.
-    </p></div><div class="sect2" id="FDW-CALLBACKS-ROW-LOCKING"><div class="titlepage"><div><div><h3 class="title">57.2.5. FDW Routines For Row Locking</h3></div></div></div><p>
+    </p></div><div class="sect2" id="FDW-CALLBACKS-TRUNCATE"><div class="titlepage"><div><div><h3 class="title">59.2.5. FDW Routines for <code class="command">TRUNCATE</code> <a href="#FDW-CALLBACKS-TRUNCATE" class="id_link">#</a></h3></div></div></div><p>
+</p><pre class="programlisting">
+void
+ExecForeignTruncate(List *rels,
+                    DropBehavior behavior,
+                    bool restart_seqs);
+</pre><p>
+
+     Truncate foreign tables.  This function is called when
+     <a class="xref" href="sql-truncate.html" title="TRUNCATE"><span class="refentrytitle">TRUNCATE</span></a> is executed on a foreign table.
+     <code class="literal">rels</code> is a list of <code class="structname">Relation</code>
+     data structures of foreign tables to truncate.
+    </p><p>
+     <code class="literal">behavior</code> is either <code class="literal">DROP_RESTRICT</code>
+     or <code class="literal">DROP_CASCADE</code> indicating that the
+     <code class="literal">RESTRICT</code> or <code class="literal">CASCADE</code> option was
+     requested in the original <code class="command">TRUNCATE</code> command,
+     respectively.
+    </p><p>
+     If <code class="literal">restart_seqs</code> is <code class="literal">true</code>,
+     the original <code class="command">TRUNCATE</code> command requested the
+     <code class="literal">RESTART IDENTITY</code> behavior, otherwise the
+     <code class="literal">CONTINUE IDENTITY</code> behavior was requested.
+    </p><p>
+     Note that the <code class="literal">ONLY</code> options specified
+     in the original <code class="command">TRUNCATE</code> command are not passed to
+     <code class="function">ExecForeignTruncate</code>.  This behavior is similar to
+     the callback functions of <code class="command">SELECT</code>,
+     <code class="command">UPDATE</code> and <code class="command">DELETE</code> on
+     a foreign table.
+    </p><p>
+     <code class="function">ExecForeignTruncate</code> is invoked once per
+     foreign server for which foreign tables are to be truncated.
+     This means that all foreign tables included in <code class="literal">rels</code>
+     must belong to the same server.
+    </p><p>
+     If the <code class="function">ExecForeignTruncate</code> pointer is set to
+     <code class="literal">NULL</code>, attempts to truncate foreign tables will
+     fail with an error message.
+    </p></div><div class="sect2" id="FDW-CALLBACKS-ROW-LOCKING"><div class="titlepage"><div><div><h3 class="title">59.2.6. FDW Routines for Row Locking <a href="#FDW-CALLBACKS-ROW-LOCKING" class="id_link">#</a></h3></div></div></div><p>
      If an FDW wishes to support <em class="firstterm">late row locking</em> (as described
-     in <a class="xref" href="fdw-row-locking.html" title="57.5. Row Locking in Foreign Data Wrappers">Section 57.5</a>), it must provide the following
+     in <a class="xref" href="fdw-row-locking.html" title="59.5. Row Locking in Foreign Data Wrappers">Section 59.5</a>), it must provide the following
      callback functions:
     </p><p>
 </p><pre class="programlisting">
@@ -723,30 +868,32 @@ GetForeignRowMarkType(RangeTblEntry *rte,
      (This implies that <code class="function">RefetchForeignRow</code> will never be called,
      so it need not be provided either.)
     </p><p>
-     See <a class="xref" href="fdw-row-locking.html" title="57.5. Row Locking in Foreign Data Wrappers">Section 57.5</a> for more information.
+     See <a class="xref" href="fdw-row-locking.html" title="59.5. Row Locking in Foreign Data Wrappers">Section 59.5</a> for more information.
     </p><p>
 </p><pre class="programlisting">
-HeapTuple
+void
 RefetchForeignRow(EState *estate,
                   ExecRowMark *erm,
                   Datum rowid,
+                  TupleTableSlot *slot,
                   bool *updated);
 </pre><p>
 
-     Re-fetch one tuple from the foreign table, after locking it if required.
+     Re-fetch one tuple slot from the foreign table, after locking it if required.
      <code class="literal">estate</code> is global execution state for the query.
      <code class="literal">erm</code> is the <code class="structname">ExecRowMark</code> struct describing
      the target foreign table and the row lock type (if any) to acquire.
      <code class="literal">rowid</code> identifies the tuple to be fetched.
-     <code class="literal">updated</code> is an output parameter.
+     <code class="literal">slot</code> contains nothing useful upon call, but can be used to
+     hold the returned tuple. <code class="literal">updated</code> is an output parameter.
     </p><p>
-     This function should return a palloc'ed copy of the fetched tuple,
-     or <code class="literal">NULL</code> if the row lock couldn't be obtained.  The row lock
-     type to acquire is defined by <code class="literal">erm-&gt;markType</code>, which is the
-     value previously returned by <code class="function">GetForeignRowMarkType</code>.
-     (<code class="literal">ROW_MARK_REFERENCE</code> means to just re-fetch the tuple without
-     acquiring any lock, and <code class="literal">ROW_MARK_COPY</code> will never be seen by
-     this routine.)
+     This function should store the tuple into the provided slot, or clear it if
+     the row lock couldn't be obtained.  The row lock type to acquire is
+     defined by <code class="literal">erm-&gt;markType</code>, which is the value
+     previously returned by <code class="function">GetForeignRowMarkType</code>.
+     (<code class="literal">ROW_MARK_REFERENCE</code> means to just re-fetch the tuple
+     without acquiring any lock, and <code class="literal">ROW_MARK_COPY</code> will
+     never be seen by this routine.)
     </p><p>
      In addition, <code class="literal">*updated</code> should be set to <code class="literal">true</code>
      if what was fetched was an updated version of the tuple rather than
@@ -754,7 +901,7 @@ RefetchForeignRow(EState *estate,
      this, always returning <code class="literal">true</code> is recommended.)
     </p><p>
      Note that by default, failure to acquire a row lock should result in
-     raising an error; a <code class="literal">NULL</code> return is only appropriate if
+     raising an error; returning with an empty slot is only appropriate if
      the <code class="literal">SKIP LOCKED</code> option is specified
      by <code class="literal">erm-&gt;waitPolicy</code>.
     </p><p>
@@ -768,7 +915,7 @@ RefetchForeignRow(EState *estate,
      <code class="literal">NULL</code>, attempts to re-fetch rows will fail
      with an error message.
     </p><p>
-     See <a class="xref" href="fdw-row-locking.html" title="57.5. Row Locking in Foreign Data Wrappers">Section 57.5</a> for more information.
+     See <a class="xref" href="fdw-row-locking.html" title="59.5. Row Locking in Foreign Data Wrappers">Section 59.5</a> for more information.
     </p><p>
 </p><pre class="programlisting">
 bool
@@ -803,7 +950,7 @@ RecheckForeignScan(ForeignScanState *node,
      join relation.  (If it does not find such a path, it returns NULL, in
      which case a foreign data wrapper may build the local path by itself or
      may choose not to create access paths for that join.)
-    </p></div><div class="sect2" id="FDW-CALLBACKS-EXPLAIN"><div class="titlepage"><div><div><h3 class="title">57.2.6. FDW Routines for <code class="command">EXPLAIN</code></h3></div></div></div><p>
+    </p></div><div class="sect2" id="FDW-CALLBACKS-EXPLAIN"><div class="titlepage"><div><div><h3 class="title">59.2.7. FDW Routines for <code class="command">EXPLAIN</code> <a href="#FDW-CALLBACKS-EXPLAIN" class="id_link">#</a></h3></div></div></div><p>
 </p><pre class="programlisting">
 void
 ExplainForeignScan(ForeignScanState *node,
@@ -862,7 +1009,7 @@ ExplainDirectModify(ForeignScanState *node,
      If the <code class="function">ExplainDirectModify</code> pointer is set to
      <code class="literal">NULL</code>, no additional information is printed during
      <code class="command">EXPLAIN</code>.
-    </p></div><div class="sect2" id="FDW-CALLBACKS-ANALYZE"><div class="titlepage"><div><div><h3 class="title">57.2.7. FDW Routines for <code class="command">ANALYZE</code></h3></div></div></div><p>
+    </p></div><div class="sect2" id="FDW-CALLBACKS-ANALYZE"><div class="titlepage"><div><div><h3 class="title">59.2.8. FDW Routines for <code class="command">ANALYZE</code> <a href="#FDW-CALLBACKS-ANALYZE" class="id_link">#</a></h3></div></div></div><p>
 </p><pre class="programlisting">
 bool
 AnalyzeForeignTable(Relation relation,
@@ -898,7 +1045,7 @@ AcquireSampleRowsFunc(Relation relation,
      the table into the output parameters <em class="parameter"><code>totalrows</code></em> and
      <em class="parameter"><code>totaldeadrows</code></em>.  (Set <em class="parameter"><code>totaldeadrows</code></em> to zero
      if the FDW does not have any concept of dead rows.)
-    </p></div><div class="sect2" id="FDW-CALLBACKS-IMPORT"><div class="titlepage"><div><div><h3 class="title">57.2.8. FDW Routines For <code class="command">IMPORT FOREIGN SCHEMA</code></h3></div></div></div><p>
+    </p></div><div class="sect2" id="FDW-CALLBACKS-IMPORT"><div class="titlepage"><div><div><h3 class="title">59.2.9. FDW Routines for <code class="command">IMPORT FOREIGN SCHEMA</code> <a href="#FDW-CALLBACKS-IMPORT" class="id_link">#</a></h3></div></div></div><p>
 </p><pre class="programlisting">
 List *
 ImportForeignSchema(ImportForeignSchemaStmt *stmt, Oid serverOid);
@@ -943,7 +1090,7 @@ ImportForeignSchema(ImportForeignSchemaStmt *stmt, Oid serverOid);
     </p><p>
      If the FDW does not support importing table definitions, the
      <code class="function">ImportForeignSchema</code> pointer can be set to <code class="literal">NULL</code>.
-    </p></div><div class="sect2" id="FDW-CALLBACKS-PARALLEL"><div class="titlepage"><div><div><h3 class="title">57.2.9. FDW Routines for Parallel Execution</h3></div></div></div><p>
+    </p></div><div class="sect2" id="FDW-CALLBACKS-PARALLEL"><div class="titlepage"><div><div><h3 class="title">59.2.10. FDW Routines for Parallel Execution <a href="#FDW-CALLBACKS-PARALLEL" class="id_link">#</a></h3></div></div></div><p>
      A <code class="structname">ForeignScan</code> node can, optionally, support parallel
      execution.  A parallel <code class="structname">ForeignScan</code> will be executed
      in multiple processes and must return each row exactly once across
@@ -1027,7 +1174,82 @@ ShutdownForeignScan(ForeignScanState *node);
     destroyed just after this callback is invoked, foreign data wrappers that
     wish to take some action before the DSM segment goes away should implement
     this method.
-   </p></div><div class="sect2" id="FDW-CALLBACKS-REPARAMETERIZE-PATHS"><div class="titlepage"><div><div><h3 class="title">57.2.10. FDW Routines For reparameterization of paths</h3></div></div></div><p>
+   </p></div><div class="sect2" id="FDW-CALLBACKS-ASYNC"><div class="titlepage"><div><div><h3 class="title">59.2.11. FDW Routines for Asynchronous Execution <a href="#FDW-CALLBACKS-ASYNC" class="id_link">#</a></h3></div></div></div><p>
+     A <code class="structname">ForeignScan</code> node can, optionally, support
+     asynchronous execution as described in
+     <code class="filename">src/backend/executor/README</code>.  The following
+     functions are all optional, but are all required if asynchronous
+     execution is to be supported.
+    </p><p>
+</p><pre class="programlisting">
+bool
+IsForeignPathAsyncCapable(ForeignPath *path);
+</pre><p>
+     Test whether a given <code class="structname">ForeignPath</code> path can scan
+     the underlying foreign relation asynchronously.
+     This function will only be called at the end of query planning when the
+     given path is a direct child of an <code class="structname">AppendPath</code>
+     path and when the planner believes that asynchronous execution improves
+     performance, and should return true if the given path is able to scan the
+     foreign relation asynchronously.
+    </p><p>
+     If this function is not defined, it is assumed that the given path scans
+     the foreign relation using <code class="function">IterateForeignScan</code>.
+     (This implies that the callback functions described below will never be
+     called, so they need not be provided either.)
+    </p><p>
+</p><pre class="programlisting">
+void
+ForeignAsyncRequest(AsyncRequest *areq);
+</pre><p>
+     Produce one tuple asynchronously from the
+     <code class="structname">ForeignScan</code> node.  <code class="literal">areq</code> is
+     the <code class="structname">AsyncRequest</code> struct describing the
+     <code class="structname">ForeignScan</code> node and the parent
+     <code class="structname">Append</code> node that requested the tuple from it.
+     This function should store the tuple into the slot specified by
+     <code class="literal">areq-&gt;result</code>, and set
+     <code class="literal">areq-&gt;request_complete</code> to <code class="literal">true</code>;
+     or if it needs to wait on an event external to the core server such as
+     network I/O, and cannot produce any tuple immediately, set the flag to
+     <code class="literal">false</code>, and set
+     <code class="literal">areq-&gt;callback_pending</code> to <code class="literal">true</code>
+     for the <code class="structname">ForeignScan</code> node to get a callback from
+     the callback functions described below.  If no more tuples are available,
+     set the slot to NULL or an empty slot, and the
+     <code class="literal">areq-&gt;request_complete</code> flag to
+     <code class="literal">true</code>.  It's recommended to use
+     <code class="function">ExecAsyncRequestDone</code> or
+     <code class="function">ExecAsyncRequestPending</code> to set the output parameters
+     in the <code class="literal">areq</code>.
+    </p><p>
+</p><pre class="programlisting">
+void
+ForeignAsyncConfigureWait(AsyncRequest *areq);
+</pre><p>
+     Configure a file descriptor event for which the
+     <code class="structname">ForeignScan</code> node wishes to wait.
+     This function will only be called when the
+     <code class="structname">ForeignScan</code> node has the
+     <code class="literal">areq-&gt;callback_pending</code> flag set, and should add
+     the event to the <code class="structfield">as_eventset</code> of the parent
+     <code class="structname">Append</code> node described by the
+     <code class="literal">areq</code>.  See the comments for
+     <code class="function">ExecAsyncConfigureWait</code> in
+     <code class="filename">src/backend/executor/execAsync.c</code> for additional
+     information.  When the file descriptor event occurs,
+     <code class="function">ForeignAsyncNotify</code> will be called.
+    </p><p>
+</p><pre class="programlisting">
+void
+ForeignAsyncNotify(AsyncRequest *areq);
+</pre><p>
+     Process a relevant event that has occurred, then produce one tuple
+     asynchronously from the <code class="structname">ForeignScan</code> node.
+     This function should set the output parameters in the
+     <code class="literal">areq</code> in the same way as
+     <code class="function">ForeignAsyncRequest</code>.
+    </p></div><div class="sect2" id="FDW-CALLBACKS-REPARAMETERIZE-PATHS"><div class="titlepage"><div><div><h3 class="title">59.2.12. FDW Routines for Reparameterization of Paths <a href="#FDW-CALLBACKS-REPARAMETERIZE-PATHS" class="id_link">#</a></h3></div></div></div><p>
 </p><pre class="programlisting">
 List *
 ReparameterizeForeignPathByChild(PlannerInfo *root, List *fdw_private,
@@ -1041,4 +1263,4 @@ ReparameterizeForeignPathByChild(PlannerInfo *root, List *fdw_private,
     callback may use <code class="literal">reparameterize_path_by_child</code>,
     <code class="literal">adjust_appendrel_attrs</code> or
     <code class="literal">adjust_appendrel_attrs_multilevel</code> as required.
-    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="fdw-functions.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="fdwhandler.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="fdw-helpers.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">57.1. Foreign Data Wrapper Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 57.3. Foreign Data Wrapper Helper Functions</td></tr></table></div></body></html>
+    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="fdw-functions.html" title="59.1. Foreign Data Wrapper Functions">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="fdwhandler.html" title="Chapter 59. Writing a Foreign Data Wrapper">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="fdw-helpers.html" title="59.3. Foreign Data Wrapper Helper Functions">Next</a></td></tr><tr><td width="40%" align="left" valign="top">59.1. Foreign Data Wrapper Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 59.3. Foreign Data Wrapper Helper Functions</td></tr></table></div></body></html>

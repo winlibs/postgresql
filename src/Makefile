@@ -66,13 +66,13 @@ clean:
 	$(MAKE) -C test $@
 	$(MAKE) -C tutorial NO_PGXS=1 $@
 	$(MAKE) -C test/isolation $@
-	$(MAKE) -C test/thread $@
+	$(MAKE) -C tools/pg_bsd_indent $@
 
 distclean maintainer-clean:
 	$(MAKE) -C test $@
 	$(MAKE) -C tutorial NO_PGXS=1 $@
 	$(MAKE) -C test/isolation $@
-	$(MAKE) -C test/thread $@
+	$(MAKE) -C tools/pg_bsd_indent $@
 	rm -f Makefile.port Makefile.global
 
 

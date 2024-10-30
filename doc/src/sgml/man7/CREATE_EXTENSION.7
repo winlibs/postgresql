@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE EXTENSION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATE EXTENSION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE EXTENSION" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -35,7 +35,6 @@ CREATE_EXTENSION \- install an extension
 CREATE EXTENSION [ IF NOT EXISTS ] \fIextension_name\fR
     [ WITH ] [ SCHEMA \fIschema_name\fR ]
              [ VERSION \fIversion\fR ]
-             [ FROM \fIold_version\fR ]
              [ CASCADE ]
 .fi
 .SH "DESCRIPTION"
@@ -51,9 +50,15 @@ additionally records the identities of all the created objects, so that they can
 \fBDROP EXTENSION\fR
 is issued\&.
 .PP
-Loading an extension requires the same privileges that would be required to create its component objects\&. For most extensions this means superuser or database owner privileges are needed\&. The user who runs
+The user who runs
 \fBCREATE EXTENSION\fR
-becomes the owner of the extension for purposes of later privilege checks, as well as the owner of any objects created by the extension\*(Aqs script\&.
+becomes the owner of the extension for purposes of later privilege checks, and normally also becomes the owner of any objects created by the extension\*(Aqs script\&.
+.PP
+Loading an extension ordinarily requires the same privileges that would be required to create its component objects\&. For many extensions this means superuser privileges are needed\&. However, if the extension is marked
+trusted
+in its control file, then it can be installed by any user who has
+CREATE
+privilege on the current database\&. In this case the extension object itself will be owned by the calling user, but the contained objects will be owned by the bootstrap superuser (unless the extension\*(Aqs script explicitly assigns them to the calling user)\&. This configuration gives the calling user the right to drop the extension, but not to modify individual objects within it\&.
 .SH "PARAMETERS"
 .PP
 IF NOT EXISTS
@@ -99,28 +104,6 @@ Remember that the extension itself is not considered to be within any schema: ex
 The version of the extension to install\&. This can be written as either an identifier or a string literal\&. The default version is whatever is specified in the extension\*(Aqs control file\&.
 .RE
 .PP
-\fIold_version\fR
-.RS 4
-FROM
-\fIold_version\fR
-must be specified when, and only when, you are attempting to install an extension that replaces an
-\(lqold style\(rq
-module that is just a collection of objects not packaged into an extension\&. This option causes
-\fBCREATE EXTENSION\fR
-to run an alternative installation script that absorbs the existing objects into the extension, instead of creating new objects\&. Be careful that
-SCHEMA
-specifies the schema containing these pre\-existing objects\&.
-.sp
-The value to use for
-\fIold_version\fR
-is determined by the extension\*(Aqs author, and might vary if there is more than one version of the old\-style module that can be upgraded into an extension\&. For the standard additional modules supplied with pre\-9\&.1
-PostgreSQL, use
-unpackaged
-for
-\fIold_version\fR
-when updating a module to extension style\&.
-.RE
-.PP
 CASCADE
 .RS 4
 Automatically install any extensions that this extension depends on that are not already installed\&. Their dependencies are likewise automatically installed, recursively\&. The
@@ -141,42 +124,60 @@ pg_available_extensions
 or
 pg_available_extension_versions
 system views\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBCaution\fR
+.ps -1
+.br
+.PP
+Installing an extension as superuser requires trusting that the extension\*(Aqs author wrote the extension installation script in a secure fashion\&. It is not terribly difficult for a malicious user to create trojan\-horse objects that will compromise later execution of a carelessly\-written extension script, allowing that user to acquire superuser privileges\&. However, trojan\-horse objects are only hazardous if they are in the
+\fIsearch_path\fR
+during script execution, meaning that they are in the extension\*(Aqs installation target schema or in the schema of some extension it depends on\&. Therefore, a good rule of thumb when dealing with extensions whose scripts have not been carefully vetted is to install them only into schemas for which CREATE privilege has not been and will not be granted to any untrusted users\&. Likewise for any extensions they depend on\&.
+.PP
+The extensions supplied with
+PostgreSQL
+are believed to be secure against installation\-time attacks of this sort, except for a few that depend on other extensions\&. As stated in the documentation for those extensions, they should be installed into secure schemas, or installed into the same schemas as the extensions they depend on, or both\&.
+.sp .5v
+.RE
 .PP
 For information about writing new extensions, see
-Section\ \&38.16\&.
+Section\ \&38.17\&.
 .SH "EXAMPLES"
 .PP
 Install the
 hstore
-extension into the current database:
+extension into the current database, placing its objects in schema
+addons:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
+CREATE EXTENSION hstore SCHEMA addons;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Another way to accomplish the same thing:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+SET search_path = addons;
 CREATE EXTENSION hstore;
 .fi
 .if n \{\
 .RE
 .\}
-.PP
-Update a pre\-9\&.1 installation of
-hstore
-into extension style:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-CREATE EXTENSION hstore SCHEMA public FROM unpackaged;
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-Be careful to specify the schema in which you installed the existing
-hstore
-objects\&.
 .SH "COMPATIBILITY"
 .PP
 \fBCREATE EXTENSION\fR

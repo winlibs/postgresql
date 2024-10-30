@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>13.4. Data Consistency Checks at the Application Level</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="explicit-locking.html" title="13.3. Explicit Locking" /><link rel="next" href="mvcc-caveats.html" title="13.5. Caveats" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">13.4. Data Consistency Checks at the Application Level</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="explicit-locking.html" title="13.3. Explicit Locking">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="mvcc.html" title="Chapter 13. Concurrency Control">Up</a></td><th width="60%" align="center">Chapter 13. Concurrency Control</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="mvcc-caveats.html" title="13.5. Caveats">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="APPLEVEL-CONSISTENCY"><div class="titlepage"><div><div><h2 class="title" style="clear: both">13.4. Data Consistency Checks at the Application Level</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="applevel-consistency.html#SERIALIZABLE-CONSISTENCY">13.4.1. Enforcing Consistency With Serializable Transactions</a></span></dt><dt><span class="sect2"><a href="applevel-consistency.html#NON-SERIALIZABLE-CONSISTENCY">13.4.2. Enforcing Consistency With Explicit Blocking Locks</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>13.4. Data Consistency Checks at the Application Level</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="explicit-locking.html" title="13.3. Explicit Locking" /><link rel="next" href="mvcc-serialization-failure-handling.html" title="13.5. Serialization Failure Handling" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">13.4. Data Consistency Checks at the Application Level</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="explicit-locking.html" title="13.3. Explicit Locking">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="mvcc.html" title="Chapter 13. Concurrency Control">Up</a></td><th width="60%" align="center">Chapter 13. Concurrency Control</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="mvcc-serialization-failure-handling.html" title="13.5. Serialization Failure Handling">Next</a></td></tr></table><hr /></div><div class="sect1" id="APPLEVEL-CONSISTENCY"><div class="titlepage"><div><div><h2 class="title" style="clear: both">13.4. Data Consistency Checks at the Application Level <a href="#APPLEVEL-CONSISTENCY" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="applevel-consistency.html#SERIALIZABLE-CONSISTENCY">13.4.1. Enforcing Consistency with Serializable Transactions</a></span></dt><dt><span class="sect2"><a href="applevel-consistency.html#NON-SERIALIZABLE-CONSISTENCY">13.4.2. Enforcing Consistency with Explicit Blocking Locks</a></span></dt></dl></div><p>
     It is very difficult to enforce business rules regarding data integrity
     using Read Committed transactions because the view of the data is
     shifting with each statement, and even a single statement may not
@@ -28,7 +28,7 @@
     When a pattern is detected which could cause a cycle in the apparent
     order of execution, one of the transactions involved is rolled back to
     break the cycle.
-   </p><div class="sect2" id="SERIALIZABLE-CONSISTENCY"><div class="titlepage"><div><div><h3 class="title">13.4.1. Enforcing Consistency With Serializable Transactions</h3></div></div></div><p>
+   </p><div class="sect2" id="SERIALIZABLE-CONSISTENCY"><div class="titlepage"><div><div><h3 class="title">13.4.1. Enforcing Consistency with Serializable Transactions <a href="#SERIALIZABLE-CONSISTENCY" class="id_link">#</a></h3></div></div></div><p>
      If the Serializable transaction isolation level is used for all writes
      and for all reads which need a consistent view of the data, no other
      effort is required to ensure consistency.  Software from other
@@ -47,12 +47,13 @@
      level in triggers.
     </p><p>
      See <a class="xref" href="transaction-iso.html#XACT-SERIALIZABLE" title="13.2.3. Serializable Isolation Level">Section 13.2.3</a> for performance suggestions.
-    </p><div class="warning"><h3 class="title">Warning</h3><p>
+    </p><div class="warning"><h3 class="title">Warning: Serializable Transactions and Data Replication</h3><p>
       This level of integrity protection using Serializable transactions
-      does not yet extend to hot standby mode (<a class="xref" href="hot-standby.html" title="26.5. Hot Standby">Section 26.5</a>).
-      Because of that, those using hot standby may want to use Repeatable
-      Read and explicit locking on the master.
-     </p></div></div><div class="sect2" id="NON-SERIALIZABLE-CONSISTENCY"><div class="titlepage"><div><div><h3 class="title">13.4.2. Enforcing Consistency With Explicit Blocking Locks</h3></div></div></div><p>
+      does not yet extend to hot standby mode (<a class="xref" href="hot-standby.html" title="27.4. Hot Standby">Section 27.4</a>)
+      or logical replicas.
+      Because of that, those using hot standby or logical replication
+      may want to use Repeatable Read and explicit locking on the primary.
+     </p></div></div><div class="sect2" id="NON-SERIALIZABLE-CONSISTENCY"><div class="titlepage"><div><div><h3 class="title">13.4.2. Enforcing Consistency with Explicit Blocking Locks <a href="#NON-SERIALIZABLE-CONSISTENCY" class="id_link">#</a></h3></div></div></div><p>
      When non-serializable writes are possible,
      to ensure the current validity of a row and protect it against
      concurrent updates one must use <code class="command">SELECT FOR UPDATE</code>,
@@ -108,7 +109,7 @@
      changes in the table.  A repeatable read transaction's snapshot is actually
      frozen at the start of its first query or data-modification command
      (<code class="literal">SELECT</code>, <code class="literal">INSERT</code>,
-     <code class="literal">UPDATE</code>, or <code class="literal">DELETE</code>), so
-     it is possible to obtain locks explicitly before the snapshot is
-     frozen.
-    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="explicit-locking.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="mvcc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="mvcc-caveats.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">13.3. Explicit Locking </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 13.5. Caveats</td></tr></table></div></body></html>
+     <code class="literal">UPDATE</code>, <code class="literal">DELETE</code>, or
+     <code class="literal">MERGE</code>), so it is possible to obtain locks explicitly
+     before the snapshot is frozen.
+    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="explicit-locking.html" title="13.3. Explicit Locking">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="mvcc.html" title="Chapter 13. Concurrency Control">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="mvcc-serialization-failure-handling.html" title="13.5. Serialization Failure Handling">Next</a></td></tr><tr><td width="40%" align="left" valign="top">13.3. Explicit Locking </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 13.5. Serialization Failure Handling</td></tr></table></div></body></html>

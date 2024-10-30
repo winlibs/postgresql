@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: clusterdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CLUSTERDB" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CLUSTERDB" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -60,11 +60,13 @@ Cluster all databases\&.
 .br
 \fB[\-\-dbname=]\fR\fB\fIdbname\fR\fR
 .RS 4
-Specifies the name of the database to be clustered\&. If this is not specified and
-\fB\-a\fR
-(or
-\fB\-\-all\fR) is not used, the database name is read from the environment variable
-\fBPGDATABASE\fR\&. If that is not set, the user name specified for the connection is used\&.
+Specifies the name of the database to be clustered, when
+\fB\-a\fR/\fB\-\-all\fR
+is not used\&. If this is not specified, the database name is read from the environment variable
+\fBPGDATABASE\fR\&. If that is not set, the user name specified for the connection is used\&. The
+\fIdbname\fR
+can be a
+connection string\&. If so, connection string parameters will override any conflicting command line options\&.
 .RE
 .PP
 \fB\-e\fR
@@ -171,11 +173,14 @@ to avoid the extra connection attempt\&.
 .PP
 \fB\-\-maintenance\-db=\fR\fB\fIdbname\fR\fR
 .RS 4
-Specifies the name of the database to connect to discover what other databases should be clustered\&. If not specified, the
+Specifies the name of the database to connect to to discover which databases should be clustered, when
+\fB\-a\fR/\fB\-\-all\fR
+is used\&. If not specified, the
 postgres
-database will be used, and if that does not exist,
+database will be used, or if that does not exist,
 template1
-will be used\&.
+will be used\&. This can be a
+connection string\&. If so, connection string parameters will override any conflicting command line options\&. Also, connection string parameters other than the database name itself will be re\-used when connecting to other databases\&.
 .RE
 .SH "ENVIRONMENT"
 .PP
@@ -190,12 +195,21 @@ will be used\&.
 Default connection parameters
 .RE
 .PP
+\fBPG_COLOR\fR
+.RS 4
+Specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.RE
+.PP
 This utility, like most other
 PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section\ \&34.14)\&.
+Section\ \&34.15)\&.
 .SH "DIAGNOSTICS"
 .PP
 In case of difficulty, see

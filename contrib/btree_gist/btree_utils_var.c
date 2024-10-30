@@ -3,15 +3,14 @@
  */
 #include "postgres.h"
 
-#include "btree_gist.h"
-
 #include <math.h>
 #include <limits.h>
 #include <float.h>
 
+#include "btree_gist.h"
 #include "btree_utils_var.h"
-#include "utils/pg_locale.h"
 #include "utils/builtins.h"
+#include "utils/pg_locale.h"
 #include "utils/rel.h"
 
 /* used for key sorting */
@@ -191,10 +190,9 @@ gbt_bytea_pf_match(const bytea *pf, const bytea *query, const gbtree_vinfo *tinf
 static bool
 gbt_var_node_pf_match(const GBT_VARKEY_R *node, const bytea *query, const gbtree_vinfo *tinfo)
 {
-	return (tinfo->trnc && (
-							gbt_bytea_pf_match(node->lower, query, tinfo) ||
-							gbt_bytea_pf_match(node->upper, query, tinfo)
-							));
+	return (tinfo->trnc &&
+			(gbt_bytea_pf_match(node->lower, query, tinfo) ||
+			 gbt_bytea_pf_match(node->upper, query, tinfo)));
 }
 
 
@@ -428,7 +426,7 @@ gbt_var_penalty(float *res, const GISTENTRY *o, const GISTENTRY *n,
 			tmp[1] = (unsigned char) (((VARSIZE(uk.lower) - VARHDRSZ) <= ul) ? 0 : (VARDATA(uk.lower)[ul]));
 			tmp[2] = (unsigned char) (((VARSIZE(ok.upper) - VARHDRSZ) <= ul) ? 0 : (VARDATA(ok.upper)[ul]));
 			tmp[3] = (unsigned char) (((VARSIZE(uk.upper) - VARHDRSZ) <= ul) ? 0 : (VARDATA(uk.upper)[ul]));
-			dres = Abs(tmp[0] - tmp[1]) + Abs(tmp[3] - tmp[2]);
+			dres = abs(tmp[0] - tmp[1]) + abs(tmp[3] - tmp[2]);
 			dres /= 256.0;
 		}
 
@@ -504,11 +502,11 @@ gbt_var_picksplit(const GistEntryVector *entryvec, GIST_SPLITVEC *v,
 	varg.tinfo = tinfo;
 	varg.collation = collation;
 	varg.flinfo = flinfo;
-	qsort_arg((void *) &arr[FirstOffsetNumber],
+	qsort_arg(&arr[FirstOffsetNumber],
 			  maxoff - FirstOffsetNumber + 1,
 			  sizeof(Vsrt),
 			  gbt_vsrt_cmp,
-			  (void *) &varg);
+			  &varg);
 
 	/* We do simply create two parts */
 

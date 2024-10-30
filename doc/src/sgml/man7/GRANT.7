@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: GRANT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "GRANT" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "GRANT" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,88 +37,99 @@ GRANT { { SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER }
     ON { [ TABLE ] \fItable_name\fR [, \&.\&.\&.]
          | ALL TABLES IN SCHEMA \fIschema_name\fR [, \&.\&.\&.] }
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
 
 GRANT { { SELECT | INSERT | UPDATE | REFERENCES } ( \fIcolumn_name\fR [, \&.\&.\&.] )
     [, \&.\&.\&.] | ALL [ PRIVILEGES ] ( \fIcolumn_name\fR [, \&.\&.\&.] ) }
     ON [ TABLE ] \fItable_name\fR [, \&.\&.\&.]
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
 
 GRANT { { USAGE | SELECT | UPDATE }
     [, \&.\&.\&.] | ALL [ PRIVILEGES ] }
     ON { SEQUENCE \fIsequence_name\fR [, \&.\&.\&.]
          | ALL SEQUENCES IN SCHEMA \fIschema_name\fR [, \&.\&.\&.] }
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
 
 GRANT { { CREATE | CONNECT | TEMPORARY | TEMP } [, \&.\&.\&.] | ALL [ PRIVILEGES ] }
     ON DATABASE \fIdatabase_name\fR [, \&.\&.\&.]
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON DOMAIN \fIdomain_name\fR [, \&.\&.\&.]
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON FOREIGN DATA WRAPPER \fIfdw_name\fR [, \&.\&.\&.]
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON FOREIGN SERVER \fIserver_name\fR [, \&.\&.\&.]
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
 
 GRANT { EXECUTE | ALL [ PRIVILEGES ] }
     ON { { FUNCTION | PROCEDURE | ROUTINE } \fIroutine_name\fR [ ( [ [ \fIargmode\fR ] [ \fIarg_name\fR ] \fIarg_type\fR [, \&.\&.\&.] ] ) ] [, \&.\&.\&.]
          | ALL { FUNCTIONS | PROCEDURES | ROUTINES } IN SCHEMA \fIschema_name\fR [, \&.\&.\&.] }
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON LANGUAGE \fIlang_name\fR [, \&.\&.\&.]
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
 
 GRANT { { SELECT | UPDATE } [, \&.\&.\&.] | ALL [ PRIVILEGES ] }
     ON LARGE OBJECT \fIloid\fR [, \&.\&.\&.]
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
+
+GRANT { { SET | ALTER SYSTEM } [, \&.\&.\&. ] | ALL [ PRIVILEGES ] }
+    ON PARAMETER \fIconfiguration_parameter\fR [, \&.\&.\&.]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
 
 GRANT { { CREATE | USAGE } [, \&.\&.\&.] | ALL [ PRIVILEGES ] }
     ON SCHEMA \fIschema_name\fR [, \&.\&.\&.]
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
 
 GRANT { CREATE | ALL [ PRIVILEGES ] }
     ON TABLESPACE \fItablespace_name\fR [, \&.\&.\&.]
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON TYPE \fItype_name\fR [, \&.\&.\&.]
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    [ GRANTED BY \fIrole_specification\fR ]
+
+GRANT \fIrole_name\fR [, \&.\&.\&.] TO \fIrole_specification\fR [, \&.\&.\&.]
+    [ WITH { ADMIN | INHERIT | SET } { OPTION | TRUE | FALSE } ]
+    [ GRANTED BY \fIrole_specification\fR ]
 
 where \fIrole_specification\fR can be:
 
     [ GROUP ] \fIrole_name\fR
   | PUBLIC
+  | CURRENT_ROLE
   | CURRENT_USER
   | SESSION_USER
-
-GRANT \fIrole_name\fR [, \&.\&.\&.] TO \fIrole_name\fR [, \&.\&.\&.] [ WITH ADMIN OPTION ]
 .fi
 .SH "DESCRIPTION"
 .PP
 The
 \fBGRANT\fR
-command has two basic variants: one that grants privileges on a database object (table, column, view, foreign table, sequence, database, foreign\-data wrapper, foreign server, function, procedure, procedural language, schema, or tablespace), and one that grants membership in a role\&. These variants are similar in many ways, but they are different enough to be described separately\&.
+command has two basic variants: one that grants privileges on a database object (table, column, view, foreign table, sequence, database, foreign\-data wrapper, foreign server, function, procedure, procedural language, large object, configuration parameter, schema, tablespace, or type), and one that grants membership in a role\&. These variants are similar in many ways, but they are different enough to be described separately\&.
 .SS "GRANT on Database Objects"
 .PP
 This variant of the
 \fBGRANT\fR
 command gives specific privileges on a database object to one or more roles\&. These privileges are added to those already granted, if any\&.
-.PP
-There is also an option to grant privileges on all objects of the same type within one or more schemas\&. This functionality is currently supported only for tables, sequences, functions, and procedures\&.
-ALL TABLES
-also affects views and foreign tables, just like the specific\-object
-\fBGRANT\fR
-command\&.
-ALL FUNCTIONS
-also affects aggregate functions, but not procedures, again just like the specific\-object
-\fBGRANT\fR
-command\&.
 .PP
 The key word
 PUBLIC
@@ -132,196 +143,159 @@ WITH GRANT OPTION
 is specified, the recipient of the privilege can in turn grant it to others\&. Without a grant option, the recipient cannot do that\&. Grant options cannot be granted to
 PUBLIC\&.
 .PP
+If
+GRANTED BY
+is specified, the specified grantor must be the current user\&. This clause is currently present in this form only for SQL compatibility\&.
+.PP
 There is no need to grant privileges to the owner of an object (usually the user that created it), as the owner has all privileges by default\&. (The owner could, however, choose to revoke some of their own privileges for safety\&.)
 .PP
 The right to drop an object, or to alter its definition in any way, is not treated as a grantable privilege; it is inherent in the owner, and cannot be granted or revoked\&. (However, a similar effect can be obtained by granting or revoking membership in the role that owns the object; see below\&.) The owner implicitly has all grant options for the object, too\&.
 .PP
-PostgreSQL grants default privileges on some types of objects to
-PUBLIC\&. No privileges are granted to
-PUBLIC
-by default on tables, table columns, sequences, foreign data wrappers, foreign servers, large objects, schemas, or tablespaces\&. For other types of objects, the default privileges granted to
-PUBLIC
-are as follows:
-CONNECT
-and
-TEMPORARY
-(create temporary tables) privileges for databases;
-EXECUTE
-privilege for functions and procedures; and
-USAGE
-privilege for languages and data types (including domains)\&. The object owner can, of course,
-\fBREVOKE\fR
-both default and expressly granted privileges\&. (For maximum security, issue the
-\fBREVOKE\fR
-in the same transaction that creates the object; then there is no window in which another user can use the object\&.) Also, these initial default privilege settings can be changed using the
-ALTER DEFAULT PRIVILEGES (\fBALTER_DEFAULT_PRIVILEGES\fR(7))
-command\&.
-.PP
 The possible privileges are:
 .PP
 SELECT
-.RS 4
-Allows
-\fBSELECT\fR(7)
-from any column, or the specific columns listed, of the specified table, view, or sequence\&. Also allows the use of
-\fBCOPY\fR(7)
-TO\&. This privilege is also needed to reference existing column values in
-\fBUPDATE\fR(7)
-or
-\fBDELETE\fR(7)\&. For sequences, this privilege also allows the use of the
-\fBcurrval\fR
-function\&. For large objects, this privilege allows the object to be read\&.
-.RE
-.PP
+.br
 INSERT
-.RS 4
-Allows
-\fBINSERT\fR(7)
-of a new row into the specified table\&. If specific columns are listed, only those columns may be assigned to in the
-\fBINSERT\fR
-command (other columns will therefore receive default values)\&. Also allows
-\fBCOPY\fR(7)
-FROM\&.
-.RE
-.PP
+.br
 UPDATE
-.RS 4
-Allows
-\fBUPDATE\fR(7)
-of any column, or the specific columns listed, of the specified table\&. (In practice, any nontrivial
-\fBUPDATE\fR
-command will require
-SELECT
-privilege as well, since it must reference table columns to determine which rows to update, and/or to compute new values for columns\&.)
-SELECT \&.\&.\&. FOR UPDATE
-and
-SELECT \&.\&.\&. FOR SHARE
-also require this privilege on at least one column, in addition to the
-SELECT
-privilege\&. For sequences, this privilege allows the use of the
-\fBnextval\fR
-and
-\fBsetval\fR
-functions\&. For large objects, this privilege allows writing or truncating the object\&.
-.RE
-.PP
+.br
 DELETE
-.RS 4
-Allows
-\fBDELETE\fR(7)
-of a row from the specified table\&. (In practice, any nontrivial
-\fBDELETE\fR
-command will require
-SELECT
-privilege as well, since it must reference table columns to determine which rows to delete\&.)
-.RE
-.PP
+.br
 TRUNCATE
-.RS 4
-Allows
-\fBTRUNCATE\fR(7)
-on the specified table\&.
-.RE
-.PP
+.br
 REFERENCES
-.RS 4
-Allows creation of a foreign key constraint referencing the specified table, or specified column(s) of the table\&. (See the
-CREATE TABLE (\fBCREATE_TABLE\fR(7))
-statement\&.)
-.RE
-.PP
+.br
 TRIGGER
-.RS 4
-Allows the creation of a trigger on the specified table\&. (See the
-CREATE TRIGGER (\fBCREATE_TRIGGER\fR(7))
-statement\&.)
-.RE
-.PP
+.br
 CREATE
-.RS 4
-For databases, allows new schemas and publications to be created within the database\&.
-.sp
-For schemas, allows new objects to be created within the schema\&. To rename an existing object, you must own the object
-\fIand\fR
-have this privilege for the containing schema\&.
-.sp
-For tablespaces, allows tables, indexes, and temporary files to be created within the tablespace, and allows databases to be created that have the tablespace as their default tablespace\&. (Note that revoking this privilege will not alter the placement of existing objects\&.)
-.RE
-.PP
+.br
 CONNECT
-.RS 4
-Allows the user to connect to the specified database\&. This privilege is checked at connection startup (in addition to checking any restrictions imposed by
-pg_hba\&.conf)\&.
-.RE
-.PP
+.br
 TEMPORARY
 .br
+EXECUTE
+.br
+USAGE
+.br
+SET
+.br
+ALTER SYSTEM
+.RS 4
+Specific types of privileges, as defined in
+Section\ \&5.7\&.
+.RE
+.PP
 TEMP
 .RS 4
-Allows temporary tables to be created while using the specified database\&.
-.RE
-.PP
-EXECUTE
-.RS 4
-Allows the use of the specified function or procedure and the use of any operators that are implemented on top of the function\&. This is the only type of privilege that is applicable to functions and procedures\&. The
-FUNCTION
-syntax also works for aggregate functions\&. Alternatively, use
-ROUTINE
-to refer to a function, aggregate function, or procedure regardless of what it is\&.
-.RE
-.PP
-USAGE
-.RS 4
-For procedural languages, allows the use of the specified language for the creation of functions in that language\&. This is the only type of privilege that is applicable to procedural languages\&.
-.sp
-For schemas, allows access to objects contained in the specified schema (assuming that the objects\*(Aq own privilege requirements are also met)\&. Essentially this allows the grantee to
-\(lqlook up\(rq
-objects within the schema\&. Without this permission, it is still possible to see the object names, e\&.g\&. by querying the system tables\&. Also, after revoking this permission, existing backends might have statements that have previously performed this lookup, so this is not a completely secure way to prevent object access\&.
-.sp
-For sequences, this privilege allows the use of the
-\fBcurrval\fR
-and
-\fBnextval\fR
-functions\&.
-.sp
-For types and domains, this privilege allows the use of the type or domain in the creation of tables, functions, and other schema objects\&. (Note that it does not control general
-\(lqusage\(rq
-of the type, such as values of the type appearing in queries\&. It only prevents objects from being created that depend on the type\&. The main purpose of the privilege is controlling which users create dependencies on a type, which could prevent the owner from changing the type later\&.)
-.sp
-For foreign\-data wrappers, this privilege allows creation of new servers using the foreign\-data wrapper\&.
-.sp
-For servers, this privilege allows creation of foreign tables using the server\&. Grantees may also create, alter, or drop their own user mappings associated with that server\&.
+Alternative spelling for
+TEMPORARY\&.
 .RE
 .PP
 ALL PRIVILEGES
 .RS 4
-Grant all of the available privileges at once\&. The
+Grant all of the privileges available for the object\*(Aqs type\&. The
 PRIVILEGES
 key word is optional in
 PostgreSQL, though it is required by strict SQL\&.
 .RE
-The privileges required by other commands are listed on the reference page of the respective command\&.
+.PP
+The
+FUNCTION
+syntax works for plain functions, aggregate functions, and window functions, but not for procedures; use
+PROCEDURE
+for those\&. Alternatively, use
+ROUTINE
+to refer to a function, aggregate function, window function, or procedure regardless of its precise type\&.
+.PP
+There is also an option to grant privileges on all objects of the same type within one or more schemas\&. This functionality is currently supported only for tables, sequences, functions, and procedures\&.
+ALL TABLES
+also affects views and foreign tables, just like the specific\-object
+\fBGRANT\fR
+command\&.
+ALL FUNCTIONS
+also affects aggregate and window functions, but not procedures, again just like the specific\-object
+\fBGRANT\fR
+command\&. Use
+ALL ROUTINES
+to include procedures\&.
 .SS "GRANT on Roles"
 .PP
 This variant of the
 \fBGRANT\fR
-command grants membership in a role to one or more other roles\&. Membership in a role is significant because it conveys the privileges granted to a role to each of its members\&.
+command grants membership in a role to one or more other roles, and the modification of membership options
+SET,
+INHERIT, and
+ADMIN; see
+Section\ \&22.3
+for details\&. Membership in a role is significant because it potentially allows access to the privileges granted to a role to each of its members, and potentially also the ability to make changes to the role itself\&. However, the actual permissions conferred depend on the options associated with the grant\&. To modify that options of an existing membership, simply specify the membership with updated option values\&.
+.PP
+Each of the options described below can be set to either
+TRUE
+or
+FALSE\&. The keyword
+OPTION
+is accepted as a synonym for
+TRUE, so that
+WITH ADMIN OPTION
+is a synonym for
+WITH ADMIN TRUE\&. When altering an existing membership the omission of an option results in the current value being retained\&.
+.PP
+The
+ADMIN
+option allows the member to in turn grant membership in the role to others, and revoke membership in the role as well\&. Without the admin option, ordinary users cannot do that\&. A role is not considered to hold
+WITH ADMIN OPTION
+on itself\&. Database superusers can grant or revoke membership in any role to anyone\&. This option defaults to
+FALSE\&.
+.PP
+The
+INHERIT
+option controls the inheritance status of the new membership; see
+Section\ \&22.3
+for details on inheritance\&. If it is set to
+TRUE, it causes the new member to inherit from the granted role\&. If set to
+FALSE, the new member does not inherit\&. If unspecified when creating a new role membership, this defaults to the inheritance attribute of the new member\&.
+.PP
+The
+SET
+option, if it is set to
+TRUE, allows the member to change to the granted role using the
+\fBSET ROLE\fR
+command\&. If a role is an indirect member of another role, it can use
+SET ROLE
+to change to that role only if there is a chain of grants each of which has
+SET TRUE\&. This option defaults to
+TRUE\&.
+.PP
+To create an object owned by another role or give ownership of an existing object to another role, you must have the ability to
+SET ROLE
+to that role; otherwise, commands such as
+ALTER \&.\&.\&. OWNER TO
+or
+CREATE DATABASE \&.\&.\&. OWNER
+will fail\&. However, a user who inherits the privileges of a role but does not have the ability to
+SET ROLE
+to that role may be able to obtain full access to the role by manipulating existing objects owned by that role (e\&.g\&. they could redefine an existing function to act as a Trojan horse)\&. Therefore, if a role\*(Aqs privileges are to be inherited but should not be accessible via
+SET ROLE, it should not own any SQL objects\&.
 .PP
 If
-WITH ADMIN OPTION
-is specified, the member can in turn grant membership in the role to others, and revoke membership in the role as well\&. Without the admin option, ordinary users cannot do that\&. A role is not considered to hold
-WITH ADMIN OPTION
-on itself, but it may grant or revoke membership in itself from a database session where the session user matches the role\&. Database superusers can grant or revoke membership in any role to anyone\&. Roles having
-CREATEROLE
-privilege can grant or revoke membership in any role that is not a superuser\&.
+GRANTED BY
+is specified, the grant is recorded as having been done by the specified role\&. A user can only attribute a grant to another role if they possess the privileges of that role\&. The role recorded as the grantor must have
+ADMIN OPTION
+on the target role, unless it is the bootstrap superuser\&. When a grant is recorded as having a grantor other than the bootstrap superuser, it depends on the grantor continuing to possess
+ADMIN OPTION
+on the role; so, if
+ADMIN OPTION
+is revoked, dependent grants must be revoked as well\&.
 .PP
 Unlike the case with privileges, membership in a role cannot be granted to
 PUBLIC\&. Note also that this form of the command does not allow the noise word
-GROUP\&.
+GROUP
+in
+\fIrole_specification\fR\&.
 .SH "NOTES"
 .PP
 The
-\fBREVOKE\fR(7)
+\fBREVOKE\fR
 command is used to revoke access privileges\&.
 .PP
 Since
@@ -351,7 +325,7 @@ If a superuser chooses to issue a
 \fBGRANT\fR
 or
 \fBREVOKE\fR
-command, the command is performed as though it were issued by the owner of the affected object\&. In particular, privileges granted via such a command will appear to have been granted by the object owner\&. (For role membership, the membership appears to have been granted by the containing role itself\&.)
+command, the command is performed as though it were issued by the owner of the affected object\&. In particular, privileges granted via such a command will appear to have been granted by the object owner\&. (For role membership, the membership appears to have been granted by the bootstrap superuser\&.)
 .PP
 \fBGRANT\fR
 and
@@ -386,103 +360,9 @@ Granting permission on a table does not automatically extend permissions to any 
 SERIAL
 columns\&. Permissions on sequences must be set separately\&.
 .PP
-Use
-\fBpsql\fR(1)\*(Aqs
-\fB\edp\fR
-command to obtain information about existing privileges for tables and columns\&. For example:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-=> \edp mytable
-                              Access privileges
- Schema |  Name   | Type  |   Access privileges   | Column access privileges 
-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
- public | mytable | table | miriam=arwdDxt/miriam | col1:
-                          : =r/miriam             :   miriam_rw=rw/miriam
-                          : admin=arw/miriam        
-(1 row)
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-The entries shown by
-\fB\edp\fR
-are interpreted thus:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-rolename=xxxx \-\- privileges granted to a role
-        =xxxx \-\- privileges granted to PUBLIC
-
-            r \-\- SELECT ("read")
-            w \-\- UPDATE ("write")
-            a \-\- INSERT ("append")
-            d \-\- DELETE
-            D \-\- TRUNCATE
-            x \-\- REFERENCES
-            t \-\- TRIGGER
-            X \-\- EXECUTE
-            U \-\- USAGE
-            C \-\- CREATE
-            c \-\- CONNECT
-            T \-\- TEMPORARY
-      arwdDxt \-\- ALL PRIVILEGES (for tables, varies for other objects)
-            * \-\- grant option for preceding privilege
-
-        /yyyy \-\- role that granted this privilege
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-The above example display would be seen by user
-miriam
-after creating table
-mytable
-and doing:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-GRANT SELECT ON mytable TO PUBLIC;
-GRANT SELECT, UPDATE, INSERT ON mytable TO admin;
-GRANT SELECT (col1), UPDATE (col1) ON mytable TO miriam_rw;
-.fi
-.if n \{\
-.RE
-.\}
-.PP
-For non\-table objects there are other
-\fB\ed\fR
-commands that can display their privileges\&.
-.PP
-If the
-\(lqAccess privileges\(rq
-column is empty for a given object, it means the object has default privileges (that is, its privileges column is null)\&. Default privileges always include all privileges for the owner, and can include some privileges for
-PUBLIC
-depending on the object type, as explained above\&. The first
-\fBGRANT\fR
-or
-\fBREVOKE\fR
-on an object will instantiate the default privileges (producing, for example,
-{miriam=arwdDxt/miriam}) and then modify them per the specified request\&. Similarly, entries are shown in
-\(lqColumn access privileges\(rq
-only for columns with nondefault privileges\&. (Note: for this purpose,
-\(lqdefault privileges\(rq
-always means the built\-in default privileges for the object\*(Aqs type\&. An object whose privileges have been affected by an
-\fBALTER DEFAULT PRIVILEGES\fR
-command will always be shown with an explicit privilege entry that includes the effects of the
-\fBALTER\fR\&.)
-.PP
-Notice that the owner\*(Aqs implicit grant options are not marked in the access privileges display\&. A
-*
-will appear only when grant options have been explicitly granted to someone\&.
+See
+Section\ \&5.7
+for more information about specific privilege types, as well as how to inspect objects\*(Aq privileges\&.
 .SH "EXAMPLES"
 .PP
 Grant insert privilege to all users on table
@@ -553,6 +433,13 @@ treats the owner\*(Aqs privileges as having been granted by the owner to themsel
 According to the SQL standard, grant options can be granted to
 PUBLIC; PostgreSQL only supports granting grant options to roles\&.
 .PP
+The SQL standard allows the
+GRANTED BY
+option to specify only
+CURRENT_USER
+or
+CURRENT_ROLE\&. The other variants are PostgreSQL extensions\&.
+.PP
 The SQL standard provides for a
 USAGE
 privilege on other kinds of objects: character sets, collations, translations\&.
@@ -573,7 +460,7 @@ privilege to the
 currval
 function is also a PostgreSQL extension (as is the function itself)\&.
 .PP
-Privileges on databases, tablespaces, schemas, and languages are
+Privileges on databases, tablespaces, schemas, languages, and configuration parameters are
 PostgreSQL
 extensions\&.
 .SH "SEE ALSO"

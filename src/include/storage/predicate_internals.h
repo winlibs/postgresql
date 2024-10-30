@@ -4,7 +4,7 @@
  *	  POSTGRES internal predicate locking definitions.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/storage/predicate_internals.h
@@ -14,7 +14,9 @@
 #ifndef PREDICATE_INTERNALS_H
 #define PREDICATE_INTERNALS_H
 
+#include "lib/ilist.h"
 #include "storage/lock.h"
+#include "storage/lwlock.h"
 
 /*
  * Commit number.
@@ -51,7 +53,7 @@ typedef uint64 SerCommitSeqNo;
  *
  * Eligibility for cleanup of committed transactions is generally determined
  * by comparing the transaction's finishedBefore field to
- * SerializableGlobalXmin.
+ * SxactGlobalXmin.
  */
 typedef struct SERIALIZABLEXACT
 {
@@ -83,19 +85,27 @@ typedef struct SERIALIZABLEXACT
 		SerCommitSeqNo lastCommitBeforeSnapshot;	/* when not committed or
 													 * no conflict out */
 	}			SeqNo;
-	SHM_QUEUE	outConflicts;	/* list of write transactions whose data we
+	dlist_head	outConflicts;	/* list of write transactions whose data we
 								 * couldn't read. */
-	SHM_QUEUE	inConflicts;	/* list of read transactions which couldn't
+	dlist_head	inConflicts;	/* list of read transactions which couldn't
 								 * see our write. */
-	SHM_QUEUE	predicateLocks; /* list of associated PREDICATELOCK objects */
-	SHM_QUEUE	finishedLink;	/* list link in
+	dlist_head	predicateLocks; /* list of associated PREDICATELOCK objects */
+	dlist_node	finishedLink;	/* list link in
 								 * FinishedSerializableTransactions */
+	dlist_node	xactLink;		/* PredXact->activeList/availableList */
+
+	/*
+	 * perXactPredicateListLock is only used in parallel queries: it protects
+	 * this SERIALIZABLEXACT's predicate lock list against other workers of
+	 * the same session.
+	 */
+	LWLock		perXactPredicateListLock;
 
 	/*
 	 * for r/o transactions: list of concurrent r/w transactions that we could
 	 * potentially have conflicts with, and vice versa for r/w transactions
 	 */
-	SHM_QUEUE	possibleUnsafeConflicts;
+	dlist_head	possibleUnsafeConflicts;
 
 	TransactionId topXid;		/* top level xid for the transaction, if one
 								 * exists; else invalid */
@@ -105,6 +115,7 @@ typedef struct SERIALIZABLEXACT
 	TransactionId xmin;			/* the transaction's snapshot xmin */
 	uint32		flags;			/* OR'd combination of values defined below */
 	int			pid;			/* pid of associated process */
+	int			pgprocno;		/* pgprocno of associated process */
 } SERIALIZABLEXACT;
 
 #define SXACT_FLAG_COMMITTED			0x00000001	/* already committed */
@@ -123,29 +134,17 @@ typedef struct SERIALIZABLEXACT
 #define SXACT_FLAG_RO_UNSAFE			0x00000100
 #define SXACT_FLAG_SUMMARY_CONFLICT_IN	0x00000200
 #define SXACT_FLAG_SUMMARY_CONFLICT_OUT 0x00000400
-
 /*
- * The following types are used to provide an ad hoc list for holding
- * SERIALIZABLEXACT objects.  An HTAB is overkill, since there is no need to
- * access these by key -- there are direct pointers to these objects where
- * needed.  If a shared memory list is created, these types can probably be
- * eliminated in favor of using the general solution.
+ * The following flag means the transaction has been partially released
+ * already, but is being preserved because parallel workers might have a
+ * reference to it.  It'll be recycled by the leader at end-of-transaction.
  */
-typedef struct PredXactListElementData
-{
-	SHM_QUEUE	link;
-	SERIALIZABLEXACT sxact;
-}			PredXactListElementData;
-
-typedef struct PredXactListElementData *PredXactListElement;
-
-#define PredXactListElementDataSize \
-		((Size)MAXALIGN(sizeof(PredXactListElementData)))
+#define SXACT_FLAG_PARTIALLY_RELEASED	0x00000800
 
 typedef struct PredXactListData
 {
-	SHM_QUEUE	availableList;
-	SHM_QUEUE	activeList;
+	dlist_head	availableList;
+	dlist_head	activeList;
 
 	/*
 	 * These global variables are maintained when registering and cleaning up
@@ -172,7 +171,7 @@ typedef struct PredXactListData
 												 * seq no */
 	SERIALIZABLEXACT *OldCommittedSxact;	/* shared copy of dummy sxact */
 
-	PredXactListElement element;
+	SERIALIZABLEXACT *element;
 }			PredXactListData;
 
 typedef struct PredXactListData *PredXactList;
@@ -193,11 +192,11 @@ typedef struct PredXactListData *PredXactList;
  */
 typedef struct RWConflictData
 {
-	SHM_QUEUE	outLink;		/* link for list of conflicts out from a sxact */
-	SHM_QUEUE	inLink;			/* link for list of conflicts in to a sxact */
+	dlist_node	outLink;		/* link for list of conflicts out from a sxact */
+	dlist_node	inLink;			/* link for list of conflicts in to a sxact */
 	SERIALIZABLEXACT *sxactOut;
 	SERIALIZABLEXACT *sxactIn;
-}			RWConflictData;
+} RWConflictData;
 
 typedef struct RWConflictData *RWConflict;
 
@@ -206,7 +205,7 @@ typedef struct RWConflictData *RWConflict;
 
 typedef struct RWConflictPoolHeaderData
 {
-	SHM_QUEUE	availableList;
+	dlist_head	availableList;
 	RWConflict	element;
 }			RWConflictPoolHeaderData;
 
@@ -288,7 +287,7 @@ typedef struct PREDICATELOCKTARGET
 	PREDICATELOCKTARGETTAG tag; /* unique identifier of lockable object */
 
 	/* data */
-	SHM_QUEUE	predicateLocks; /* list of PREDICATELOCK objects assoc. with
+	dlist_head	predicateLocks; /* list of PREDICATELOCK objects assoc. with
 								 * predicate lock target */
 } PREDICATELOCKTARGET;
 
@@ -321,9 +320,9 @@ typedef struct PREDICATELOCK
 	PREDICATELOCKTAG tag;		/* unique identifier of lock */
 
 	/* data */
-	SHM_QUEUE	targetLink;		/* list link in PREDICATELOCKTARGET's list of
+	dlist_node	targetLink;		/* list link in PREDICATELOCKTARGET's list of
 								 * predicate locks */
-	SHM_QUEUE	xactLink;		/* list link in SERIALIZABLEXACT's list of
+	dlist_node	xactLink;		/* list link in SERIALIZABLEXACT's list of
 								 * predicate locks */
 	SerCommitSeqNo commitSeqNo; /* only used for summarized predicate locks */
 } PREDICATELOCK;
@@ -473,7 +472,7 @@ typedef struct TwoPhasePredicateRecord
  * locking internals.
  */
 extern PredicateLockData *GetPredicateLockStatusData(void);
-extern int GetSafeSnapshotBlockingPids(int blocked_pid,
-							int *output, int output_size);
+extern int	GetSafeSnapshotBlockingPids(int blocked_pid,
+										int *output, int output_size);
 
 #endif							/* PREDICATE_INTERNALS_H */

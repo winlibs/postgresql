@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>16.2. Requirements</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="install-short.html" title="16.1. Short Version" /><link rel="next" href="install-getsource.html" title="16.3. Getting The Source" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">16.2. Requirements</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="install-short.html" title="16.1. Short Version">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="installation.html" title="Chapter 16. Installation from Source Code">Up</a></td><th width="60%" align="center">Chapter 16. Installation from Source Code</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="install-getsource.html" title="16.3. Getting The Source">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="INSTALL-REQUIREMENTS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">16.2. Requirements</h2></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>17.1. Requirements</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="installation.html" title="Chapter 17. Installation from Source Code" /><link rel="next" href="install-getsource.html" title="17.2. Getting the Source" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">17.1. Requirements</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="installation.html" title="Chapter 17. Installation from Source Code">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="installation.html" title="Chapter 17. Installation from Source Code">Up</a></td><th width="60%" align="center">Chapter 17. Installation from Source Code</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="install-getsource.html" title="17.2. Getting the Source">Next</a></td></tr></table><hr /></div><div class="sect1" id="INSTALL-REQUIREMENTS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">17.1. Requirements <a href="#INSTALL-REQUIREMENTS" class="id_link">#</a></h2></div></div></div><p>
    In general, a modern Unix-compatible platform should be able to run
    <span class="productname">PostgreSQL</span>.
    The platforms that had received specific testing at the
-   time of release are listed in <a class="xref" href="supported-platforms.html" title="16.6. Supported Platforms">Section 16.6</a>
-   below. In the <code class="filename">doc</code> subdirectory of the distribution
-   there are several platform-specific <acronym class="acronym">FAQ</acronym> documents you
-   might wish to consult if you are having trouble.
+   time of release are described in <a class="xref" href="supported-platforms.html" title="17.6. Supported Platforms">Section 17.6</a>
+   below.
   </p><p>
    The following software packages are required for building
    <span class="productname">PostgreSQL</span>:
 
    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
-      <a id="id-1.6.3.5.3.2.1.1.1" class="indexterm"></a>
+      <a id="id-1.6.4.5.3.2.1.1.1" class="indexterm"></a>
 
-      <acronym class="acronym">GNU</acronym> <span class="application">make</span> version 3.80 or newer is required; other
+      <acronym class="acronym">GNU</acronym> <span class="application">make</span> version 3.81 or newer is required; other
       <span class="application">make</span> programs or older <acronym class="acronym">GNU</acronym> <span class="application">make</span> versions will <span class="emphasis"><em>not</em></span> work.
       (<acronym class="acronym">GNU</acronym> <span class="application">make</span> is sometimes installed under
       the name <code class="filename">gmake</code>.)  To test for <acronym class="acronym">GNU</acronym>
@@ -23,8 +21,20 @@
 <strong class="userinput"><code>make --version</code></strong>
 </pre><p>
      </p></li><li class="listitem"><p>
+      <a id="id-1.6.4.5.3.2.2.1.1" class="indexterm"></a>
+
+      Alternatively, <span class="productname">PostgreSQL</span> can be built using
+      <a class="ulink" href="https://mesonbuild.com/" target="_top">Meson</a>.  This is currently
+      experimental and only works when building from a Git checkout (not from
+      a distribution tarball).  If you choose to use
+      <span class="application">Meson</span>, then you don't need
+      <acronym class="acronym">GNU</acronym> <span class="application">make</span>, but the other
+      requirements below still apply.
+     </p><p>
+      The minimum required version of <span class="application">Meson</span> is 0.54.
+     </p></li><li class="listitem"><p>
       You need an <acronym class="acronym">ISO</acronym>/<acronym class="acronym">ANSI</acronym> C compiler (at least
-      C89-compliant). Recent
+      C99-compliant). Recent
       versions of <span class="productname">GCC</span> are recommended, but
       <span class="productname">PostgreSQL</span> is known to build using a wide variety
       of compilers from different vendors.
@@ -33,8 +43,8 @@
       distribution, in addition to either
       <span class="application">gzip</span> or <span class="application">bzip2</span>.
      </p></li><li class="listitem"><p>
-      <a id="id-1.6.3.5.3.2.4.1.1" class="indexterm"></a>
-      <a id="id-1.6.3.5.3.2.4.1.2" class="indexterm"></a>
+      <a id="id-1.6.4.5.3.2.5.1.1" class="indexterm"></a>
+      <a id="id-1.6.4.5.3.2.5.1.2" class="indexterm"></a>
 
       The <acronym class="acronym">GNU</acronym> <span class="productname">Readline</span> library is used by
       default.  It allows <span class="application">psql</span> (the
@@ -55,7 +65,7 @@
       <code class="literal">readline</code> and <code class="literal">readline-devel</code> packages, if
       those are separate in your distribution.
      </p></li><li class="listitem"><p>
-      <a id="id-1.6.3.5.3.2.5.1.1" class="indexterm"></a>
+      <a id="id-1.6.4.5.3.2.6.1.1" class="indexterm"></a>
 
       The <span class="productname">zlib</span> compression library is
       used by default. If you don't want to use it then you must
@@ -63,6 +73,28 @@
       <code class="filename">configure</code>. Using this option disables
       support for compressed archives in <span class="application">pg_dump</span> and
       <span class="application">pg_restore</span>.
+     </p></li><li class="listitem"><p>
+      The ICU library is used by default. If you don't want to use it then you must specify the <code class="option">--without-icu</code> option to <code class="filename">configure</code>. Using this option disables support for ICU collation features (see <a class="xref" href="collation.html" title="24.2. Collation Support">Section 24.2</a>).
+     </p><p>
+      ICU support requires the <span class="productname">ICU4C</span> package to be
+      installed.  The minimum required version of
+      <span class="productname">ICU4C</span> is currently 4.2.
+     </p><p>
+      By default,
+      <span class="productname">pkg-config</span><a id="id-1.6.4.5.3.2.7.3.2" class="indexterm"></a>
+      will be used to find the required compilation options.  This is
+      supported for <span class="productname">ICU4C</span> version 4.6 and later.
+      For older versions, or if <span class="productname">pkg-config</span> is not
+      available, the variables <code class="envar">ICU_CFLAGS</code> and
+      <code class="envar">ICU_LIBS</code> can be specified to
+      <code class="filename">configure</code>, like in this example:
+</p><pre class="programlisting">
+./configure ... ICU_CFLAGS='-I/some/where/include' ICU_LIBS='-L/some/where/lib -licui18n -licuuc -licudata'
+</pre><p>
+      (If <span class="productname">ICU4C</span> is in the default search path
+      for the compiler, then you still need to specify nonempty strings in
+      order to avoid use of <span class="productname">pkg-config</span>, for
+      example, <code class="literal">ICU_CFLAGS=' '</code>.)
      </p></li></ul></div><p>
   </p><p>
    The following packages are optional.  They are not required in the
@@ -74,9 +106,9 @@
       <span class="application">PL/Perl</span> you need a full
       <span class="productname">Perl</span> installation, including the
       <code class="filename">libperl</code> library and the header files.
-      The minimum required version is <span class="productname">Perl</span> 5.8.3.
+      The minimum required version is <span class="productname">Perl</span> 5.14.
       Since <span class="application">PL/Perl</span> will be a shared
-      library, the <a id="id-1.6.3.5.4.1.1.1.6" class="indexterm"></a>
+      library, the <a id="id-1.6.4.5.4.1.1.1.6" class="indexterm"></a>
       <code class="filename">libperl</code> library must be a shared library
       also on most platforms.  This appears to be the default in
       recent <span class="productname">Perl</span> versions, but it was not
@@ -98,15 +130,11 @@
       To build the <span class="application">PL/Python</span> server programming
       language, you need a <span class="productname">Python</span>
       installation with the header files and
-      the <span class="application">distutils</span> module.  The minimum
-      required version is <span class="productname">Python</span> 2.4.
-      <span class="productname">Python 3</span> is supported if it's
-      version 3.1 or later; but see
-      <a class="xref" href="plpython-python23.html" title="46.1. Python 2 vs. Python 3">Section 46.1</a>
-      when using Python 3.
+      the <span class="application">sysconfig</span> module.  The minimum
+      required version is <span class="productname">Python</span> 3.2.
      </p><p>
       Since <span class="application">PL/Python</span> will be a shared
-      library, the <a id="id-1.6.3.5.4.1.2.2.2" class="indexterm"></a>
+      library, the <a id="id-1.6.4.5.4.1.2.2.2" class="indexterm"></a>
       <code class="filename">libpython</code> library must be a shared library
       also on most platforms.  This is not the case in a default
       <span class="productname">Python</span> installation built from source, but a
@@ -130,20 +158,32 @@
       <span class="application">Gettext</span> <acronym class="acronym">API</acronym>.  Some operating
       systems have this built-in (e.g., <span class="systemitem">Linux</span>, <span class="systemitem">NetBSD</span>,
       <span class="systemitem">Solaris</span>), for other systems you
-      can download an add-on package from <a class="ulink" href="http://www.gnu.org/software/gettext/" target="_top">http://www.gnu.org/software/gettext/</a>.
+      can download an add-on package from <a class="ulink" href="https://www.gnu.org/software/gettext/" target="_top">https://www.gnu.org/software/gettext/</a>.
       If you are using the <span class="application">Gettext</span> implementation in
-      the <acronym class="acronym">GNU</acronym> C library then you will additionally
+      the <acronym class="acronym">GNU</acronym> C library, then you will additionally
       need the <span class="productname">GNU Gettext</span> package for some
       utility programs.  For any of the other implementations you will
       not need it.
      </p></li><li class="listitem"><p>
       You need <span class="productname">OpenSSL</span>, if you want to support
-      encrypted client connections. The minimum required version is
-      0.9.8.
+      encrypted client connections.  <span class="productname">OpenSSL</span> is
+      also required for random number generation on platforms that do not
+      have <code class="filename">/dev/urandom</code> (except Windows).  The minimum
+      required version is 1.0.1.
      </p></li><li class="listitem"><p>
-      You need <span class="application">Kerberos</span>, <span class="productname">OpenLDAP</span>,
-      and/or <span class="application">PAM</span>, if you want to support authentication
-      using those services.
+      You need <span class="application">MIT Kerberos</span> (for GSSAPI),
+      <span class="productname">OpenLDAP</span>, and/or <span class="application">PAM</span>,
+      if you want to support authentication using those services.
+     </p></li><li class="listitem"><p>
+      You need <span class="productname">LZ4</span>, if you want to support
+      compression of data with that method; see
+      <a class="xref" href="runtime-config-client.html#GUC-DEFAULT-TOAST-COMPRESSION">default_toast_compression</a> and
+      <a class="xref" href="runtime-config-wal.html#GUC-WAL-COMPRESSION">wal_compression</a>.
+     </p></li><li class="listitem"><p>
+      You need <span class="productname">Zstandard</span>, if you want to support
+      compression of data with that method; see
+      <a class="xref" href="runtime-config-wal.html#GUC-WAL-COMPRESSION">wal_compression</a>.
+      The minimum required version is 1.4.0.
      </p></li><li class="listitem"><p>
       To build the <span class="productname">PostgreSQL</span> documentation,
       there is a separate set of requirements; see
@@ -155,21 +195,21 @@
    you also need the following packages:
 
    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
-      <a id="id-1.6.3.5.5.2.1.1.1" class="indexterm"></a>
-      <a id="id-1.6.3.5.5.2.1.1.2" class="indexterm"></a>
-      <a id="id-1.6.3.5.5.2.1.1.3" class="indexterm"></a>
-      <a id="id-1.6.3.5.5.2.1.1.4" class="indexterm"></a>
+      <a id="id-1.6.4.5.5.2.1.1.1" class="indexterm"></a>
+      <a id="id-1.6.4.5.5.2.1.1.2" class="indexterm"></a>
+      <a id="id-1.6.4.5.5.2.1.1.3" class="indexterm"></a>
+      <a id="id-1.6.4.5.5.2.1.1.4" class="indexterm"></a>
 
       <span class="application">Flex</span> and <span class="application">Bison</span>
       are needed to build from a Git checkout, or if you changed the actual
       scanner and parser definition files. If you need them, be sure
-      to get <span class="application">Flex</span> 2.5.31 or later and
-      <span class="application">Bison</span> 1.875 or later. Other <span class="application">lex</span>
+      to get <span class="application">Flex</span> 2.5.35 or later and
+      <span class="application">Bison</span> 2.3 or later. Other <span class="application">lex</span>
       and <span class="application">yacc</span> programs cannot be used.
      </p></li><li class="listitem"><p>
-      <a id="id-1.6.3.5.5.2.2.1.1" class="indexterm"></a>
+      <a id="id-1.6.4.5.5.2.2.1.1" class="indexterm"></a>
 
-      <span class="application">Perl</span> 5.8.3 or later is needed to build from a Git checkout,
+      <span class="application">Perl</span> 5.14 or later is needed to build from a Git checkout,
       or if you changed the input files for any of the build steps that
       use Perl scripts.  If building on Windows you will need
       <span class="application">Perl</span> in any case.  <span class="application">Perl</span> is
@@ -179,13 +219,4 @@
    If you need to get a <acronym class="acronym">GNU</acronym> package, you can find
    it at your local <acronym class="acronym">GNU</acronym> mirror site (see <a class="ulink" href="https://www.gnu.org/prep/ftp" target="_top">https://www.gnu.org/prep/ftp</a>
    for a list) or at <a class="ulink" href="ftp://ftp.gnu.org/gnu/" target="_top">ftp://ftp.gnu.org/gnu/</a>.
-  </p><p>
-   Also check that you have sufficient disk space. You will need about
-   100 MB for the source tree during compilation and about 20 MB for
-   the installation directory. An empty database cluster takes about
-   35 MB; databases take about five times the amount of space that a
-   flat text file with the same data would take. If you are going to
-   run the regression tests you will temporarily need up to an extra
-   150 MB. Use the <code class="command">df</code> command to check free disk
-   space.
-  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="install-short.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="installation.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="install-getsource.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">16.1. Short Version </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 16.3. Getting The Source</td></tr></table></div></body></html>
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="installation.html" title="Chapter 17. Installation from Source Code">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="installation.html" title="Chapter 17. Installation from Source Code">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="install-getsource.html" title="17.2. Getting the Source">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 17. Installation from Source Code </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 17.2. Getting the Source</td></tr></table></div></body></html>

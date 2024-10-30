@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>22.3. Template Databases</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="manage-ag-createdb.html" title="22.2. Creating a Database" /><link rel="next" href="manage-ag-config.html" title="22.4. Database Configuration" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">22.3. Template Databases</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="manage-ag-createdb.html" title="22.2. Creating a Database">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="managing-databases.html" title="Chapter 22. Managing Databases">Up</a></td><th width="60%" align="center">Chapter 22. Managing Databases</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="manage-ag-config.html" title="22.4. Database Configuration">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="MANAGE-AG-TEMPLATEDBS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">22.3. Template Databases</h2></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>23.3. Template Databases</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="manage-ag-createdb.html" title="23.2. Creating a Database" /><link rel="next" href="manage-ag-config.html" title="23.4. Database Configuration" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">23.3. Template Databases</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="manage-ag-createdb.html" title="23.2. Creating a Database">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="managing-databases.html" title="Chapter 23. Managing Databases">Up</a></td><th width="60%" align="center">Chapter 23. Managing Databases</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="manage-ag-config.html" title="23.4. Database Configuration">Next</a></td></tr></table><hr /></div><div class="sect1" id="MANAGE-AG-TEMPLATEDBS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">23.3. Template Databases <a href="#MANAGE-AG-TEMPLATEDBS" class="id_link">#</a></h2></div></div></div><p>
    <code class="command">CREATE DATABASE</code> actually works by copying an existing
    database.  By default, it copies the standard system database named
-   <code class="literal">template1</code>.<a id="id-1.6.9.6.2.3" class="indexterm"></a> Thus that
+   <code class="literal">template1</code>.<a id="id-1.6.10.6.2.3" class="indexterm"></a> Thus that
    database is the <span class="quote">“<span class="quote">template</span>”</span> from which new databases are
    made.  If you add objects to <code class="literal">template1</code>, these objects
    will be copied into subsequently created user databases.  This
@@ -12,8 +12,12 @@
    automatically be available in user databases without any extra
    action being taken when those databases are created.
   </p><p>
+   However, <code class="command">CREATE DATABASE</code> does not copy database-level
+   <code class="command">GRANT</code> permissions attached to the source database.
+   The new database has default database-level permissions.
+  </p><p>
    There is a second standard system database named
-   <code class="literal">template0</code>.<a id="id-1.6.9.6.3.2" class="indexterm"></a> This
+   <code class="literal">template0</code>.<a id="id-1.6.10.6.4.2" class="indexterm"></a> This
    database contains the same data as the initial contents of
    <code class="literal">template1</code>, that is, only the standard objects
    predefined by your version of
@@ -21,11 +25,12 @@
    should never be changed after the database cluster has been
    initialized.  By instructing
    <code class="command">CREATE DATABASE</code> to copy <code class="literal">template0</code> instead
-   of <code class="literal">template1</code>, you can create a <span class="quote">“<span class="quote">virgin</span>”</span> user
-   database that contains none of the site-local additions in
+   of <code class="literal">template1</code>, you can create a <span class="quote">“<span class="quote">pristine</span>”</span> user
+   database (one where no user-defined objects exist and where the system
+   objects have not been altered) that contains none of the site-local additions in
    <code class="literal">template1</code>.  This is particularly handy when restoring a
    <code class="literal">pg_dump</code> dump: the dump script should be restored in a
-   virgin database to ensure that one recreates the correct contents
+   pristine database to ensure that one recreates the correct contents
    of the dumped database, without conflicting with objects that
    might have been added to <code class="literal">template1</code> later on.
   </p><p>
@@ -57,7 +62,7 @@ createdb -T template0 <em class="replaceable"><code>dbname</code></em>
    during the copy operation, new connections to the source database
    are prevented.
   </p><p>
-   Two useful flags exist in <code class="literal">pg_database</code><a id="id-1.6.9.6.7.2" class="indexterm"></a> for each
+   Two useful flags exist in <code class="literal">pg_database</code><a id="id-1.6.10.6.8.2" class="indexterm"></a> for each
    database: the columns <code class="literal">datistemplate</code> and
    <code class="literal">datallowconn</code>.  <code class="literal">datistemplate</code>
    can be set to indicate that a database is intended as a template for
@@ -84,4 +89,4 @@ createdb -T template0 <em class="replaceable"><code>dbname</code></em>
     cluster is initialized.  This database is meant as a default database for
     users and applications to connect to. It is simply a copy of
     <code class="literal">template1</code> and can be dropped and recreated if necessary.
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="manage-ag-createdb.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="managing-databases.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="manage-ag-config.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">22.2. Creating a Database </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 22.4. Database Configuration</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="manage-ag-createdb.html" title="23.2. Creating a Database">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="managing-databases.html" title="Chapter 23. Managing Databases">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="manage-ag-config.html" title="23.4. Database Configuration">Next</a></td></tr><tr><td width="40%" align="left" valign="top">23.2. Creating a Database </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 23.4. Database Configuration</td></tr></table></div></body></html>

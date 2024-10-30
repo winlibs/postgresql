@@ -2,7 +2,7 @@
 
 #include "postgres_fe.h"
 
-#include "extern.h"
+#include "preproc_extern.h"
 
 static struct variable *allvariables = NULL;
 
@@ -104,7 +104,6 @@ find_struct_member(char *name, char *str, struct ECPGstruct_member *members, int
 							return find_struct_member(name, ++end, members->type->u.element->u.members, brace_level);
 						else
 							return find_struct_member(name, ++end, members->type->u.members, brace_level);
-						break;
 						break;
 					case '.':
 						if (members->type->type == ECPGt_array)
@@ -497,15 +496,20 @@ check_indicator(struct ECPGtype *var)
 }
 
 struct typedefs *
-get_typedef(char *name)
+get_typedef(const char *name, bool noerror)
 {
 	struct typedefs *this;
 
-	for (this = types; this && strcmp(this->name, name) != 0; this = this->next);
-	if (!this)
+	for (this = types; this != NULL; this = this->next)
+	{
+		if (strcmp(this->name, name) == 0)
+			return this;
+	}
+
+	if (!noerror)
 		mmfatal(PARSE_ERROR, "unrecognized data type name \"%s\"", name);
 
-	return this;
+	return NULL;
 }
 
 void
@@ -560,6 +564,7 @@ adjust_array(enum ECPGttype type_enum, char **dimension, char **length, char *ty
 
 			break;
 		case ECPGt_varchar:
+		case ECPGt_bytea:
 			/* pointer has to get dimension 0 */
 			if (pointer_len)
 				*dimension = mm_strdup("0");

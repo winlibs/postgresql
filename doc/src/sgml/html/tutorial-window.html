@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>3.5. Window Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="tutorial-transactions.html" title="3.4. Transactions" /><link rel="next" href="tutorial-inheritance.html" title="3.6. Inheritance" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">3.5. Window Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="tutorial-transactions.html" title="3.4. Transactions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="tutorial-advanced.html" title="Chapter 3. Advanced Features">Up</a></td><th width="60%" align="center">Chapter 3. Advanced Features</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="tutorial-inheritance.html" title="3.6. Inheritance">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TUTORIAL-WINDOW"><div class="titlepage"><div><div><h2 class="title" style="clear: both">3.5. Window Functions</h2></div></div></div><a id="id-1.4.5.6.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>3.5. Window Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="tutorial-transactions.html" title="3.4. Transactions" /><link rel="next" href="tutorial-inheritance.html" title="3.6. Inheritance" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">3.5. Window Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="tutorial-transactions.html" title="3.4. Transactions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="tutorial-advanced.html" title="Chapter 3. Advanced Features">Up</a></td><th width="60%" align="center">Chapter 3. Advanced Features</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="tutorial-inheritance.html" title="3.6. Inheritance">Next</a></td></tr></table><hr /></div><div class="sect1" id="TUTORIAL-WINDOW"><div class="titlepage"><div><div><h2 class="title" style="clear: both">3.5. Window Functions <a href="#TUTORIAL-WINDOW" class="id_link">#</a></h2></div></div></div><a id="id-1.4.5.6.2" class="indexterm"></a><p>
     A <em class="firstterm">window function</em> performs a calculation across a set of
     table rows that are somehow related to the current row.  This is comparable
     to the type of calculation that can be done with an aggregate function.
@@ -17,7 +17,7 @@ SELECT depname, empno, salary, avg(salary) OVER (PARTITION BY depname) FROM emps
 </pre><p>
 
 </p><pre class="screen">
-  depname  | empno | salary |          avg          
+  depname  | empno | salary |          avg
 -----------+-------+--------+-----------------------
  develop   |    11 |   5200 | 5020.0000000000000000
  develop   |     7 |   4200 | 5020.0000000000000000
@@ -63,7 +63,7 @@ FROM empsalary;
 </pre><p>
 
 </p><pre class="screen">
-  depname  | empno | salary | rank 
+  depname  | empno | salary | rank
 -----------+-------+--------+------
  develop   |     8 |   6000 |    1
  develop   |    10 |   5200 |    2
@@ -106,12 +106,12 @@ FROM empsalary;
     any following rows that are equal to the current row according to the
     <code class="literal">ORDER BY</code> clause.  When <code class="literal">ORDER BY</code> is omitted the
     default frame consists of all rows in the partition.
-     <a href="#ftn.id-1.4.5.6.9.5" class="footnote"><sup class="footnote" id="id-1.4.5.6.9.5">[4]</sup></a>
+     <a href="#ftn.id-1.4.5.6.9.5" class="footnote"><sup class="footnote" id="id-1.4.5.6.9.5">[5]</sup></a>
     Here is an example using <code class="function">sum</code>:
    </p><pre class="programlisting">
 SELECT salary, sum(salary) OVER () FROM empsalary;
 </pre><pre class="screen">
- salary |  sum  
+ salary |  sum
 --------+-------
    5200 | 47100
    5000 | 47100
@@ -134,7 +134,7 @@ SELECT salary, sum(salary) OVER () FROM empsalary;
    </p><pre class="programlisting">
 SELECT salary, sum(salary) OVER (ORDER BY salary) FROM empsalary;
 </pre><pre class="screen">
- salary |  sum  
+ salary |  sum
 --------+-------
    3500 |  3500
    3900 |  7400
@@ -192,11 +192,11 @@ SELECT sum(salary) OVER w, avg(salary) OVER w
    </p><p>
     More details about window functions can be found in
     <a class="xref" href="sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS" title="4.2.8. Window Function Calls">Section 4.2.8</a>,
-    <a class="xref" href="functions-window.html" title="9.21. Window Functions">Section 9.21</a>,
+    <a class="xref" href="functions-window.html" title="9.22. Window Functions">Section 9.22</a>,
     <a class="xref" href="queries-table-expressions.html#QUERIES-WINDOW" title="7.2.5. Window Function Processing">Section 7.2.5</a>, and the
     <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a> reference page.
-   </p><div class="footnotes"><br /><hr style="width:100; text-align:left;margin-left: 0" /><div id="ftn.id-1.4.5.6.9.5" class="footnote"><p><a href="#id-1.4.5.6.9.5" class="para"><sup class="para">[4] </sup></a>
+   </p><div class="footnotes"><br /><hr style="width:100; text-align:left;margin-left: 0" /><div id="ftn.id-1.4.5.6.9.5" class="footnote"><p><a href="#id-1.4.5.6.9.5" class="para"><sup class="para">[5] </sup></a>
        There are options to define the window frame in other ways, but
        this tutorial does not cover them.  See
        <a class="xref" href="sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS" title="4.2.8. Window Function Calls">Section 4.2.8</a> for details.
-      </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="tutorial-transactions.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="tutorial-advanced.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="tutorial-inheritance.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">3.4. Transactions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 3.6. Inheritance</td></tr></table></div></body></html>
+      </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="tutorial-transactions.html" title="3.4. Transactions">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="tutorial-advanced.html" title="Chapter 3. Advanced Features">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="tutorial-inheritance.html" title="3.6. Inheritance">Next</a></td></tr><tr><td width="40%" align="left" valign="top">3.4. Transactions </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 3.6. Inheritance</td></tr></table></div></body></html>

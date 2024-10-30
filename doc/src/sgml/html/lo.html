@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.20. lo</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="isn.html" title="F.19. isn" /><link rel="next" href="ltree.html" title="F.21. ltree" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.20. lo</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="isn.html" title="F.19. isn">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="ltree.html" title="F.21. ltree">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="LO"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.20. lo</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="lo.html#id-1.11.7.29.4">F.20.1. Rationale</a></span></dt><dt><span class="sect2"><a href="lo.html#id-1.11.7.29.5">F.20.2. How to Use It</a></span></dt><dt><span class="sect2"><a href="lo.html#id-1.11.7.29.6">F.20.3. Limitations</a></span></dt><dt><span class="sect2"><a href="lo.html#id-1.11.7.29.7">F.20.4. Author</a></span></dt></dl></div><a id="id-1.11.7.29.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.22. lo — manage large objects</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="isn.html" title="F.21. isn — data types for international standard numbers (ISBN, EAN, UPC, etc.)" /><link rel="next" href="ltree.html" title="F.23. ltree — hierarchical tree-like data type" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.22. lo — manage large objects</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="isn.html" title="F.21. isn — data types for international standard numbers (ISBN, EAN, UPC, etc.)">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules and Extensions">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules and Extensions</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="ltree.html" title="F.23. ltree — hierarchical tree-like data type">Next</a></td></tr></table><hr /></div><div class="sect1" id="LO"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.22. lo — manage large objects <a href="#LO" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="lo.html#LO-RATIONALE">F.22.1. Rationale</a></span></dt><dt><span class="sect2"><a href="lo.html#LO-HOW-TO-USE">F.22.2. How to Use It</a></span></dt><dt><span class="sect2"><a href="lo.html#LO-LIMITATIONS">F.22.3. Limitations</a></span></dt><dt><span class="sect2"><a href="lo.html#LO-AUTHOR">F.22.4. Author</a></span></dt></dl></div><a id="id-1.11.7.32.2" class="indexterm"></a><p>
   The <code class="filename">lo</code> module provides support for managing Large Objects
   (also called LOs or BLOBs).  This includes a data type <code class="type">lo</code>
   and a trigger <code class="function">lo_manage</code>.
- </p><div class="sect2" id="id-1.11.7.29.4"><div class="titlepage"><div><div><h3 class="title">F.20.1. Rationale</h3></div></div></div><p>
+ </p><p>
+  This module is considered <span class="quote">“<span class="quote">trusted</span>”</span>, that is, it can be
+  installed by non-superusers who have <code class="literal">CREATE</code> privilege
+  on the current database.
+ </p><div class="sect2" id="LO-RATIONALE"><div class="titlepage"><div><div><h3 class="title">F.22.1. Rationale <a href="#LO-RATIONALE" class="id_link">#</a></h3></div></div></div><p>
    One of the problems with the JDBC driver (and this affects the ODBC driver
    also), is that the specification assumes that references to BLOBs (Binary
    Large OBjects) are stored within a table, and if that entry is changed, the
@@ -28,14 +32,15 @@
    referenced in a trigger-controlled column!
   </p><p>
    The module also provides a data type <code class="type">lo</code>, which is really just
-   a domain of the <code class="type">oid</code> type.  This is useful for differentiating
+   a <a class="glossterm" href="glossary.html#GLOSSARY-DOMAIN"><em class="glossterm"><a class="glossterm" href="glossary.html#GLOSSARY-DOMAIN" title="Domain">domain</a></em></a> over
+   the <code class="type">oid</code> type.  This is useful for differentiating
    database columns that hold large object references from those that are
    OIDs of other things.  You don't have to use the <code class="type">lo</code> type to
    use the trigger, but it may be convenient to use it to keep track of which
    columns in your database represent large objects that you are managing with
    the trigger.  It is also rumored that the ODBC driver gets confused if you
    don't use <code class="type">lo</code> for BLOB columns.
-  </p></div><div class="sect2" id="id-1.11.7.29.5"><div class="titlepage"><div><div><h3 class="title">F.20.2. How to Use It</h3></div></div></div><p>
+  </p></div><div class="sect2" id="LO-HOW-TO-USE"><div class="titlepage"><div><div><h3 class="title">F.22.2. How to Use It <a href="#LO-HOW-TO-USE" class="id_link">#</a></h3></div></div></div><p>
    Here's a simple example of usage:
   </p><pre class="programlisting">
 CREATE TABLE image (title text, raster lo);
@@ -51,7 +56,7 @@ CREATE TRIGGER t_raster BEFORE UPDATE OR DELETE ON image
    If you need multiple <code class="type">lo</code>
    columns in the same table, create a separate trigger for each one,
    remembering to give a different name to each trigger on the same table.
-  </p></div><div class="sect2" id="id-1.11.7.29.6"><div class="titlepage"><div><div><h3 class="title">F.20.3. Limitations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+  </p></div><div class="sect2" id="LO-LIMITATIONS"><div class="titlepage"><div><div><h3 class="title">F.22.3. Limitations <a href="#LO-LIMITATIONS" class="id_link">#</a></h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
      Dropping a table will still orphan any objects it contains, as the trigger
      is not executed.  You can avoid this by preceding the <code class="command">DROP
      TABLE</code> with <code class="command">DELETE FROM <em class="replaceable"><code>table</code></em></code>.
@@ -66,6 +71,6 @@ CREATE TRIGGER t_raster BEFORE UPDATE OR DELETE ON image
      Some frontends may create their own tables, and will not create the
      associated trigger(s).  Also, users may not remember (or know) to create
      the triggers.
-    </p></li></ul></div></div><div class="sect2" id="id-1.11.7.29.7"><div class="titlepage"><div><div><h3 class="title">F.20.4. Author</h3></div></div></div><p>
+    </p></li></ul></div></div><div class="sect2" id="LO-AUTHOR"><div class="titlepage"><div><div><h3 class="title">F.22.4. Author <a href="#LO-AUTHOR" class="id_link">#</a></h3></div></div></div><p>
    Peter Mount <code class="email">&lt;<a class="email" href="mailto:peter@retep.org.uk">peter@retep.org.uk</a>&gt;</code>
-  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="isn.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ltree.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.19. isn </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> F.21. ltree</td></tr></table></div></body></html>
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="isn.html" title="F.21. isn — data types for international standard numbers (ISBN, EAN, UPC, etc.)">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules and Extensions">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ltree.html" title="F.23. ltree — hierarchical tree-like data type">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.21. isn — data types for international standard numbers (ISBN, EAN, UPC, etc.) </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> F.23. ltree — hierarchical tree-like data type</td></tr></table></div></body></html>

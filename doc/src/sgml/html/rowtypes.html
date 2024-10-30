@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>8.16. Composite Types</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="arrays.html" title="8.15. Arrays" /><link rel="next" href="rangetypes.html" title="8.17. Range Types" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">8.16. Composite Types</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="arrays.html" title="8.15. Arrays">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="datatype.html" title="Chapter 8. Data Types">Up</a></td><th width="60%" align="center">Chapter 8. Data Types</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="rangetypes.html" title="8.17. Range Types">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="ROWTYPES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">8.16. Composite Types</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-DECLARING">8.16.1. Declaration of Composite Types</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#id-1.5.7.24.6">8.16.2. Constructing Composite Values</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-ACCESSING">8.16.3. Accessing Composite Types</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#id-1.5.7.24.8">8.16.4. Modifying Composite Types</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-USAGE">8.16.5. Using Composite Types in Queries</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-IO-SYNTAX">8.16.6. Composite Type Input and Output Syntax</a></span></dt></dl></div><a id="id-1.5.7.24.2" class="indexterm"></a><a id="id-1.5.7.24.3" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>8.16. Composite Types</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="arrays.html" title="8.15. Arrays" /><link rel="next" href="rangetypes.html" title="8.17. Range Types" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">8.16. Composite Types</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="arrays.html" title="8.15. Arrays">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="datatype.html" title="Chapter 8. Data Types">Up</a></td><th width="60%" align="center">Chapter 8. Data Types</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="rangetypes.html" title="8.17. Range Types">Next</a></td></tr></table><hr /></div><div class="sect1" id="ROWTYPES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">8.16. Composite Types <a href="#ROWTYPES" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-DECLARING">8.16.1. Declaration of Composite Types</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-CONSTRUCTING">8.16.2. Constructing Composite Values</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-ACCESSING">8.16.3. Accessing Composite Types</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-MODIFYING">8.16.4. Modifying Composite Types</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-USAGE">8.16.5. Using Composite Types in Queries</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-IO-SYNTAX">8.16.6. Composite Type Input and Output Syntax</a></span></dt></dl></div><a id="id-1.5.7.24.2" class="indexterm"></a><a id="id-1.5.7.24.3" class="indexterm"></a><p>
   A <em class="firstterm">composite type</em> represents the structure of a row or record;
   it is essentially just a list of field names and their data types.
   <span class="productname">PostgreSQL</span> allows  composite types to be
   used in many of the same ways that simple types can be used.  For example, a
   column of a table can be declared to be of a composite type.
- </p><div class="sect2" id="ROWTYPES-DECLARING"><div class="titlepage"><div><div><h3 class="title">8.16.1. Declaration of Composite Types</h3></div></div></div><p>
+ </p><div class="sect2" id="ROWTYPES-DECLARING"><div class="titlepage"><div><div><h3 class="title">8.16.1. Declaration of Composite Types <a href="#ROWTYPES-DECLARING" class="id_link">#</a></h3></div></div></div><p>
   Here are two simple examples of defining composite types:
 </p><pre class="programlisting">
 CREATE TYPE complex AS (
@@ -63,10 +63,11 @@ CREATE TABLE inventory_item (
   restriction of the current implementation: since no constraints are
   associated with a composite type, the constraints shown in the table
   definition <span class="emphasis"><em>do not apply</em></span> to values of the composite type
-  outside the table.  (To work around this, create a domain over the composite
+  outside the table.  (To work around this, create a
+  <a class="glossterm" href="glossary.html#GLOSSARY-DOMAIN"><em class="glossterm"><a class="glossterm" href="glossary.html#GLOSSARY-DOMAIN" title="Domain">domain</a></em></a> over the composite
   type, and apply the desired constraints as <code class="literal">CHECK</code>
   constraints of the domain.)
- </p></div><div class="sect2" id="id-1.5.7.24.6"><div class="titlepage"><div><div><h3 class="title">8.16.2. Constructing Composite Values</h3></div></div></div><a id="id-1.5.7.24.6.2" class="indexterm"></a><p>
+ </p></div><div class="sect2" id="ROWTYPES-CONSTRUCTING"><div class="titlepage"><div><div><h3 class="title">8.16.2. Constructing Composite Values <a href="#ROWTYPES-CONSTRUCTING" class="id_link">#</a></h3></div></div></div><a id="id-1.5.7.24.6.2" class="indexterm"></a><p>
    To write a composite value as a literal constant, enclose the field
    values within parentheses and separate them by commas.  You can put double
    quotes around any field value, and must do so if it contains commas or
@@ -114,7 +115,7 @@ ROW('', 42, NULL)
 ('', 42, NULL)
 </pre><p>
   The <code class="literal">ROW</code> expression syntax is discussed in more detail in <a class="xref" href="sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS" title="4.2.13. Row Constructors">Section 4.2.13</a>.
- </p></div><div class="sect2" id="ROWTYPES-ACCESSING"><div class="titlepage"><div><div><h3 class="title">8.16.3. Accessing Composite Types</h3></div></div></div><p>
+ </p></div><div class="sect2" id="ROWTYPES-ACCESSING"><div class="titlepage"><div><div><h3 class="title">8.16.3. Accessing Composite Types <a href="#ROWTYPES-ACCESSING" class="id_link">#</a></h3></div></div></div><p>
   To access a field of a composite column, one writes a dot and the field
   name, much like selecting a field from a table name.  In fact, it's so
   much like selecting from a table name that you often have to use parentheses
@@ -156,7 +157,7 @@ SELECT (my_func(...)).field FROM ...
  </p><p>
   The special field name <code class="literal">*</code> means <span class="quote">“<span class="quote">all fields</span>”</span>, as
   further explained in <a class="xref" href="rowtypes.html#ROWTYPES-USAGE" title="8.16.5. Using Composite Types in Queries">Section 8.16.5</a>.
- </p></div><div class="sect2" id="id-1.5.7.24.8"><div class="titlepage"><div><div><h3 class="title">8.16.4. Modifying Composite Types</h3></div></div></div><p>
+ </p></div><div class="sect2" id="ROWTYPES-MODIFYING"><div class="titlepage"><div><div><h3 class="title">8.16.4. Modifying Composite Types <a href="#ROWTYPES-MODIFYING" class="id_link">#</a></h3></div></div></div><p>
   Here are some examples of the proper syntax for inserting and updating
   composite columns.
   First, inserting or updating a whole column:
@@ -189,7 +190,7 @@ INSERT INTO mytab (complex_col.r, complex_col.i) VALUES(1.1, 2.2);
 
   Had we not supplied values for all the subfields of the column, the
   remaining subfields would have been filled with null values.
- </p></div><div class="sect2" id="ROWTYPES-USAGE"><div class="titlepage"><div><div><h3 class="title">8.16.5. Using Composite Types in Queries</h3></div></div></div><p>
+ </p></div><div class="sect2" id="ROWTYPES-USAGE"><div class="titlepage"><div><div><h3 class="title">8.16.5. Using Composite Types in Queries <a href="#ROWTYPES-USAGE" class="id_link">#</a></h3></div></div></div><p>
    There are various special syntax rules and behaviors associated with
    composite types in queries.  These rules provide useful shortcuts,
    but can be confusing if you don't know the logic behind them.
@@ -268,7 +269,7 @@ SELECT m.* FROM some_table, LATERAL myfunc(x) AS m;
    The <em class="replaceable"><code>composite_value</code></em><code class="literal">.*</code> syntax results in
    column expansion of this kind when it appears at the top level of
    a <a class="link" href="queries-select-lists.html" title="7.3. Select Lists"><code class="command">SELECT</code> output
-   list</a>, a <a class="link" href="dml-returning.html" title="6.4. Returning Data From Modified Rows"><code class="literal">RETURNING</code>
+   list</a>, a <a class="link" href="dml-returning.html" title="6.4. Returning Data from Modified Rows"><code class="literal">RETURNING</code>
    list</a> in <code class="command">INSERT</code>/<code class="command">UPDATE</code>/<code class="command">DELETE</code>,
    a <a class="link" href="queries-values.html" title="7.7. VALUES Lists"><code class="literal">VALUES</code> clause</a>, or
    a <a class="link" href="sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS" title="4.2.13. Row Constructors">row constructor</a>.
@@ -304,7 +305,7 @@ SELECT * FROM inventory_item c ORDER BY ROW(c.*);
 </pre><p>
    All of these <code class="literal">ORDER BY</code> clauses specify the row's composite
    value, resulting in sorting the rows according to the rules described
-   in <a class="xref" href="functions-comparisons.html#COMPOSITE-TYPE-COMPARISON" title="9.23.6. Composite Type Comparison">Section 9.23.6</a>.  However,
+   in <a class="xref" href="functions-comparisons.html#COMPOSITE-TYPE-COMPARISON" title="9.24.6. Composite Type Comparison">Section 9.24.6</a>.  However,
    if <code class="structname">inventory_item</code> contained a column
    named <code class="structfield">c</code>, the first case would be different from the
    others, as it would mean to sort by that column only.  Given the column
@@ -356,7 +357,7 @@ SELECT c.somefunc FROM inventory_item c;
     be a function call.  One way to force the function interpretation in
     older versions is to schema-qualify the function name, that is, write
     <code class="literal"><em class="replaceable"><code>schema</code></em>.<em class="replaceable"><code>func</code></em>(<em class="replaceable"><code>compositevalue</code></em>)</code>.
-   </p></div></div><div class="sect2" id="ROWTYPES-IO-SYNTAX"><div class="titlepage"><div><div><h3 class="title">8.16.6. Composite Type Input and Output Syntax</h3></div></div></div><p>
+   </p></div></div><div class="sect2" id="ROWTYPES-IO-SYNTAX"><div class="titlepage"><div><div><h3 class="title">8.16.6. Composite Type Input and Output Syntax <a href="#ROWTYPES-IO-SYNTAX" class="id_link">#</a></h3></div></div></div><p>
    The external text representation of a composite value consists of items that
    are interpreted according to the I/O conversion rules for the individual
    field types, plus decoration that indicates the composite structure.
@@ -412,7 +413,7 @@ INSERT ... VALUES ('("\"\\")');
    with a data type whose input routine also treated backslashes specially,
    <code class="type">bytea</code> for example, we might need as many as eight backslashes
    in the command to get one backslash into the stored composite field.)
-   Dollar quoting (see <a class="xref" href="sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING" title="4.1.2.4. Dollar-quoted String Constants">Section 4.1.2.4</a>) can be
+   Dollar quoting (see <a class="xref" href="sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING" title="4.1.2.4. Dollar-Quoted String Constants">Section 4.1.2.4</a>) can be
    used to avoid the need to double backslashes.
   </p></div><div class="tip"><h3 class="title">Tip</h3><p>
    The <code class="literal">ROW</code> constructor syntax is usually easier to work with
@@ -420,4 +421,4 @@ INSERT ... VALUES ('("\"\\")');
    commands.
    In <code class="literal">ROW</code>, individual field values are written the same way
    they would be written when not members of a composite.
-  </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="arrays.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="datatype.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rangetypes.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">8.15. Arrays </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 8.17. Range Types</td></tr></table></div></body></html>
+  </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="arrays.html" title="8.15. Arrays">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="datatype.html" title="Chapter 8. Data Types">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rangetypes.html" title="8.17. Range Types">Next</a></td></tr><tr><td width="40%" align="left" valign="top">8.15. Arrays </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 8.17. Range Types</td></tr></table></div></body></html>

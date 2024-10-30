@@ -19,6 +19,7 @@ gbt_num_compress(GISTENTRY *entry, const gbtree_ninfo *tinfo)
 	{
 		union
 		{
+			bool		bo;
 			int16		i2;
 			int32		i4;
 			int64		i8;
@@ -35,6 +36,10 @@ gbt_num_compress(GISTENTRY *entry, const gbtree_ninfo *tinfo)
 
 		switch (tinfo->t)
 		{
+			case gbt_t_bool:
+				v.bo = DatumGetBool(entry->key);
+				leaf = &v.bo;
+				break;
 			case gbt_t_int2:
 				v.i2 = DatumGetInt16(entry->key);
 				leaf = &v.i2;
@@ -82,8 +87,8 @@ gbt_num_compress(GISTENTRY *entry, const gbtree_ninfo *tinfo)
 
 		Assert(tinfo->indexsize >= 2 * tinfo->size);
 
-		memcpy((void *) &r[0], leaf, tinfo->size);
-		memcpy((void *) &r[tinfo->size], leaf, tinfo->size);
+		memcpy(&r[0], leaf, tinfo->size);
+		memcpy(&r[tinfo->size], leaf, tinfo->size);
 		retval = palloc(sizeof(GISTENTRY));
 		gistentryinit(*retval, PointerGetDatum(r), entry->rel, entry->page,
 					  entry->offset, false);
@@ -113,6 +118,9 @@ gbt_num_fetch(GISTENTRY *entry, const gbtree_ninfo *tinfo)
 	 */
 	switch (tinfo->t)
 	{
+		case gbt_t_bool:
+			datum = BoolGetDatum(*(bool *) entry->key);
+			break;
 		case gbt_t_int2:
 			datum = Int16GetDatum(*(int16 *) entry->key);
 			break;
@@ -145,7 +153,7 @@ gbt_num_fetch(GISTENTRY *entry, const gbtree_ninfo *tinfo)
 			datum = CashGetDatum(*(Cash *) entry->key);
 			break;
 		default:
-			datum = PointerGetDatum(entry->key);
+			datum = entry->key;
 	}
 
 	retval = palloc(sizeof(GISTENTRY));
@@ -176,7 +184,7 @@ gbt_num_union(GBT_NUMKEY *out, const GistEntryVector *entryvec, const gbtree_nin
 	o.lower = &((GBT_NUMKEY *) out)[0];
 	o.upper = &((GBT_NUMKEY *) out)[tinfo->size];
 
-	memcpy((void *) out, (void *) cur, 2 * tinfo->size);
+	memcpy(out, cur, 2 * tinfo->size);
 
 	for (i = 1; i < numranges; i++)
 	{
@@ -185,10 +193,10 @@ gbt_num_union(GBT_NUMKEY *out, const GistEntryVector *entryvec, const gbtree_nin
 		c.upper = &cur[tinfo->size];
 		/* if out->lower > cur->lower, adopt cur as lower */
 		if (tinfo->f_gt(o.lower, c.lower, flinfo))
-			memcpy((void *) o.lower, (void *) c.lower, tinfo->size);
+			memcpy(unconstify(GBT_NUMKEY *, o.lower), c.lower, tinfo->size);
 		/* if out->upper < cur->upper, adopt cur as upper */
 		if (tinfo->f_lt(o.upper, c.upper, flinfo))
-			memcpy((void *) o.upper, (void *) c.upper, tinfo->size);
+			memcpy(unconstify(GBT_NUMKEY *, o.upper), c.upper, tinfo->size);
 	}
 
 	return out;
@@ -206,10 +214,10 @@ gbt_num_same(const GBT_NUMKEY *a, const GBT_NUMKEY *b, const gbtree_ninfo *tinfo
 	GBT_NUMKEY_R b1,
 				b2;
 
-	b1.lower = &(((GBT_NUMKEY *) a)[0]);
-	b1.upper = &(((GBT_NUMKEY *) a)[tinfo->size]);
-	b2.lower = &(((GBT_NUMKEY *) b)[0]);
-	b2.upper = &(((GBT_NUMKEY *) b)[tinfo->size]);
+	b1.lower = &(a[0]);
+	b1.upper = &(a[tinfo->size]);
+	b2.lower = &(b[0]);
+	b2.upper = &(b[tinfo->size]);
 
 	return (tinfo->f_eq(b1.lower, b2.lower, flinfo) &&
 			tinfo->f_eq(b1.upper, b2.upper, flinfo));
@@ -227,8 +235,8 @@ gbt_num_bin_union(Datum *u, GBT_NUMKEY *e, const gbtree_ninfo *tinfo, FmgrInfo *
 	if (!DatumGetPointer(*u))
 	{
 		*u = PointerGetDatum(palloc0(tinfo->indexsize));
-		memcpy((void *) &(((GBT_NUMKEY *) DatumGetPointer(*u))[0]), (void *) rd.lower, tinfo->size);
-		memcpy((void *) &(((GBT_NUMKEY *) DatumGetPointer(*u))[tinfo->size]), (void *) rd.upper, tinfo->size);
+		memcpy(&(((GBT_NUMKEY *) DatumGetPointer(*u))[0]), rd.lower, tinfo->size);
+		memcpy(&(((GBT_NUMKEY *) DatumGetPointer(*u))[tinfo->size]), rd.upper, tinfo->size);
 	}
 	else
 	{
@@ -236,10 +244,10 @@ gbt_num_bin_union(Datum *u, GBT_NUMKEY *e, const gbtree_ninfo *tinfo, FmgrInfo *
 
 		ur.lower = &(((GBT_NUMKEY *) DatumGetPointer(*u))[0]);
 		ur.upper = &(((GBT_NUMKEY *) DatumGetPointer(*u))[tinfo->size]);
-		if (tinfo->f_gt((void *) ur.lower, (void *) rd.lower, flinfo))
-			memcpy((void *) ur.lower, (void *) rd.lower, tinfo->size);
-		if (tinfo->f_lt((void *) ur.upper, (void *) rd.upper, flinfo))
-			memcpy((void *) ur.upper, (void *) rd.upper, tinfo->size);
+		if (tinfo->f_gt(ur.lower, rd.lower, flinfo))
+			memcpy(unconstify(GBT_NUMKEY *, ur.lower), rd.lower, tinfo->size);
+		if (tinfo->f_lt(ur.upper, rd.upper, flinfo))
+			memcpy(unconstify(GBT_NUMKEY *, ur.upper), rd.upper, tinfo->size);
 	}
 }
 
@@ -352,7 +360,7 @@ gbt_num_picksplit(const GistEntryVector *entryvec, GIST_SPLITVEC *v,
 		arr[i].t = (GBT_NUMKEY *) DatumGetPointer((entryvec->vector[i].key));
 		arr[i].i = i;
 	}
-	qsort_arg((void *) &arr[FirstOffsetNumber], maxoff - FirstOffsetNumber + 1, sizeof(Nsrt), (qsort_arg_comparator) tinfo->f_cmp, (void *) flinfo);
+	qsort_arg(&arr[FirstOffsetNumber], maxoff - FirstOffsetNumber + 1, sizeof(Nsrt), (qsort_arg_comparator) tinfo->f_cmp, flinfo);
 
 	/* We do simply create two parts */
 

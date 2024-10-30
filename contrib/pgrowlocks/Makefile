@@ -1,12 +1,16 @@
 # contrib/pgrowlocks/Makefile
 
 MODULE_big	= pgrowlocks
-OBJS		= pgrowlocks.o $(WIN32RES)
+OBJS = \
+	$(WIN32RES) \
+	pgrowlocks.o
 
 EXTENSION = pgrowlocks
-DATA = pgrowlocks--1.2.sql pgrowlocks--1.1--1.2.sql pgrowlocks--1.0--1.1.sql \
-	pgrowlocks--unpackaged--1.0.sql
+DATA = pgrowlocks--1.2.sql pgrowlocks--1.1--1.2.sql pgrowlocks--1.0--1.1.sql
 PGFILEDESC = "pgrowlocks - display row locking information"
+
+ISOLATION = pgrowlocks
+ISOLATION_OPTS = --load-extension=pgrowlocks
 
 ifdef USE_PGXS
 PG_CONFIG = pg_config

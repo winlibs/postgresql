@@ -32,7 +32,7 @@
  * input group.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -132,6 +132,7 @@ build_hash_table(SetOpState *setopstate)
 												   node->dupColIdx,
 												   setopstate->eqfuncoids,
 												   setopstate->hashfunctions,
+												   node->dupCollations,
 												   node->numGroups,
 												   0,
 												   setopstate->ps.state->es_query_cxt,
@@ -253,7 +254,7 @@ setop_retrieve_direct(SetOpState *setopstate)
 			if (!TupIsNull(outerslot))
 			{
 				/* Make a copy of the first input tuple */
-				setopstate->grp_firstTuple = ExecCopySlotTuple(outerslot);
+				setopstate->grp_firstTuple = ExecCopySlotHeapTuple(outerslot);
 			}
 			else
 			{
@@ -268,10 +269,9 @@ setop_retrieve_direct(SetOpState *setopstate)
 		 * for it.  The tuple will be deleted when it is cleared from the
 		 * slot.
 		 */
-		ExecStoreTuple(setopstate->grp_firstTuple,
-					   resultTupleSlot,
-					   InvalidBuffer,
-					   true);
+		ExecStoreHeapTuple(setopstate->grp_firstTuple,
+						   resultTupleSlot,
+						   true);
 		setopstate->grp_firstTuple = NULL;	/* don't keep two pointers */
 
 		/* Initialize working state for a new input tuple group */
@@ -305,7 +305,7 @@ setop_retrieve_direct(SetOpState *setopstate)
 				/*
 				 * Save the first input tuple of the next group.
 				 */
-				setopstate->grp_firstTuple = ExecCopySlotTuple(outerslot);
+				setopstate->grp_firstTuple = ExecCopySlotHeapTuple(outerslot);
 				break;
 			}
 
@@ -381,7 +381,7 @@ setop_fill_hash_table(SetOpState *setopstate)
 
 			/* Find or build hashtable entry for this tuple's group */
 			entry = LookupTupleHashEntry(setopstate->hashtable, outerslot,
-										 &isnew);
+										 &isnew, NULL);
 
 			/* If new tuple group, initialize counts */
 			if (isnew)
@@ -402,7 +402,7 @@ setop_fill_hash_table(SetOpState *setopstate)
 
 			/* For tuples not seen previously, do not make hashtable entry */
 			entry = LookupTupleHashEntry(setopstate->hashtable, outerslot,
-										 NULL);
+										 NULL, NULL);
 
 			/* Advance the counts if entry is already present */
 			if (entry)
@@ -534,7 +534,9 @@ ExecInitSetOp(SetOp *node, EState *estate, int eflags)
 	 * Initialize result slot and type. Setop nodes do no projections, so
 	 * initialize projection info for this node appropriately.
 	 */
-	ExecInitResultTupleSlotTL(estate, &setopstate->ps);
+	ExecInitResultTupleSlotTL(&setopstate->ps,
+							  node->strategy == SETOP_HASHED ?
+							  &TTSOpsMinimalTuple : &TTSOpsHeapTuple);
 	setopstate->ps.ps_ProjInfo = NULL;
 
 	/*
@@ -553,6 +555,7 @@ ExecInitSetOp(SetOp *node, EState *estate, int eflags)
 								   node->numCols,
 								   node->dupColIdx,
 								   node->dupOperators,
+								   node->dupCollations,
 								   &setopstate->ps);
 
 	if (node->strategy == SETOP_HASHED)
@@ -594,6 +597,8 @@ ExecEndSetOp(SetOpState *node)
 void
 ExecReScanSetOp(SetOpState *node)
 {
+	PlanState  *outerPlan = outerPlanState(node);
+
 	ExecClearTuple(node->ps.ps_ResultTupleSlot);
 	node->setop_done = false;
 	node->numOutput = 0;
@@ -614,7 +619,7 @@ ExecReScanSetOp(SetOpState *node)
 		 * parameter changes, then we can just rescan the existing hash table;
 		 * no need to build it again.
 		 */
-		if (node->ps.lefttree->chgParam == NULL)
+		if (outerPlan->chgParam == NULL)
 		{
 			ResetTupleHashIterator(node->hashtable, &node->hashiter);
 			return;
@@ -643,6 +648,6 @@ ExecReScanSetOp(SetOpState *node)
 	 * if chgParam of subnode is not null then plan will be re-scanned by
 	 * first ExecProcNode.
 	 */
-	if (node->ps.lefttree->chgParam == NULL)
-		ExecReScan(node->ps.lefttree);
+	if (outerPlan->chgParam == NULL)
+		ExecReScan(outerPlan);
 }

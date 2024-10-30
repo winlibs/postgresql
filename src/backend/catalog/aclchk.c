@@ -3,7 +3,7 @@
  * aclchk.c
  *	  Routines to check access control permissions.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -21,6 +21,7 @@
 #include "access/heapam.h"
 #include "access/htup_details.h"
 #include "access/sysattr.h"
+#include "access/tableam.h"
 #include "access/xact.h"
 #include "catalog/binary_upgrade.h"
 #include "catalog/catalog.h"
@@ -31,6 +32,7 @@
 #include "catalog/pg_am.h"
 #include "catalog/pg_authid.h"
 #include "catalog/pg_cast.h"
+#include "catalog/pg_class.h"
 #include "catalog/pg_collation.h"
 #include "catalog/pg_conversion.h"
 #include "catalog/pg_database.h"
@@ -47,17 +49,19 @@
 #include "catalog/pg_opclass.h"
 #include "catalog/pg_operator.h"
 #include "catalog/pg_opfamily.h"
+#include "catalog/pg_parameter_acl.h"
 #include "catalog/pg_proc.h"
 #include "catalog/pg_statistic_ext.h"
 #include "catalog/pg_subscription.h"
 #include "catalog/pg_tablespace.h"
-#include "catalog/pg_type.h"
+#include "catalog/pg_transform.h"
 #include "catalog/pg_ts_config.h"
 #include "catalog/pg_ts_dict.h"
 #include "catalog/pg_ts_parser.h"
 #include "catalog/pg_ts_template.h"
-#include "catalog/pg_transform.h"
+#include "catalog/pg_type.h"
 #include "commands/dbcommands.h"
+#include "commands/defrem.h"
 #include "commands/event_trigger.h"
 #include "commands/extension.h"
 #include "commands/proclang.h"
@@ -71,11 +75,10 @@
 #include "utils/aclchk_internal.h"
 #include "utils/builtins.h"
 #include "utils/fmgroids.h"
+#include "utils/guc.h"
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
 #include "utils/syscache.h"
-#include "utils/tqual.h"
-
 
 /*
  * Internal format used by ALTER DEFAULT PRIVILEGES.
@@ -102,62 +105,60 @@ typedef struct
 bool		binary_upgrade_record_init_privs = false;
 
 static void ExecGrantStmt_oids(InternalGrant *istmt);
-static void ExecGrant_Relation(InternalGrant *grantStmt);
-static void ExecGrant_Database(InternalGrant *grantStmt);
-static void ExecGrant_Fdw(InternalGrant *grantStmt);
-static void ExecGrant_ForeignServer(InternalGrant *grantStmt);
-static void ExecGrant_Function(InternalGrant *grantStmt);
-static void ExecGrant_Language(InternalGrant *grantStmt);
-static void ExecGrant_Largeobject(InternalGrant *grantStmt);
-static void ExecGrant_Namespace(InternalGrant *grantStmt);
-static void ExecGrant_Tablespace(InternalGrant *grantStmt);
-static void ExecGrant_Type(InternalGrant *grantStmt);
+static void ExecGrant_Relation(InternalGrant *istmt);
+static void ExecGrant_common(InternalGrant *istmt, Oid classid, AclMode default_privs,
+							 void (*object_check) (InternalGrant *istmt, HeapTuple tuple));
+static void ExecGrant_Language_check(InternalGrant *istmt, HeapTuple tuple);
+static void ExecGrant_Largeobject(InternalGrant *istmt);
+static void ExecGrant_Type_check(InternalGrant *istmt, HeapTuple tuple);
+static void ExecGrant_Parameter(InternalGrant *istmt);
 
 static void SetDefaultACLsInSchemas(InternalDefaultACL *iacls, List *nspnames);
 static void SetDefaultACL(InternalDefaultACL *iacls);
 
-static List *objectNamesToOids(ObjectType objtype, List *objnames);
+static List *objectNamesToOids(ObjectType objtype, List *objnames,
+							   bool is_grant);
 static List *objectsInSchemaToOids(ObjectType objtype, List *nspnames);
 static List *getRelationsInNamespace(Oid namespaceId, char relkind);
 static void expand_col_privileges(List *colnames, Oid table_oid,
-					  AclMode this_privileges,
-					  AclMode *col_privileges,
-					  int num_col_privileges);
+								  AclMode this_privileges,
+								  AclMode *col_privileges,
+								  int num_col_privileges);
 static void expand_all_col_privileges(Oid table_oid, Form_pg_class classForm,
-						  AclMode this_privileges,
-						  AclMode *col_privileges,
-						  int num_col_privileges);
+									  AclMode this_privileges,
+									  AclMode *col_privileges,
+									  int num_col_privileges);
 static AclMode string_to_privilege(const char *privname);
 static const char *privilege_to_string(AclMode privilege);
 static AclMode restrict_and_check_grant(bool is_grant, AclMode avail_goptions,
-						 bool all_privs, AclMode privileges,
-						 Oid objectId, Oid grantorId,
-						 ObjectType objtype, const char *objname,
-						 AttrNumber att_number, const char *colname);
-static AclMode pg_aclmask(ObjectType objtype, Oid table_oid, AttrNumber attnum,
-		   Oid roleid, AclMode mask, AclMaskHow how);
+										bool all_privs, AclMode privileges,
+										Oid objectId, Oid grantorId,
+										ObjectType objtype, const char *objname,
+										AttrNumber att_number, const char *colname);
+static AclMode pg_aclmask(ObjectType objtype, Oid object_oid, AttrNumber attnum,
+						  Oid roleid, AclMode mask, AclMaskHow how);
+static AclMode object_aclmask(Oid classid, Oid objectid, Oid roleid,
+							  AclMode mask, AclMaskHow how);
+static AclMode pg_attribute_aclmask(Oid table_oid, AttrNumber attnum,
+									Oid roleid, AclMode mask, AclMaskHow how);
+static AclMode pg_attribute_aclmask_ext(Oid table_oid, AttrNumber attnum,
+										Oid roleid, AclMode mask,
+										AclMaskHow how, bool *is_missing);
+static AclMode pg_class_aclmask_ext(Oid table_oid, Oid roleid,
+									AclMode mask, AclMaskHow how,
+									bool *is_missing);
+static AclMode pg_parameter_acl_aclmask(Oid acl_oid, Oid roleid,
+										AclMode mask, AclMaskHow how);
+static AclMode pg_largeobject_aclmask_snapshot(Oid lobj_oid, Oid roleid,
+											   AclMode mask, AclMaskHow how, Snapshot snapshot);
+static AclMode pg_namespace_aclmask(Oid nsp_oid, Oid roleid,
+									AclMode mask, AclMaskHow how);
+static AclMode pg_type_aclmask(Oid type_oid, Oid roleid,
+							   AclMode mask, AclMaskHow how);
 static void recordExtensionInitPriv(Oid objoid, Oid classoid, int objsubid,
-						Acl *new_acl);
+									Acl *new_acl);
 static void recordExtensionInitPrivWorker(Oid objoid, Oid classoid, int objsubid,
-							  Acl *new_acl);
-
-
-#ifdef ACLDEBUG
-static void
-dumpacl(Acl *acl)
-{
-	int			i;
-	AclItem    *aip;
-
-	elog(DEBUG2, "acl size = %d, # acls = %d",
-		 ACL_SIZE(acl), ACL_NUM(acl));
-	aip = ACL_DAT(acl);
-	for (i = 0; i < ACL_NUM(acl); ++i)
-		elog(DEBUG2, "	acl[%d]: %s", i,
-			 DatumGetCString(DirectFunctionCall1(aclitemout,
-												 PointerGetDatum(aip + i))));
-}
-#endif							/* ACLDEBUG */
+										  Acl *new_acl);
 
 
 /*
@@ -179,9 +180,6 @@ merge_acl_with_grant(Acl *old_acl, bool is_grant,
 
 	modechg = is_grant ? ACL_MODECHG_ADD : ACL_MODECHG_DEL;
 
-#ifdef ACLDEBUG
-	dumpacl(old_acl);
-#endif
 	new_acl = old_acl;
 
 	foreach(j, grantees)
@@ -220,10 +218,6 @@ merge_acl_with_grant(Acl *old_acl, bool is_grant,
 		/* avoid memory leak when there are many grantees */
 		pfree(new_acl);
 		new_acl = newer_acl;
-
-#ifdef ACLDEBUG
-		dumpacl(new_acl);
-#endif
 	}
 
 	return new_acl;
@@ -283,6 +277,9 @@ restrict_and_check_grant(bool is_grant, AclMode avail_goptions, bool all_privs,
 			return ACL_NO_RIGHTS;
 		case OBJECT_TYPE:
 			whole_mask = ACL_ALL_RIGHTS_TYPE;
+			break;
+		case OBJECT_PARAMETER_ACL:
+			whole_mask = ACL_ALL_RIGHTS_PARAMETER_ACL;
 			break;
 		default:
 			elog(ERROR, "unrecognized object type: %d", objtype);
@@ -389,6 +386,22 @@ ExecuteGrantStmt(GrantStmt *stmt)
 	const char *errormsg;
 	AclMode		all_privileges;
 
+	if (stmt->grantor)
+	{
+		Oid			grantor;
+
+		grantor = get_rolespec_oid(stmt->grantor, false);
+
+		/*
+		 * Currently, this clause is only for SQL compatibility, not very
+		 * interesting otherwise.
+		 */
+		if (grantor != GetUserId())
+			ereport(ERROR,
+					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+					 errmsg("grantor must be current user")));
+	}
+
 	/*
 	 * Turn the regular GrantStmt into the InternalGrant form.
 	 */
@@ -399,7 +412,8 @@ ExecuteGrantStmt(GrantStmt *stmt)
 	switch (stmt->targtype)
 	{
 		case ACL_TARGET_OBJECT:
-			istmt.objects = objectNamesToOids(stmt->objtype, stmt->objects);
+			istmt.objects = objectNamesToOids(stmt->objtype, stmt->objects,
+											  stmt->is_grant);
 			break;
 		case ACL_TARGET_ALL_IN_SCHEMA:
 			istmt.objects = objectsInSchemaToOids(stmt->objtype, stmt->objects);
@@ -507,6 +521,10 @@ ExecuteGrantStmt(GrantStmt *stmt)
 			all_privileges = ACL_ALL_RIGHTS_FOREIGN_SERVER;
 			errormsg = gettext_noop("invalid privilege type %s for foreign server");
 			break;
+		case OBJECT_PARAMETER_ACL:
+			all_privileges = ACL_ALL_RIGHTS_PARAMETER_ACL;
+			errormsg = gettext_noop("invalid privilege type %s for parameter");
+			break;
 		default:
 			elog(ERROR, "unrecognized GrantStmt.objtype: %d",
 				 (int) stmt->objtype);
@@ -580,34 +598,37 @@ ExecGrantStmt_oids(InternalGrant *istmt)
 			ExecGrant_Relation(istmt);
 			break;
 		case OBJECT_DATABASE:
-			ExecGrant_Database(istmt);
+			ExecGrant_common(istmt, DatabaseRelationId, ACL_ALL_RIGHTS_DATABASE, NULL);
 			break;
 		case OBJECT_DOMAIN:
 		case OBJECT_TYPE:
-			ExecGrant_Type(istmt);
+			ExecGrant_common(istmt, TypeRelationId, ACL_ALL_RIGHTS_TYPE, ExecGrant_Type_check);
 			break;
 		case OBJECT_FDW:
-			ExecGrant_Fdw(istmt);
+			ExecGrant_common(istmt, ForeignDataWrapperRelationId, ACL_ALL_RIGHTS_FDW, NULL);
 			break;
 		case OBJECT_FOREIGN_SERVER:
-			ExecGrant_ForeignServer(istmt);
+			ExecGrant_common(istmt, ForeignServerRelationId, ACL_ALL_RIGHTS_FOREIGN_SERVER, NULL);
 			break;
 		case OBJECT_FUNCTION:
 		case OBJECT_PROCEDURE:
 		case OBJECT_ROUTINE:
-			ExecGrant_Function(istmt);
+			ExecGrant_common(istmt, ProcedureRelationId, ACL_ALL_RIGHTS_FUNCTION, NULL);
 			break;
 		case OBJECT_LANGUAGE:
-			ExecGrant_Language(istmt);
+			ExecGrant_common(istmt, LanguageRelationId, ACL_ALL_RIGHTS_LANGUAGE, ExecGrant_Language_check);
 			break;
 		case OBJECT_LARGEOBJECT:
 			ExecGrant_Largeobject(istmt);
 			break;
 		case OBJECT_SCHEMA:
-			ExecGrant_Namespace(istmt);
+			ExecGrant_common(istmt, NamespaceRelationId, ACL_ALL_RIGHTS_SCHEMA, NULL);
 			break;
 		case OBJECT_TABLESPACE:
-			ExecGrant_Tablespace(istmt);
+			ExecGrant_common(istmt, TableSpaceRelationId, ACL_ALL_RIGHTS_TABLESPACE, NULL);
+			break;
+		case OBJECT_PARAMETER_ACL:
+			ExecGrant_Parameter(istmt);
 			break;
 		default:
 			elog(ERROR, "unrecognized GrantStmt.objtype: %d",
@@ -635,7 +656,7 @@ ExecGrantStmt_oids(InternalGrant *istmt)
  * to fail.
  */
 static List *
-objectNamesToOids(ObjectType objtype, List *objnames)
+objectNamesToOids(ObjectType objtype, List *objnames, bool is_grant)
 {
 	List	   *objects = NIL;
 	ListCell   *cell;
@@ -768,6 +789,37 @@ objectNamesToOids(ObjectType objtype, List *objnames)
 				objects = lappend_oid(objects, srvid);
 			}
 			break;
+		case OBJECT_PARAMETER_ACL:
+			foreach(cell, objnames)
+			{
+				/*
+				 * In this code we represent a GUC by the OID of its entry in
+				 * pg_parameter_acl, which we have to manufacture here if it
+				 * doesn't exist yet.  (That's a hack for sure, but it avoids
+				 * messing with all the GRANT/REVOKE infrastructure that
+				 * expects to use OIDs for object identities.)  However, if
+				 * this is a REVOKE, we can instead just ignore any GUCs that
+				 * don't have such an entry, as they must not have any
+				 * privileges needing removal.
+				 */
+				char	   *parameter = strVal(lfirst(cell));
+				Oid			parameterId = ParameterAclLookup(parameter, true);
+
+				if (!OidIsValid(parameterId) && is_grant)
+				{
+					parameterId = ParameterAclCreate(parameter);
+
+					/*
+					 * Prevent error when processing duplicate objects, and
+					 * make this new entry visible so that ExecGrant_Parameter
+					 * can update it.
+					 */
+					CommandCounterIncrement();
+				}
+				if (OidIsValid(parameterId))
+					objects = lappend_oid(objects, parameterId);
+			}
+			break;
 		default:
 			elog(ERROR, "unrecognized GrantStmt.objtype: %d",
 				 (int) objtype);
@@ -822,7 +874,7 @@ objectsInSchemaToOids(ObjectType objtype, List *nspnames)
 					ScanKeyData key[2];
 					int			keycount;
 					Relation	rel;
-					HeapScanDesc scan;
+					TableScanDesc scan;
 					HeapTuple	tuple;
 
 					keycount = 0;
@@ -843,16 +895,18 @@ objectsInSchemaToOids(ObjectType objtype, List *nspnames)
 									BTEqualStrategyNumber, F_CHAREQ,
 									CharGetDatum(PROKIND_PROCEDURE));
 
-					rel = heap_open(ProcedureRelationId, AccessShareLock);
-					scan = heap_beginscan_catalog(rel, keycount, key);
+					rel = table_open(ProcedureRelationId, AccessShareLock);
+					scan = table_beginscan_catalog(rel, keycount, key);
 
 					while ((tuple = heap_getnext(scan, ForwardScanDirection)) != NULL)
 					{
-						objects = lappend_oid(objects, HeapTupleGetOid(tuple));
+						Oid			oid = ((Form_pg_proc) GETSTRUCT(tuple))->oid;
+
+						objects = lappend_oid(objects, oid);
 					}
 
-					heap_endscan(scan);
-					heap_close(rel, AccessShareLock);
+					table_endscan(scan);
+					table_close(rel, AccessShareLock);
 				}
 				break;
 			default:
@@ -876,7 +930,7 @@ getRelationsInNamespace(Oid namespaceId, char relkind)
 	List	   *relations = NIL;
 	ScanKeyData key[2];
 	Relation	rel;
-	HeapScanDesc scan;
+	TableScanDesc scan;
 	HeapTuple	tuple;
 
 	ScanKeyInit(&key[0],
@@ -888,16 +942,18 @@ getRelationsInNamespace(Oid namespaceId, char relkind)
 				BTEqualStrategyNumber, F_CHAREQ,
 				CharGetDatum(relkind));
 
-	rel = heap_open(RelationRelationId, AccessShareLock);
-	scan = heap_beginscan_catalog(rel, 2, key);
+	rel = table_open(RelationRelationId, AccessShareLock);
+	scan = table_beginscan_catalog(rel, 2, key);
 
 	while ((tuple = heap_getnext(scan, ForwardScanDirection)) != NULL)
 	{
-		relations = lappend_oid(relations, HeapTupleGetOid(tuple));
+		Oid			oid = ((Form_pg_class) GETSTRUCT(tuple))->oid;
+
+		relations = lappend_oid(relations, oid);
 	}
 
-	heap_endscan(scan);
-	heap_close(rel, AccessShareLock);
+	table_endscan(scan);
+	table_close(rel, AccessShareLock);
 
 	return relations;
 }
@@ -927,19 +983,13 @@ ExecAlterDefaultPrivilegesStmt(ParseState *pstate, AlterDefaultPrivilegesStmt *s
 		if (strcmp(defel->defname, "schemas") == 0)
 		{
 			if (dnspnames)
-				ereport(ERROR,
-						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options"),
-						 parser_errposition(pstate, defel->location)));
+				errorConflictingDefElem(defel, pstate);
 			dnspnames = defel;
 		}
 		else if (strcmp(defel->defname, "roles") == 0)
 		{
 			if (drolespecs)
-				ereport(ERROR,
-						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options"),
-						 parser_errposition(pstate, defel->location)));
+				errorConflictingDefElem(defel, pstate);
 			drolespecs = defel;
 		}
 		else
@@ -1082,13 +1132,10 @@ ExecAlterDefaultPrivilegesStmt(ParseState *pstate, AlterDefaultPrivilegesStmt *s
 
 			iacls.roleid = get_rolespec_oid(rolespec, false);
 
-			/*
-			 * We insist that calling user be a member of each target role. If
-			 * he has that, he could become that role anyway via SET ROLE, so
-			 * FOR ROLE is just a syntactic convenience and doesn't give any
-			 * special privileges.
-			 */
-			check_is_member_of_role(GetUserId(), iacls.roleid);
+			if (!has_privs_of_role(GetUserId(), iacls.roleid))
+				ereport(ERROR,
+						(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+						 errmsg("permission denied to change default privileges")));
 
 			SetDefaultACLsInSchemas(&iacls, nspnames);
 		}
@@ -1154,15 +1201,12 @@ SetDefaultACL(InternalDefaultACL *iacls)
 	Acl		   *old_acl;
 	Acl		   *new_acl;
 	HeapTuple	newtuple;
-	Datum		values[Natts_pg_default_acl];
-	bool		nulls[Natts_pg_default_acl];
-	bool		replaces[Natts_pg_default_acl];
 	int			noldmembers;
 	int			nnewmembers;
 	Oid		   *oldmembers;
 	Oid		   *newmembers;
 
-	rel = heap_open(DefaultAclRelationId, RowExclusiveLock);
+	rel = table_open(DefaultAclRelationId, RowExclusiveLock);
 
 	/*
 	 * The default for a global entry is the hard-wired default ACL for the
@@ -1216,7 +1260,7 @@ SetDefaultACL(InternalDefaultACL *iacls)
 			break;
 
 		default:
-			elog(ERROR, "unrecognized objtype: %d",
+			elog(ERROR, "unrecognized object type: %d",
 				 (int) iacls->objtype);
 			objtype = 0;		/* keep compiler quiet */
 			break;
@@ -1299,7 +1343,7 @@ SetDefaultACL(InternalDefaultACL *iacls)
 			 * there shouldn't be anything depending on this entry.
 			 */
 			myself.classId = DefaultAclRelationId;
-			myself.objectId = HeapTupleGetOid(tuple);
+			myself.objectId = ((Form_pg_default_acl) GETSTRUCT(tuple))->oid;
 			myself.objectSubId = 0;
 
 			performDeletion(&myself, DROP_RESTRICT, 0);
@@ -1307,14 +1351,17 @@ SetDefaultACL(InternalDefaultACL *iacls)
 	}
 	else
 	{
-		/* Prepare to insert or update pg_default_acl entry */
-		MemSet(values, 0, sizeof(values));
-		MemSet(nulls, false, sizeof(nulls));
-		MemSet(replaces, false, sizeof(replaces));
+		Datum		values[Natts_pg_default_acl] = {0};
+		bool		nulls[Natts_pg_default_acl] = {0};
+		bool		replaces[Natts_pg_default_acl] = {0};
+		Oid			defAclOid;
 
 		if (isNew)
 		{
 			/* insert new entry */
+			defAclOid = GetNewOidWithIndex(rel, DefaultAclOidIndexId,
+										   Anum_pg_default_acl_oid);
+			values[Anum_pg_default_acl_oid - 1] = ObjectIdGetDatum(defAclOid);
 			values[Anum_pg_default_acl_defaclrole - 1] = ObjectIdGetDatum(iacls->roleid);
 			values[Anum_pg_default_acl_defaclnamespace - 1] = ObjectIdGetDatum(iacls->nspid);
 			values[Anum_pg_default_acl_defaclobjtype - 1] = CharGetDatum(objtype);
@@ -1325,6 +1372,8 @@ SetDefaultACL(InternalDefaultACL *iacls)
 		}
 		else
 		{
+			defAclOid = ((Form_pg_default_acl) GETSTRUCT(tuple))->oid;
+
 			/* update existing entry */
 			values[Anum_pg_default_acl_defaclacl - 1] = PointerGetDatum(new_acl);
 			replaces[Anum_pg_default_acl_defaclacl - 1] = true;
@@ -1338,8 +1387,7 @@ SetDefaultACL(InternalDefaultACL *iacls)
 		if (isNew)
 		{
 			/* dependency on role */
-			recordDependencyOnOwner(DefaultAclRelationId,
-									HeapTupleGetOid(newtuple),
+			recordDependencyOnOwner(DefaultAclRelationId, defAclOid,
 									iacls->roleid);
 
 			/* dependency on namespace */
@@ -1349,7 +1397,7 @@ SetDefaultACL(InternalDefaultACL *iacls)
 							referenced;
 
 				myself.classId = DefaultAclRelationId;
-				myself.objectId = HeapTupleGetOid(newtuple);
+				myself.objectId = defAclOid;
 				myself.objectSubId = 0;
 
 				referenced.classId = NamespaceRelationId;
@@ -1366,23 +1414,24 @@ SetDefaultACL(InternalDefaultACL *iacls)
 		nnewmembers = aclmembers(new_acl, &newmembers);
 
 		updateAclDependencies(DefaultAclRelationId,
-							  HeapTupleGetOid(newtuple), 0,
+							  defAclOid, 0,
 							  iacls->roleid,
 							  noldmembers, oldmembers,
 							  nnewmembers, newmembers);
 
 		if (isNew)
-			InvokeObjectPostCreateHook(DefaultAclRelationId,
-									   HeapTupleGetOid(newtuple), 0);
+			InvokeObjectPostCreateHook(DefaultAclRelationId, defAclOid, 0);
 		else
-			InvokeObjectPostAlterHook(DefaultAclRelationId,
-									  HeapTupleGetOid(newtuple), 0);
+			InvokeObjectPostAlterHook(DefaultAclRelationId, defAclOid, 0);
 	}
 
 	if (HeapTupleIsValid(tuple))
 		ReleaseSysCache(tuple);
 
-	heap_close(rel, RowExclusiveLock);
+	table_close(rel, RowExclusiveLock);
+
+	/* prevent error when processing duplicate objects */
+	CommandCounterIncrement();
 }
 
 
@@ -1404,10 +1453,10 @@ RemoveRoleFromObjectACL(Oid roleid, Oid classid, Oid objid)
 		HeapTuple	tuple;
 
 		/* first fetch info needed by SetDefaultACL */
-		rel = heap_open(DefaultAclRelationId, AccessShareLock);
+		rel = table_open(DefaultAclRelationId, AccessShareLock);
 
 		ScanKeyInit(&skey[0],
-					ObjectIdAttributeNumber,
+					Anum_pg_default_acl_oid,
 					BTEqualStrategyNumber, F_OIDEQ,
 					ObjectIdGetDatum(objid));
 
@@ -1449,7 +1498,7 @@ RemoveRoleFromObjectACL(Oid roleid, Oid classid, Oid objid)
 		}
 
 		systable_endscan(scan);
-		heap_close(rel, AccessShareLock);
+		table_close(rel, AccessShareLock);
 
 		iacls.is_grant = false;
 		iacls.all_privs = true;
@@ -1498,6 +1547,9 @@ RemoveRoleFromObjectACL(Oid roleid, Oid classid, Oid objid)
 			case ForeignDataWrapperRelationId:
 				istmt.objtype = OBJECT_FDW;
 				break;
+			case ParameterAclRelationId:
+				istmt.objtype = OBJECT_PARAMETER_ACL;
+				break;
 			default:
 				elog(ERROR, "unexpected object class %u", classid);
 				break;
@@ -1513,39 +1565,6 @@ RemoveRoleFromObjectACL(Oid roleid, Oid classid, Oid objid)
 
 		ExecGrantStmt_oids(&istmt);
 	}
-}
-
-
-/*
- * Remove a pg_default_acl entry
- */
-void
-RemoveDefaultACLById(Oid defaclOid)
-{
-	Relation	rel;
-	ScanKeyData skey[1];
-	SysScanDesc scan;
-	HeapTuple	tuple;
-
-	rel = heap_open(DefaultAclRelationId, RowExclusiveLock);
-
-	ScanKeyInit(&skey[0],
-				ObjectIdAttributeNumber,
-				BTEqualStrategyNumber, F_OIDEQ,
-				ObjectIdGetDatum(defaclOid));
-
-	scan = systable_beginscan(rel, DefaultAclOidIndexId, true,
-							  NULL, 1, skey);
-
-	tuple = systable_getnext(scan);
-
-	if (!HeapTupleIsValid(tuple))
-		elog(ERROR, "could not find tuple for default ACL %u", defaclOid);
-
-	CatalogTupleDelete(rel, &tuple->t_self);
-
-	systable_endscan(scan);
-	heap_close(rel, RowExclusiveLock);
 }
 
 
@@ -1608,10 +1627,6 @@ expand_all_col_privileges(Oid table_oid, Form_pg_class classForm,
 		if (curr_att == InvalidAttrNumber)
 			continue;
 
-		/* Skip OID column if it doesn't exist */
-		if (curr_att == ObjectIdAttributeNumber && !classForm->relhasoids)
-			continue;
-
 		/* Views don't have any system columns at all */
 		if (classForm->relkind == RELKIND_VIEW && curr_att < 0)
 			continue;
@@ -1637,7 +1652,7 @@ expand_all_col_privileges(Oid table_oid, Form_pg_class classForm,
 
 /*
  *	This processes attributes, but expects to be called from
- *	ExecGrant_Relation, not directly from ExecGrantStmt.
+ *	ExecGrant_Relation, not directly from ExecuteGrantStmt.
  */
 static void
 ExecGrant_Attribute(InternalGrant *istmt, Oid relOid, const char *relname,
@@ -1655,9 +1670,9 @@ ExecGrant_Attribute(InternalGrant *istmt, Oid relOid, const char *relname,
 	AclMode		avail_goptions;
 	bool		need_update;
 	HeapTuple	newtuple;
-	Datum		values[Natts_pg_attribute];
-	bool		nulls[Natts_pg_attribute];
-	bool		replaces[Natts_pg_attribute];
+	Datum		values[Natts_pg_attribute] = {0};
+	bool		nulls[Natts_pg_attribute] = {0};
+	bool		replaces[Natts_pg_attribute] = {0};
 	int			noldmembers;
 	int			nnewmembers;
 	Oid		   *oldmembers;
@@ -1738,9 +1753,6 @@ ExecGrant_Attribute(InternalGrant *istmt, Oid relOid, const char *relname,
 	nnewmembers = aclmembers(new_acl, &newmembers);
 
 	/* finished building new ACL value, now insert it */
-	MemSet(values, 0, sizeof(values));
-	MemSet(nulls, false, sizeof(nulls));
-	MemSet(replaces, false, sizeof(replaces));
 
 	/*
 	 * If the updated ACL is empty, we can set attacl to null, and maybe even
@@ -1794,8 +1806,8 @@ ExecGrant_Relation(InternalGrant *istmt)
 	Relation	attRelation;
 	ListCell   *cell;
 
-	relation = heap_open(RelationRelationId, RowExclusiveLock);
-	attRelation = heap_open(AttributeRelationId, RowExclusiveLock);
+	relation = table_open(RelationRelationId, RowExclusiveLock);
+	attRelation = table_open(AttributeRelationId, RowExclusiveLock);
 
 	foreach(cell, istmt->objects)
 	{
@@ -1968,9 +1980,9 @@ ExecGrant_Relation(InternalGrant *istmt)
 			Acl		   *new_acl;
 			Oid			grantorId;
 			HeapTuple	newtuple;
-			Datum		values[Natts_pg_class];
-			bool		nulls[Natts_pg_class];
-			bool		replaces[Natts_pg_class];
+			Datum		values[Natts_pg_class] = {0};
+			bool		nulls[Natts_pg_class] = {0};
+			bool		replaces[Natts_pg_class] = {0};
 			int			nnewmembers;
 			Oid		   *newmembers;
 			ObjectType	objtype;
@@ -2020,10 +2032,6 @@ ExecGrant_Relation(InternalGrant *istmt)
 			nnewmembers = aclmembers(new_acl, &newmembers);
 
 			/* finished building new ACL value, now insert it */
-			MemSet(values, 0, sizeof(values));
-			MemSet(nulls, false, sizeof(nulls));
-			MemSet(replaces, false, sizeof(replaces));
-
 			replaces[Anum_pg_class_relacl - 1] = true;
 			values[Anum_pg_class_relacl - 1] = PointerGetDatum(new_acl);
 
@@ -2115,146 +2123,30 @@ ExecGrant_Relation(InternalGrant *istmt)
 		CommandCounterIncrement();
 	}
 
-	heap_close(attRelation, RowExclusiveLock);
-	heap_close(relation, RowExclusiveLock);
+	table_close(attRelation, RowExclusiveLock);
+	table_close(relation, RowExclusiveLock);
 }
 
 static void
-ExecGrant_Database(InternalGrant *istmt)
+ExecGrant_common(InternalGrant *istmt, Oid classid, AclMode default_privs,
+				 void (*object_check) (InternalGrant *istmt, HeapTuple tuple))
 {
+	int			cacheid;
 	Relation	relation;
 	ListCell   *cell;
 
 	if (istmt->all_privs && istmt->privileges == ACL_NO_RIGHTS)
-		istmt->privileges = ACL_ALL_RIGHTS_DATABASE;
+		istmt->privileges = default_privs;
 
-	relation = heap_open(DatabaseRelationId, RowExclusiveLock);
+	cacheid = get_object_catcache_oid(classid);
 
-	foreach(cell, istmt->objects)
-	{
-		Oid			datId = lfirst_oid(cell);
-		Form_pg_database pg_database_tuple;
-		Datum		aclDatum;
-		bool		isNull;
-		AclMode		avail_goptions;
-		AclMode		this_privileges;
-		Acl		   *old_acl;
-		Acl		   *new_acl;
-		Oid			grantorId;
-		Oid			ownerId;
-		HeapTuple	newtuple;
-		Datum		values[Natts_pg_database];
-		bool		nulls[Natts_pg_database];
-		bool		replaces[Natts_pg_database];
-		int			noldmembers;
-		int			nnewmembers;
-		Oid		   *oldmembers;
-		Oid		   *newmembers;
-		HeapTuple	tuple;
-
-		tuple = SearchSysCache1(DATABASEOID, ObjectIdGetDatum(datId));
-		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for database %u", datId);
-
-		pg_database_tuple = (Form_pg_database) GETSTRUCT(tuple);
-
-		/*
-		 * Get owner ID and working copy of existing ACL. If there's no ACL,
-		 * substitute the proper default.
-		 */
-		ownerId = pg_database_tuple->datdba;
-		aclDatum = heap_getattr(tuple, Anum_pg_database_datacl,
-								RelationGetDescr(relation), &isNull);
-		if (isNull)
-		{
-			old_acl = acldefault(OBJECT_DATABASE, ownerId);
-			/* There are no old member roles according to the catalogs */
-			noldmembers = 0;
-			oldmembers = NULL;
-		}
-		else
-		{
-			old_acl = DatumGetAclPCopy(aclDatum);
-			/* Get the roles mentioned in the existing ACL */
-			noldmembers = aclmembers(old_acl, &oldmembers);
-		}
-
-		/* Determine ID to do the grant as, and available grant options */
-		select_best_grantor(GetUserId(), istmt->privileges,
-							old_acl, ownerId,
-							&grantorId, &avail_goptions);
-
-		/*
-		 * Restrict the privileges to what we can actually grant, and emit the
-		 * standards-mandated warning and error messages.
-		 */
-		this_privileges =
-			restrict_and_check_grant(istmt->is_grant, avail_goptions,
-									 istmt->all_privs, istmt->privileges,
-									 datId, grantorId, OBJECT_DATABASE,
-									 NameStr(pg_database_tuple->datname),
-									 0, NULL);
-
-		/*
-		 * Generate new ACL.
-		 */
-		new_acl = merge_acl_with_grant(old_acl, istmt->is_grant,
-									   istmt->grant_option, istmt->behavior,
-									   istmt->grantees, this_privileges,
-									   grantorId, ownerId);
-
-		/*
-		 * We need the members of both old and new ACLs so we can correct the
-		 * shared dependency information.
-		 */
-		nnewmembers = aclmembers(new_acl, &newmembers);
-
-		/* finished building new ACL value, now insert it */
-		MemSet(values, 0, sizeof(values));
-		MemSet(nulls, false, sizeof(nulls));
-		MemSet(replaces, false, sizeof(replaces));
-
-		replaces[Anum_pg_database_datacl - 1] = true;
-		values[Anum_pg_database_datacl - 1] = PointerGetDatum(new_acl);
-
-		newtuple = heap_modify_tuple(tuple, RelationGetDescr(relation), values,
-									 nulls, replaces);
-
-		CatalogTupleUpdate(relation, &newtuple->t_self, newtuple);
-
-		/* Update the shared dependency ACL info */
-		updateAclDependencies(DatabaseRelationId, HeapTupleGetOid(tuple), 0,
-							  ownerId,
-							  noldmembers, oldmembers,
-							  nnewmembers, newmembers);
-
-		ReleaseSysCache(tuple);
-
-		pfree(new_acl);
-
-		/* prevent error when processing duplicate objects */
-		CommandCounterIncrement();
-	}
-
-	heap_close(relation, RowExclusiveLock);
-}
-
-static void
-ExecGrant_Fdw(InternalGrant *istmt)
-{
-	Relation	relation;
-	ListCell   *cell;
-
-	if (istmt->all_privs && istmt->privileges == ACL_NO_RIGHTS)
-		istmt->privileges = ACL_ALL_RIGHTS_FDW;
-
-	relation = heap_open(ForeignDataWrapperRelationId, RowExclusiveLock);
+	relation = table_open(classid, RowExclusiveLock);
 
 	foreach(cell, istmt->objects)
 	{
-		Oid			fdwid = lfirst_oid(cell);
-		Form_pg_foreign_data_wrapper pg_fdw_tuple;
+		Oid			objectid = lfirst_oid(cell);
 		Datum		aclDatum;
+		Datum		nameDatum;
 		bool		isNull;
 		AclMode		avail_goptions;
 		AclMode		this_privileges;
@@ -2264,32 +2156,38 @@ ExecGrant_Fdw(InternalGrant *istmt)
 		Oid			ownerId;
 		HeapTuple	tuple;
 		HeapTuple	newtuple;
-		Datum		values[Natts_pg_foreign_data_wrapper];
-		bool		nulls[Natts_pg_foreign_data_wrapper];
-		bool		replaces[Natts_pg_foreign_data_wrapper];
+		Datum	   *values = palloc0_array(Datum, RelationGetDescr(relation)->natts);
+		bool	   *nulls = palloc0_array(bool, RelationGetDescr(relation)->natts);
+		bool	   *replaces = palloc0_array(bool, RelationGetDescr(relation)->natts);
 		int			noldmembers;
 		int			nnewmembers;
 		Oid		   *oldmembers;
 		Oid		   *newmembers;
 
-		tuple = SearchSysCache1(FOREIGNDATAWRAPPEROID,
-								ObjectIdGetDatum(fdwid));
+		tuple = SearchSysCache1(cacheid, ObjectIdGetDatum(objectid));
 		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for foreign-data wrapper %u", fdwid);
+			elog(ERROR, "cache lookup failed for %s %u", get_object_class_descr(classid), objectid);
 
-		pg_fdw_tuple = (Form_pg_foreign_data_wrapper) GETSTRUCT(tuple);
+		/*
+		 * Additional object-type-specific checks
+		 */
+		if (object_check)
+			object_check(istmt, tuple);
 
 		/*
 		 * Get owner ID and working copy of existing ACL. If there's no ACL,
 		 * substitute the proper default.
 		 */
-		ownerId = pg_fdw_tuple->fdwowner;
-		aclDatum = SysCacheGetAttr(FOREIGNDATAWRAPPEROID, tuple,
-								   Anum_pg_foreign_data_wrapper_fdwacl,
+		ownerId = DatumGetObjectId(SysCacheGetAttrNotNull(cacheid,
+														  tuple,
+														  get_object_attnum_owner(classid)));
+		aclDatum = SysCacheGetAttr(cacheid,
+								   tuple,
+								   get_object_attnum_acl(classid),
 								   &isNull);
 		if (isNull)
 		{
-			old_acl = acldefault(OBJECT_FDW, ownerId);
+			old_acl = acldefault(get_object_type(classid, objectid), ownerId);
 			/* There are no old member roles according to the catalogs */
 			noldmembers = 0;
 			oldmembers = NULL;
@@ -2306,6 +2204,9 @@ ExecGrant_Fdw(InternalGrant *istmt)
 							old_acl, ownerId,
 							&grantorId, &avail_goptions);
 
+		nameDatum = SysCacheGetAttrNotNull(cacheid, tuple,
+										   get_object_attnum_name(classid));
+
 		/*
 		 * Restrict the privileges to what we can actually grant, and emit the
 		 * standards-mandated warning and error messages.
@@ -2313,8 +2214,8 @@ ExecGrant_Fdw(InternalGrant *istmt)
 		this_privileges =
 			restrict_and_check_grant(istmt->is_grant, avail_goptions,
 									 istmt->all_privs, istmt->privileges,
-									 fdwid, grantorId, OBJECT_FDW,
-									 NameStr(pg_fdw_tuple->fdwname),
+									 objectid, grantorId, get_object_type(classid, objectid),
+									 NameStr(*DatumGetName(nameDatum)),
 									 0, NULL);
 
 		/*
@@ -2332,12 +2233,8 @@ ExecGrant_Fdw(InternalGrant *istmt)
 		nnewmembers = aclmembers(new_acl, &newmembers);
 
 		/* finished building new ACL value, now insert it */
-		MemSet(values, 0, sizeof(values));
-		MemSet(nulls, false, sizeof(nulls));
-		MemSet(replaces, false, sizeof(replaces));
-
-		replaces[Anum_pg_foreign_data_wrapper_fdwacl - 1] = true;
-		values[Anum_pg_foreign_data_wrapper_fdwacl - 1] = PointerGetDatum(new_acl);
+		replaces[get_object_attnum_acl(classid) - 1] = true;
+		values[get_object_attnum_acl(classid) - 1] = PointerGetDatum(new_acl);
 
 		newtuple = heap_modify_tuple(tuple, RelationGetDescr(relation), values,
 									 nulls, replaces);
@@ -2345,12 +2242,11 @@ ExecGrant_Fdw(InternalGrant *istmt)
 		CatalogTupleUpdate(relation, &newtuple->t_self, newtuple);
 
 		/* Update initial privileges for extensions */
-		recordExtensionInitPriv(fdwid, ForeignDataWrapperRelationId, 0,
-								new_acl);
+		recordExtensionInitPriv(objectid, classid, 0, new_acl);
 
 		/* Update the shared dependency ACL info */
-		updateAclDependencies(ForeignDataWrapperRelationId,
-							  HeapTupleGetOid(tuple), 0,
+		updateAclDependencies(classid,
+							  objectid, 0,
 							  ownerId,
 							  noldmembers, oldmembers,
 							  nnewmembers, newmembers);
@@ -2363,386 +2259,23 @@ ExecGrant_Fdw(InternalGrant *istmt)
 		CommandCounterIncrement();
 	}
 
-	heap_close(relation, RowExclusiveLock);
+	table_close(relation, RowExclusiveLock);
 }
 
 static void
-ExecGrant_ForeignServer(InternalGrant *istmt)
+ExecGrant_Language_check(InternalGrant *istmt, HeapTuple tuple)
 {
-	Relation	relation;
-	ListCell   *cell;
+	Form_pg_language pg_language_tuple;
 
-	if (istmt->all_privs && istmt->privileges == ACL_NO_RIGHTS)
-		istmt->privileges = ACL_ALL_RIGHTS_FOREIGN_SERVER;
+	pg_language_tuple = (Form_pg_language) GETSTRUCT(tuple);
 
-	relation = heap_open(ForeignServerRelationId, RowExclusiveLock);
-
-	foreach(cell, istmt->objects)
-	{
-		Oid			srvid = lfirst_oid(cell);
-		Form_pg_foreign_server pg_server_tuple;
-		Datum		aclDatum;
-		bool		isNull;
-		AclMode		avail_goptions;
-		AclMode		this_privileges;
-		Acl		   *old_acl;
-		Acl		   *new_acl;
-		Oid			grantorId;
-		Oid			ownerId;
-		HeapTuple	tuple;
-		HeapTuple	newtuple;
-		Datum		values[Natts_pg_foreign_server];
-		bool		nulls[Natts_pg_foreign_server];
-		bool		replaces[Natts_pg_foreign_server];
-		int			noldmembers;
-		int			nnewmembers;
-		Oid		   *oldmembers;
-		Oid		   *newmembers;
-
-		tuple = SearchSysCache1(FOREIGNSERVEROID, ObjectIdGetDatum(srvid));
-		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for foreign server %u", srvid);
-
-		pg_server_tuple = (Form_pg_foreign_server) GETSTRUCT(tuple);
-
-		/*
-		 * Get owner ID and working copy of existing ACL. If there's no ACL,
-		 * substitute the proper default.
-		 */
-		ownerId = pg_server_tuple->srvowner;
-		aclDatum = SysCacheGetAttr(FOREIGNSERVEROID, tuple,
-								   Anum_pg_foreign_server_srvacl,
-								   &isNull);
-		if (isNull)
-		{
-			old_acl = acldefault(OBJECT_FOREIGN_SERVER, ownerId);
-			/* There are no old member roles according to the catalogs */
-			noldmembers = 0;
-			oldmembers = NULL;
-		}
-		else
-		{
-			old_acl = DatumGetAclPCopy(aclDatum);
-			/* Get the roles mentioned in the existing ACL */
-			noldmembers = aclmembers(old_acl, &oldmembers);
-		}
-
-		/* Determine ID to do the grant as, and available grant options */
-		select_best_grantor(GetUserId(), istmt->privileges,
-							old_acl, ownerId,
-							&grantorId, &avail_goptions);
-
-		/*
-		 * Restrict the privileges to what we can actually grant, and emit the
-		 * standards-mandated warning and error messages.
-		 */
-		this_privileges =
-			restrict_and_check_grant(istmt->is_grant, avail_goptions,
-									 istmt->all_privs, istmt->privileges,
-									 srvid, grantorId, OBJECT_FOREIGN_SERVER,
-									 NameStr(pg_server_tuple->srvname),
-									 0, NULL);
-
-		/*
-		 * Generate new ACL.
-		 */
-		new_acl = merge_acl_with_grant(old_acl, istmt->is_grant,
-									   istmt->grant_option, istmt->behavior,
-									   istmt->grantees, this_privileges,
-									   grantorId, ownerId);
-
-		/*
-		 * We need the members of both old and new ACLs so we can correct the
-		 * shared dependency information.
-		 */
-		nnewmembers = aclmembers(new_acl, &newmembers);
-
-		/* finished building new ACL value, now insert it */
-		MemSet(values, 0, sizeof(values));
-		MemSet(nulls, false, sizeof(nulls));
-		MemSet(replaces, false, sizeof(replaces));
-
-		replaces[Anum_pg_foreign_server_srvacl - 1] = true;
-		values[Anum_pg_foreign_server_srvacl - 1] = PointerGetDatum(new_acl);
-
-		newtuple = heap_modify_tuple(tuple, RelationGetDescr(relation), values,
-									 nulls, replaces);
-
-		CatalogTupleUpdate(relation, &newtuple->t_self, newtuple);
-
-		/* Update initial privileges for extensions */
-		recordExtensionInitPriv(srvid, ForeignServerRelationId, 0, new_acl);
-
-		/* Update the shared dependency ACL info */
-		updateAclDependencies(ForeignServerRelationId,
-							  HeapTupleGetOid(tuple), 0,
-							  ownerId,
-							  noldmembers, oldmembers,
-							  nnewmembers, newmembers);
-
-		ReleaseSysCache(tuple);
-
-		pfree(new_acl);
-
-		/* prevent error when processing duplicate objects */
-		CommandCounterIncrement();
-	}
-
-	heap_close(relation, RowExclusiveLock);
-}
-
-static void
-ExecGrant_Function(InternalGrant *istmt)
-{
-	Relation	relation;
-	ListCell   *cell;
-
-	if (istmt->all_privs && istmt->privileges == ACL_NO_RIGHTS)
-		istmt->privileges = ACL_ALL_RIGHTS_FUNCTION;
-
-	relation = heap_open(ProcedureRelationId, RowExclusiveLock);
-
-	foreach(cell, istmt->objects)
-	{
-		Oid			funcId = lfirst_oid(cell);
-		Form_pg_proc pg_proc_tuple;
-		Datum		aclDatum;
-		bool		isNull;
-		AclMode		avail_goptions;
-		AclMode		this_privileges;
-		Acl		   *old_acl;
-		Acl		   *new_acl;
-		Oid			grantorId;
-		Oid			ownerId;
-		HeapTuple	tuple;
-		HeapTuple	newtuple;
-		Datum		values[Natts_pg_proc];
-		bool		nulls[Natts_pg_proc];
-		bool		replaces[Natts_pg_proc];
-		int			noldmembers;
-		int			nnewmembers;
-		Oid		   *oldmembers;
-		Oid		   *newmembers;
-
-		tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(funcId));
-		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for function %u", funcId);
-
-		pg_proc_tuple = (Form_pg_proc) GETSTRUCT(tuple);
-
-		/*
-		 * Get owner ID and working copy of existing ACL. If there's no ACL,
-		 * substitute the proper default.
-		 */
-		ownerId = pg_proc_tuple->proowner;
-		aclDatum = SysCacheGetAttr(PROCOID, tuple, Anum_pg_proc_proacl,
-								   &isNull);
-		if (isNull)
-		{
-			old_acl = acldefault(OBJECT_FUNCTION, ownerId);
-			/* There are no old member roles according to the catalogs */
-			noldmembers = 0;
-			oldmembers = NULL;
-		}
-		else
-		{
-			old_acl = DatumGetAclPCopy(aclDatum);
-			/* Get the roles mentioned in the existing ACL */
-			noldmembers = aclmembers(old_acl, &oldmembers);
-		}
-
-		/* Determine ID to do the grant as, and available grant options */
-		select_best_grantor(GetUserId(), istmt->privileges,
-							old_acl, ownerId,
-							&grantorId, &avail_goptions);
-
-		/*
-		 * Restrict the privileges to what we can actually grant, and emit the
-		 * standards-mandated warning and error messages.
-		 */
-		this_privileges =
-			restrict_and_check_grant(istmt->is_grant, avail_goptions,
-									 istmt->all_privs, istmt->privileges,
-									 funcId, grantorId, OBJECT_FUNCTION,
-									 NameStr(pg_proc_tuple->proname),
-									 0, NULL);
-
-		/*
-		 * Generate new ACL.
-		 */
-		new_acl = merge_acl_with_grant(old_acl, istmt->is_grant,
-									   istmt->grant_option, istmt->behavior,
-									   istmt->grantees, this_privileges,
-									   grantorId, ownerId);
-
-		/*
-		 * We need the members of both old and new ACLs so we can correct the
-		 * shared dependency information.
-		 */
-		nnewmembers = aclmembers(new_acl, &newmembers);
-
-		/* finished building new ACL value, now insert it */
-		MemSet(values, 0, sizeof(values));
-		MemSet(nulls, false, sizeof(nulls));
-		MemSet(replaces, false, sizeof(replaces));
-
-		replaces[Anum_pg_proc_proacl - 1] = true;
-		values[Anum_pg_proc_proacl - 1] = PointerGetDatum(new_acl);
-
-		newtuple = heap_modify_tuple(tuple, RelationGetDescr(relation), values,
-									 nulls, replaces);
-
-		CatalogTupleUpdate(relation, &newtuple->t_self, newtuple);
-
-		/* Update initial privileges for extensions */
-		recordExtensionInitPriv(funcId, ProcedureRelationId, 0, new_acl);
-
-		/* Update the shared dependency ACL info */
-		updateAclDependencies(ProcedureRelationId, funcId, 0,
-							  ownerId,
-							  noldmembers, oldmembers,
-							  nnewmembers, newmembers);
-
-		ReleaseSysCache(tuple);
-
-		pfree(new_acl);
-
-		/* prevent error when processing duplicate objects */
-		CommandCounterIncrement();
-	}
-
-	heap_close(relation, RowExclusiveLock);
-}
-
-static void
-ExecGrant_Language(InternalGrant *istmt)
-{
-	Relation	relation;
-	ListCell   *cell;
-
-	if (istmt->all_privs && istmt->privileges == ACL_NO_RIGHTS)
-		istmt->privileges = ACL_ALL_RIGHTS_LANGUAGE;
-
-	relation = heap_open(LanguageRelationId, RowExclusiveLock);
-
-	foreach(cell, istmt->objects)
-	{
-		Oid			langId = lfirst_oid(cell);
-		Form_pg_language pg_language_tuple;
-		Datum		aclDatum;
-		bool		isNull;
-		AclMode		avail_goptions;
-		AclMode		this_privileges;
-		Acl		   *old_acl;
-		Acl		   *new_acl;
-		Oid			grantorId;
-		Oid			ownerId;
-		HeapTuple	tuple;
-		HeapTuple	newtuple;
-		Datum		values[Natts_pg_language];
-		bool		nulls[Natts_pg_language];
-		bool		replaces[Natts_pg_language];
-		int			noldmembers;
-		int			nnewmembers;
-		Oid		   *oldmembers;
-		Oid		   *newmembers;
-
-		tuple = SearchSysCache1(LANGOID, ObjectIdGetDatum(langId));
-		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for language %u", langId);
-
-		pg_language_tuple = (Form_pg_language) GETSTRUCT(tuple);
-
-		if (!pg_language_tuple->lanpltrusted)
-			ereport(ERROR,
-					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
-					 errmsg("language \"%s\" is not trusted",
-							NameStr(pg_language_tuple->lanname)),
-					 errdetail("GRANT and REVOKE are not allowed on untrusted languages, "
-							   "because only superusers can use untrusted languages.")));
-
-		/*
-		 * Get owner ID and working copy of existing ACL. If there's no ACL,
-		 * substitute the proper default.
-		 */
-		ownerId = pg_language_tuple->lanowner;
-		aclDatum = SysCacheGetAttr(LANGNAME, tuple, Anum_pg_language_lanacl,
-								   &isNull);
-		if (isNull)
-		{
-			old_acl = acldefault(OBJECT_LANGUAGE, ownerId);
-			/* There are no old member roles according to the catalogs */
-			noldmembers = 0;
-			oldmembers = NULL;
-		}
-		else
-		{
-			old_acl = DatumGetAclPCopy(aclDatum);
-			/* Get the roles mentioned in the existing ACL */
-			noldmembers = aclmembers(old_acl, &oldmembers);
-		}
-
-		/* Determine ID to do the grant as, and available grant options */
-		select_best_grantor(GetUserId(), istmt->privileges,
-							old_acl, ownerId,
-							&grantorId, &avail_goptions);
-
-		/*
-		 * Restrict the privileges to what we can actually grant, and emit the
-		 * standards-mandated warning and error messages.
-		 */
-		this_privileges =
-			restrict_and_check_grant(istmt->is_grant, avail_goptions,
-									 istmt->all_privs, istmt->privileges,
-									 langId, grantorId, OBJECT_LANGUAGE,
-									 NameStr(pg_language_tuple->lanname),
-									 0, NULL);
-
-		/*
-		 * Generate new ACL.
-		 */
-		new_acl = merge_acl_with_grant(old_acl, istmt->is_grant,
-									   istmt->grant_option, istmt->behavior,
-									   istmt->grantees, this_privileges,
-									   grantorId, ownerId);
-
-		/*
-		 * We need the members of both old and new ACLs so we can correct the
-		 * shared dependency information.
-		 */
-		nnewmembers = aclmembers(new_acl, &newmembers);
-
-		/* finished building new ACL value, now insert it */
-		MemSet(values, 0, sizeof(values));
-		MemSet(nulls, false, sizeof(nulls));
-		MemSet(replaces, false, sizeof(replaces));
-
-		replaces[Anum_pg_language_lanacl - 1] = true;
-		values[Anum_pg_language_lanacl - 1] = PointerGetDatum(new_acl);
-
-		newtuple = heap_modify_tuple(tuple, RelationGetDescr(relation), values,
-									 nulls, replaces);
-
-		CatalogTupleUpdate(relation, &newtuple->t_self, newtuple);
-
-		/* Update initial privileges for extensions */
-		recordExtensionInitPriv(langId, LanguageRelationId, 0, new_acl);
-
-		/* Update the shared dependency ACL info */
-		updateAclDependencies(LanguageRelationId, HeapTupleGetOid(tuple), 0,
-							  ownerId,
-							  noldmembers, oldmembers,
-							  nnewmembers, newmembers);
-
-		ReleaseSysCache(tuple);
-
-		pfree(new_acl);
-
-		/* prevent error when processing duplicate objects */
-		CommandCounterIncrement();
-	}
-
-	heap_close(relation, RowExclusiveLock);
+	if (!pg_language_tuple->lanpltrusted)
+		ereport(ERROR,
+				(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+				 errmsg("language \"%s\" is not trusted",
+						NameStr(pg_language_tuple->lanname)),
+				 errdetail("GRANT and REVOKE are not allowed on untrusted languages, "
+						   "because only superusers can use untrusted languages.")));
 }
 
 static void
@@ -2754,8 +2287,8 @@ ExecGrant_Largeobject(InternalGrant *istmt)
 	if (istmt->all_privs && istmt->privileges == ACL_NO_RIGHTS)
 		istmt->privileges = ACL_ALL_RIGHTS_LARGEOBJECT;
 
-	relation = heap_open(LargeObjectMetadataRelationId,
-						 RowExclusiveLock);
+	relation = table_open(LargeObjectMetadataRelationId,
+						  RowExclusiveLock);
 
 	foreach(cell, istmt->objects)
 	{
@@ -2771,9 +2304,9 @@ ExecGrant_Largeobject(InternalGrant *istmt)
 		Oid			grantorId;
 		Oid			ownerId;
 		HeapTuple	newtuple;
-		Datum		values[Natts_pg_largeobject_metadata];
-		bool		nulls[Natts_pg_largeobject_metadata];
-		bool		replaces[Natts_pg_largeobject_metadata];
+		Datum		values[Natts_pg_largeobject_metadata] = {0};
+		bool		nulls[Natts_pg_largeobject_metadata] = {0};
+		bool		replaces[Natts_pg_largeobject_metadata] = {0};
 		int			noldmembers;
 		int			nnewmembers;
 		Oid		   *oldmembers;
@@ -2784,7 +2317,7 @@ ExecGrant_Largeobject(InternalGrant *istmt)
 
 		/* There's no syscache for pg_largeobject_metadata */
 		ScanKeyInit(&entry[0],
-					ObjectIdAttributeNumber,
+					Anum_pg_largeobject_metadata_oid,
 					BTEqualStrategyNumber, F_OIDEQ,
 					ObjectIdGetDatum(loid));
 
@@ -2851,10 +2384,6 @@ ExecGrant_Largeobject(InternalGrant *istmt)
 		nnewmembers = aclmembers(new_acl, &newmembers);
 
 		/* finished building new ACL value, now insert it */
-		MemSet(values, 0, sizeof(values));
-		MemSet(nulls, false, sizeof(nulls));
-		MemSet(replaces, false, sizeof(replaces));
-
 		replaces[Anum_pg_largeobject_metadata_lomacl - 1] = true;
 		values[Anum_pg_largeobject_metadata_lomacl - 1]
 			= PointerGetDatum(new_acl);
@@ -2869,7 +2398,7 @@ ExecGrant_Largeobject(InternalGrant *istmt)
 
 		/* Update the shared dependency ACL info */
 		updateAclDependencies(LargeObjectRelationId,
-							  HeapTupleGetOid(tuple), 0,
+							  form_lo_meta->oid, 0,
 							  ownerId,
 							  noldmembers, oldmembers,
 							  nnewmembers, newmembers);
@@ -2882,24 +2411,47 @@ ExecGrant_Largeobject(InternalGrant *istmt)
 		CommandCounterIncrement();
 	}
 
-	heap_close(relation, RowExclusiveLock);
+	table_close(relation, RowExclusiveLock);
 }
 
 static void
-ExecGrant_Namespace(InternalGrant *istmt)
+ExecGrant_Type_check(InternalGrant *istmt, HeapTuple tuple)
+{
+	Form_pg_type pg_type_tuple;
+
+	pg_type_tuple = (Form_pg_type) GETSTRUCT(tuple);
+
+	if (IsTrueArrayType(pg_type_tuple))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_GRANT_OPERATION),
+				 errmsg("cannot set privileges of array types"),
+				 errhint("Set the privileges of the element type instead.")));
+
+	/* Used GRANT DOMAIN on a non-domain? */
+	if (istmt->objtype == OBJECT_DOMAIN &&
+		pg_type_tuple->typtype != TYPTYPE_DOMAIN)
+		ereport(ERROR,
+				(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+				 errmsg("\"%s\" is not a domain",
+						NameStr(pg_type_tuple->typname))));
+}
+
+static void
+ExecGrant_Parameter(InternalGrant *istmt)
 {
 	Relation	relation;
 	ListCell   *cell;
 
 	if (istmt->all_privs && istmt->privileges == ACL_NO_RIGHTS)
-		istmt->privileges = ACL_ALL_RIGHTS_SCHEMA;
+		istmt->privileges = ACL_ALL_RIGHTS_PARAMETER_ACL;
 
-	relation = heap_open(NamespaceRelationId, RowExclusiveLock);
+	relation = table_open(ParameterAclRelationId, RowExclusiveLock);
 
 	foreach(cell, istmt->objects)
 	{
-		Oid			nspid = lfirst_oid(cell);
-		Form_pg_namespace pg_namespace_tuple;
+		Oid			parameterId = lfirst_oid(cell);
+		Datum		nameDatum;
+		const char *parname;
 		Datum		aclDatum;
 		bool		isNull;
 		AclMode		avail_goptions;
@@ -2909,287 +2461,32 @@ ExecGrant_Namespace(InternalGrant *istmt)
 		Oid			grantorId;
 		Oid			ownerId;
 		HeapTuple	tuple;
-		HeapTuple	newtuple;
-		Datum		values[Natts_pg_namespace];
-		bool		nulls[Natts_pg_namespace];
-		bool		replaces[Natts_pg_namespace];
 		int			noldmembers;
 		int			nnewmembers;
 		Oid		   *oldmembers;
 		Oid		   *newmembers;
 
-		tuple = SearchSysCache1(NAMESPACEOID, ObjectIdGetDatum(nspid));
+		tuple = SearchSysCache1(PARAMETERACLOID, ObjectIdGetDatum(parameterId));
 		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for namespace %u", nspid);
+			elog(ERROR, "cache lookup failed for parameter ACL %u",
+				 parameterId);
 
-		pg_namespace_tuple = (Form_pg_namespace) GETSTRUCT(tuple);
+		/* We'll need the GUC's name */
+		nameDatum = SysCacheGetAttrNotNull(PARAMETERACLOID, tuple,
+										   Anum_pg_parameter_acl_parname);
+		parname = TextDatumGetCString(nameDatum);
+
+		/* Treat all parameters as belonging to the bootstrap superuser. */
+		ownerId = BOOTSTRAP_SUPERUSERID;
 
 		/*
-		 * Get owner ID and working copy of existing ACL. If there's no ACL,
-		 * substitute the proper default.
+		 * Get working copy of existing ACL. If there's no ACL, substitute the
+		 * proper default.
 		 */
-		ownerId = pg_namespace_tuple->nspowner;
-		aclDatum = SysCacheGetAttr(NAMESPACENAME, tuple,
-								   Anum_pg_namespace_nspacl,
+		aclDatum = SysCacheGetAttr(PARAMETERACLOID, tuple,
+								   Anum_pg_parameter_acl_paracl,
 								   &isNull);
-		if (isNull)
-		{
-			old_acl = acldefault(OBJECT_SCHEMA, ownerId);
-			/* There are no old member roles according to the catalogs */
-			noldmembers = 0;
-			oldmembers = NULL;
-		}
-		else
-		{
-			old_acl = DatumGetAclPCopy(aclDatum);
-			/* Get the roles mentioned in the existing ACL */
-			noldmembers = aclmembers(old_acl, &oldmembers);
-		}
 
-		/* Determine ID to do the grant as, and available grant options */
-		select_best_grantor(GetUserId(), istmt->privileges,
-							old_acl, ownerId,
-							&grantorId, &avail_goptions);
-
-		/*
-		 * Restrict the privileges to what we can actually grant, and emit the
-		 * standards-mandated warning and error messages.
-		 */
-		this_privileges =
-			restrict_and_check_grant(istmt->is_grant, avail_goptions,
-									 istmt->all_privs, istmt->privileges,
-									 nspid, grantorId, OBJECT_SCHEMA,
-									 NameStr(pg_namespace_tuple->nspname),
-									 0, NULL);
-
-		/*
-		 * Generate new ACL.
-		 */
-		new_acl = merge_acl_with_grant(old_acl, istmt->is_grant,
-									   istmt->grant_option, istmt->behavior,
-									   istmt->grantees, this_privileges,
-									   grantorId, ownerId);
-
-		/*
-		 * We need the members of both old and new ACLs so we can correct the
-		 * shared dependency information.
-		 */
-		nnewmembers = aclmembers(new_acl, &newmembers);
-
-		/* finished building new ACL value, now insert it */
-		MemSet(values, 0, sizeof(values));
-		MemSet(nulls, false, sizeof(nulls));
-		MemSet(replaces, false, sizeof(replaces));
-
-		replaces[Anum_pg_namespace_nspacl - 1] = true;
-		values[Anum_pg_namespace_nspacl - 1] = PointerGetDatum(new_acl);
-
-		newtuple = heap_modify_tuple(tuple, RelationGetDescr(relation), values,
-									 nulls, replaces);
-
-		CatalogTupleUpdate(relation, &newtuple->t_self, newtuple);
-
-		/* Update initial privileges for extensions */
-		recordExtensionInitPriv(nspid, NamespaceRelationId, 0, new_acl);
-
-		/* Update the shared dependency ACL info */
-		updateAclDependencies(NamespaceRelationId, HeapTupleGetOid(tuple), 0,
-							  ownerId,
-							  noldmembers, oldmembers,
-							  nnewmembers, newmembers);
-
-		ReleaseSysCache(tuple);
-
-		pfree(new_acl);
-
-		/* prevent error when processing duplicate objects */
-		CommandCounterIncrement();
-	}
-
-	heap_close(relation, RowExclusiveLock);
-}
-
-static void
-ExecGrant_Tablespace(InternalGrant *istmt)
-{
-	Relation	relation;
-	ListCell   *cell;
-
-	if (istmt->all_privs && istmt->privileges == ACL_NO_RIGHTS)
-		istmt->privileges = ACL_ALL_RIGHTS_TABLESPACE;
-
-	relation = heap_open(TableSpaceRelationId, RowExclusiveLock);
-
-	foreach(cell, istmt->objects)
-	{
-		Oid			tblId = lfirst_oid(cell);
-		Form_pg_tablespace pg_tablespace_tuple;
-		Datum		aclDatum;
-		bool		isNull;
-		AclMode		avail_goptions;
-		AclMode		this_privileges;
-		Acl		   *old_acl;
-		Acl		   *new_acl;
-		Oid			grantorId;
-		Oid			ownerId;
-		HeapTuple	newtuple;
-		Datum		values[Natts_pg_tablespace];
-		bool		nulls[Natts_pg_tablespace];
-		bool		replaces[Natts_pg_tablespace];
-		int			noldmembers;
-		int			nnewmembers;
-		Oid		   *oldmembers;
-		Oid		   *newmembers;
-		HeapTuple	tuple;
-
-		/* Search syscache for pg_tablespace */
-		tuple = SearchSysCache1(TABLESPACEOID, ObjectIdGetDatum(tblId));
-		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for tablespace %u", tblId);
-
-		pg_tablespace_tuple = (Form_pg_tablespace) GETSTRUCT(tuple);
-
-		/*
-		 * Get owner ID and working copy of existing ACL. If there's no ACL,
-		 * substitute the proper default.
-		 */
-		ownerId = pg_tablespace_tuple->spcowner;
-		aclDatum = heap_getattr(tuple, Anum_pg_tablespace_spcacl,
-								RelationGetDescr(relation), &isNull);
-		if (isNull)
-		{
-			old_acl = acldefault(OBJECT_TABLESPACE, ownerId);
-			/* There are no old member roles according to the catalogs */
-			noldmembers = 0;
-			oldmembers = NULL;
-		}
-		else
-		{
-			old_acl = DatumGetAclPCopy(aclDatum);
-			/* Get the roles mentioned in the existing ACL */
-			noldmembers = aclmembers(old_acl, &oldmembers);
-		}
-
-		/* Determine ID to do the grant as, and available grant options */
-		select_best_grantor(GetUserId(), istmt->privileges,
-							old_acl, ownerId,
-							&grantorId, &avail_goptions);
-
-		/*
-		 * Restrict the privileges to what we can actually grant, and emit the
-		 * standards-mandated warning and error messages.
-		 */
-		this_privileges =
-			restrict_and_check_grant(istmt->is_grant, avail_goptions,
-									 istmt->all_privs, istmt->privileges,
-									 tblId, grantorId, OBJECT_TABLESPACE,
-									 NameStr(pg_tablespace_tuple->spcname),
-									 0, NULL);
-
-		/*
-		 * Generate new ACL.
-		 */
-		new_acl = merge_acl_with_grant(old_acl, istmt->is_grant,
-									   istmt->grant_option, istmt->behavior,
-									   istmt->grantees, this_privileges,
-									   grantorId, ownerId);
-
-		/*
-		 * We need the members of both old and new ACLs so we can correct the
-		 * shared dependency information.
-		 */
-		nnewmembers = aclmembers(new_acl, &newmembers);
-
-		/* finished building new ACL value, now insert it */
-		MemSet(values, 0, sizeof(values));
-		MemSet(nulls, false, sizeof(nulls));
-		MemSet(replaces, false, sizeof(replaces));
-
-		replaces[Anum_pg_tablespace_spcacl - 1] = true;
-		values[Anum_pg_tablespace_spcacl - 1] = PointerGetDatum(new_acl);
-
-		newtuple = heap_modify_tuple(tuple, RelationGetDescr(relation), values,
-									 nulls, replaces);
-
-		CatalogTupleUpdate(relation, &newtuple->t_self, newtuple);
-
-		/* Update the shared dependency ACL info */
-		updateAclDependencies(TableSpaceRelationId, tblId, 0,
-							  ownerId,
-							  noldmembers, oldmembers,
-							  nnewmembers, newmembers);
-
-		ReleaseSysCache(tuple);
-		pfree(new_acl);
-
-		/* prevent error when processing duplicate objects */
-		CommandCounterIncrement();
-	}
-
-	heap_close(relation, RowExclusiveLock);
-}
-
-static void
-ExecGrant_Type(InternalGrant *istmt)
-{
-	Relation	relation;
-	ListCell   *cell;
-
-	if (istmt->all_privs && istmt->privileges == ACL_NO_RIGHTS)
-		istmt->privileges = ACL_ALL_RIGHTS_TYPE;
-
-	relation = heap_open(TypeRelationId, RowExclusiveLock);
-
-	foreach(cell, istmt->objects)
-	{
-		Oid			typId = lfirst_oid(cell);
-		Form_pg_type pg_type_tuple;
-		Datum		aclDatum;
-		bool		isNull;
-		AclMode		avail_goptions;
-		AclMode		this_privileges;
-		Acl		   *old_acl;
-		Acl		   *new_acl;
-		Oid			grantorId;
-		Oid			ownerId;
-		HeapTuple	newtuple;
-		Datum		values[Natts_pg_type];
-		bool		nulls[Natts_pg_type];
-		bool		replaces[Natts_pg_type];
-		int			noldmembers;
-		int			nnewmembers;
-		Oid		   *oldmembers;
-		Oid		   *newmembers;
-		HeapTuple	tuple;
-
-		/* Search syscache for pg_type */
-		tuple = SearchSysCache1(TYPEOID, ObjectIdGetDatum(typId));
-		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for type %u", typId);
-
-		pg_type_tuple = (Form_pg_type) GETSTRUCT(tuple);
-
-		if (pg_type_tuple->typelem != 0 && pg_type_tuple->typlen == -1)
-			ereport(ERROR,
-					(errcode(ERRCODE_INVALID_GRANT_OPERATION),
-					 errmsg("cannot set privileges of array types"),
-					 errhint("Set the privileges of the element type instead.")));
-
-		/* Used GRANT DOMAIN on a non-domain? */
-		if (istmt->objtype == OBJECT_DOMAIN &&
-			pg_type_tuple->typtype != TYPTYPE_DOMAIN)
-			ereport(ERROR,
-					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
-					 errmsg("\"%s\" is not a domain",
-							NameStr(pg_type_tuple->typname))));
-
-		/*
-		 * Get owner ID and working copy of existing ACL. If there's no ACL,
-		 * substitute the proper default.
-		 */
-		ownerId = pg_type_tuple->typowner;
-		aclDatum = heap_getattr(tuple, Anum_pg_type_typacl,
-								RelationGetDescr(relation), &isNull);
 		if (isNull)
 		{
 			old_acl = acldefault(istmt->objtype, ownerId);
@@ -3216,8 +2513,9 @@ ExecGrant_Type(InternalGrant *istmt)
 		this_privileges =
 			restrict_and_check_grant(istmt->is_grant, avail_goptions,
 									 istmt->all_privs, istmt->privileges,
-									 typId, grantorId, OBJECT_TYPE,
-									 NameStr(pg_type_tuple->typname),
+									 parameterId, grantorId,
+									 OBJECT_PARAMETER_ACL,
+									 parname,
 									 0, NULL);
 
 		/*
@@ -3234,24 +2532,38 @@ ExecGrant_Type(InternalGrant *istmt)
 		 */
 		nnewmembers = aclmembers(new_acl, &newmembers);
 
-		/* finished building new ACL value, now insert it */
-		MemSet(values, 0, sizeof(values));
-		MemSet(nulls, false, sizeof(nulls));
-		MemSet(replaces, false, sizeof(replaces));
+		/*
+		 * If the new ACL is equal to the default, we don't need the catalog
+		 * entry any longer.  Delete it rather than updating it, to avoid
+		 * leaving a degenerate entry.
+		 */
+		if (aclequal(new_acl, acldefault(istmt->objtype, ownerId)))
+		{
+			CatalogTupleDelete(relation, &tuple->t_self);
+		}
+		else
+		{
+			/* finished building new ACL value, now insert it */
+			HeapTuple	newtuple;
+			Datum		values[Natts_pg_parameter_acl] = {0};
+			bool		nulls[Natts_pg_parameter_acl] = {0};
+			bool		replaces[Natts_pg_parameter_acl] = {0};
 
-		replaces[Anum_pg_type_typacl - 1] = true;
-		values[Anum_pg_type_typacl - 1] = PointerGetDatum(new_acl);
+			replaces[Anum_pg_parameter_acl_paracl - 1] = true;
+			values[Anum_pg_parameter_acl_paracl - 1] = PointerGetDatum(new_acl);
 
-		newtuple = heap_modify_tuple(tuple, RelationGetDescr(relation), values,
-									 nulls, replaces);
+			newtuple = heap_modify_tuple(tuple, RelationGetDescr(relation),
+										 values, nulls, replaces);
 
-		CatalogTupleUpdate(relation, &newtuple->t_self, newtuple);
+			CatalogTupleUpdate(relation, &newtuple->t_self, newtuple);
+		}
 
 		/* Update initial privileges for extensions */
-		recordExtensionInitPriv(typId, TypeRelationId, 0, new_acl);
+		recordExtensionInitPriv(parameterId, ParameterAclRelationId, 0,
+								new_acl);
 
 		/* Update the shared dependency ACL info */
-		updateAclDependencies(TypeRelationId, typId, 0,
+		updateAclDependencies(ParameterAclRelationId, parameterId, 0,
 							  ownerId,
 							  noldmembers, oldmembers,
 							  nnewmembers, newmembers);
@@ -3263,7 +2575,7 @@ ExecGrant_Type(InternalGrant *istmt)
 		CommandCounterIncrement();
 	}
 
-	heap_close(relation, RowExclusiveLock);
+	table_close(relation, RowExclusiveLock);
 }
 
 
@@ -3296,6 +2608,10 @@ string_to_privilege(const char *privname)
 		return ACL_CREATE_TEMP;
 	if (strcmp(privname, "connect") == 0)
 		return ACL_CONNECT;
+	if (strcmp(privname, "set") == 0)
+		return ACL_SET;
+	if (strcmp(privname, "alter system") == 0)
+		return ACL_ALTER_SYSTEM;
 	if (strcmp(privname, "rule") == 0)
 		return 0;				/* ignore old RULE privileges */
 	ereport(ERROR,
@@ -3333,6 +2649,10 @@ privilege_to_string(AclMode privilege)
 			return "TEMP";
 		case ACL_CONNECT:
 			return "CONNECT";
+		case ACL_SET:
+			return "SET";
+		case ACL_ALTER_SYSTEM:
+			return "ALTER SYSTEM";
 		default:
 			elog(ERROR, "unrecognized privilege: %d", (int) privilege);
 	}
@@ -3417,6 +2737,9 @@ aclcheck_error(AclResult aclerr, ObjectType objtype,
 					case OBJECT_OPFAMILY:
 						msg = gettext_noop("permission denied for operator family %s");
 						break;
+					case OBJECT_PARAMETER_ACL:
+						msg = gettext_noop("permission denied for parameter %s");
+						break;
 					case OBJECT_POLICY:
 						msg = gettext_noop("permission denied for policy %s");
 						break;
@@ -3468,6 +2791,7 @@ aclcheck_error(AclResult aclerr, ObjectType objtype,
 					case OBJECT_DEFAULT:
 					case OBJECT_DEFACL:
 					case OBJECT_DOMCONSTRAINT:
+					case OBJECT_PUBLICATION_NAMESPACE:
 					case OBJECT_PUBLICATION_REL:
 					case OBJECT_ROLE:
 					case OBJECT_RULE:
@@ -3477,7 +2801,7 @@ aclcheck_error(AclResult aclerr, ObjectType objtype,
 					case OBJECT_TSPARSER:
 					case OBJECT_TSTEMPLATE:
 					case OBJECT_USER_MAPPING:
-						elog(ERROR, "unsupported object type %d", objtype);
+						elog(ERROR, "unsupported object type: %d", objtype);
 				}
 
 				ereport(ERROR,
@@ -3607,13 +2931,15 @@ aclcheck_error(AclResult aclerr, ObjectType objtype,
 					case OBJECT_DEFAULT:
 					case OBJECT_DEFACL:
 					case OBJECT_DOMCONSTRAINT:
+					case OBJECT_PARAMETER_ACL:
+					case OBJECT_PUBLICATION_NAMESPACE:
 					case OBJECT_PUBLICATION_REL:
 					case OBJECT_ROLE:
 					case OBJECT_TRANSFORM:
 					case OBJECT_TSPARSER:
 					case OBJECT_TSTEMPLATE:
 					case OBJECT_USER_MAPPING:
-						elog(ERROR, "unsupported object type %d", objtype);
+						elog(ERROR, "unsupported object type: %d", objtype);
 				}
 
 				ereport(ERROR,
@@ -3671,47 +2997,49 @@ aclcheck_error_type(AclResult aclerr, Oid typeOid)
  * Relay for the various pg_*_mask routines depending on object kind
  */
 static AclMode
-pg_aclmask(ObjectType objtype, Oid table_oid, AttrNumber attnum, Oid roleid,
+pg_aclmask(ObjectType objtype, Oid object_oid, AttrNumber attnum, Oid roleid,
 		   AclMode mask, AclMaskHow how)
 {
 	switch (objtype)
 	{
 		case OBJECT_COLUMN:
 			return
-				pg_class_aclmask(table_oid, roleid, mask, how) |
-				pg_attribute_aclmask(table_oid, attnum, roleid, mask, how);
+				pg_class_aclmask(object_oid, roleid, mask, how) |
+				pg_attribute_aclmask(object_oid, attnum, roleid, mask, how);
 		case OBJECT_TABLE:
 		case OBJECT_SEQUENCE:
-			return pg_class_aclmask(table_oid, roleid, mask, how);
+			return pg_class_aclmask(object_oid, roleid, mask, how);
 		case OBJECT_DATABASE:
-			return pg_database_aclmask(table_oid, roleid, mask, how);
+			return object_aclmask(DatabaseRelationId, object_oid, roleid, mask, how);
 		case OBJECT_FUNCTION:
-			return pg_proc_aclmask(table_oid, roleid, mask, how);
+			return object_aclmask(ProcedureRelationId, object_oid, roleid, mask, how);
 		case OBJECT_LANGUAGE:
-			return pg_language_aclmask(table_oid, roleid, mask, how);
+			return object_aclmask(LanguageRelationId, object_oid, roleid, mask, how);
 		case OBJECT_LARGEOBJECT:
-			return pg_largeobject_aclmask_snapshot(table_oid, roleid,
+			return pg_largeobject_aclmask_snapshot(object_oid, roleid,
 												   mask, how, NULL);
+		case OBJECT_PARAMETER_ACL:
+			return pg_parameter_acl_aclmask(object_oid, roleid, mask, how);
 		case OBJECT_SCHEMA:
-			return pg_namespace_aclmask(table_oid, roleid, mask, how);
+			return object_aclmask(NamespaceRelationId, object_oid, roleid, mask, how);
 		case OBJECT_STATISTIC_EXT:
 			elog(ERROR, "grantable rights not supported for statistics objects");
 			/* not reached, but keep compiler quiet */
 			return ACL_NO_RIGHTS;
 		case OBJECT_TABLESPACE:
-			return pg_tablespace_aclmask(table_oid, roleid, mask, how);
+			return object_aclmask(TableSpaceRelationId, object_oid, roleid, mask, how);
 		case OBJECT_FDW:
-			return pg_foreign_data_wrapper_aclmask(table_oid, roleid, mask, how);
+			return object_aclmask(ForeignDataWrapperRelationId, object_oid, roleid, mask, how);
 		case OBJECT_FOREIGN_SERVER:
-			return pg_foreign_server_aclmask(table_oid, roleid, mask, how);
+			return object_aclmask(ForeignServerRelationId, object_oid, roleid, mask, how);
 		case OBJECT_EVENT_TRIGGER:
 			elog(ERROR, "grantable rights not supported for event triggers");
 			/* not reached, but keep compiler quiet */
 			return ACL_NO_RIGHTS;
 		case OBJECT_TYPE:
-			return pg_type_aclmask(table_oid, roleid, mask, how);
+			return object_aclmask(TypeRelationId, object_oid, roleid, mask, how);
 		default:
-			elog(ERROR, "unrecognized objtype: %d",
+			elog(ERROR, "unrecognized object type: %d",
 				 (int) objtype);
 			/* not reached, but keep compiler quiet */
 			return ACL_NO_RIGHTS;
@@ -3731,16 +3059,104 @@ pg_aclmask(ObjectType objtype, Oid table_oid, AttrNumber attnum, Oid roleid,
  */
 
 /*
- * Exported routine for examining a user's privileges for a column
+ * Generic routine for examining a user's privileges for an object
+ */
+static AclMode
+object_aclmask(Oid classid, Oid objectid, Oid roleid,
+			   AclMode mask, AclMaskHow how)
+{
+	int			cacheid;
+	AclMode		result;
+	HeapTuple	tuple;
+	Datum		aclDatum;
+	bool		isNull;
+	Acl		   *acl;
+	Oid			ownerId;
+
+	/* Special cases */
+	switch (classid)
+	{
+		case NamespaceRelationId:
+			return pg_namespace_aclmask(objectid, roleid, mask, how);
+		case TypeRelationId:
+			return pg_type_aclmask(objectid, roleid, mask, how);
+	}
+
+	/* Even more special cases */
+	Assert(classid != RelationRelationId);	/* should use pg_class_acl* */
+	Assert(classid != LargeObjectMetadataRelationId);	/* should use
+														 * pg_largeobject_acl* */
+
+	/* Superusers bypass all permission checking. */
+	if (superuser_arg(roleid))
+		return mask;
+
+	/*
+	 * Get the objects's ACL from its catalog
+	 */
+
+	cacheid = get_object_catcache_oid(classid);
+
+	tuple = SearchSysCache1(cacheid, ObjectIdGetDatum(objectid));
+	if (!HeapTupleIsValid(tuple))
+		ereport(ERROR,
+				(errcode(ERRCODE_UNDEFINED_DATABASE),
+				 errmsg("%s with OID %u does not exist", get_object_class_descr(classid), objectid)));
+
+	ownerId = DatumGetObjectId(SysCacheGetAttrNotNull(cacheid,
+													  tuple,
+													  get_object_attnum_owner(classid)));
+
+	aclDatum = SysCacheGetAttr(cacheid, tuple, get_object_attnum_acl(classid),
+							   &isNull);
+	if (isNull)
+	{
+		/* No ACL, so build default ACL */
+		acl = acldefault(get_object_type(classid, objectid), ownerId);
+		aclDatum = (Datum) 0;
+	}
+	else
+	{
+		/* detoast ACL if necessary */
+		acl = DatumGetAclP(aclDatum);
+	}
+
+	result = aclmask(acl, roleid, ownerId, mask, how);
+
+	/* if we have a detoasted copy, free it */
+	if (acl && (Pointer) acl != DatumGetPointer(aclDatum))
+		pfree(acl);
+
+	ReleaseSysCache(tuple);
+
+	return result;
+}
+
+/*
+ * Routine for examining a user's privileges for a column
  *
  * Note: this considers only privileges granted specifically on the column.
  * It is caller's responsibility to take relation-level privileges into account
  * as appropriate.  (For the same reason, we have no special case for
  * superuser-ness here.)
  */
-AclMode
+static AclMode
 pg_attribute_aclmask(Oid table_oid, AttrNumber attnum, Oid roleid,
 					 AclMode mask, AclMaskHow how)
+{
+	return pg_attribute_aclmask_ext(table_oid, attnum, roleid,
+									mask, how, NULL);
+}
+
+/*
+ * Routine for examining a user's privileges for a column
+ *
+ * Does the bulk of the work for pg_attribute_aclmask(), and allows other
+ * callers to avoid the missing attribute ERROR when is_missing is non-NULL.
+ */
+static AclMode
+pg_attribute_aclmask_ext(Oid table_oid, AttrNumber attnum, Oid roleid,
+						 AclMode mask, AclMaskHow how, bool *is_missing)
 {
 	AclMode		result;
 	HeapTuple	classTuple;
@@ -3759,18 +3175,38 @@ pg_attribute_aclmask(Oid table_oid, AttrNumber attnum, Oid roleid,
 							   ObjectIdGetDatum(table_oid),
 							   Int16GetDatum(attnum));
 	if (!HeapTupleIsValid(attTuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_COLUMN),
-				 errmsg("attribute %d of relation with OID %u does not exist",
-						attnum, table_oid)));
+	{
+		if (is_missing != NULL)
+		{
+			/* return "no privileges" instead of throwing an error */
+			*is_missing = true;
+			return 0;
+		}
+		else
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_COLUMN),
+					 errmsg("attribute %d of relation with OID %u does not exist",
+							attnum, table_oid)));
+	}
+
 	attributeForm = (Form_pg_attribute) GETSTRUCT(attTuple);
 
-	/* Throw error on dropped columns, too */
+	/* Check dropped columns, too */
 	if (attributeForm->attisdropped)
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_COLUMN),
-				 errmsg("attribute %d of relation with OID %u does not exist",
-						attnum, table_oid)));
+	{
+		if (is_missing != NULL)
+		{
+			/* return "no privileges" instead of throwing an error */
+			*is_missing = true;
+			ReleaseSysCache(attTuple);
+			return 0;
+		}
+		else
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_COLUMN),
+					 errmsg("attribute %d of relation with OID %u does not exist",
+							attnum, table_oid)));
+	}
 
 	aclDatum = SysCacheGetAttr(ATTNUM, attTuple, Anum_pg_attribute_attacl,
 							   &isNull);
@@ -3827,6 +3263,19 @@ AclMode
 pg_class_aclmask(Oid table_oid, Oid roleid,
 				 AclMode mask, AclMaskHow how)
 {
+	return pg_class_aclmask_ext(table_oid, roleid, mask, how, NULL);
+}
+
+/*
+ * Routine for examining a user's privileges for a table
+ *
+ * Does the bulk of the work for pg_class_aclmask(), and allows other
+ * callers to avoid the missing relation ERROR when is_missing is non-NULL.
+ */
+static AclMode
+pg_class_aclmask_ext(Oid table_oid, Oid roleid, AclMode mask,
+					 AclMaskHow how, bool *is_missing)
+{
 	AclMode		result;
 	HeapTuple	tuple;
 	Form_pg_class classForm;
@@ -3840,15 +3289,25 @@ pg_class_aclmask(Oid table_oid, Oid roleid,
 	 */
 	tuple = SearchSysCache1(RELOID, ObjectIdGetDatum(table_oid));
 	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_TABLE),
-				 errmsg("relation with OID %u does not exist",
-						table_oid)));
+	{
+		if (is_missing != NULL)
+		{
+			/* return "no privileges" instead of throwing an error */
+			*is_missing = true;
+			return 0;
+		}
+		else
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_TABLE),
+					 errmsg("relation with OID %u does not exist",
+							table_oid)));
+	}
+
 	classForm = (Form_pg_class) GETSTRUCT(tuple);
 
 	/*
 	 * Deny anyone permission to update a system catalog unless
-	 * pg_authid.rolsuper is set.  Also allow it if allowSystemTableMods.
+	 * pg_authid.rolsuper is set.
 	 *
 	 * As of 7.4 we have some updatable system views; those shouldn't be
 	 * protected in this way.  Assume the view rules can take care of
@@ -3857,23 +3316,14 @@ pg_class_aclmask(Oid table_oid, Oid roleid,
 	if ((mask & (ACL_INSERT | ACL_UPDATE | ACL_DELETE | ACL_TRUNCATE | ACL_USAGE)) &&
 		IsSystemClass(table_oid, classForm) &&
 		classForm->relkind != RELKIND_VIEW &&
-		!superuser_arg(roleid) &&
-		!allowSystemTableMods)
-	{
-#ifdef ACLDEBUG
-		elog(DEBUG2, "permission denied for system catalog update");
-#endif
+		!superuser_arg(roleid))
 		mask &= ~(ACL_INSERT | ACL_UPDATE | ACL_DELETE | ACL_TRUNCATE | ACL_USAGE);
-	}
 
 	/*
 	 * Otherwise, superusers bypass all permission-checking.
 	 */
 	if (superuser_arg(roleid))
 	{
-#ifdef ACLDEBUG
-		elog(DEBUG2, "OID %u is superuser, home free", roleid);
-#endif
 		ReleaseSysCache(tuple);
 		return mask;
 	}
@@ -3913,152 +3363,126 @@ pg_class_aclmask(Oid table_oid, Oid roleid,
 
 	ReleaseSysCache(tuple);
 
+	/*
+	 * Check if ACL_SELECT is being checked and, if so, and not set already as
+	 * part of the result, then check if the user is a member of the
+	 * pg_read_all_data role, which allows read access to all relations.
+	 */
+	if (mask & ACL_SELECT && !(result & ACL_SELECT) &&
+		has_privs_of_role(roleid, ROLE_PG_READ_ALL_DATA))
+		result |= ACL_SELECT;
+
+	/*
+	 * Check if ACL_INSERT, ACL_UPDATE, or ACL_DELETE is being checked and, if
+	 * so, and not set already as part of the result, then check if the user
+	 * is a member of the pg_write_all_data role, which allows
+	 * INSERT/UPDATE/DELETE access to all relations (except system catalogs,
+	 * which requires superuser, see above).
+	 */
+	if (mask & (ACL_INSERT | ACL_UPDATE | ACL_DELETE) &&
+		!(result & (ACL_INSERT | ACL_UPDATE | ACL_DELETE)) &&
+		has_privs_of_role(roleid, ROLE_PG_WRITE_ALL_DATA))
+		result |= (mask & (ACL_INSERT | ACL_UPDATE | ACL_DELETE));
+
 	return result;
 }
 
 /*
- * Exported routine for examining a user's privileges for a database
+ * Routine for examining a user's privileges for a configuration
+ * parameter (GUC), identified by GUC name.
  */
-AclMode
-pg_database_aclmask(Oid db_oid, Oid roleid,
-					AclMode mask, AclMaskHow how)
+static AclMode
+pg_parameter_aclmask(const char *name, Oid roleid, AclMode mask, AclMaskHow how)
 {
 	AclMode		result;
+	char	   *parname;
+	text	   *partext;
 	HeapTuple	tuple;
-	Datum		aclDatum;
-	bool		isNull;
-	Acl		   *acl;
-	Oid			ownerId;
 
 	/* Superusers bypass all permission checking. */
 	if (superuser_arg(roleid))
 		return mask;
 
-	/*
-	 * Get the database's ACL from pg_database
-	 */
-	tuple = SearchSysCache1(DATABASEOID, ObjectIdGetDatum(db_oid));
+	/* Convert name to the form it should have in pg_parameter_acl... */
+	parname = convert_GUC_name_for_parameter_acl(name);
+	partext = cstring_to_text(parname);
+
+	/* ... and look it up */
+	tuple = SearchSysCache1(PARAMETERACLNAME, PointerGetDatum(partext));
+
 	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_DATABASE),
-				 errmsg("database with OID %u does not exist", db_oid)));
-
-	ownerId = ((Form_pg_database) GETSTRUCT(tuple))->datdba;
-
-	aclDatum = SysCacheGetAttr(DATABASEOID, tuple, Anum_pg_database_datacl,
-							   &isNull);
-	if (isNull)
 	{
-		/* No ACL, so build default ACL */
-		acl = acldefault(OBJECT_DATABASE, ownerId);
-		aclDatum = (Datum) 0;
+		/* If no entry, GUC has no permissions for non-superusers */
+		result = ACL_NO_RIGHTS;
 	}
 	else
 	{
-		/* detoast ACL if necessary */
-		acl = DatumGetAclP(aclDatum);
+		Datum		aclDatum;
+		bool		isNull;
+		Acl		   *acl;
+
+		aclDatum = SysCacheGetAttr(PARAMETERACLNAME, tuple,
+								   Anum_pg_parameter_acl_paracl,
+								   &isNull);
+		if (isNull)
+		{
+			/* No ACL, so build default ACL */
+			acl = acldefault(OBJECT_PARAMETER_ACL, BOOTSTRAP_SUPERUSERID);
+			aclDatum = (Datum) 0;
+		}
+		else
+		{
+			/* detoast ACL if necessary */
+			acl = DatumGetAclP(aclDatum);
+		}
+
+		result = aclmask(acl, roleid, BOOTSTRAP_SUPERUSERID, mask, how);
+
+		/* if we have a detoasted copy, free it */
+		if (acl && (Pointer) acl != DatumGetPointer(aclDatum))
+			pfree(acl);
+
+		ReleaseSysCache(tuple);
 	}
 
-	result = aclmask(acl, roleid, ownerId, mask, how);
-
-	/* if we have a detoasted copy, free it */
-	if (acl && (Pointer) acl != DatumGetPointer(aclDatum))
-		pfree(acl);
-
-	ReleaseSysCache(tuple);
+	pfree(parname);
+	pfree(partext);
 
 	return result;
 }
 
 /*
- * Exported routine for examining a user's privileges for a function
+ * Routine for examining a user's privileges for a configuration
+ * parameter (GUC), identified by the OID of its pg_parameter_acl entry.
  */
-AclMode
-pg_proc_aclmask(Oid proc_oid, Oid roleid,
-				AclMode mask, AclMaskHow how)
+static AclMode
+pg_parameter_acl_aclmask(Oid acl_oid, Oid roleid, AclMode mask, AclMaskHow how)
 {
 	AclMode		result;
 	HeapTuple	tuple;
 	Datum		aclDatum;
 	bool		isNull;
 	Acl		   *acl;
-	Oid			ownerId;
 
 	/* Superusers bypass all permission checking. */
 	if (superuser_arg(roleid))
 		return mask;
 
-	/*
-	 * Get the function's ACL from pg_proc
-	 */
-	tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(proc_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_FUNCTION),
-				 errmsg("function with OID %u does not exist", proc_oid)));
-
-	ownerId = ((Form_pg_proc) GETSTRUCT(tuple))->proowner;
-
-	aclDatum = SysCacheGetAttr(PROCOID, tuple, Anum_pg_proc_proacl,
-							   &isNull);
-	if (isNull)
-	{
-		/* No ACL, so build default ACL */
-		acl = acldefault(OBJECT_FUNCTION, ownerId);
-		aclDatum = (Datum) 0;
-	}
-	else
-	{
-		/* detoast ACL if necessary */
-		acl = DatumGetAclP(aclDatum);
-	}
-
-	result = aclmask(acl, roleid, ownerId, mask, how);
-
-	/* if we have a detoasted copy, free it */
-	if (acl && (Pointer) acl != DatumGetPointer(aclDatum))
-		pfree(acl);
-
-	ReleaseSysCache(tuple);
-
-	return result;
-}
-
-/*
- * Exported routine for examining a user's privileges for a language
- */
-AclMode
-pg_language_aclmask(Oid lang_oid, Oid roleid,
-					AclMode mask, AclMaskHow how)
-{
-	AclMode		result;
-	HeapTuple	tuple;
-	Datum		aclDatum;
-	bool		isNull;
-	Acl		   *acl;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return mask;
-
-	/*
-	 * Get the language's ACL from pg_language
-	 */
-	tuple = SearchSysCache1(LANGOID, ObjectIdGetDatum(lang_oid));
+	/* Get the ACL from pg_parameter_acl */
+	tuple = SearchSysCache1(PARAMETERACLOID, ObjectIdGetDatum(acl_oid));
 	if (!HeapTupleIsValid(tuple))
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("language with OID %u does not exist", lang_oid)));
+				 errmsg("parameter ACL with OID %u does not exist",
+						acl_oid)));
 
-	ownerId = ((Form_pg_language) GETSTRUCT(tuple))->lanowner;
-
-	aclDatum = SysCacheGetAttr(LANGOID, tuple, Anum_pg_language_lanacl,
+	aclDatum = SysCacheGetAttr(PARAMETERACLOID, tuple,
+							   Anum_pg_parameter_acl_paracl,
 							   &isNull);
 	if (isNull)
 	{
 		/* No ACL, so build default ACL */
-		acl = acldefault(OBJECT_LANGUAGE, ownerId);
+		acl = acldefault(OBJECT_PARAMETER_ACL, BOOTSTRAP_SUPERUSERID);
 		aclDatum = (Datum) 0;
 	}
 	else
@@ -4067,7 +3491,7 @@ pg_language_aclmask(Oid lang_oid, Oid roleid,
 		acl = DatumGetAclP(aclDatum);
 	}
 
-	result = aclmask(acl, roleid, ownerId, mask, how);
+	result = aclmask(acl, roleid, BOOTSTRAP_SUPERUSERID, mask, how);
 
 	/* if we have a detoasted copy, free it */
 	if (acl && (Pointer) acl != DatumGetPointer(aclDatum))
@@ -4079,7 +3503,7 @@ pg_language_aclmask(Oid lang_oid, Oid roleid,
 }
 
 /*
- * Exported routine for examining a user's privileges for a largeobject
+ * Routine for examining a user's privileges for a largeobject
  *
  * When a large object is opened for reading, it is opened relative to the
  * caller's snapshot, but when it is opened for writing, a current
@@ -4090,7 +3514,7 @@ pg_language_aclmask(Oid lang_oid, Oid roleid,
  * snapshot, since all we do with the snapshot argument is pass it through
  * to systable_beginscan().
  */
-AclMode
+static AclMode
 pg_largeobject_aclmask_snapshot(Oid lobj_oid, Oid roleid,
 								AclMode mask, AclMaskHow how,
 								Snapshot snapshot)
@@ -4110,13 +3534,13 @@ pg_largeobject_aclmask_snapshot(Oid lobj_oid, Oid roleid,
 		return mask;
 
 	/*
-	 * Get the largeobject's ACL from pg_language_metadata
+	 * Get the largeobject's ACL from pg_largeobject_metadata
 	 */
-	pg_lo_meta = heap_open(LargeObjectMetadataRelationId,
-						   AccessShareLock);
+	pg_lo_meta = table_open(LargeObjectMetadataRelationId,
+							AccessShareLock);
 
 	ScanKeyInit(&entry[0],
-				ObjectIdAttributeNumber,
+				Anum_pg_largeobject_metadata_oid,
 				BTEqualStrategyNumber, F_OIDEQ,
 				ObjectIdGetDatum(lobj_oid));
 
@@ -4155,15 +3579,15 @@ pg_largeobject_aclmask_snapshot(Oid lobj_oid, Oid roleid,
 
 	systable_endscan(scan);
 
-	heap_close(pg_lo_meta, AccessShareLock);
+	table_close(pg_lo_meta, AccessShareLock);
 
 	return result;
 }
 
 /*
- * Exported routine for examining a user's privileges for a namespace
+ * Routine for examining a user's privileges for a namespace
  */
-AclMode
+static AclMode
 pg_namespace_aclmask(Oid nsp_oid, Oid roleid,
 					 AclMode mask, AclMaskHow how)
 {
@@ -4199,8 +3623,8 @@ pg_namespace_aclmask(Oid nsp_oid, Oid roleid,
 	 */
 	if (isTempNamespace(nsp_oid))
 	{
-		if (pg_database_aclcheck(MyDatabaseId, roleid,
-								 ACL_CREATE_TEMP) == ACLCHECK_OK)
+		if (object_aclcheck(DatabaseRelationId, MyDatabaseId, roleid,
+							ACL_CREATE_TEMP) == ACLCHECK_OK)
 			return mask & ACL_ALL_RIGHTS_SCHEMA;
 		else
 			return mask & ACL_USAGE;
@@ -4239,193 +3663,23 @@ pg_namespace_aclmask(Oid nsp_oid, Oid roleid,
 
 	ReleaseSysCache(tuple);
 
+	/*
+	 * Check if ACL_USAGE is being checked and, if so, and not set already as
+	 * part of the result, then check if the user is a member of the
+	 * pg_read_all_data or pg_write_all_data roles, which allow usage access
+	 * to all schemas.
+	 */
+	if (mask & ACL_USAGE && !(result & ACL_USAGE) &&
+		(has_privs_of_role(roleid, ROLE_PG_READ_ALL_DATA) ||
+		 has_privs_of_role(roleid, ROLE_PG_WRITE_ALL_DATA)))
+		result |= ACL_USAGE;
 	return result;
 }
 
 /*
- * Exported routine for examining a user's privileges for a tablespace
+ * Routine for examining a user's privileges for a type.
  */
-AclMode
-pg_tablespace_aclmask(Oid spc_oid, Oid roleid,
-					  AclMode mask, AclMaskHow how)
-{
-	AclMode		result;
-	HeapTuple	tuple;
-	Datum		aclDatum;
-	bool		isNull;
-	Acl		   *acl;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return mask;
-
-	/*
-	 * Get the tablespace's ACL from pg_tablespace
-	 */
-	tuple = SearchSysCache1(TABLESPACEOID, ObjectIdGetDatum(spc_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("tablespace with OID %u does not exist", spc_oid)));
-
-	ownerId = ((Form_pg_tablespace) GETSTRUCT(tuple))->spcowner;
-
-	aclDatum = SysCacheGetAttr(TABLESPACEOID, tuple,
-							   Anum_pg_tablespace_spcacl,
-							   &isNull);
-
-	if (isNull)
-	{
-		/* No ACL, so build default ACL */
-		acl = acldefault(OBJECT_TABLESPACE, ownerId);
-		aclDatum = (Datum) 0;
-	}
-	else
-	{
-		/* detoast ACL if necessary */
-		acl = DatumGetAclP(aclDatum);
-	}
-
-	result = aclmask(acl, roleid, ownerId, mask, how);
-
-	/* if we have a detoasted copy, free it */
-	if (acl && (Pointer) acl != DatumGetPointer(aclDatum))
-		pfree(acl);
-
-	ReleaseSysCache(tuple);
-
-	return result;
-}
-
-/*
- * Exported routine for examining a user's privileges for a foreign
- * data wrapper
- */
-AclMode
-pg_foreign_data_wrapper_aclmask(Oid fdw_oid, Oid roleid,
-								AclMode mask, AclMaskHow how)
-{
-	AclMode		result;
-	HeapTuple	tuple;
-	Datum		aclDatum;
-	bool		isNull;
-	Acl		   *acl;
-	Oid			ownerId;
-
-	Form_pg_foreign_data_wrapper fdwForm;
-
-	/* Bypass permission checks for superusers */
-	if (superuser_arg(roleid))
-		return mask;
-
-	/*
-	 * Must get the FDW's tuple from pg_foreign_data_wrapper
-	 */
-	tuple = SearchSysCache1(FOREIGNDATAWRAPPEROID, ObjectIdGetDatum(fdw_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("foreign-data wrapper with OID %u does not exist",
-						fdw_oid)));
-	fdwForm = (Form_pg_foreign_data_wrapper) GETSTRUCT(tuple);
-
-	/*
-	 * Normal case: get the FDW's ACL from pg_foreign_data_wrapper
-	 */
-	ownerId = fdwForm->fdwowner;
-
-	aclDatum = SysCacheGetAttr(FOREIGNDATAWRAPPEROID, tuple,
-							   Anum_pg_foreign_data_wrapper_fdwacl, &isNull);
-	if (isNull)
-	{
-		/* No ACL, so build default ACL */
-		acl = acldefault(OBJECT_FDW, ownerId);
-		aclDatum = (Datum) 0;
-	}
-	else
-	{
-		/* detoast rel's ACL if necessary */
-		acl = DatumGetAclP(aclDatum);
-	}
-
-	result = aclmask(acl, roleid, ownerId, mask, how);
-
-	/* if we have a detoasted copy, free it */
-	if (acl && (Pointer) acl != DatumGetPointer(aclDatum))
-		pfree(acl);
-
-	ReleaseSysCache(tuple);
-
-	return result;
-}
-
-/*
- * Exported routine for examining a user's privileges for a foreign
- * server.
- */
-AclMode
-pg_foreign_server_aclmask(Oid srv_oid, Oid roleid,
-						  AclMode mask, AclMaskHow how)
-{
-	AclMode		result;
-	HeapTuple	tuple;
-	Datum		aclDatum;
-	bool		isNull;
-	Acl		   *acl;
-	Oid			ownerId;
-
-	Form_pg_foreign_server srvForm;
-
-	/* Bypass permission checks for superusers */
-	if (superuser_arg(roleid))
-		return mask;
-
-	/*
-	 * Must get the FDW's tuple from pg_foreign_data_wrapper
-	 */
-	tuple = SearchSysCache1(FOREIGNSERVEROID, ObjectIdGetDatum(srv_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("foreign server with OID %u does not exist",
-						srv_oid)));
-	srvForm = (Form_pg_foreign_server) GETSTRUCT(tuple);
-
-	/*
-	 * Normal case: get the foreign server's ACL from pg_foreign_server
-	 */
-	ownerId = srvForm->srvowner;
-
-	aclDatum = SysCacheGetAttr(FOREIGNSERVEROID, tuple,
-							   Anum_pg_foreign_server_srvacl, &isNull);
-	if (isNull)
-	{
-		/* No ACL, so build default ACL */
-		acl = acldefault(OBJECT_FOREIGN_SERVER, ownerId);
-		aclDatum = (Datum) 0;
-	}
-	else
-	{
-		/* detoast rel's ACL if necessary */
-		acl = DatumGetAclP(aclDatum);
-	}
-
-	result = aclmask(acl, roleid, ownerId, mask, how);
-
-	/* if we have a detoasted copy, free it */
-	if (acl && (Pointer) acl != DatumGetPointer(aclDatum))
-		pfree(acl);
-
-	ReleaseSysCache(tuple);
-
-	return result;
-}
-
-/*
- * Exported routine for examining a user's privileges for a type.
- */
-AclMode
+static AclMode
 pg_type_aclmask(Oid type_oid, Oid roleid, AclMode mask, AclMaskHow how)
 {
 	AclMode		result;
@@ -4456,7 +3710,7 @@ pg_type_aclmask(Oid type_oid, Oid roleid, AclMode mask, AclMaskHow how)
 	 * "True" array types don't manage permissions of their own; consult the
 	 * element type instead.
 	 */
-	if (OidIsValid(typeForm->typelem) && typeForm->typlen == -1)
+	if (IsTrueArrayType(typeForm))
 	{
 		Oid			elttype_oid = typeForm->typelem;
 
@@ -4500,6 +3754,18 @@ pg_type_aclmask(Oid type_oid, Oid roleid, AclMode mask, AclMaskHow how)
 }
 
 /*
+ * Exported generic routine for checking a user's access privileges to an object
+ */
+AclResult
+object_aclcheck(Oid classid, Oid objectid, Oid roleid, AclMode mode)
+{
+	if (object_aclmask(classid, objectid, roleid, mode, ACLMASK_ANY) != 0)
+		return ACLCHECK_OK;
+	else
+		return ACLCHECK_NO_PRIV;
+}
+
+/*
  * Exported routine for checking a user's access privileges to a column
  *
  * Returns ACLCHECK_OK if the user has any of the privileges identified by
@@ -4513,7 +3779,22 @@ AclResult
 pg_attribute_aclcheck(Oid table_oid, AttrNumber attnum,
 					  Oid roleid, AclMode mode)
 {
-	if (pg_attribute_aclmask(table_oid, attnum, roleid, mode, ACLMASK_ANY) != 0)
+	return pg_attribute_aclcheck_ext(table_oid, attnum, roleid, mode, NULL);
+}
+
+
+/*
+ * Exported routine for checking a user's access privileges to a column
+ *
+ * Does the bulk of the work for pg_attribute_aclcheck(), and allows other
+ * callers to avoid the missing attribute ERROR when is_missing is non-NULL.
+ */
+AclResult
+pg_attribute_aclcheck_ext(Oid table_oid, AttrNumber attnum,
+						  Oid roleid, AclMode mode, bool *is_missing)
+{
+	if (pg_attribute_aclmask_ext(table_oid, attnum, roleid, mode,
+								 ACLMASK_ANY, is_missing) != 0)
 		return ACLCHECK_OK;
 	else
 		return ACLCHECK_NO_PRIV;
@@ -4626,43 +3907,34 @@ pg_attribute_aclcheck_all(Oid table_oid, Oid roleid, AclMode mode,
 AclResult
 pg_class_aclcheck(Oid table_oid, Oid roleid, AclMode mode)
 {
-	if (pg_class_aclmask(table_oid, roleid, mode, ACLMASK_ANY) != 0)
+	return pg_class_aclcheck_ext(table_oid, roleid, mode, NULL);
+}
+
+/*
+ * Exported routine for checking a user's access privileges to a table
+ *
+ * Does the bulk of the work for pg_class_aclcheck(), and allows other
+ * callers to avoid the missing relation ERROR when is_missing is non-NULL.
+ */
+AclResult
+pg_class_aclcheck_ext(Oid table_oid, Oid roleid,
+					  AclMode mode, bool *is_missing)
+{
+	if (pg_class_aclmask_ext(table_oid, roleid, mode,
+							 ACLMASK_ANY, is_missing) != 0)
 		return ACLCHECK_OK;
 	else
 		return ACLCHECK_NO_PRIV;
 }
 
 /*
- * Exported routine for checking a user's access privileges to a database
+ * Exported routine for checking a user's access privileges to a configuration
+ * parameter (GUC), identified by GUC name.
  */
 AclResult
-pg_database_aclcheck(Oid db_oid, Oid roleid, AclMode mode)
+pg_parameter_aclcheck(const char *name, Oid roleid, AclMode mode)
 {
-	if (pg_database_aclmask(db_oid, roleid, mode, ACLMASK_ANY) != 0)
-		return ACLCHECK_OK;
-	else
-		return ACLCHECK_NO_PRIV;
-}
-
-/*
- * Exported routine for checking a user's access privileges to a function
- */
-AclResult
-pg_proc_aclcheck(Oid proc_oid, Oid roleid, AclMode mode)
-{
-	if (pg_proc_aclmask(proc_oid, roleid, mode, ACLMASK_ANY) != 0)
-		return ACLCHECK_OK;
-	else
-		return ACLCHECK_NO_PRIV;
-}
-
-/*
- * Exported routine for checking a user's access privileges to a language
- */
-AclResult
-pg_language_aclcheck(Oid lang_oid, Oid roleid, AclMode mode)
-{
-	if (pg_language_aclmask(lang_oid, roleid, mode, ACLMASK_ANY) != 0)
+	if (pg_parameter_aclmask(name, roleid, mode, ACLMASK_ANY) != 0)
 		return ACLCHECK_OK;
 	else
 		return ACLCHECK_NO_PRIV;
@@ -4683,680 +3955,74 @@ pg_largeobject_aclcheck_snapshot(Oid lobj_oid, Oid roleid, AclMode mode,
 }
 
 /*
- * Exported routine for checking a user's access privileges to a namespace
+ * Generic ownership check for an object
  */
-AclResult
-pg_namespace_aclcheck(Oid nsp_oid, Oid roleid, AclMode mode)
+bool
+object_ownercheck(Oid classid, Oid objectid, Oid roleid)
 {
-	if (pg_namespace_aclmask(nsp_oid, roleid, mode, ACLMASK_ANY) != 0)
-		return ACLCHECK_OK;
+	int			cacheid;
+	Oid			ownerId;
+
+	/* Superusers bypass all permission checking. */
+	if (superuser_arg(roleid))
+		return true;
+
+	/* For large objects, the catalog to consult is pg_largeobject_metadata */
+	if (classid == LargeObjectRelationId)
+		classid = LargeObjectMetadataRelationId;
+
+	cacheid = get_object_catcache_oid(classid);
+	if (cacheid != -1)
+	{
+		/* we can get the object's tuple from the syscache */
+		HeapTuple	tuple;
+
+		tuple = SearchSysCache1(cacheid, ObjectIdGetDatum(objectid));
+		if (!HeapTupleIsValid(tuple))
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("%s with OID %u does not exist", get_object_class_descr(classid), objectid)));
+
+		ownerId = DatumGetObjectId(SysCacheGetAttrNotNull(cacheid,
+														  tuple,
+														  get_object_attnum_owner(classid)));
+		ReleaseSysCache(tuple);
+	}
 	else
-		return ACLCHECK_NO_PRIV;
-}
-
-/*
- * Exported routine for checking a user's access privileges to a tablespace
- */
-AclResult
-pg_tablespace_aclcheck(Oid spc_oid, Oid roleid, AclMode mode)
-{
-	if (pg_tablespace_aclmask(spc_oid, roleid, mode, ACLMASK_ANY) != 0)
-		return ACLCHECK_OK;
-	else
-		return ACLCHECK_NO_PRIV;
-}
-
-/*
- * Exported routine for checking a user's access privileges to a foreign
- * data wrapper
- */
-AclResult
-pg_foreign_data_wrapper_aclcheck(Oid fdw_oid, Oid roleid, AclMode mode)
-{
-	if (pg_foreign_data_wrapper_aclmask(fdw_oid, roleid, mode, ACLMASK_ANY) != 0)
-		return ACLCHECK_OK;
-	else
-		return ACLCHECK_NO_PRIV;
-}
-
-/*
- * Exported routine for checking a user's access privileges to a foreign
- * server
- */
-AclResult
-pg_foreign_server_aclcheck(Oid srv_oid, Oid roleid, AclMode mode)
-{
-	if (pg_foreign_server_aclmask(srv_oid, roleid, mode, ACLMASK_ANY) != 0)
-		return ACLCHECK_OK;
-	else
-		return ACLCHECK_NO_PRIV;
-}
-
-/*
- * Exported routine for checking a user's access privileges to a type
- */
-AclResult
-pg_type_aclcheck(Oid type_oid, Oid roleid, AclMode mode)
-{
-	if (pg_type_aclmask(type_oid, roleid, mode, ACLMASK_ANY) != 0)
-		return ACLCHECK_OK;
-	else
-		return ACLCHECK_NO_PRIV;
-}
-
-/*
- * Ownership check for a relation (specified by OID).
- */
-bool
-pg_class_ownercheck(Oid class_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(RELOID, ObjectIdGetDatum(class_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_TABLE),
-				 errmsg("relation with OID %u does not exist", class_oid)));
-
-	ownerId = ((Form_pg_class) GETSTRUCT(tuple))->relowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a type (specified by OID).
- */
-bool
-pg_type_ownercheck(Oid type_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(TYPEOID, ObjectIdGetDatum(type_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("type with OID %u does not exist", type_oid)));
-
-	ownerId = ((Form_pg_type) GETSTRUCT(tuple))->typowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for an operator (specified by OID).
- */
-bool
-pg_oper_ownercheck(Oid oper_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(OPEROID, ObjectIdGetDatum(oper_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_FUNCTION),
-				 errmsg("operator with OID %u does not exist", oper_oid)));
-
-	ownerId = ((Form_pg_operator) GETSTRUCT(tuple))->oprowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a function (specified by OID).
- */
-bool
-pg_proc_ownercheck(Oid proc_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(proc_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_FUNCTION),
-				 errmsg("function with OID %u does not exist", proc_oid)));
-
-	ownerId = ((Form_pg_proc) GETSTRUCT(tuple))->proowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a procedural language (specified by OID)
- */
-bool
-pg_language_ownercheck(Oid lan_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(LANGOID, ObjectIdGetDatum(lan_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_FUNCTION),
-				 errmsg("language with OID %u does not exist", lan_oid)));
-
-	ownerId = ((Form_pg_language) GETSTRUCT(tuple))->lanowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a largeobject (specified by OID)
- *
- * This is only used for operations like ALTER LARGE OBJECT that are always
- * relative to an up-to-date snapshot.
- */
-bool
-pg_largeobject_ownercheck(Oid lobj_oid, Oid roleid)
-{
-	Relation	pg_lo_meta;
-	ScanKeyData entry[1];
-	SysScanDesc scan;
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	/* There's no syscache for pg_largeobject_metadata */
-	pg_lo_meta = heap_open(LargeObjectMetadataRelationId,
-						   AccessShareLock);
-
-	ScanKeyInit(&entry[0],
-				ObjectIdAttributeNumber,
-				BTEqualStrategyNumber, F_OIDEQ,
-				ObjectIdGetDatum(lobj_oid));
-
-	scan = systable_beginscan(pg_lo_meta,
-							  LargeObjectMetadataOidIndexId, true,
-							  NULL, 1, entry);
-
-	tuple = systable_getnext(scan);
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("large object %u does not exist", lobj_oid)));
-
-	ownerId = ((Form_pg_largeobject_metadata) GETSTRUCT(tuple))->lomowner;
-
-	systable_endscan(scan);
-	heap_close(pg_lo_meta, AccessShareLock);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a namespace (specified by OID).
- */
-bool
-pg_namespace_ownercheck(Oid nsp_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(NAMESPACEOID, ObjectIdGetDatum(nsp_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_SCHEMA),
-				 errmsg("schema with OID %u does not exist", nsp_oid)));
-
-	ownerId = ((Form_pg_namespace) GETSTRUCT(tuple))->nspowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a tablespace (specified by OID).
- */
-bool
-pg_tablespace_ownercheck(Oid spc_oid, Oid roleid)
-{
-	HeapTuple	spctuple;
-	Oid			spcowner;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	/* Search syscache for pg_tablespace */
-	spctuple = SearchSysCache1(TABLESPACEOID, ObjectIdGetDatum(spc_oid));
-	if (!HeapTupleIsValid(spctuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("tablespace with OID %u does not exist", spc_oid)));
-
-	spcowner = ((Form_pg_tablespace) GETSTRUCT(spctuple))->spcowner;
-
-	ReleaseSysCache(spctuple);
-
-	return has_privs_of_role(roleid, spcowner);
-}
-
-/*
- * Ownership check for an operator class (specified by OID).
- */
-bool
-pg_opclass_ownercheck(Oid opc_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(CLAOID, ObjectIdGetDatum(opc_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("operator class with OID %u does not exist",
-						opc_oid)));
-
-	ownerId = ((Form_pg_opclass) GETSTRUCT(tuple))->opcowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for an operator family (specified by OID).
- */
-bool
-pg_opfamily_ownercheck(Oid opf_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(OPFAMILYOID, ObjectIdGetDatum(opf_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("operator family with OID %u does not exist",
-						opf_oid)));
-
-	ownerId = ((Form_pg_opfamily) GETSTRUCT(tuple))->opfowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a text search dictionary (specified by OID).
- */
-bool
-pg_ts_dict_ownercheck(Oid dict_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(TSDICTOID, ObjectIdGetDatum(dict_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("text search dictionary with OID %u does not exist",
-						dict_oid)));
-
-	ownerId = ((Form_pg_ts_dict) GETSTRUCT(tuple))->dictowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a text search configuration (specified by OID).
- */
-bool
-pg_ts_config_ownercheck(Oid cfg_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(TSCONFIGOID, ObjectIdGetDatum(cfg_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("text search configuration with OID %u does not exist",
-						cfg_oid)));
-
-	ownerId = ((Form_pg_ts_config) GETSTRUCT(tuple))->cfgowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a foreign-data wrapper (specified by OID).
- */
-bool
-pg_foreign_data_wrapper_ownercheck(Oid srv_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(FOREIGNDATAWRAPPEROID, ObjectIdGetDatum(srv_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("foreign-data wrapper with OID %u does not exist",
-						srv_oid)));
-
-	ownerId = ((Form_pg_foreign_data_wrapper) GETSTRUCT(tuple))->fdwowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a foreign server (specified by OID).
- */
-bool
-pg_foreign_server_ownercheck(Oid srv_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(FOREIGNSERVEROID, ObjectIdGetDatum(srv_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("foreign server with OID %u does not exist",
-						srv_oid)));
-
-	ownerId = ((Form_pg_foreign_server) GETSTRUCT(tuple))->srvowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for an event trigger (specified by OID).
- */
-bool
-pg_event_trigger_ownercheck(Oid et_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(EVENTTRIGGEROID, ObjectIdGetDatum(et_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("event trigger with OID %u does not exist",
-						et_oid)));
-
-	ownerId = ((Form_pg_event_trigger) GETSTRUCT(tuple))->evtowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a database (specified by OID).
- */
-bool
-pg_database_ownercheck(Oid db_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			dba;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(DATABASEOID, ObjectIdGetDatum(db_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_DATABASE),
-				 errmsg("database with OID %u does not exist", db_oid)));
-
-	dba = ((Form_pg_database) GETSTRUCT(tuple))->datdba;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, dba);
-}
-
-/*
- * Ownership check for a collation (specified by OID).
- */
-bool
-pg_collation_ownercheck(Oid coll_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(COLLOID, ObjectIdGetDatum(coll_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("collation with OID %u does not exist", coll_oid)));
-
-	ownerId = ((Form_pg_collation) GETSTRUCT(tuple))->collowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a conversion (specified by OID).
- */
-bool
-pg_conversion_ownercheck(Oid conv_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(CONVOID, ObjectIdGetDatum(conv_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("conversion with OID %u does not exist", conv_oid)));
-
-	ownerId = ((Form_pg_conversion) GETSTRUCT(tuple))->conowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for an extension (specified by OID).
- */
-bool
-pg_extension_ownercheck(Oid ext_oid, Oid roleid)
-{
-	Relation	pg_extension;
-	ScanKeyData entry[1];
-	SysScanDesc scan;
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	/* There's no syscache for pg_extension, so do it the hard way */
-	pg_extension = heap_open(ExtensionRelationId, AccessShareLock);
-
-	ScanKeyInit(&entry[0],
-				ObjectIdAttributeNumber,
-				BTEqualStrategyNumber, F_OIDEQ,
-				ObjectIdGetDatum(ext_oid));
-
-	scan = systable_beginscan(pg_extension,
-							  ExtensionOidIndexId, true,
-							  NULL, 1, entry);
-
-	tuple = systable_getnext(scan);
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("extension with OID %u does not exist", ext_oid)));
-
-	ownerId = ((Form_pg_extension) GETSTRUCT(tuple))->extowner;
-
-	systable_endscan(scan);
-	heap_close(pg_extension, AccessShareLock);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a publication (specified by OID).
- */
-bool
-pg_publication_ownercheck(Oid pub_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(PUBLICATIONOID, ObjectIdGetDatum(pub_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("publication with OID %u does not exist", pub_oid)));
-
-	ownerId = ((Form_pg_publication) GETSTRUCT(tuple))->pubowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a subscription (specified by OID).
- */
-bool
-pg_subscription_ownercheck(Oid sub_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(SUBSCRIPTIONOID, ObjectIdGetDatum(sub_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("subscription with OID %u does not exist", sub_oid)));
-
-	ownerId = ((Form_pg_subscription) GETSTRUCT(tuple))->subowner;
-
-	ReleaseSysCache(tuple);
-
-	return has_privs_of_role(roleid, ownerId);
-}
-
-/*
- * Ownership check for a statistics object (specified by OID).
- */
-bool
-pg_statistics_object_ownercheck(Oid stat_oid, Oid roleid)
-{
-	HeapTuple	tuple;
-	Oid			ownerId;
-
-	/* Superusers bypass all permission checking. */
-	if (superuser_arg(roleid))
-		return true;
-
-	tuple = SearchSysCache1(STATEXTOID, ObjectIdGetDatum(stat_oid));
-	if (!HeapTupleIsValid(tuple))
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("statistics object with OID %u does not exist",
-						stat_oid)));
-
-	ownerId = ((Form_pg_statistic_ext) GETSTRUCT(tuple))->stxowner;
-
-	ReleaseSysCache(tuple);
+	{
+		/* for catalogs without an appropriate syscache */
+		Relation	rel;
+		ScanKeyData entry[1];
+		SysScanDesc scan;
+		HeapTuple	tuple;
+		bool		isnull;
+
+		rel = table_open(classid, AccessShareLock);
+
+		ScanKeyInit(&entry[0],
+					get_object_attnum_oid(classid),
+					BTEqualStrategyNumber, F_OIDEQ,
+					ObjectIdGetDatum(objectid));
+
+		scan = systable_beginscan(rel,
+								  get_object_oid_index(classid), true,
+								  NULL, 1, entry);
+
+		tuple = systable_getnext(scan);
+		if (!HeapTupleIsValid(tuple))
+			ereport(ERROR,
+					(errcode(ERRCODE_UNDEFINED_OBJECT),
+					 errmsg("%s with OID %u does not exist", get_object_class_descr(classid), objectid)));
+
+		ownerId = DatumGetObjectId(heap_getattr(tuple,
+												get_object_attnum_owner(classid),
+												RelationGetDescr(rel),
+												&isnull));
+		Assert(!isnull);
+
+		systable_endscan(scan);
+		table_close(rel, AccessShareLock);
+	}
 
 	return has_privs_of_role(roleid, ownerId);
 }
@@ -5552,9 +4218,6 @@ recordDependencyOnNewAcl(Oid classId, Oid objectId, int32 objsubId,
  *
  * For the object passed in, this will record its ACL (if any) and the ACLs of
  * any sub-objects (eg: columns) into pg_init_privs.
- *
- * Any new kinds of objects which have ACLs associated with them and can be
- * added to an extension should be added to the if-else tree below.
  */
 void
 recordExtObjInitPriv(Oid objoid, Oid classoid)
@@ -5578,19 +4241,22 @@ recordExtObjInitPriv(Oid objoid, Oid classoid)
 			elog(ERROR, "cache lookup failed for relation %u", objoid);
 		pg_class_tuple = (Form_pg_class) GETSTRUCT(tuple);
 
-		/* Indexes don't have permissions */
+		/*
+		 * Indexes don't have permissions, neither do the pg_class rows for
+		 * composite types.  (These cases are unreachable given the
+		 * restrictions in ALTER EXTENSION ADD, but let's check anyway.)
+		 */
 		if (pg_class_tuple->relkind == RELKIND_INDEX ||
-			pg_class_tuple->relkind == RELKIND_PARTITIONED_INDEX)
+			pg_class_tuple->relkind == RELKIND_PARTITIONED_INDEX ||
+			pg_class_tuple->relkind == RELKIND_COMPOSITE_TYPE)
+		{
+			ReleaseSysCache(tuple);
 			return;
-
-		/* Composite types don't have permissions either */
-		if (pg_class_tuple->relkind == RELKIND_COMPOSITE_TYPE)
-			return;
+		}
 
 		/*
-		 * If this isn't a sequence, index, or composite type then it's
-		 * possibly going to have columns associated with it that might have
-		 * ACLs.
+		 * If this isn't a sequence then it's possibly going to have
+		 * column-level ACLs associated with it.
 		 */
 		if (pg_class_tuple->relkind != RELKIND_SEQUENCE)
 		{
@@ -5644,77 +4310,9 @@ recordExtObjInitPriv(Oid objoid, Oid classoid)
 
 		ReleaseSysCache(tuple);
 	}
-	/* pg_foreign_data_wrapper */
-	else if (classoid == ForeignDataWrapperRelationId)
+	else if (classoid == LargeObjectRelationId)
 	{
-		Datum		aclDatum;
-		bool		isNull;
-		HeapTuple	tuple;
-
-		tuple = SearchSysCache1(FOREIGNDATAWRAPPEROID,
-								ObjectIdGetDatum(objoid));
-		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for foreign data wrapper %u",
-				 objoid);
-
-		aclDatum = SysCacheGetAttr(FOREIGNDATAWRAPPEROID, tuple,
-								   Anum_pg_foreign_data_wrapper_fdwacl,
-								   &isNull);
-
-		/* Add the record, if any, for the top-level object */
-		if (!isNull)
-			recordExtensionInitPrivWorker(objoid, classoid, 0,
-										  DatumGetAclP(aclDatum));
-
-		ReleaseSysCache(tuple);
-	}
-	/* pg_foreign_server */
-	else if (classoid == ForeignServerRelationId)
-	{
-		Datum		aclDatum;
-		bool		isNull;
-		HeapTuple	tuple;
-
-		tuple = SearchSysCache1(FOREIGNSERVEROID, ObjectIdGetDatum(objoid));
-		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for foreign data wrapper %u",
-				 objoid);
-
-		aclDatum = SysCacheGetAttr(FOREIGNSERVEROID, tuple,
-								   Anum_pg_foreign_server_srvacl,
-								   &isNull);
-
-		/* Add the record, if any, for the top-level object */
-		if (!isNull)
-			recordExtensionInitPrivWorker(objoid, classoid, 0,
-										  DatumGetAclP(aclDatum));
-
-		ReleaseSysCache(tuple);
-	}
-	/* pg_language */
-	else if (classoid == LanguageRelationId)
-	{
-		Datum		aclDatum;
-		bool		isNull;
-		HeapTuple	tuple;
-
-		tuple = SearchSysCache1(LANGOID, ObjectIdGetDatum(objoid));
-		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for language %u", objoid);
-
-		aclDatum = SysCacheGetAttr(LANGOID, tuple, Anum_pg_language_lanacl,
-								   &isNull);
-
-		/* Add the record, if any, for the top-level object */
-		if (!isNull)
-			recordExtensionInitPrivWorker(objoid, classoid, 0,
-										  DatumGetAclP(aclDatum));
-
-		ReleaseSysCache(tuple);
-	}
-	/* pg_largeobject_metadata */
-	else if (classoid == LargeObjectMetadataRelationId)
-	{
+		/* For large objects, we must consult pg_largeobject_metadata */
 		Datum		aclDatum;
 		bool		isNull;
 		HeapTuple	tuple;
@@ -5722,11 +4320,16 @@ recordExtObjInitPriv(Oid objoid, Oid classoid)
 		SysScanDesc scan;
 		Relation	relation;
 
-		relation = heap_open(LargeObjectMetadataRelationId, RowExclusiveLock);
+		/*
+		 * Note: this is dead code, given that we don't allow large objects to
+		 * be made extension members.  But it seems worth carrying in case
+		 * some future caller of this function has need for it.
+		 */
+		relation = table_open(LargeObjectMetadataRelationId, RowExclusiveLock);
 
 		/* There's no syscache for pg_largeobject_metadata */
 		ScanKeyInit(&entry[0],
-					ObjectIdAttributeNumber,
+					Anum_pg_largeobject_metadata_oid,
 					BTEqualStrategyNumber, F_OIDEQ,
 					ObjectIdGetDatum(objoid));
 
@@ -5749,39 +4352,21 @@ recordExtObjInitPriv(Oid objoid, Oid classoid)
 
 		systable_endscan(scan);
 	}
-	/* pg_namespace */
-	else if (classoid == NamespaceRelationId)
+	/* This will error on unsupported classoid. */
+	else if (get_object_attnum_acl(classoid) != InvalidAttrNumber)
 	{
 		Datum		aclDatum;
 		bool		isNull;
 		HeapTuple	tuple;
 
-		tuple = SearchSysCache1(NAMESPACEOID, ObjectIdGetDatum(objoid));
+		tuple = SearchSysCache1(get_object_catcache_oid(classoid),
+								ObjectIdGetDatum(objoid));
 		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for function %u", objoid);
+			elog(ERROR, "cache lookup failed for %s %u",
+				 get_object_class_descr(classoid), objoid);
 
-		aclDatum = SysCacheGetAttr(NAMESPACEOID, tuple,
-								   Anum_pg_namespace_nspacl, &isNull);
-
-		/* Add the record, if any, for the top-level object */
-		if (!isNull)
-			recordExtensionInitPrivWorker(objoid, classoid, 0,
-										  DatumGetAclP(aclDatum));
-
-		ReleaseSysCache(tuple);
-	}
-	/* pg_proc */
-	else if (classoid == ProcedureRelationId)
-	{
-		Datum		aclDatum;
-		bool		isNull;
-		HeapTuple	tuple;
-
-		tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(objoid));
-		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for function %u", objoid);
-
-		aclDatum = SysCacheGetAttr(PROCOID, tuple, Anum_pg_proc_proacl,
+		aclDatum = SysCacheGetAttr(get_object_catcache_oid(classoid), tuple,
+								   get_object_attnum_acl(classoid),
 								   &isNull);
 
 		/* Add the record, if any, for the top-level object */
@@ -5790,55 +4375,6 @@ recordExtObjInitPriv(Oid objoid, Oid classoid)
 										  DatumGetAclP(aclDatum));
 
 		ReleaseSysCache(tuple);
-	}
-	/* pg_type */
-	else if (classoid == TypeRelationId)
-	{
-		Datum		aclDatum;
-		bool		isNull;
-		HeapTuple	tuple;
-
-		tuple = SearchSysCache1(TYPEOID, ObjectIdGetDatum(objoid));
-		if (!HeapTupleIsValid(tuple))
-			elog(ERROR, "cache lookup failed for function %u", objoid);
-
-		aclDatum = SysCacheGetAttr(TYPEOID, tuple, Anum_pg_type_typacl,
-								   &isNull);
-
-		/* Add the record, if any, for the top-level object */
-		if (!isNull)
-			recordExtensionInitPrivWorker(objoid, classoid, 0,
-										  DatumGetAclP(aclDatum));
-
-		ReleaseSysCache(tuple);
-	}
-	else if (classoid == AccessMethodRelationId ||
-			 classoid == AggregateRelationId ||
-			 classoid == CastRelationId ||
-			 classoid == CollationRelationId ||
-			 classoid == ConversionRelationId ||
-			 classoid == EventTriggerRelationId ||
-			 classoid == OperatorRelationId ||
-			 classoid == OperatorClassRelationId ||
-			 classoid == OperatorFamilyRelationId ||
-			 classoid == NamespaceRelationId ||
-			 classoid == TSConfigRelationId ||
-			 classoid == TSDictionaryRelationId ||
-			 classoid == TSParserRelationId ||
-			 classoid == TSTemplateRelationId ||
-			 classoid == TransformRelationId
-		)
-	{
-		/* no ACL for these object types, so do nothing. */
-	}
-
-	/*
-	 * complain if we are given a class OID for a class that extensions don't
-	 * support or that we don't recognize.
-	 */
-	else
-	{
-		elog(ERROR, "unrecognized or unsupported class OID: %u", classoid);
 	}
 }
 
@@ -5864,19 +4400,22 @@ removeExtObjInitPriv(Oid objoid, Oid classoid)
 			elog(ERROR, "cache lookup failed for relation %u", objoid);
 		pg_class_tuple = (Form_pg_class) GETSTRUCT(tuple);
 
-		/* Indexes don't have permissions */
+		/*
+		 * Indexes don't have permissions, neither do the pg_class rows for
+		 * composite types.  (These cases are unreachable given the
+		 * restrictions in ALTER EXTENSION DROP, but let's check anyway.)
+		 */
 		if (pg_class_tuple->relkind == RELKIND_INDEX ||
-			pg_class_tuple->relkind == RELKIND_PARTITIONED_INDEX)
+			pg_class_tuple->relkind == RELKIND_PARTITIONED_INDEX ||
+			pg_class_tuple->relkind == RELKIND_COMPOSITE_TYPE)
+		{
+			ReleaseSysCache(tuple);
 			return;
-
-		/* Composite types don't have permissions either */
-		if (pg_class_tuple->relkind == RELKIND_COMPOSITE_TYPE)
-			return;
+		}
 
 		/*
-		 * If this isn't a sequence, index, or composite type then it's
-		 * possibly going to have columns associated with it that might have
-		 * ACLs.
+		 * If this isn't a sequence then it's possibly going to have
+		 * column-level ACLs associated with it.
 		 */
 		if (pg_class_tuple->relkind != RELKIND_SEQUENCE)
 		{
@@ -5964,7 +4503,7 @@ recordExtensionInitPrivWorker(Oid objoid, Oid classoid, int objsubid, Acl *new_a
 	HeapTuple	tuple;
 	HeapTuple	oldtuple;
 
-	relation = heap_open(InitPrivsRelationId, RowExclusiveLock);
+	relation = table_open(InitPrivsRelationId, RowExclusiveLock);
 
 	ScanKeyInit(&key[0],
 				Anum_pg_init_privs_objoid,
@@ -5988,17 +4527,13 @@ recordExtensionInitPrivWorker(Oid objoid, Oid classoid, int objsubid, Acl *new_a
 	/* If we find an entry, update it with the latest ACL. */
 	if (HeapTupleIsValid(oldtuple))
 	{
-		Datum		values[Natts_pg_init_privs];
-		bool		nulls[Natts_pg_init_privs];
-		bool		replace[Natts_pg_init_privs];
+		Datum		values[Natts_pg_init_privs] = {0};
+		bool		nulls[Natts_pg_init_privs] = {0};
+		bool		replace[Natts_pg_init_privs] = {0};
 
 		/* If we have a new ACL to set, then update the row with it. */
 		if (new_acl)
 		{
-			MemSet(values, 0, sizeof(values));
-			MemSet(nulls, false, sizeof(nulls));
-			MemSet(replace, false, sizeof(replace));
-
 			values[Anum_pg_init_privs_initprivs - 1] = PointerGetDatum(new_acl);
 			replace[Anum_pg_init_privs_initprivs - 1] = true;
 
@@ -6015,8 +4550,8 @@ recordExtensionInitPrivWorker(Oid objoid, Oid classoid, int objsubid, Acl *new_a
 	}
 	else
 	{
-		Datum		values[Natts_pg_init_privs];
-		bool		nulls[Natts_pg_init_privs];
+		Datum		values[Natts_pg_init_privs] = {0};
+		bool		nulls[Natts_pg_init_privs] = {0};
 
 		/*
 		 * Only add a new entry if the new ACL is non-NULL.
@@ -6027,8 +4562,6 @@ recordExtensionInitPrivWorker(Oid objoid, Oid classoid, int objsubid, Acl *new_a
 		if (new_acl)
 		{
 			/* No entry found, so add it. */
-			MemSet(nulls, false, sizeof(nulls));
-
 			values[Anum_pg_init_privs_objoid - 1] = ObjectIdGetDatum(objoid);
 			values[Anum_pg_init_privs_classoid - 1] = ObjectIdGetDatum(classoid);
 			values[Anum_pg_init_privs_objsubid - 1] = Int32GetDatum(objsubid);
@@ -6050,5 +4583,5 @@ recordExtensionInitPrivWorker(Oid objoid, Oid classoid, int objsubid, Acl *new_a
 	/* prevent error when processing objects multiple times */
 	CommandCounterIncrement();
 
-	heap_close(relation, RowExclusiveLock);
+	table_close(relation, RowExclusiveLock);
 }

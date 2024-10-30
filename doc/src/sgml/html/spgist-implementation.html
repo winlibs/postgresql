@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>65.4. Implementation</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="spgist-extensibility.html" title="65.3. Extensibility" /><link rel="next" href="spgist-examples.html" title="65.5. Examples" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">65.4. Implementation</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="spgist-extensibility.html" title="65.3. Extensibility">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="spgist.html" title="Chapter 65. SP-GiST Indexes">Up</a></td><th width="60%" align="center">Chapter 65. SP-GiST Indexes</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="spgist-examples.html" title="65.5. Examples">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="SPGIST-IMPLEMENTATION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">65.4. Implementation</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="spgist-implementation.html#SPGIST-LIMITS">65.4.1. SP-GiST Limits</a></span></dt><dt><span class="sect2"><a href="spgist-implementation.html#SPGIST-NULL-LABELS">65.4.2. SP-GiST Without Node Labels</a></span></dt><dt><span class="sect2"><a href="spgist-implementation.html#SPGIST-ALL-THE-SAME">65.4.3. <span class="quote">“<span class="quote">All-the-same</span>”</span> Inner Tuples</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>69.4. Implementation</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="spgist-extensibility.html" title="69.3. Extensibility" /><link rel="next" href="spgist-examples.html" title="69.5. Examples" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">69.4. Implementation</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="spgist-extensibility.html" title="69.3. Extensibility">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="spgist.html" title="Chapter 69. SP-GiST Indexes">Up</a></td><th width="60%" align="center">Chapter 69. SP-GiST Indexes</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="spgist-examples.html" title="69.5. Examples">Next</a></td></tr></table><hr /></div><div class="sect1" id="SPGIST-IMPLEMENTATION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">69.4. Implementation <a href="#SPGIST-IMPLEMENTATION" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="spgist-implementation.html#SPGIST-LIMITS">69.4.1. SP-GiST Limits</a></span></dt><dt><span class="sect2"><a href="spgist-implementation.html#SPGIST-NULL-LABELS">69.4.2. SP-GiST Without Node Labels</a></span></dt><dt><span class="sect2"><a href="spgist-implementation.html#SPGIST-ALL-THE-SAME">69.4.3. <span class="quote">“<span class="quote">All-the-Same</span>”</span> Inner Tuples</a></span></dt></dl></div><p>
    This section covers implementation details and other tricks that are
    useful for implementers of <acronym class="acronym">SP-GiST</acronym> operator classes to
    know.
-  </p><div class="sect2" id="SPGIST-LIMITS"><div class="titlepage"><div><div><h3 class="title">65.4.1. SP-GiST Limits</h3></div></div></div><p>
+  </p><div class="sect2" id="SPGIST-LIMITS"><div class="titlepage"><div><div><h3 class="title">69.4.1. SP-GiST Limits <a href="#SPGIST-LIMITS" class="id_link">#</a></h3></div></div></div><p>
    Individual leaf tuples and inner tuples must fit on a single index page
    (8kB by default).  Therefore, when indexing values of variable-length
    data types, long values can only be supported by methods such as radix
@@ -29,8 +29,18 @@
    tuple <span class="emphasis"><em>must</em></span> divide the set of leaf values into more than one
    node group.  If the operator class's <code class="function">picksplit</code> function
    fails to do that, the <acronym class="acronym">SP-GiST</acronym> core resorts to
-   extraordinary measures described in <a class="xref" href="spgist-implementation.html#SPGIST-ALL-THE-SAME" title="65.4.3. “All-the-same” Inner Tuples">Section 65.4.3</a>.
-  </p></div><div class="sect2" id="SPGIST-NULL-LABELS"><div class="titlepage"><div><div><h3 class="title">65.4.2. SP-GiST Without Node Labels</h3></div></div></div><p>
+   extraordinary measures described in <a class="xref" href="spgist-implementation.html#SPGIST-ALL-THE-SAME" title="69.4.3. “All-the-Same” Inner Tuples">Section 69.4.3</a>.
+  </p><p>
+   When <code class="structfield">longValuesOK</code> is true, it is expected
+   that successive levels of the <acronym class="acronym">SP-GiST</acronym> tree will
+   absorb more and more information into the prefixes and node labels of
+   the inner tuples, making the required leaf datum smaller and smaller,
+   so that eventually it will fit on a page.
+   To prevent bugs in operator classes from causing infinite insertion
+   loops, the <acronym class="acronym">SP-GiST</acronym> core will raise an error if the
+   leaf datum does not become any smaller within ten cycles
+   of <code class="function">choose</code> method calls.
+  </p></div><div class="sect2" id="SPGIST-NULL-LABELS"><div class="titlepage"><div><div><h3 class="title">69.4.2. SP-GiST Without Node Labels <a href="#SPGIST-NULL-LABELS" class="id_link">#</a></h3></div></div></div><p>
    Some tree algorithms use a fixed set of nodes for each inner tuple;
    for example, in a quad-tree there are always exactly four nodes
    corresponding to the four quadrants around the inner tuple's centroid
@@ -49,7 +59,7 @@
    When working with an inner tuple having unlabeled nodes, it is an error
    for <code class="function">choose</code> to return <code class="literal">spgAddNode</code>, since the set
    of nodes is supposed to be fixed in such cases.
-  </p></div><div class="sect2" id="SPGIST-ALL-THE-SAME"><div class="titlepage"><div><div><h3 class="title">65.4.3. <span class="quote">“<span class="quote">All-the-same</span>”</span> Inner Tuples</h3></div></div></div><p>
+  </p></div><div class="sect2" id="SPGIST-ALL-THE-SAME"><div class="titlepage"><div><div><h3 class="title">69.4.3. <span class="quote">“<span class="quote">All-the-Same</span>”</span> Inner Tuples <a href="#SPGIST-ALL-THE-SAME" class="id_link">#</a></h3></div></div></div><p>
    The <acronym class="acronym">SP-GiST</acronym> core can override the results of the
    operator class's <code class="function">picksplit</code> function when
    <code class="function">picksplit</code> fails to divide the supplied leaf values into
@@ -77,4 +87,4 @@
    all equivalent.  This may or may not require any special-case code,
    depending on how much the <code class="function">inner_consistent</code> function normally
    assumes about the meaning of the nodes.
-  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="spgist-extensibility.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="spgist.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="spgist-examples.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">65.3. Extensibility </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 65.5. Examples</td></tr></table></div></body></html>
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="spgist-extensibility.html" title="69.3. Extensibility">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="spgist.html" title="Chapter 69. SP-GiST Indexes">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="spgist-examples.html" title="69.5. Examples">Next</a></td></tr><tr><td width="40%" align="left" valign="top">69.3. Extensibility </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 69.5. Examples</td></tr></table></div></body></html>

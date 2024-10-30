@@ -55,6 +55,9 @@ SELECT * FROM temptest;
 
 CREATE TEMP TABLE temptest(col int) ON COMMIT DELETE ROWS;
 
+-- while we're here, verify successful truncation of index with SQL function
+CREATE INDEX ON temptest(bit_length(''));
+
 BEGIN;
 INSERT INTO temptest VALUES (1);
 INSERT INTO temptest VALUES (2);
@@ -92,6 +95,22 @@ SELECT * FROM temptest;
 
 BEGIN;
 CREATE TEMP TABLE temptest(col) ON COMMIT DROP AS SELECT 1;
+
+SELECT * FROM temptest;
+COMMIT;
+
+SELECT * FROM temptest;
+
+-- Test it with a CHECK condition that produces a toasted pg_constraint entry
+BEGIN;
+do $$
+begin
+  execute format($cmd$
+    CREATE TEMP TABLE temptest (col text CHECK (col < %L)) ON COMMIT DROP
+  $cmd$,
+    (SELECT string_agg(g.i::text || ':' || random()::text, '|')
+     FROM generate_series(1, 100) g(i)));
+end$$;
 
 SELECT * FROM temptest;
 COMMIT;
@@ -152,6 +171,17 @@ select pg_temp.whoami();
 
 drop table public.whereami;
 
+-- types in temp schema
+set search_path = pg_temp, public;
+create domain pg_temp.nonempty as text check (value <> '');
+-- function-syntax invocation of types matches rules for functions
+select nonempty('');
+select pg_temp.nonempty('');
+-- other syntax matches rules for tables
+select ''::nonempty;
+
+reset search_path;
+
 -- For partitioned temp tables, ON COMMIT actions ignore storage-less
 -- partitioned tables.
 begin;
@@ -181,7 +211,7 @@ create temp table temp_parted_oncommit_test2
 insert into temp_parted_oncommit_test values (1), (2);
 commit;
 -- no relations remain in this case.
-select relname from pg_class where relname like 'temp_parted_oncommit_test%';
+select relname from pg_class where relname ~ '^temp_parted_oncommit_test';
 -- Using ON COMMIT DELETE on a partitioned table does not remove
 -- all rows if partitions preserve their data.
 begin;
@@ -199,7 +229,8 @@ commit;
 -- preserved.
 select * from temp_parted_oncommit_test;
 -- two relations remain in this case.
-select relname from pg_class where relname like 'temp_parted_oncommit_test%';
+select relname from pg_class where relname ~ '^temp_parted_oncommit_test'
+  order by relname;
 drop table temp_parted_oncommit_test;
 
 -- Check dependencies between ON COMMIT actions with inheritance trees.
@@ -211,7 +242,7 @@ create temp table temp_inh_oncommit_test1 ()
 insert into temp_inh_oncommit_test1 values (1);
 commit;
 -- no relations remain in this case
-select relname from pg_class where relname like 'temp_inh_oncommit_test%';
+select relname from pg_class where relname ~ '^temp_inh_oncommit_test';
 -- Data on the parent is removed, and the child goes away.
 begin;
 create temp table temp_inh_oncommit_test (a int) on commit delete rows;
@@ -222,7 +253,7 @@ insert into temp_inh_oncommit_test values (1);
 commit;
 select * from temp_inh_oncommit_test;
 -- one relation remains
-select relname from pg_class where relname like 'temp_inh_oncommit_test%';
+select relname from pg_class where relname ~ '^temp_inh_oncommit_test';
 drop table temp_inh_oncommit_test;
 
 -- Tests with two-phase commit
@@ -274,11 +305,8 @@ prepare transaction 'twophase_tab';
 
 -- Corner case: current_schema may create a temporary schema if namespace
 -- creation is pending, so check after that.  First reset the connection
--- to remove the temporary namespace, and make sure that non-parallel plans
--- are used.
+-- to remove the temporary namespace.
 \c -
-SET max_parallel_workers = 0;
-SET max_parallel_workers_per_gather = 0;
 SET search_path TO 'pg_temp';
 BEGIN;
 SELECT current_schema() ~ 'pg_temp' AS is_temp_schema;

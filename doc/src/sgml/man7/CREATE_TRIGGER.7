@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE TRIGGER
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATE TRIGGER" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE TRIGGER" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ CREATE_TRIGGER \- define a new trigger
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE [ CONSTRAINT ] TRIGGER \fIname\fR { BEFORE | AFTER | INSTEAD OF } { \fIevent\fR [ OR \&.\&.\&. ] }
+CREATE [ OR REPLACE ] [ CONSTRAINT ] TRIGGER \fIname\fR { BEFORE | AFTER | INSTEAD OF } { \fIevent\fR [ OR \&.\&.\&. ] }
     ON \fItable_name\fR
     [ FROM \fIreferenced_table_name\fR ]
     [ NOT DEFERRABLE | [ DEFERRABLE ] [ INITIALLY IMMEDIATE | INITIALLY DEFERRED ] ]
@@ -51,9 +51,14 @@ where \fIevent\fR can be one of:
 .SH "DESCRIPTION"
 .PP
 \fBCREATE TRIGGER\fR
-creates a new trigger\&. The trigger will be associated with the specified table, view, or foreign table and will execute the specified function
+creates a new trigger\&.
+\fBCREATE OR REPLACE TRIGGER\fR
+will either create a new trigger, or replace an existing trigger\&. The trigger will be associated with the specified table, view, or foreign table and will execute the specified function
 \fIfunction_name\fR
 when certain operations are performed on that table\&.
+.PP
+To replace the current definition of an existing trigger, use
+\fBCREATE OR REPLACE TRIGGER\fR, specifying the existing trigger\*(Aqs name and parent table\&. All other properties are replaced\&.
 .PP
 The trigger can be specified to fire before the operation is attempted on a row (before constraints are checked and the
 \fBINSERT\fR,
@@ -131,7 +136,7 @@ T}
 T}:T{
 \(em
 T}:T{
-Tables
+Tables and foreign tables
 T}
 T{
 AFTER
@@ -147,7 +152,7 @@ T}
 T}:T{
 \(em
 T}:T{
-Tables
+Tables and foreign tables
 T}
 T{
 INSTEAD OF
@@ -181,8 +186,9 @@ If multiple triggers of the same kind are defined for the same event, they will 
 When the
 CONSTRAINT
 option is specified, this command creates a
-constraint trigger\&. This is the same as a regular trigger except that the timing of the trigger firing can be adjusted using
-SET CONSTRAINTS (\fBSET_CONSTRAINTS\fR(7))\&. Constraint triggers must be
+constraint trigger\&.
+This is the same as a regular trigger except that the timing of the trigger firing can be adjusted using
+\fBSET CONSTRAINTS\fR\&. Constraint triggers must be
 AFTER ROW
 triggers on plain tables (not foreign tables)\&. They can be fired either at the end of the statement causing the triggering event, or at the end of the containing transaction; in the latter case they are said to be
 deferred\&. A pending deferred\-trigger firing can also be forced to happen immediately by using
@@ -266,7 +272,8 @@ UPDATE OF \fIcolumn_name1\fR [, \fIcolumn_name2\fR \&.\&.\&. ]
 .sp
 The trigger will only fire if at least one of the listed columns is mentioned as a target of the
 \fBUPDATE\fR
-command\&.
+command or if one of the listed columns is a generated column that depends on a column that is the target of the
+\fBUPDATE\fR\&.
 .sp
 INSTEAD OF UPDATE
 events do not allow a list of columns\&. A column list cannot be specified when requesting transition relations, either\&.
@@ -381,15 +388,21 @@ An optional comma\-separated list of arguments to be provided to the function wh
 .RE
 .SH "NOTES"
 .PP
-To create a trigger on a table, the user must have the
+To create or replace a trigger on a table, the user must have the
 TRIGGER
 privilege on the table\&. The user must also have
 EXECUTE
 privilege on the trigger function\&.
 .PP
 Use
-DROP TRIGGER (\fBDROP_TRIGGER\fR(7))
+\fBDROP TRIGGER\fR
 to remove a trigger\&.
+.PP
+Creating a row\-level trigger on a partitioned table will cause an identical
+\(lqclone\(rq
+trigger to be created on each of its existing partitions; and any partitions created or attached later will have an identical trigger, too\&. If there is a conflictingly\-named trigger on a child partition already, an error occurs unless
+\fBCREATE OR REPLACE TRIGGER\fR
+is used, in which case that trigger is replaced with a clone trigger\&. When a partition is detached from its parent, its clone triggers are removed\&.
 .PP
 A column\-specific trigger (one defined using the
 UPDATE OF \fIcolumn_name\fR
@@ -419,7 +432,7 @@ WHEN
 condition is not allowed to examine the system columns of the
 NEW
 row (such as
-oid), because those won\*(Aqt have been set yet\&.
+ctid), because those won\*(Aqt have been set yet\&.
 .PP
 In an
 AFTER
@@ -444,7 +457,7 @@ trigger will see only the updated rows\&.
 Row updates or deletions caused by foreign\-key enforcement actions, such as
 ON UPDATE CASCADE
 or
-ON DELETE SET NULL, are treated as part of the SQL command that caused them (note that such actions are never deferred)\&. Relevant triggers on the affected table will be fired, so that this provides another way in which a SQL command might fire triggers not directly matching its type\&. In simple cases, triggers that request transition relations will see all changes caused in their table by a single original SQL command as a single transition relation\&. However, there are cases in which the presence of an
+ON DELETE SET NULL, are treated as part of the SQL command that caused them (note that such actions are never deferred)\&. Relevant triggers on the affected table will be fired, so that this provides another way in which an SQL command might fire triggers not directly matching its type\&. In simple cases, triggers that request transition relations will see all changes caused in their table by a single original SQL command as a single transition relation\&. However, there are cases in which the presence of an
 AFTER ROW
 trigger that requests transition relations will cause the foreign\-key enforcement actions triggered by a single SQL command to be split into multiple steps, each with its own transition relation(s)\&. In such cases, any statement\-level triggers that are present will be fired once per creation of a transition relation set, ensuring that the triggers see each affected row in a transition relation once and only once\&.
 .PP
@@ -454,22 +467,21 @@ trigger\&. If the action is handled by an
 INSTEAD
 rule, then whatever statements are emitted by the rule are executed in place of the original statement naming the view, so that the triggers that will be fired are those on tables named in the replacement statements\&. Similarly, if the view is automatically updatable, then the action is handled by automatically rewriting the statement into an action on the view\*(Aqs base table, so that the base table\*(Aqs statement\-level triggers are the ones that are fired\&.
 .PP
-Creating a row\-level trigger on a partitioned table will cause identical triggers to be created in all its existing partitions; and any partitions created or attached later will contain an identical trigger, too\&. Triggers on partitioned tables may only be
-AFTER\&.
-.PP
 Modifying a partitioned table or a table with inheritance children fires statement\-level triggers attached to the explicitly named table, but not statement\-level triggers for its partitions or child tables\&. In contrast, row\-level triggers are fired on the rows in affected partitions or child tables, even if they are not explicitly named in the query\&. If a statement\-level trigger has been defined with transition relations named by a
 REFERENCING
-clause, then before and after images of rows are visible from all affected partitions or child tables\&. In the case of inheritance children, the row images include only columns that are present in the table that the trigger is attached to\&. Currently, row\-level triggers with transition relations cannot be defined on partitions or inheritance child tables\&.
+clause, then before and after images of rows are visible from all affected partitions or child tables\&. In the case of inheritance children, the row images include only columns that are present in the table that the trigger is attached to\&.
 .PP
-In
-PostgreSQL
-versions before 7\&.3, it was necessary to declare trigger functions as returning the placeholder type
-opaque, rather than
-trigger\&. To support loading of old dump files,
-\fBCREATE TRIGGER\fR
-will accept a function declared as returning
-opaque, but it will issue a notice and change the function\*(Aqs declared return type to
-trigger\&.
+Currently, row\-level triggers with transition relations cannot be defined on partitions or inheritance child tables\&. Also, triggers on partitioned tables may not be
+INSTEAD OF\&.
+.PP
+Currently, the
+OR REPLACE
+option is not supported for constraint triggers\&.
+.PP
+Replacing an existing trigger within a transaction that has already performed updating actions on the trigger\*(Aqs table is not recommended\&. Trigger firing decisions, or portions of firing decisions, that have already been made will not be reconsidered, so the effects could be surprising\&.
+.PP
+There are a few built\-in trigger functions that can be used to solve common problems without having to write your own trigger code; see
+Section\ \&9.28\&.
 .SH "EXAMPLES"
 .PP
 Execute the function
@@ -491,7 +503,7 @@ CREATE TRIGGER check_update
 .RE
 .\}
 .sp
-The same, but only execute the function if column
+Modify that trigger definition to only execute the function if column
 balance
 is specified as a target in the
 \fBUPDATE\fR
@@ -501,7 +513,7 @@ command:
 .RS 4
 .\}
 .nf
-CREATE TRIGGER check_update
+CREATE OR REPLACE TRIGGER check_update
     BEFORE UPDATE OF balance ON accounts
     FOR EACH ROW
     EXECUTE FUNCTION check_account_update();
@@ -696,6 +708,8 @@ is a
 PostgreSQL
 extension of the
 SQL
-standard\&.
+standard\&. So is the
+OR REPLACE
+option\&.
 .SH "SEE ALSO"
 ALTER TRIGGER (\fBALTER_TRIGGER\fR(7)), DROP TRIGGER (\fBDROP_TRIGGER\fR(7)), CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7)), SET CONSTRAINTS (\fBSET_CONSTRAINTS\fR(7))

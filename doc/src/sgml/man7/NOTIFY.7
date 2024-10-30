@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: NOTIFY
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "NOTIFY" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "NOTIFY" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -75,7 +75,7 @@ a notification once it has sent it to the client\&. So notification events are o
 \fBNOTIFY\fR
 for real\-time signaling should try to keep their transactions short\&.
 .PP
-If the same channel name is signaled multiple times from the same transaction with identical payload strings, the database server can decide to deliver a single notification only\&. On the other hand, notifications with distinct payload strings will always be delivered as distinct notifications\&. Similarly, notifications from different transactions will never get folded into one notification\&. Except for dropping later instances of duplicate notifications,
+If the same channel name is signaled multiple times with identical payload strings within the same transaction, only one instance of the notification event is delivered to listeners\&. On the other hand, notifications with distinct payload strings will always be delivered as distinct notifications\&. Similarly, notifications from different transactions will never get folded into one notification\&. Except for dropping later instances of duplicate notifications,
 \fBNOTIFY\fR
 guarantees that notifications from the same transaction get delivered in the order they were sent\&. It is also guaranteed that messages from different transactions are delivered in the order in which the transactions committed\&.
 .PP
@@ -111,7 +111,7 @@ and then enters a transaction for a very long time\&. Once the queue is half ful
 The function
 \fBpg_notification_queue_usage\fR
 returns the fraction of the queue that is currently occupied by pending notifications\&. See
-Section\ \&9.25
+Section\ \&9.26
 for more information\&.
 .PP
 A transaction that has executed

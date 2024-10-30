@@ -23,7 +23,7 @@ standard_targets = all install installdirs uninstall distprep clean distclean ma
 # these targets should recurse even into subdirectories not being built:
 standard_always_targets = distprep clean distclean maintainer-clean
 
-.PHONY: $(standard_targets) install-strip html man installcheck-parallel maintainer-check
+.PHONY: $(standard_targets) install-strip html man installcheck-parallel update-unicode
 
 # make `all' the default target
 all:
@@ -39,6 +39,8 @@ all:
 VERSION = @PACKAGE_VERSION@
 MAJORVERSION = @PG_MAJORVERSION@
 VERSION_NUM = @PG_VERSION_NUM@
+
+PACKAGE_URL = @PACKAGE_URL@
 
 # Set top_srcdir, srcdir, and VPATH.
 ifdef PGXS
@@ -73,9 +75,6 @@ endif
 endif # not PGXS
 
 vpathsearch = `for f in $(addsuffix /$(1),$(subst :, ,. $(VPATH))); do test -r $$f && echo $$f && break; done`
-
-# Saved arguments from configure
-configure_args = @configure_args@
 
 
 ##########################################################################
@@ -184,7 +183,8 @@ with_icu	= @with_icu@
 with_perl	= @with_perl@
 with_python	= @with_python@
 with_tcl	= @with_tcl@
-with_openssl	= @with_openssl@
+with_ssl	= @with_ssl@
+with_readline	= @with_readline@
 with_selinux	= @with_selinux@
 with_systemd	= @with_systemd@
 with_gssapi	= @with_gssapi@
@@ -203,7 +203,6 @@ enable_dtrace	= @enable_dtrace@
 enable_coverage	= @enable_coverage@
 enable_tap_tests	= @enable_tap_tests@
 enable_thread_safety	= @enable_thread_safety@
-enable_strong_random	= @enable_strong_random@
 
 python_includespec	= @python_includespec@
 python_libdir		= @python_libdir@
@@ -222,12 +221,10 @@ TCL_LIBS		= @TCL_LIBS@
 TCL_LIB_SPEC		= @TCL_LIB_SPEC@
 TCL_INCLUDE_SPEC	= @TCL_INCLUDE_SPEC@
 TCL_SHARED_BUILD	= @TCL_SHARED_BUILD@
-TCL_SHLIB_LD_LIBS	= @TCL_SHLIB_LD_LIBS@
 
 PTHREAD_CFLAGS		= @PTHREAD_CFLAGS@
 PTHREAD_LIBS		= @PTHREAD_LIBS@
 
-LLVM_CONFIG = @LLVM_CONFIG@
 LLVM_BINPATH = @LLVM_BINPATH@
 CLANG = @CLANG@
 BITCODE_CFLAGS = @BITCODE_CFLAGS@
@@ -259,9 +256,14 @@ GCC = @GCC@
 SUN_STUDIO_CC = @SUN_STUDIO_CC@
 CXX = @CXX@
 CFLAGS = @CFLAGS@
-CFLAGS_VECTOR = @CFLAGS_VECTOR@
-CFLAGS_SSE42 = @CFLAGS_SSE42@
-CFLAGS_ARMV8_CRC32C = @CFLAGS_ARMV8_CRC32C@
+CFLAGS_SL = @CFLAGS_SL@
+# *_MODULE are for flags applied to extension libraries
+CFLAGS_SL_MODULE = @CFLAGS_SL_MODULE@
+CXXFLAGS_SL_MODULE = @CXXFLAGS_SL_MODULE@
+CFLAGS_UNROLL_LOOPS = @CFLAGS_UNROLL_LOOPS@
+CFLAGS_VECTORIZE = @CFLAGS_VECTORIZE@
+CFLAGS_CRC = @CFLAGS_CRC@
+PERMIT_DECLARATION_AFTER_STATEMENT = @PERMIT_DECLARATION_AFTER_STATEMENT@
 CXXFLAGS = @CXXFLAGS@
 
 LLVM_CPPFLAGS = @LLVM_CPPFLAGS@
@@ -281,16 +283,12 @@ ZIC = @ZIC@
 # Linking
 
 AR = @AR@
-DLLTOOL = @DLLTOOL@
-DLLWRAP = @DLLWRAP@
+AROPT = crs
 LIBS = @LIBS@
 LDAP_LIBS_FE = @LDAP_LIBS_FE@
 LDAP_LIBS_BE = @LDAP_LIBS_BE@
 UUID_LIBS = @UUID_LIBS@
-UUID_EXTRA_OBJS = @UUID_EXTRA_OBJS@
 LLVM_LIBS=@LLVM_LIBS@
-LD = @LD@
-with_gnu_ld = @with_gnu_ld@
 
 # It's critical that within LDFLAGS, all -L switches pointing to build-tree
 # directories come before any -L switches pointing to external directories.
@@ -314,11 +312,9 @@ endif
 LDFLAGS = $(LDFLAGS_INTERNAL) @LDFLAGS@
 
 LDFLAGS_EX = @LDFLAGS_EX@
+LDFLAGS_EX_BE = @LDFLAGS_EX_BE@
 # LDFLAGS_SL might have already been assigned by calling makefile
 LDFLAGS_SL += @LDFLAGS_SL@
-LDREL = -r
-LDOUT = -o
-RANLIB = @RANLIB@
 WINDRES = @WINDRES@
 X = @EXEEXT@
 
@@ -343,12 +339,31 @@ LN_S	= @LN_S@
 MSGFMT  = @MSGFMT@
 MSGFMT_FLAGS = @MSGFMT_FLAGS@
 MSGMERGE = @MSGMERGE@
+OPENSSL	= @OPENSSL@
 PYTHON	= @PYTHON@
 TAR	= @TAR@
 XGETTEXT = @XGETTEXT@
 
 GZIP	= gzip
 BZIP2	= bzip2
+LZ4	= @LZ4@
+ZSTD	= @ZSTD@
+
+DOWNLOAD = wget -O $@ --no-use-server-timestamps
+#DOWNLOAD = curl -o $@
+
+
+# Unicode data information
+
+# Before each major release, update these and run make update-unicode.
+
+# Pick a release from here: <https://www.unicode.org/Public/>.  Note
+# that the most recent release listed there is often a pre-release;
+# don't pick that one, except for testing.
+UNICODE_VERSION = 15.0.0
+
+# Pick a release from here: <http://cldr.unicode.org/index/downloads>
+CLDR_VERSION = 43
 
 
 # Tree-wide build support
@@ -421,26 +436,55 @@ ld_library_path_var = LD_LIBRARY_PATH
 # need something more here. If not defined then the expansion does
 # nothing.
 with_temp_install = \
-	PATH="$(abs_top_builddir)/tmp_install$(bindir):$$PATH" \
+	PATH="$(abs_top_builddir)/tmp_install$(bindir):$(CURDIR):$$PATH" \
 	$(call add_to_path,$(strip $(ld_library_path_var)),$(abs_top_builddir)/tmp_install$(libdir)) \
 	$(with_temp_install_extra)
 
 ifeq ($(enable_tap_tests),yes)
 
+ifndef PGXS
 define prove_installcheck
-rm -rf '$(CURDIR)'/tmp_check
-$(MKDIR_P) '$(CURDIR)'/tmp_check
-cd $(srcdir) && TESTDIR='$(CURDIR)' PATH="$(bindir):$$PATH" PGPORT='6$(DEF_PGPORT)' top_builddir='$(CURDIR)/$(top_builddir)' PG_REGRESS='$(CURDIR)/$(top_builddir)/src/test/regress/pg_regress' REGRESS_SHLIB='$(abs_top_builddir)/src/test/regress/regress$(DLSUFFIX)' $(PROVE) $(PG_PROVE_FLAGS) $(PROVE_FLAGS) $(if $(PROVE_TESTS),$(PROVE_TESTS),t/*.pl)
+echo "# +++ tap install-check in $(subdir) +++" && \
+rm -rf '$(CURDIR)'/tmp_check && \
+$(MKDIR_P) '$(CURDIR)'/tmp_check && \
+cd $(srcdir) && \
+   TESTLOGDIR='$(CURDIR)/tmp_check/log' \
+   TESTDATADIR='$(CURDIR)/tmp_check' \
+   PATH="$(bindir):$(CURDIR):$$PATH" \
+   PGPORT='6$(DEF_PGPORT)' top_builddir='$(CURDIR)/$(top_builddir)' \
+   PG_REGRESS='$(CURDIR)/$(top_builddir)/src/test/regress/pg_regress' \
+   $(PROVE) $(PG_PROVE_FLAGS) $(PROVE_FLAGS) $(if $(PROVE_TESTS),$(PROVE_TESTS),t/*.pl)
 endef
+else # PGXS case
+define prove_installcheck
+echo "# +++ tap install-check in $(subdir) +++" && \
+rm -rf '$(CURDIR)'/tmp_check && \
+$(MKDIR_P) '$(CURDIR)'/tmp_check && \
+cd $(srcdir) && \
+   TESTLOGDIR='$(CURDIR)/tmp_check/log' \
+   TESTDATADIR='$(CURDIR)/tmp_check' \
+   PATH="$(bindir):$(CURDIR):$$PATH" \
+   PGPORT='6$(DEF_PGPORT)' \
+   PG_REGRESS='$(top_builddir)/src/test/regress/pg_regress' \
+   $(PROVE) $(PG_PROVE_FLAGS) $(PROVE_FLAGS) $(if $(PROVE_TESTS),$(PROVE_TESTS),t/*.pl)
+endef
+endif # PGXS
 
 define prove_check
-rm -rf '$(CURDIR)'/tmp_check
-$(MKDIR_P) '$(CURDIR)'/tmp_check
-cd $(srcdir) && TESTDIR='$(CURDIR)' $(with_temp_install) PGPORT='6$(DEF_PGPORT)' PG_REGRESS='$(CURDIR)/$(top_builddir)/src/test/regress/pg_regress' REGRESS_SHLIB='$(abs_top_builddir)/src/test/regress/regress$(DLSUFFIX)' $(PROVE) $(PG_PROVE_FLAGS) $(PROVE_FLAGS) $(if $(PROVE_TESTS),$(PROVE_TESTS),t/*.pl)
+echo "# +++ tap check in $(subdir) +++" && \
+rm -rf '$(CURDIR)'/tmp_check && \
+$(MKDIR_P) '$(CURDIR)'/tmp_check && \
+cd $(srcdir) && \
+   TESTLOGDIR='$(CURDIR)/tmp_check/log' \
+   TESTDATADIR='$(CURDIR)/tmp_check' \
+   $(with_temp_install) \
+   PGPORT='6$(DEF_PGPORT)' top_builddir='$(CURDIR)/$(top_builddir)' \
+   PG_REGRESS='$(CURDIR)/$(top_builddir)/src/test/regress/pg_regress' \
+   $(PROVE) $(PG_PROVE_FLAGS) $(PROVE_FLAGS) $(if $(PROVE_TESTS),$(PROVE_TESTS),t/*.pl)
 endef
 
 else
-prove_installcheck = @echo "TAP tests not enabled"
+prove_installcheck = @echo "TAP tests not enabled. Try configuring with --enable-tap-tests"
 prove_check = $(prove_installcheck)
 endif
 
@@ -481,11 +525,6 @@ GCOV = @GCOV@
 LCOV = @LCOV@
 GENHTML = @GENHTML@
 
-ifeq ($(enable_coverage),yes)
-# ccache loses .gcno files
-export CCACHE_DISABLE = 1
-endif
-
 # Feature settings
 
 DEF_PGPORT = @default_port@
@@ -506,18 +545,10 @@ host_tuple = @host@
 host_os = @host_os@
 host_cpu = @host_cpu@
 
-# Make HAVE_IPV6 available for initdb script creation
-HAVE_IPV6= @HAVE_IPV6@
-
-# This is mainly for use on FreeBSD, where we have both a.out and elf
-# systems now.  May be applicable to other systems to?
-ELF_SYSTEM= @ELF_SYS@
-
 # Backend stack size limit has to be hard-wired on Windows (it's in bytes)
 WIN32_STACK_RLIMIT=4194304
 
-# Set if we have a working win32 crashdump header
-have_win32_dbghelp = @have_win32_dbghelp@
+DLSUFFIX = @DLSUFFIX@
 
 # Pull in platform-specific magic
 include $(top_builddir)/src/Makefile.port
@@ -549,21 +580,39 @@ libpq_srcdir = $(top_srcdir)/src/interfaces/libpq
 libpq_builddir = $(top_builddir)/src/interfaces/libpq
 endif
 
-# This macro is for use by libraries linking to libpq.  (Because libpgport
-# isn't created with the same link flags as libpq, it can't be used.)
+# How to link to libpq.  (This macro may be used as-is by backend extensions.
+# Client-side code should go through libpq_pgport or libpq_pgport_shlib,
+# instead.)
 libpq = -L$(libpq_builddir) -lpq
 
-# This macro is for use by client executables (not libraries) that use libpq.
-# We force clients to pull symbols from the non-shared libraries libpgport
+# libpq_pgport is for use by client executables (not libraries) that use libpq.
+# We want clients to pull symbols from the non-shared libraries libpgport
 # and libpgcommon rather than pulling some libpgport symbols from libpq just
 # because libpq uses those functions too.  This makes applications less
 # dependent on changes in libpq's usage of pgport.  To do this we link to
 # pgport before libpq.  This does cause duplicate -lpgport's to appear
-# on client link lines.
-ifdef PGXS
+# on client link lines, since that also appears in $(LIBS).  On platforms
+# where we have symbol export control for libpq, the whole exercise is
+# unnecessary because libpq won't expose any of these symbols.  Currently,
+# only macOS warns about duplicate library references, so we only suppress
+# the duplicates on macOS.
+ifeq ($(PORTNAME),darwin)
+libpq_pgport = $(libpq)
+else ifdef PGXS
 libpq_pgport = -L$(libdir) -lpgcommon -lpgport $(libpq)
 else
 libpq_pgport = -L$(top_builddir)/src/common -lpgcommon -L$(top_builddir)/src/port -lpgport $(libpq)
+endif
+
+# libpq_pgport_shlib is the same idea, but for use in client shared libraries.
+# We need those clients to use the shlib variants.  (Ideally, users of this
+# macro would strip libpgport and libpgcommon from $(LIBS), but no harm is
+# done if they don't, since they will have satisfied all their references
+# from these libraries.)
+ifdef PGXS
+libpq_pgport_shlib = -L$(libdir) -lpgcommon_shlib -lpgport_shlib $(libpq)
+else
+libpq_pgport_shlib = -L$(top_builddir)/src/common -lpgcommon_shlib -L$(top_builddir)/src/port -lpgport_shlib $(libpq)
 endif
 
 # Cygwin seems to need ldap libraries to be mentioned here, too
@@ -597,19 +646,22 @@ submake-libpgfeutils: | submake-generated-headers
 
 ifneq ($(USE_MODULE_DB),)
   PL_TESTDB = pl_regression_$(NAME)
-  # Replace this with $(or ...) if we ever require GNU make 3.81.
   ifneq ($(MODULE_big),)
     CONTRIB_TESTDB=contrib_regression_$(MODULE_big)
+    ISOLATION_TESTDB=isolation_regression_$(MODULE_big)
   else
     ifneq ($(MODULES),)
       CONTRIB_TESTDB=contrib_regression_$(word 1,$(MODULES))
+      ISOLATION_TESTDB=isolation_regression_$(word 1,$(MODULES))
     else
       CONTRIB_TESTDB=contrib_regression_$(word 1,$(REGRESS))
+      ISOLATION_TESTDB=isolation_regression_$(word 1,$(ISOLATION))
     endif
   endif
 else
   PL_TESTDB = pl_regression
   CONTRIB_TESTDB = contrib_regression
+  ISOLATION_TESTDB = isolation_regression
 endif
 
 ifdef NO_LOCALE
@@ -626,6 +678,7 @@ pg_regress_locale_flags = $(if $(ENCODING),--encoding=$(ENCODING)) $(NOLOCALE)
 pg_regress_clean_files = results/ regression.diffs regression.out tmp_check/ tmp_check_iso/ log/ output_iso/
 
 pg_regress_check = \
+    echo "\# +++ regress check in $(subdir) +++" && \
     $(with_temp_install) \
     $(top_builddir)/src/test/regress/pg_regress \
     --temp-instance=./tmp_check \
@@ -634,12 +687,14 @@ pg_regress_check = \
     $(TEMP_CONF) \
     $(pg_regress_locale_flags) $(EXTRA_REGRESS_OPTS)
 pg_regress_installcheck = \
+    echo "\# +++ regress install-check in $(subdir) +++" && \
     $(top_builddir)/src/test/regress/pg_regress \
     --inputdir=$(srcdir) \
     --bindir='$(bindir)' \
     $(pg_regress_locale_flags) $(EXTRA_REGRESS_OPTS)
 
 pg_isolation_regress_check = \
+    echo "\# +++ isolation check in $(subdir) +++" && \
     $(with_temp_install) \
     $(top_builddir)/src/test/isolation/pg_isolation_regress \
     --temp-instance=./tmp_check_iso \
@@ -648,6 +703,7 @@ pg_isolation_regress_check = \
     $(TEMP_CONF) \
     $(pg_regress_locale_flags) $(EXTRA_REGRESS_OPTS)
 pg_isolation_regress_installcheck = \
+    echo "\# +++ isolation install-check in $(subdir) +++" && \
     $(top_builddir)/src/test/isolation/pg_isolation_regress \
     --inputdir=$(srcdir) --outputdir=output_iso \
     --bindir='$(bindir)' \
@@ -754,6 +810,13 @@ endif
 # tracking (see below) is used.
 %: %.c
 
+# Replace gmake's default rule for linking a single .o file to produce an
+# executable.  The main point here is to put LDFLAGS after the .o file,
+# since we put -l switches into LDFLAGS and those are order-sensitive.
+# In addition, include CFLAGS and LDFLAGS_EX per project conventions.
+%: %.o
+	$(CC) $(CFLAGS) $^ $(LDFLAGS) $(LDFLAGS_EX) $(LIBS) -o $@$(X)
+
 ifndef PGXS
 
 # Remake Makefile.global from Makefile.global.in if the latter
@@ -819,11 +882,11 @@ install-strip:
 # allows parallel make across directories and lets make -k and -q work
 # correctly.
 
-# We need the $(eval) function and order-only prerequisites, which are
-# available in GNU make 3.80.  That also happens to be the version
-# where the .VARIABLES variable was introduced, so this is a simple check.
-ifndef .VARIABLES
-$(error GNU make 3.80 or newer is required.  You are using version $(MAKE_VERSION))
+# We need the ability to export target-specific variables, which was
+# added in GNU make 3.81.  That also happens to be the version
+# where the .FEATURES variable was introduced, so this is a simple check.
+ifndef .FEATURES
+$(error GNU make 3.81 or newer is required.  You are using version $(MAKE_VERSION))
 endif
 
 # This function is only for internal use below.  It should be called
@@ -831,7 +894,7 @@ endif
 # given subdirectory.  For the tree-wide all/install/check/installcheck cases,
 # ensure we do our one-time tasks before recursing (see targets above).
 # Note that to avoid a nasty bug in make 3.80,
-# this function has to avoid using any complicated constructs (like
+# this function was written to not use any complicated constructs (like
 # multiple targets on a line) and also not contain any lines that expand
 # to more than about 200 bytes.  This is why we make it apply to just one
 # subdirectory at a time, rather than to a list of subdirectories.

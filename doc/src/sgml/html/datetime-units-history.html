@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>B.5. History of Units</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="datetime-config-files.html" title="B.4. Date/Time Configuration Files" /><link rel="next" href="sql-keywords-appendix.html" title="Appendix C. SQL Key Words" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">B.5. History of Units</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="datetime-config-files.html" title="B.4. Date/Time Configuration Files">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="datetime-appendix.html" title="Appendix B. Date/Time Support">Up</a></td><th width="60%" align="center">Appendix B. Date/Time Support</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-keywords-appendix.html" title="Appendix C. SQL Key Words">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="DATETIME-UNITS-HISTORY"><div class="titlepage"><div><div><h2 class="title" style="clear: both">B.5. History of Units</h2></div></div></div><a id="id-1.11.3.8.2" class="indexterm"></a><a id="id-1.11.3.8.3" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>B.6. History of Units</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="datetime-posix-timezone-specs.html" title="B.5. POSIX Time Zone Specifications" /><link rel="next" href="datetime-julian-dates.html" title="B.7. Julian Dates" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">B.6. History of Units</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="datetime-posix-timezone-specs.html" title="B.5. POSIX Time Zone Specifications">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="datetime-appendix.html" title="Appendix B. Date/Time Support">Up</a></td><th width="60%" align="center">Appendix B. Date/Time Support</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="datetime-julian-dates.html" title="B.7. Julian Dates">Next</a></td></tr></table><hr /></div><div class="sect1" id="DATETIME-UNITS-HISTORY"><div class="titlepage"><div><div><h2 class="title" style="clear: both">B.6. History of Units <a href="#DATETIME-UNITS-HISTORY" class="id_link">#</a></h2></div></div></div><a id="id-1.11.3.9.2" class="indexterm"></a><p>
    The SQL standard states that <span class="quote">“<span class="quote">Within the definition of a
    <span class="quote">‘<span class="quote">datetime literal</span>’</span>, the <span class="quote">‘<span class="quote">datetime
    values</span>’</span> are constrained by the natural rules for dates and
@@ -84,26 +84,4 @@ $ <strong class="userinput"><code>cal 9 1752</code></strong>
    The People's Republic of China uses the Gregorian calendar
    for civil purposes. The Chinese calendar is used for determining
    festivals.
-  </p><p>
-   The <em class="firstterm">Julian Date</em> system is another type of
-   calendar, unrelated to the Julian calendar though it is confusingly
-   named similarly to that calendar.
-   The Julian Date system was invented by the French scholar
-   Joseph Justus Scaliger (1540-1609)
-   and probably takes its name from Scaliger's father,
-   the Italian scholar Julius Caesar Scaliger (1484-1558).
-   In the Julian Date system, each day has a sequential number, starting
-   from JD 0 (which is sometimes called <span class="emphasis"><em>the</em></span> Julian Date).
-   JD 0 corresponds to 1 January 4713 BC in the Julian calendar, or
-   24 November 4714 BC in the Gregorian calendar.  Julian Date counting
-   is most often used by astronomers for labeling their nightly observations,
-   and therefore a date runs from noon UTC to the next noon UTC, rather than
-   from midnight to midnight: JD 0 designates the 24 hours from noon UTC on
-   24 November 4714 BC to noon UTC on 25 November 4714 BC.
-  </p><p>
-   Although <span class="productname">PostgreSQL</span> supports Julian Date notation for
-   input and output of dates (and also uses Julian dates for some internal
-   datetime calculations), it does not observe the nicety of having dates
-   run from noon to noon.  <span class="productname">PostgreSQL</span> treats a Julian Date
-   as running from midnight to midnight.
-  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="datetime-config-files.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="datetime-appendix.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-keywords-appendix.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">B.4. Date/Time Configuration Files </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Appendix C. <acronym class="acronym">SQL</acronym> Key Words</td></tr></table></div></body></html>
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="datetime-posix-timezone-specs.html" title="B.5. POSIX Time Zone Specifications">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="datetime-appendix.html" title="Appendix B. Date/Time Support">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="datetime-julian-dates.html" title="B.7. Julian Dates">Next</a></td></tr><tr><td width="40%" align="left" valign="top">B.5. <acronym class="acronym">POSIX</acronym> Time Zone Specifications </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> B.7. Julian Dates</td></tr></table></div></body></html>

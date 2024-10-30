@@ -83,7 +83,7 @@ intr2num(const Interval *i)
 static float8
 gbt_intv_dist(const void *a, const void *b, FmgrInfo *flinfo)
 {
-	return (float8) Abs(intr2num((const Interval *) a) - intr2num((const Interval *) b));
+	return fabs(intr2num((const Interval *) a) - intr2num((const Interval *) b));
 }
 
 /*
@@ -157,8 +157,8 @@ gbt_intv_compress(PG_FUNCTION_ARGS)
 		{
 			Interval   *key = DatumGetIntervalP(entry->key);
 
-			memcpy((void *) r, (void *) key, INTERVALSIZE);
-			memcpy((void *) (r + INTERVALSIZE), (void *) key, INTERVALSIZE);
+			memcpy(r, key, INTERVALSIZE);
+			memcpy(r + INTERVALSIZE, key, INTERVALSIZE);
 		}
 		else
 		{
@@ -173,7 +173,6 @@ gbt_intv_compress(PG_FUNCTION_ARGS)
 	}
 
 	PG_RETURN_POINTER(retval);
-
 }
 
 Datum
@@ -225,9 +224,8 @@ gbt_intv_consistent(PG_FUNCTION_ARGS)
 	key.lower = (GBT_NUMKEY *) &kkk->lower;
 	key.upper = (GBT_NUMKEY *) &kkk->upper;
 
-	PG_RETURN_BOOL(
-				   gbt_num_consistent(&key, (void *) query, &strategy, GIST_LEAF(entry), &tinfo, fcinfo->flinfo)
-		);
+	PG_RETURN_BOOL(gbt_num_consistent(&key, (void *) query, &strategy,
+									  GIST_LEAF(entry), &tinfo, fcinfo->flinfo));
 }
 
 
@@ -244,9 +242,8 @@ gbt_intv_distance(PG_FUNCTION_ARGS)
 	key.lower = (GBT_NUMKEY *) &kkk->lower;
 	key.upper = (GBT_NUMKEY *) &kkk->upper;
 
-	PG_RETURN_FLOAT8(
-					 gbt_num_distance(&key, (void *) query, GIST_LEAF(entry), &tinfo, fcinfo->flinfo)
-		);
+	PG_RETURN_FLOAT8(gbt_num_distance(&key, (void *) query, GIST_LEAF(entry),
+									  &tinfo, fcinfo->flinfo));
 }
 
 
@@ -278,17 +275,14 @@ gbt_intv_penalty(PG_FUNCTION_ARGS)
 	penalty_num(result, iorg[0], iorg[1], inew[0], inew[1]);
 
 	PG_RETURN_POINTER(result);
-
 }
 
 Datum
 gbt_intv_picksplit(PG_FUNCTION_ARGS)
 {
-	PG_RETURN_POINTER(gbt_num_picksplit(
-										(GistEntryVector *) PG_GETARG_POINTER(0),
+	PG_RETURN_POINTER(gbt_num_picksplit((GistEntryVector *) PG_GETARG_POINTER(0),
 										(GIST_SPLITVEC *) PG_GETARG_POINTER(1),
-										&tinfo, fcinfo->flinfo
-										));
+										&tinfo, fcinfo->flinfo));
 }
 
 Datum

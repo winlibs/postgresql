@@ -3,7 +3,7 @@
  * nodeIndexonlyscan.c
  *	  Routines to support index-only scans
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -30,21 +30,26 @@
  */
 #include "postgres.h"
 
+#include "access/genam.h"
 #include "access/relscan.h"
+#include "access/tableam.h"
+#include "access/tupdesc.h"
 #include "access/visibilitymap.h"
+#include "catalog/pg_type.h"
 #include "executor/execdebug.h"
 #include "executor/nodeIndexonlyscan.h"
 #include "executor/nodeIndexscan.h"
 #include "miscadmin.h"
 #include "storage/bufmgr.h"
 #include "storage/predicate.h"
+#include "utils/builtins.h"
 #include "utils/memutils.h"
 #include "utils/rel.h"
 
 
 static TupleTableSlot *IndexOnlyNext(IndexOnlyScanState *node);
-static void StoreIndexTuple(TupleTableSlot *slot, IndexTuple itup,
-				TupleDesc itupdesc);
+static void StoreIndexTuple(IndexOnlyScanState *node, TupleTableSlot *slot,
+							IndexTuple itup, TupleDesc itupdesc);
 
 
 /* ----------------------------------------------------------------
@@ -67,15 +72,13 @@ IndexOnlyNext(IndexOnlyScanState *node)
 	 * extract necessary information from index scan node
 	 */
 	estate = node->ss.ps.state;
-	direction = estate->es_direction;
-	/* flip direction if this is an overall backward scan */
-	if (ScanDirectionIsBackward(((IndexOnlyScan *) node->ss.ps.plan)->indexorderdir))
-	{
-		if (ScanDirectionIsForward(direction))
-			direction = BackwardScanDirection;
-		else if (ScanDirectionIsBackward(direction))
-			direction = ForwardScanDirection;
-	}
+
+	/*
+	 * Determine which direction to scan the index in based on the plan's scan
+	 * direction and the current direction of execution.
+	 */
+	direction = ScanDirectionCombine(estate->es_direction,
+									 ((IndexOnlyScan *) node->ss.ps.plan)->indexorderdir);
 	scandesc = node->ioss_ScanDesc;
 	econtext = node->ss.ps.ps_ExprContext;
 	slot = node->ss.ss_ScanTupleSlot;
@@ -117,7 +120,7 @@ IndexOnlyNext(IndexOnlyScanState *node)
 	 */
 	while ((tid = index_getnext_tid(scandesc, direction)) != NULL)
 	{
-		HeapTuple	tuple = NULL;
+		bool		tuple_from_heap = false;
 
 		CHECK_FOR_INTERRUPTS();
 
@@ -163,9 +166,10 @@ IndexOnlyNext(IndexOnlyScanState *node)
 			 * Rats, we have to visit the heap to check visibility.
 			 */
 			InstrCountTuples2(node, 1);
-			tuple = index_fetch_heap(scandesc);
-			if (tuple == NULL)
+			if (!index_fetch_heap(scandesc, node->ioss_TableSlot))
 				continue;		/* no visible tuple, try next index entry */
+
+			ExecClearTuple(node->ioss_TableSlot);
 
 			/*
 			 * Only MVCC snapshots are supported here, so there should be no
@@ -173,7 +177,7 @@ IndexOnlyNext(IndexOnlyScanState *node)
 			 * been found.  If we did want to allow that, we'd need to keep
 			 * more state to remember not to call index_getnext_tid next time.
 			 */
-			if (scandesc->xs_continue_hot)
+			if (scandesc->xs_heap_continue)
 				elog(ERROR, "non-MVCC snapshots are not supported in index-only scans");
 
 			/*
@@ -182,6 +186,8 @@ IndexOnlyNext(IndexOnlyScanState *node)
 			 * but it's not clear whether it's a win to do so.  The next index
 			 * entry might require a visit to the same heap page.
 			 */
+
+			tuple_from_heap = true;
 		}
 
 		/*
@@ -199,22 +205,20 @@ IndexOnlyNext(IndexOnlyScanState *node)
 			 */
 			Assert(slot->tts_tupleDescriptor->natts ==
 				   scandesc->xs_hitupdesc->natts);
-			ExecStoreTuple(scandesc->xs_hitup, slot, InvalidBuffer, false);
+			ExecForceStoreHeapTuple(scandesc->xs_hitup, slot, false);
 		}
 		else if (scandesc->xs_itup)
-			StoreIndexTuple(slot, scandesc->xs_itup, scandesc->xs_itupdesc);
+			StoreIndexTuple(node, slot, scandesc->xs_itup, scandesc->xs_itupdesc);
 		else
 			elog(ERROR, "no data returned for index-only scan");
 
 		/*
 		 * If the index was lossy, we have to recheck the index quals.
-		 * (Currently, this can never happen, but we should support the case
-		 * for possible future use, eg with GiST indexes.)
 		 */
 		if (scandesc->xs_recheck)
 		{
 			econtext->ecxt_scantuple = slot;
-			if (!ExecQualAndReset(node->indexqual, econtext))
+			if (!ExecQualAndReset(node->recheckqual, econtext))
 			{
 				/* Fails recheck, so drop it and loop back for another */
 				InstrCountFiltered2(node, 1);
@@ -236,13 +240,10 @@ IndexOnlyNext(IndexOnlyScanState *node)
 					 errmsg("lossy distance functions are not supported in index-only scans")));
 
 		/*
-		 * Predicate locks for index-only scans must be acquired at the page
-		 * level when the heap is not accessed, since tuple-level predicate
-		 * locks need the tuple's xmin value.  If we had to visit the tuple
-		 * anyway, then we already have the tuple-level lock and can skip the
-		 * page lock.
+		 * If we didn't access the heap, then we'll need to take a predicate
+		 * lock explicitly, as if we had.  For now we do that at page level.
 		 */
-		if (tuple == NULL)
+		if (!tuple_from_heap)
 			PredicateLockPage(scandesc->heapRelation,
 							  ItemPointerGetBlockNumber(tid),
 							  estate->es_snapshot);
@@ -265,25 +266,51 @@ IndexOnlyNext(IndexOnlyScanState *node)
  * right now we don't need it elsewhere.
  */
 static void
-StoreIndexTuple(TupleTableSlot *slot, IndexTuple itup, TupleDesc itupdesc)
+StoreIndexTuple(IndexOnlyScanState *node, TupleTableSlot *slot,
+				IndexTuple itup, TupleDesc itupdesc)
 {
-	int			nindexatts = itupdesc->natts;
-	Datum	   *values = slot->tts_values;
-	bool	   *isnull = slot->tts_isnull;
-	int			i;
-
 	/*
-	 * Note: we must use the tupdesc supplied by the AM in index_getattr, not
-	 * the slot's tupdesc, in case the latter has different datatypes (this
-	 * happens for btree name_ops in particular).  They'd better have the same
-	 * number of columns though, as well as being datatype-compatible which is
-	 * something we can't so easily check.
+	 * Note: we must use the tupdesc supplied by the AM in index_deform_tuple,
+	 * not the slot's tupdesc, in case the latter has different datatypes
+	 * (this happens for btree name_ops in particular).  They'd better have
+	 * the same number of columns though, as well as being datatype-compatible
+	 * which is something we can't so easily check.
 	 */
-	Assert(slot->tts_tupleDescriptor->natts == nindexatts);
+	Assert(slot->tts_tupleDescriptor->natts == itupdesc->natts);
 
 	ExecClearTuple(slot);
-	for (i = 0; i < nindexatts; i++)
-		values[i] = index_getattr(itup, i + 1, itupdesc, &isnull[i]);
+	index_deform_tuple(itup, itupdesc, slot->tts_values, slot->tts_isnull);
+
+	/*
+	 * Copy all name columns stored as cstrings back into a NAMEDATALEN byte
+	 * sized allocation.  We mark this branch as unlikely as generally "name"
+	 * is used only for the system catalogs and this would have to be a user
+	 * query running on those or some other user table with an index on a name
+	 * column.
+	 */
+	if (unlikely(node->ioss_NameCStringAttNums != NULL))
+	{
+		int			attcount = node->ioss_NameCStringCount;
+
+		for (int idx = 0; idx < attcount; idx++)
+		{
+			int			attnum = node->ioss_NameCStringAttNums[idx];
+			Name		name;
+
+			/* skip null Datums */
+			if (slot->tts_isnull[attnum])
+				continue;
+
+			/* allocate the NAMEDATALEN and copy the datum into that memory */
+			name = (Name) MemoryContextAlloc(node->ss.ps.ps_ExprContext->ecxt_per_tuple_memory,
+											 NAMEDATALEN);
+
+			/* use namestrcpy to zero-pad all trailing bytes */
+			namestrcpy(name, DatumGetCString(slot->tts_values[attnum]));
+			slot->tts_values[attnum] = NameGetDatum(name);
+		}
+	}
+
 	ExecStoreVirtualTuple(slot);
 }
 
@@ -373,14 +400,12 @@ ExecEndIndexOnlyScan(IndexOnlyScanState *node)
 {
 	Relation	indexRelationDesc;
 	IndexScanDesc indexScanDesc;
-	Relation	relation;
 
 	/*
 	 * extract information from the node
 	 */
 	indexRelationDesc = node->ioss_RelationDesc;
 	indexScanDesc = node->ioss_ScanDesc;
-	relation = node->ss.ss_currentRelation;
 
 	/* Release VM buffer pin, if any. */
 	if (node->ioss_VMBuffer != InvalidBuffer)
@@ -401,7 +426,8 @@ ExecEndIndexOnlyScan(IndexOnlyScanState *node)
 	/*
 	 * clear out tuple table slots
 	 */
-	ExecClearTuple(node->ss.ps.ps_ResultTupleSlot);
+	if (node->ss.ps.ps_ResultTupleSlot)
+		ExecClearTuple(node->ss.ps.ps_ResultTupleSlot);
 	ExecClearTuple(node->ss.ss_ScanTupleSlot);
 
 	/*
@@ -411,11 +437,6 @@ ExecEndIndexOnlyScan(IndexOnlyScanState *node)
 		index_endscan(indexScanDesc);
 	if (indexRelationDesc)
 		index_close(indexRelationDesc, NoLock);
-
-	/*
-	 * close the heap relation.
-	 */
-	ExecCloseScanRelation(relation);
 }
 
 /* ----------------------------------------------------------------
@@ -429,25 +450,27 @@ void
 ExecIndexOnlyMarkPos(IndexOnlyScanState *node)
 {
 	EState	   *estate = node->ss.ps.state;
+	EPQState   *epqstate = estate->es_epq_active;
 
-	if (estate->es_epqTuple != NULL)
+	if (epqstate != NULL)
 	{
 		/*
 		 * We are inside an EvalPlanQual recheck.  If a test tuple exists for
 		 * this relation, then we shouldn't access the index at all.  We would
 		 * instead need to save, and later restore, the state of the
-		 * es_epqScanDone flag, so that re-fetching the test tuple is
-		 * possible.  However, given the assumption that no caller sets a mark
-		 * at the start of the scan, we can only get here with es_epqScanDone
+		 * relsubs_done flag, so that re-fetching the test tuple is possible.
+		 * However, given the assumption that no caller sets a mark at the
+		 * start of the scan, we can only get here with relsubs_done[i]
 		 * already set, and so no state need be saved.
 		 */
 		Index		scanrelid = ((Scan *) node->ss.ps.plan)->scanrelid;
 
 		Assert(scanrelid > 0);
-		if (estate->es_epqTupleSet[scanrelid - 1])
+		if (epqstate->relsubs_slot[scanrelid - 1] != NULL ||
+			epqstate->relsubs_rowmark[scanrelid - 1] != NULL)
 		{
 			/* Verify the claim above */
-			if (!estate->es_epqScanDone[scanrelid - 1])
+			if (!epqstate->relsubs_done[scanrelid - 1])
 				elog(ERROR, "unexpected ExecIndexOnlyMarkPos call in EPQ recheck");
 			return;
 		}
@@ -464,17 +487,19 @@ void
 ExecIndexOnlyRestrPos(IndexOnlyScanState *node)
 {
 	EState	   *estate = node->ss.ps.state;
+	EPQState   *epqstate = estate->es_epq_active;
 
-	if (estate->es_epqTuple != NULL)
+	if (estate->es_epq_active != NULL)
 	{
-		/* See comments in ExecIndexOnlyMarkPos */
+		/* See comments in ExecIndexMarkPos */
 		Index		scanrelid = ((Scan *) node->ss.ps.plan)->scanrelid;
 
 		Assert(scanrelid > 0);
-		if (estate->es_epqTupleSet[scanrelid - 1])
+		if (epqstate->relsubs_slot[scanrelid - 1] != NULL ||
+			epqstate->relsubs_rowmark[scanrelid - 1] != NULL)
 		{
 			/* Verify the claim above */
-			if (!estate->es_epqScanDone[scanrelid - 1])
+			if (!epqstate->relsubs_done[scanrelid - 1])
 				elog(ERROR, "unexpected ExecIndexOnlyRestrPos call in EPQ recheck");
 			return;
 		}
@@ -499,8 +524,11 @@ ExecInitIndexOnlyScan(IndexOnlyScan *node, EState *estate, int eflags)
 {
 	IndexOnlyScanState *indexstate;
 	Relation	currentRelation;
-	bool		relistarget;
+	Relation	indexRelation;
+	LOCKMODE	lockmode;
 	TupleDesc	tupDesc;
+	int			indnkeyatts;
+	int			namecount;
 
 	/*
 	 * create state structure
@@ -518,7 +546,7 @@ ExecInitIndexOnlyScan(IndexOnlyScan *node, EState *estate, int eflags)
 	ExecAssignExprContext(estate, &indexstate->ss.ps);
 
 	/*
-	 * open the base relation and acquire appropriate lock on it.
+	 * open the scan relation
 	 */
 	currentRelation = ExecOpenScanRelation(estate, node->scan.scanrelid, eflags);
 
@@ -532,15 +560,24 @@ ExecInitIndexOnlyScan(IndexOnlyScan *node, EState *estate, int eflags)
 	 * types of the original datums.  (It's the AM's responsibility to return
 	 * suitable data anyway.)
 	 */
-	tupDesc = ExecTypeFromTL(node->indextlist, false);
-	ExecInitScanTupleSlot(estate, &indexstate->ss, tupDesc);
+	tupDesc = ExecTypeFromTL(node->indextlist);
+	ExecInitScanTupleSlot(estate, &indexstate->ss, tupDesc,
+						  &TTSOpsVirtual);
 
 	/*
-	 * Initialize result slot, type and projection info.  The node's
-	 * targetlist will contain Vars with varno = INDEX_VAR, referencing the
-	 * scan tuple.
+	 * We need another slot, in a format that's suitable for the table AM, for
+	 * when we need to fetch a tuple from the table for rechecking visibility.
 	 */
-	ExecInitResultTupleSlotTL(estate, &indexstate->ss.ps);
+	indexstate->ioss_TableSlot =
+		ExecAllocTableSlot(&estate->es_tupleTable,
+						   RelationGetDescr(currentRelation),
+						   table_slot_callbacks(currentRelation));
+
+	/*
+	 * Initialize result type and projection info.  The node's targetlist will
+	 * contain Vars with varno = INDEX_VAR, referencing the scan tuple.
+	 */
+	ExecInitResultTypeTL(&indexstate->ss.ps);
 	ExecAssignScanProjectionInfoWithVarno(&indexstate->ss, INDEX_VAR);
 
 	/*
@@ -551,8 +588,8 @@ ExecInitIndexOnlyScan(IndexOnlyScan *node, EState *estate, int eflags)
 	 */
 	indexstate->ss.ps.qual =
 		ExecInitQual(node->scan.plan.qual, (PlanState *) indexstate);
-	indexstate->indexqual =
-		ExecInitQual(node->indexqual, (PlanState *) indexstate);
+	indexstate->recheckqual =
+		ExecInitQual(node->recheckqual, (PlanState *) indexstate);
 
 	/*
 	 * If we are just doing EXPLAIN (ie, aren't going to run the plan), stop
@@ -562,16 +599,10 @@ ExecInitIndexOnlyScan(IndexOnlyScan *node, EState *estate, int eflags)
 	if (eflags & EXEC_FLAG_EXPLAIN_ONLY)
 		return indexstate;
 
-	/*
-	 * Open the index relation.
-	 *
-	 * If the parent table is one of the target relations of the query, then
-	 * InitPlan already opened and write-locked the index, so we can avoid
-	 * taking another lock here.  Otherwise we need a normal reader's lock.
-	 */
-	relistarget = ExecRelationIsTargetRelation(estate, node->scan.scanrelid);
-	indexstate->ioss_RelationDesc = index_open(node->indexid,
-											   relistarget ? NoLock : AccessShareLock);
+	/* Open the index relation. */
+	lockmode = exec_rt_fetch(node->scan.scanrelid, estate)->rellockmode;
+	indexRelation = index_open(node->indexid, lockmode);
+	indexstate->ioss_RelationDesc = indexRelation;
 
 	/*
 	 * Initialize index-specific scan state
@@ -584,7 +615,7 @@ ExecInitIndexOnlyScan(IndexOnlyScan *node, EState *estate, int eflags)
 	 * build the index scan keys from the index qualification
 	 */
 	ExecIndexBuildScanKeys((PlanState *) indexstate,
-						   indexstate->ioss_RelationDesc,
+						   indexRelation,
 						   node->indexqual,
 						   false,
 						   &indexstate->ioss_ScanKeys,
@@ -598,7 +629,7 @@ ExecInitIndexOnlyScan(IndexOnlyScan *node, EState *estate, int eflags)
 	 * any ORDER BY exprs have to be turned into scankeys in the same way
 	 */
 	ExecIndexBuildScanKeys((PlanState *) indexstate,
-						   indexstate->ioss_RelationDesc,
+						   indexRelation,
 						   node->indexorderby,
 						   true,
 						   &indexstate->ioss_OrderByKeys,
@@ -626,6 +657,49 @@ ExecInitIndexOnlyScan(IndexOnlyScan *node, EState *estate, int eflags)
 	{
 		indexstate->ioss_RuntimeContext = NULL;
 	}
+
+	indexstate->ioss_NameCStringAttNums = NULL;
+	indnkeyatts = indexRelation->rd_index->indnkeyatts;
+	namecount = 0;
+
+	/*
+	 * The "name" type for btree uses text_ops which results in storing
+	 * cstrings in the indexed keys rather than names.  Here we detect that in
+	 * a generic way in case other index AMs want to do the same optimization.
+	 * Check for opclasses with an opcintype of NAMEOID and an index tuple
+	 * descriptor with CSTRINGOID.  If any of these are found, create an array
+	 * marking the index attribute number of each of them.  StoreIndexTuple()
+	 * handles copying the name Datums into a NAMEDATALEN-byte allocation.
+	 */
+
+	/* First, count the number of such index keys */
+	for (int attnum = 0; attnum < indnkeyatts; attnum++)
+	{
+		if (indexRelation->rd_att->attrs[attnum].atttypid == CSTRINGOID &&
+			indexRelation->rd_opcintype[attnum] == NAMEOID)
+			namecount++;
+	}
+
+	if (namecount > 0)
+	{
+		int			idx = 0;
+
+		/*
+		 * Now create an array to mark the attribute numbers of the keys that
+		 * need to be converted from cstring to name.
+		 */
+		indexstate->ioss_NameCStringAttNums = (AttrNumber *)
+									palloc(sizeof(AttrNumber) * namecount);
+
+		for (int attnum = 0; attnum < indnkeyatts; attnum++)
+		{
+			if (indexRelation->rd_att->attrs[attnum].atttypid == CSTRINGOID &&
+				indexRelation->rd_opcintype[attnum] == NAMEOID)
+				indexstate->ioss_NameCStringAttNums[idx++] = (AttrNumber) attnum;
+		}
+	}
+
+	indexstate->ioss_NameCStringCount = namecount;
 
 	/*
 	 * all done.

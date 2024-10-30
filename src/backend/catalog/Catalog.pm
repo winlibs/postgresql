@@ -4,7 +4,7 @@
 #    Perl module that extracts info from catalog files into Perl
 #    data structures
 #
-# Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+# Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
 # Portions Copyright (c) 1994, Regents of the University of California
 #
 # src/backend/catalog/Catalog.pm
@@ -28,22 +28,24 @@ sub ParseHeader
 	# There are a few types which are given one name in the C source, but a
 	# different name at the SQL level.  These are enumerated here.
 	my %RENAME_ATTTYPE = (
-		'int16'         => 'int2',
-		'int32'         => 'int4',
-		'int64'         => 'int8',
-		'Oid'           => 'oid',
-		'NameData'      => 'name',
+		'int16' => 'int2',
+		'int32' => 'int4',
+		'int64' => 'int8',
+		'Oid' => 'oid',
+		'NameData' => 'name',
 		'TransactionId' => 'xid',
-		'XLogRecPtr'    => 'pg_lsn');
+		'XLogRecPtr' => 'pg_lsn');
 
 	my %catalog;
 	my $declaring_attributes = 0;
-	my $is_varlen            = 0;
-	my $is_client_code       = 0;
+	my $is_varlen = 0;
+	my $is_client_code = 0;
 
-	$catalog{columns}     = [];
-	$catalog{toasting}    = [];
-	$catalog{indexing}    = [];
+	$catalog{columns} = [];
+	$catalog{toasting} = [];
+	$catalog{indexing} = [];
+	$catalog{other_oids} = [];
+	$catalog{foreign_keys} = [];
 	$catalog{client_code} = [];
 
 	open(my $ifh, '<', $input_file) || die "$input_file: $!";
@@ -87,43 +89,81 @@ sub ParseHeader
 		}
 
 		# Push the data into the appropriate data structure.
+		# Caution: when adding new recognized OID-defining macros,
+		# also update src/include/catalog/renumber_oids.pl.
 		if (/^DECLARE_TOAST\(\s*(\w+),\s*(\d+),\s*(\d+)\)/)
 		{
 			push @{ $catalog{toasting} },
 			  { parent_table => $1, toast_oid => $2, toast_index_oid => $3 };
 		}
-		elsif (/^DECLARE_(UNIQUE_)?INDEX\(\s*(\w+),\s*(\d+),\s*(.+)\)/)
+		elsif (
+			/^DECLARE_TOAST_WITH_MACRO\(\s*(\w+),\s*(\d+),\s*(\d+),\s*(\w+),\s*(\w+)\)/
+		  )
+		{
+			push @{ $catalog{toasting} },
+			  {
+				parent_table => $1,
+				toast_oid => $2,
+				toast_index_oid => $3,
+				toast_oid_macro => $4,
+				toast_index_oid_macro => $5
+			  };
+		}
+		elsif (
+			/^DECLARE_(UNIQUE_)?INDEX(_PKEY)?\(\s*(\w+),\s*(\d+),\s*(\w+),\s*(.+)\)/
+		  )
 		{
 			push @{ $catalog{indexing} },
 			  {
 				is_unique => $1 ? 1 : 0,
-				index_name => $2,
-				index_oid  => $3,
-				index_decl => $4
+				is_pkey => $2 ? 1 : 0,
+				index_name => $3,
+				index_oid => $4,
+				index_oid_macro => $5,
+				index_decl => $6
+			  };
+		}
+		elsif (/^DECLARE_OID_DEFINING_MACRO\(\s*(\w+),\s*(\d+)\)/)
+		{
+			push @{ $catalog{other_oids} },
+			  {
+				other_name => $1,
+				other_oid => $2
+			  };
+		}
+		elsif (
+			/^DECLARE_(ARRAY_)?FOREIGN_KEY(_OPT)?\(\s*\(([^)]+)\),\s*(\w+),\s*\(([^)]+)\)\)/
+		  )
+		{
+			push @{ $catalog{foreign_keys} },
+			  {
+				is_array => $1 ? 1 : 0,
+				is_opt => $2 ? 1 : 0,
+				fk_cols => $3,
+				pk_table => $4,
+				pk_cols => $5
 			  };
 		}
 		elsif (/^CATALOG\((\w+),(\d+),(\w+)\)/)
 		{
-			$catalog{catname}            = $1;
-			$catalog{relation_oid}       = $2;
+			$catalog{catname} = $1;
+			$catalog{relation_oid} = $2;
 			$catalog{relation_oid_macro} = $3;
 
 			$catalog{bootstrap} = /BKI_BOOTSTRAP/ ? ' bootstrap' : '';
 			$catalog{shared_relation} =
 			  /BKI_SHARED_RELATION/ ? ' shared_relation' : '';
-			$catalog{without_oids} =
-			  /BKI_WITHOUT_OIDS/ ? ' without_oids' : '';
 			if (/BKI_ROWTYPE_OID\((\d+),(\w+)\)/)
 			{
-				$catalog{rowtype_oid}        = $1;
+				$catalog{rowtype_oid} = $1;
 				$catalog{rowtype_oid_clause} = " rowtype_oid $1";
-				$catalog{rowtype_oid_macro}  = $2;
+				$catalog{rowtype_oid_macro} = $2;
 			}
 			else
 			{
-				$catalog{rowtype_oid}        = '';
+				$catalog{rowtype_oid} = '';
 				$catalog{rowtype_oid_clause} = '';
-				$catalog{rowtype_oid_macro}  = '';
+				$catalog{rowtype_oid_macro} = '';
 			}
 			$catalog{schema_macro} = /BKI_SCHEMA_MACRO/ ? 1 : 0;
 			$declaring_attributes = 1;
@@ -169,8 +209,8 @@ sub ParseHeader
 					$atttype = '_' . $atttype;
 				}
 
-				$column{type}      = $atttype;
-				$column{name}      = $attname;
+				$column{type} = $atttype;
+				$column{name} = $attname;
 				$column{is_varlen} = 1 if $is_varlen;
 
 				foreach my $attopt (@attopts)
@@ -191,9 +231,27 @@ sub ParseHeader
 					{
 						$column{default} = $1;
 					}
-					elsif ($attopt =~ /BKI_LOOKUP\((\w+)\)/)
+					elsif (
+						$attopt =~ /BKI_ARRAY_DEFAULT\(['"]?([^'"]+)['"]?\)/)
 					{
-						$column{lookup} = $1;
+						$column{array_default} = $1;
+					}
+					elsif ($attopt =~ /BKI_LOOKUP(_OPT)?\((\w+)\)/)
+					{
+						$column{lookup} = $2;
+						$column{lookup_opt} = $1 ? 1 : 0;
+						# BKI_LOOKUP implicitly makes an FK reference
+						push @{ $catalog{foreign_keys} },
+						  {
+							is_array => (
+								$atttype eq 'oidvector' || $atttype eq '_oid')
+							? 1
+							: 0,
+							is_opt => $column{lookup_opt},
+							fk_cols => $attname,
+							pk_table => $column{lookup},
+							pk_cols => 'oid'
+						  };
 					}
 					else
 					{
@@ -227,69 +285,95 @@ sub ParseData
 	$input_file =~ /(\w+)\.dat$/
 	  or die "Input file $input_file needs to be a .dat file.\n";
 	my $catname = $1;
-	my $data    = [];
+	my $data = [];
 
-	# Scan the input file.
-	while (<$ifd>)
+	if ($preserve_formatting)
 	{
-		my $hash_ref;
-
-		if (/{/)
+		# Scan the input file.
+		while (<$ifd>)
 		{
-			# Capture the hash ref
-			# NB: Assumes that the next hash ref can't start on the
-			# same line where the present one ended.
-			# Not foolproof, but we shouldn't need a full parser,
-			# since we expect relatively well-behaved input.
+			my $hash_ref;
 
-			# Quick hack to detect when we have a full hash ref to
-			# parse. We can't just use a regex because of values in
-			# pg_aggregate and pg_proc like '{0,0}'.  This will need
-			# work if we ever need to allow unbalanced braces within
-			# a field value.
-			my $lcnt = tr/{//;
-			my $rcnt = tr/}//;
-
-			if ($lcnt == $rcnt)
+			if (/{/)
 			{
-				# We're treating the input line as a piece of Perl, so we
-				# need to use string eval here. Tell perlcritic we know what
-				# we're doing.
-				eval '$hash_ref = ' . $_;   ## no critic (ProhibitStringyEval)
-				if (!ref $hash_ref)
+				# Capture the hash ref
+				# NB: Assumes that the next hash ref can't start on the
+				# same line where the present one ended.
+				# Not foolproof, but we shouldn't need a full parser,
+				# since we expect relatively well-behaved input.
+
+				# Quick hack to detect when we have a full hash ref to
+				# parse. We can't just use a regex because of values in
+				# pg_aggregate and pg_proc like '{0,0}'.  This will need
+				# work if we ever need to allow unbalanced braces within
+				# a field value.
+				my $lcnt = tr/{//;
+				my $rcnt = tr/}//;
+
+				if ($lcnt == $rcnt)
 				{
-					die "$input_file: error parsing line $.:\n$_\n";
+					# We're treating the input line as a piece of Perl, so we
+					# need to use string eval here. Tell perlcritic we know what
+					# we're doing.
+					eval "\$hash_ref = $_"; ## no critic (ProhibitStringyEval)
+					if (!ref $hash_ref)
+					{
+						die "$input_file: error parsing line $.:\n$_\n";
+					}
+
+					# Annotate each hash with the source line number.
+					$hash_ref->{line_number} = $.;
+
+					# Expand tuples to their full representation.
+					AddDefaultValues($hash_ref, $schema, $catname);
 				}
+				else
+				{
+					my $next_line = <$ifd>;
+					die "$input_file: file ends within Perl hash\n"
+					  if !defined $next_line;
+					$_ .= $next_line;
+					redo;
+				}
+			}
 
-				# Annotate each hash with the source line number.
-				$hash_ref->{line_number} = $.;
-
-				# Expand tuples to their full representation.
-				AddDefaultValues($hash_ref, $schema, $catname);
+			# If we found a hash reference, keep it, unless it is marked as
+			# autogenerated; in that case it'd duplicate an entry we'll
+			# autogenerate below.  (This makes it safe for reformat_dat_file.pl
+			# with --full-tuples to print autogenerated entries, which seems like
+			# useful behavior for debugging.)
+			#
+			# Otherwise, we have a non-data string, which we need to keep in
+			# order to preserve formatting.
+			if (defined $hash_ref)
+			{
+				push @$data, $hash_ref if !$hash_ref->{autogenerated};
 			}
 			else
 			{
-				my $next_line = <$ifd>;
-				die "$input_file: file ends within Perl hash\n"
-				  if !defined $next_line;
-				$_ .= $next_line;
-				redo;
+				push @$data, $_;
 			}
 		}
-
-		# If we found a hash reference, keep it.
-		# Only keep non-data strings if we
-		# are told to preserve formatting.
-		if (defined $hash_ref)
+	}
+	else
+	{
+		# When we only care about the contents, it's faster to read and eval
+		# the whole file at once.
+		local $/;
+		my $full_file = <$ifd>;
+		eval "\$data = $full_file"    ## no critic (ProhibitStringyEval)
+		  or die "error parsing $input_file\n";
+		foreach my $hash_ref (@{$data})
 		{
-			push @$data, $hash_ref;
-		}
-		elsif ($preserve_formatting)
-		{
-			push @$data, $_;
+			AddDefaultValues($hash_ref, $schema, $catname);
 		}
 	}
+
 	close $ifd;
+
+	# If this is pg_type, auto-generate array types too.
+	GenerateArrayTypes($schema, $data) if $catname eq 'pg_type';
+
 	return $data;
 }
 
@@ -318,21 +402,22 @@ sub AddDefaultValues
 	foreach my $column (@$schema)
 	{
 		my $attname = $column->{name};
-		my $atttype = $column->{type};
 
-		if (defined $row->{$attname})
-		{
-			;
-		}
-		elsif (defined $column->{default})
+		# No work if field already has a value.
+		next if defined $row->{$attname};
+
+		# Ignore 'oid' columns, they're handled elsewhere.
+		next if $attname eq 'oid';
+
+		# If column has a default value, fill that in.
+		if (defined $column->{default})
 		{
 			$row->{$attname} = $column->{default};
+			next;
 		}
-		else
-		{
-			# Failed to find a value.
-			push @missing_fields, $attname;
-		}
+
+		# Failed to find a value for this field.
+		push @missing_fields, $attname;
 	}
 
 	# Failure to provide all columns is a hard error.
@@ -341,6 +426,65 @@ sub AddDefaultValues
 		die sprintf "missing values for field(s) %s in %s.dat line %s\n",
 		  join(', ', @missing_fields), $catname, $row->{line_number};
 	}
+}
+
+# If a pg_type entry has an array_type_oid metadata field,
+# auto-generate an entry for its array type.
+sub GenerateArrayTypes
+{
+	my $pgtype_schema = shift;
+	my $types = shift;
+	my @array_types;
+
+	foreach my $elem_type (@$types)
+	{
+		next if !(ref $elem_type eq 'HASH');
+		next if !defined($elem_type->{array_type_oid});
+
+		my %array_type;
+
+		# Set up metadata fields for array type.
+		$array_type{oid} = $elem_type->{array_type_oid};
+		$array_type{autogenerated} = 1;
+		$array_type{line_number} = $elem_type->{line_number};
+
+		# Set up column values derived from the element type.
+		$array_type{typname} = '_' . $elem_type->{typname};
+		$array_type{typelem} = $elem_type->{typname};
+
+		# Arrays require INT alignment, unless the element type requires
+		# DOUBLE alignment.
+		$array_type{typalign} = $elem_type->{typalign} eq 'd' ? 'd' : 'i';
+
+		# Fill in the rest of the array entry's fields.
+		foreach my $column (@$pgtype_schema)
+		{
+			my $attname = $column->{name};
+
+			# Skip if we already set it above.
+			next if defined $array_type{$attname};
+
+			# Apply the BKI_ARRAY_DEFAULT setting if there is one,
+			# otherwise copy the field from the element type.
+			if (defined $column->{array_default})
+			{
+				$array_type{$attname} = $column->{array_default};
+			}
+			else
+			{
+				$array_type{$attname} = $elem_type->{$attname};
+			}
+		}
+
+		# Lastly, cross-link the array to the element type.
+		$elem_type->{typarray} = $array_type{typname};
+
+		push @array_types, \%array_type;
+	}
+
+	push @$types, @array_types;
+
+	return;
 }
 
 # Rename temporary files to final names.
@@ -355,8 +499,8 @@ sub AddDefaultValues
 sub RenameTempFile
 {
 	my $final_name = shift;
-	my $extension  = shift;
-	my $temp_name  = $final_name . $extension;
+	my $extension = shift;
+	my $temp_name = $final_name . $extension;
 
 	if (-f $final_name
 		&& compare($temp_name, $final_name) == 0)
@@ -458,6 +602,10 @@ sub FindAllOidsFromHeaders
 		foreach my $index (@{ $catalog->{indexing} })
 		{
 			push @oids, $index->{index_oid};
+		}
+		foreach my $other (@{ $catalog->{other_oids} })
+		{
+			push @oids, $other->{other_oid};
 		}
 	}
 

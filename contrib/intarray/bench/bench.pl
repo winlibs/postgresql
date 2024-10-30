@@ -1,6 +1,9 @@
 #!/usr/bin/perl
 
+# Copyright (c) 2021-2023, PostgreSQL Global Development Group
+
 use strict;
+use warnings;
 
 # make sure we are in a sane environment.
 use DBI();
@@ -80,7 +83,7 @@ else
 	$outf = ($opt{u}) ? 'distinct( message.mid )' : 'message.mid';
 }
 my $sql =
-    "select $outf from "
+	"select $outf from "
   . join(', ', keys %table)
   . " where "
   . join(' AND ', @where) . ';';
@@ -97,9 +100,9 @@ if ($opt{e})
 	print @plan;
 }
 
-my $t0    = [gettimeofday];
+my $t0 = [gettimeofday];
 my $count = 0;
-my $b     = $opt{b};
+my $b = $opt{b};
 $b ||= 1;
 my @a;
 foreach (1 .. $b)

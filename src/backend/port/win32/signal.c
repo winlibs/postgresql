@@ -3,7 +3,7 @@
  * signal.c
  *	  Microsoft Windows Win32 Signal Emulation Functions
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/backend/port/win32/signal.c
@@ -34,11 +34,11 @@ HANDLE		pgwin32_initial_signal_pipe = INVALID_HANDLE_VALUE;
 static CRITICAL_SECTION pg_signal_crit_sec;
 
 /* Note that array elements 0 are unused since they correspond to signal 0 */
-static pqsigfunc pg_signal_array[PG_SIGNAL_COUNT];
+static struct sigaction pg_signal_array[PG_SIGNAL_COUNT];
 static pqsigfunc pg_signal_defaults[PG_SIGNAL_COUNT];
 
 
-/* Signal handling thread function */
+/* Signal handling thread functions */
 static DWORD WINAPI pg_signal_thread(LPVOID param);
 static BOOL WINAPI pg_console_handler(DWORD dwCtrlType);
 
@@ -52,6 +52,17 @@ static BOOL WINAPI pg_console_handler(DWORD dwCtrlType);
 void
 pg_usleep(long microsec)
 {
+	if (unlikely(pgwin32_signal_event == NULL))
+	{
+		/*
+		 * If we're reached by pgwin32_open_handle() early in startup before
+		 * the signal event is set up, just fall back to a regular
+		 * non-interruptible sleep.
+		 */
+		SleepEx((microsec < 500 ? 1 : (microsec + 500) / 1000), FALSE);
+		return;
+	}
+
 	if (WaitForSingleObject(pgwin32_signal_event,
 							(microsec < 500 ? 1 : (microsec + 500) / 1000))
 		== WAIT_OBJECT_0)
@@ -74,7 +85,9 @@ pgwin32_signal_initialize(void)
 
 	for (i = 0; i < PG_SIGNAL_COUNT; i++)
 	{
-		pg_signal_array[i] = SIG_DFL;
+		pg_signal_array[i].sa_handler = SIG_DFL;
+		pg_signal_array[i].sa_mask = 0;
+		pg_signal_array[i].sa_flags = 0;
 		pg_signal_defaults[i] = SIG_IGN;
 	}
 	pg_signal_mask = 0;
@@ -101,13 +114,14 @@ pgwin32_signal_initialize(void)
 /*
  * Dispatch all signals currently queued and not blocked
  * Blocked signals are ignored, and will be fired at the time of
- * the sigsetmask() call.
+ * the pqsigprocmask() call.
  */
 void
 pgwin32_dispatch_queued_signals(void)
 {
 	int			exec_mask;
 
+	Assert(pgwin32_signal_event != NULL);
 	EnterCriticalSection(&pg_signal_crit_sec);
 	while ((exec_mask = UNBLOCKED_SIGNAL_QUEUE()) != 0)
 	{
@@ -119,15 +133,27 @@ pgwin32_dispatch_queued_signals(void)
 			if (exec_mask & sigmask(i))
 			{
 				/* Execute this signal */
-				pqsigfunc	sig = pg_signal_array[i];
+				struct sigaction *act = &pg_signal_array[i];
+				pqsigfunc	sig = act->sa_handler;
 
 				if (sig == SIG_DFL)
 					sig = pg_signal_defaults[i];
 				pg_signal_queue &= ~sigmask(i);
 				if (sig != SIG_ERR && sig != SIG_IGN && sig != SIG_DFL)
 				{
+					sigset_t	block_mask;
+					sigset_t	save_mask;
+
 					LeaveCriticalSection(&pg_signal_crit_sec);
+
+					block_mask = act->sa_mask;
+					if ((act->sa_flags & SA_NODEFER) == 0)
+						block_mask |= sigmask(i);
+
+					sigprocmask(SIG_BLOCK, &block_mask, &save_mask);
 					sig(i);
+					sigprocmask(SIG_SETMASK, &save_mask, NULL);
+
 					EnterCriticalSection(&pg_signal_crit_sec);
 					break;		/* Restart outer loop, in case signal mask or
 								 * queue has been modified inside signal
@@ -142,12 +168,29 @@ pgwin32_dispatch_queued_signals(void)
 
 /* signal masking. Only called on main thread, no sync required */
 int
-pqsigsetmask(int mask)
+pqsigprocmask(int how, const sigset_t *set, sigset_t *oset)
 {
-	int			prevmask;
+	if (oset)
+		*oset = pg_signal_mask;
 
-	prevmask = pg_signal_mask;
-	pg_signal_mask = mask;
+	if (!set)
+		return 0;
+
+	switch (how)
+	{
+		case SIG_BLOCK:
+			pg_signal_mask |= *set;
+			break;
+		case SIG_UNBLOCK:
+			pg_signal_mask &= ~*set;
+			break;
+		case SIG_SETMASK:
+			pg_signal_mask = *set;
+			break;
+		default:
+			errno = EINVAL;
+			return -1;
+	}
 
 	/*
 	 * Dispatch any signals queued up right away, in case we have unblocked
@@ -155,25 +198,28 @@ pqsigsetmask(int mask)
 	 */
 	pgwin32_dispatch_queued_signals();
 
-	return prevmask;
+	return 0;
 }
-
 
 /*
  * Unix-like signal handler installation
  *
  * Only called on main thread, no sync required
  */
-pqsigfunc
-pqsignal(int signum, pqsigfunc handler)
+int
+pqsigaction(int signum, const struct sigaction *act,
+			struct sigaction *oldact)
 {
-	pqsigfunc	prevfunc;
-
 	if (signum >= PG_SIGNAL_COUNT || signum < 0)
-		return SIG_ERR;
-	prevfunc = pg_signal_array[signum];
-	pg_signal_array[signum] = handler;
-	return prevfunc;
+	{
+		errno = EINVAL;
+		return -1;
+	}
+	if (oldact)
+		*oldact = pg_signal_array[signum];
+	if (act)
+		pg_signal_array[signum] = *act;
+	return 0;
 }
 
 /* Create the signal listener pipe for specified PID */
@@ -206,47 +252,21 @@ pgwin32_create_signal_listener(pid_t pid)
  */
 
 
+/*
+ * Queue a signal for the main thread, by setting the flag bit and event.
+ */
 void
 pg_queue_signal(int signum)
 {
+	Assert(pgwin32_signal_event != NULL);
 	if (signum >= PG_SIGNAL_COUNT || signum <= 0)
-		return;
+		return;					/* ignore any bad signal number */
 
 	EnterCriticalSection(&pg_signal_crit_sec);
 	pg_signal_queue |= sigmask(signum);
 	LeaveCriticalSection(&pg_signal_crit_sec);
 
 	SetEvent(pgwin32_signal_event);
-}
-
-/* Signal dispatching thread */
-static DWORD WINAPI
-pg_signal_dispatch_thread(LPVOID param)
-{
-	HANDLE		pipe = (HANDLE) param;
-	BYTE		sigNum;
-	DWORD		bytes;
-
-	if (!ReadFile(pipe, &sigNum, 1, &bytes, NULL))
-	{
-		/* Client died before sending */
-		CloseHandle(pipe);
-		return 0;
-	}
-	if (bytes != 1)
-	{
-		/* Received <bytes> bytes over signal pipe (should be 1) */
-		CloseHandle(pipe);
-		return 0;
-	}
-	WriteFile(pipe, &sigNum, 1, &bytes, NULL);	/* Don't care if it works or
-												 * not.. */
-	FlushFileBuffers(pipe);
-	DisconnectNamedPipe(pipe);
-	CloseHandle(pipe);
-
-	pg_queue_signal(sigNum);
-	return 0;
 }
 
 /* Signal handling thread */
@@ -256,13 +276,14 @@ pg_signal_thread(LPVOID param)
 	char		pipename[128];
 	HANDLE		pipe = pgwin32_initial_signal_pipe;
 
+	/* Set up pipe name, in case we have to re-create the pipe. */
 	snprintf(pipename, sizeof(pipename), "\\\\.\\pipe\\pgsignal_%lu", GetCurrentProcessId());
 
 	for (;;)
 	{
 		BOOL		fConnected;
-		HANDLE		hThread;
 
+		/* Create a new pipe instance if we don't have one. */
 		if (pipe == INVALID_HANDLE_VALUE)
 		{
 			pipe = CreateNamedPipe(pipename, PIPE_ACCESS_DUPLEX,
@@ -277,62 +298,70 @@ pg_signal_thread(LPVOID param)
 			}
 		}
 
+		/*
+		 * Wait for a client to connect.  If something connects before we
+		 * reach here, we'll get back a "failure" with ERROR_PIPE_CONNECTED,
+		 * which is actually a success (way to go, Microsoft).
+		 */
 		fConnected = ConnectNamedPipe(pipe, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
 		if (fConnected)
 		{
-			HANDLE		newpipe;
-
 			/*
-			 * We have a connected pipe. Pass this off to a separate thread
-			 * that will do the actual processing of the pipe.
-			 *
-			 * We must also create a new instance of the pipe *before* we
-			 * start running the new thread. If we don't, there is a race
-			 * condition whereby the dispatch thread might run CloseHandle()
-			 * before we have created a new instance, thereby causing a small
-			 * window of time where we will miss incoming requests.
+			 * We have a connection from a would-be signal sender. Process it.
 			 */
-			newpipe = CreateNamedPipe(pipename, PIPE_ACCESS_DUPLEX,
-									  PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-									  PIPE_UNLIMITED_INSTANCES, 16, 16, 1000, NULL);
-			if (newpipe == INVALID_HANDLE_VALUE)
+			BYTE		sigNum;
+			DWORD		bytes;
+
+			if (ReadFile(pipe, &sigNum, 1, &bytes, NULL) &&
+				bytes == 1)
 			{
 				/*
-				 * This really should never fail. Just retry in case it does,
-				 * even though we have a small race window in that case. There
-				 * is nothing else we can do other than abort the whole
-				 * process which will be even worse.
+				 * Queue the signal before responding to the client.  In this
+				 * way, it's guaranteed that once kill() has returned in the
+				 * signal sender, the next CHECK_FOR_INTERRUPTS() in the
+				 * signal recipient will see the signal.  (This is a stronger
+				 * guarantee than POSIX makes; maybe we don't need it?  But
+				 * without it, we've seen timing bugs on Windows that do not
+				 * manifest on any known Unix.)
 				 */
-				write_stderr("could not create signal listener pipe: error code %lu; retrying\n", GetLastError());
+				pg_queue_signal(sigNum);
 
 				/*
-				 * Keep going so we at least dispatch this signal. Hopefully,
-				 * the call will succeed when retried in the loop soon after.
+				 * Write something back to the client, allowing its
+				 * CallNamedPipe() call to terminate.
+				 */
+				WriteFile(pipe, &sigNum, 1, &bytes, NULL);	/* Don't care if it
+															 * works or not */
+
+				/*
+				 * We must wait for the client to read the data before we can
+				 * disconnect, else the data will be lost.  (If the WriteFile
+				 * call failed, there'll be nothing in the buffer, so this
+				 * shouldn't block.)
+				 */
+				FlushFileBuffers(pipe);
+			}
+			else
+			{
+				/*
+				 * If we fail to read a byte from the client, assume it's the
+				 * client's problem and do nothing.  Perhaps it'd be better to
+				 * force a pipe close and reopen?
 				 */
 			}
-			hThread = CreateThread(NULL, 0,
-								   (LPTHREAD_START_ROUTINE) pg_signal_dispatch_thread,
-								   (LPVOID) pipe, 0, NULL);
-			if (hThread == INVALID_HANDLE_VALUE)
-				write_stderr("could not create signal dispatch thread: error code %lu\n",
-							 GetLastError());
-			else
-				CloseHandle(hThread);
 
-			/*
-			 * Background thread is running with our instance of the pipe. So
-			 * replace our reference with the newly created one and loop back
-			 * up for another run.
-			 */
-			pipe = newpipe;
+			/* Disconnect from client so that we can re-use the pipe. */
+			DisconnectNamedPipe(pipe);
 		}
 		else
 		{
 			/*
-			 * Connection failed. Cleanup and try again.
+			 * Connection failed.  Cleanup and try again.
 			 *
-			 * This should never happen. If it does, we have a small race
-			 * condition until we loop up and re-create the pipe.
+			 * This should never happen.  If it does, there's a window where
+			 * we'll miss signals until we manage to re-create the pipe.
+			 * However, just trying to use the same pipe again is probably not
+			 * going to work, so we have little choice.
 			 */
 			CloseHandle(pipe);
 			pipe = INVALID_HANDLE_VALUE;

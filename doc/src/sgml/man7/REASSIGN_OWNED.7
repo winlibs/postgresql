@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: REASSIGN OWNED
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "REASSIGN OWNED" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "REASSIGN OWNED" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,8 +32,8 @@ REASSIGN_OWNED \- change the ownership of database objects owned by a database r
 .SH "SYNOPSIS"
 .sp
 .nf
-REASSIGN OWNED BY { \fIold_role\fR | CURRENT_USER | SESSION_USER } [, \&.\&.\&.]
-               TO { \fInew_role\fR | CURRENT_USER | SESSION_USER }
+REASSIGN OWNED BY { \fIold_role\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER } [, \&.\&.\&.]
+               TO { \fInew_role\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -65,7 +65,7 @@ does not affect objects within other databases, it is usually necessary to execu
 requires membership on both the source role(s) and the target role\&.
 .PP
 The
-DROP OWNED (\fBDROP_OWNED\fR(7))
+\fBDROP OWNED\fR
 command is an alternative that simply drops all the database objects owned by one or more roles\&.
 .PP
 The
@@ -78,7 +78,7 @@ on objects that are not owned by them\&. Likewise, it does not affect default pr
 to revoke such privileges\&.
 .PP
 See
-Section\ \&21.4
+Section\ \&22.4
 for more discussion\&.
 .SH "COMPATIBILITY"
 .PP

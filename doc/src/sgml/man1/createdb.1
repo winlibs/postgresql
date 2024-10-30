@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: createdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATEDB" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATEDB" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -47,7 +47,7 @@ createdb
 is a wrapper around the
 SQL
 command
-CREATE DATABASE (\fBCREATE_DATABASE\fR(7))\&. There is no effective difference between creating databases via this utility and via other methods for accessing the server\&.
+\fBCREATE DATABASE\fR\&. There is no effective difference between creating databases via this utility and via other methods for accessing the server\&.
 .SH "OPTIONS"
 .PP
 createdb
@@ -88,17 +88,19 @@ generates and sends to the server\&.
 Specifies the character encoding scheme to be used in this database\&. The character sets supported by the
 PostgreSQL
 server are described in
-Section\ \&23.3.1\&.
+Section\ \&24.3.1\&.
 .RE
 .PP
 \fB\-l \fR\fB\fIlocale\fR\fR
 .br
 \fB\-\-locale=\fR\fB\fIlocale\fR\fR
 .RS 4
-Specifies the locale to be used in this database\&. This is equivalent to specifying both
-\fB\-\-lc\-collate\fR
-and
-\fB\-\-lc\-ctype\fR\&.
+Specifies the locale to be used in this database\&. This is equivalent to specifying
+\fB\-\-lc\-collate\fR,
+\fB\-\-lc\-ctype\fR, and
+\fB\-\-icu\-locale\fR
+to the same value\&. Some locales are only valid for ICU and must be set with
+\fB\-\-icu\-locale\fR\&.
 .RE
 .PP
 \fB\-\-lc\-collate=\fR\fB\fIlocale\fR\fR
@@ -111,11 +113,35 @@ Specifies the LC_COLLATE setting to be used in this database\&.
 Specifies the LC_CTYPE setting to be used in this database\&.
 .RE
 .PP
+\fB\-\-icu\-locale=\fR\fB\fIlocale\fR\fR
+.RS 4
+Specifies the ICU locale ID to be used in this database, if the ICU locale provider is selected\&.
+.RE
+.PP
+\fB\-\-icu\-rules=\fR\fB\fIrules\fR\fR
+.RS 4
+Specifies additional collation rules to customize the behavior of the default collation of this database\&. This is supported for ICU only\&.
+.RE
+.PP
+\fB\-\-locale\-provider={\fR\fBlibc\fR\fB|\fR\fBicu\fR\fB}\fR
+.RS 4
+Specifies the locale provider for the database\*(Aqs default collation\&.
+.RE
+.PP
 \fB\-O \fR\fB\fIowner\fR\fR
 .br
 \fB\-\-owner=\fR\fB\fIowner\fR\fR
 .RS 4
 Specifies the database user who will own the new database\&. (This name is processed as a double\-quoted identifier\&.)
+.RE
+.PP
+\fB\-S \fR\fB\fIstrategy\fR\fR
+.br
+\fB\-\-strategy=\fR\fB\fIstrategy\fR\fR
+.RS 4
+Specifies the database creation strategy\&. See
+CREATE DATABASE STRATEGY
+for more details\&.
 .RE
 .PP
 \fB\-T \fR\fB\fItemplate\fR\fR
@@ -150,7 +176,7 @@ The options
 \fB\-O\fR, and
 \fB\-T\fR
 correspond to options of the underlying SQL command
-CREATE DATABASE (\fBCREATE_DATABASE\fR(7)); see there for more information about them\&.
+\fBCREATE DATABASE\fR; see there for more information about them\&.
 .PP
 createdb
 also accepts the following command\-line arguments for connection parameters:
@@ -208,7 +234,8 @@ Specifies the name of the database to connect to when creating the new database\
 postgres
 database will be used; if that does not exist (or if it is the name of the new database being created),
 template1
-will be used\&.
+will be used\&. This can be a
+connection string\&. If so, connection string parameters will override any conflicting command line options\&.
 .RE
 .SH "ENVIRONMENT"
 .PP
@@ -229,12 +256,21 @@ also determines the name of the database to create, if it is not specified on th
 \fBPGDATABASE\fR\&.
 .RE
 .PP
+\fBPG_COLOR\fR
+.RS 4
+Specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.RE
+.PP
 This utility, like most other
 PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section\ \&34.14)\&.
+Section\ \&34.15)\&.
 .SH "DIAGNOSTICS"
 .PP
 In case of difficulty, see

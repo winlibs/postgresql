@@ -3,7 +3,7 @@
  * spgxlog.h
  *	  xlog declarations for SP-GiST access method.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/spgxlog.h
@@ -18,7 +18,7 @@
 #include "storage/off.h"
 
 /* XLOG record types for SPGiST */
-#define XLOG_SPGIST_CREATE_INDEX	0x00
+ /* #define XLOG_SPGIST_CREATE_INDEX       0x00 */	/* not used anymore */
 #define XLOG_SPGIST_ADD_LEAF		0x10
 #define XLOG_SPGIST_MOVE_LEAFS		0x20
 #define XLOG_SPGIST_ADD_NODE		0x30
@@ -239,7 +239,9 @@ typedef struct spgxlogVacuumRedirect
 {
 	uint16		nToPlaceholder; /* number of redirects to make placeholders */
 	OffsetNumber firstPlaceholder;	/* first placeholder tuple to remove */
-	TransactionId newestRedirectXid;	/* newest XID of removed redirects */
+	TransactionId snapshotConflictHorizon;	/* newest XID of removed redirects */
+	bool		isCatalogRel;	/* to handle recovery conflict during logical
+								 * decoding on standby */
 
 	/* offsets of redirect tuples to make placeholders follow */
 	OffsetNumber offsets[FLEXIBLE_ARRAY_MEMBER];

@@ -36,7 +36,7 @@ static const char rcsid[] = "Id: inet_net_ntop.c,v 1.1.2.2 2004/03/09 09:17:27 m
 #else
 /*
  * In a frontend build, we can't include inet.h, but we still need to have
- * sensible definitions of these two constants.  Note that inet_net_ntop()
+ * sensible definitions of these two constants.  Note that pg_inet_net_ntop()
  * assumes that PGSQL_AF_INET is equal to AF_INET.
  */
 #define PGSQL_AF_INET	(AF_INET + 0)
@@ -54,41 +54,40 @@ static const char rcsid[] = "Id: inet_net_ntop.c,v 1.1.2.2 2004/03/09 09:17:27 m
 #endif
 
 static char *inet_net_ntop_ipv4(const u_char *src, int bits,
-				   char *dst, size_t size);
+								char *dst, size_t size);
 static char *inet_net_ntop_ipv6(const u_char *src, int bits,
-				   char *dst, size_t size);
+								char *dst, size_t size);
 
 
 /*
  * char *
- * inet_net_ntop(af, src, bits, dst, size)
+ * pg_inet_net_ntop(af, src, bits, dst, size)
  *	convert host/network address from network to presentation format.
  *	"src"'s size is determined from its "af".
  * return:
  *	pointer to dst, or NULL if an error occurred (check errno).
  * note:
  *	192.5.5.1/28 has a nonzero host part, which means it isn't a network
- *	as called for by inet_net_pton() but it can be a host address with
+ *	as called for by pg_inet_net_pton() but it can be a host address with
  *	an included netmask.
  * author:
  *	Paul Vixie (ISC), October 1998
  */
 char *
-inet_net_ntop(int af, const void *src, int bits, char *dst, size_t size)
+pg_inet_net_ntop(int af, const void *src, int bits, char *dst, size_t size)
 {
 	/*
 	 * We need to cover both the address family constants used by the PG inet
 	 * type (PGSQL_AF_INET and PGSQL_AF_INET6) and those used by the system
 	 * libraries (AF_INET and AF_INET6).  We can safely assume PGSQL_AF_INET
-	 * == AF_INET, but the INET6 constants are very likely to be different. If
-	 * AF_INET6 isn't defined, silently ignore it.
+	 * == AF_INET, but the INET6 constants are very likely to be different.
 	 */
 	switch (af)
 	{
 		case PGSQL_AF_INET:
 			return (inet_net_ntop_ipv4(src, bits, dst, size));
 		case PGSQL_AF_INET6:
-#if defined(AF_INET6) && AF_INET6 != PGSQL_AF_INET6
+#if AF_INET6 != PGSQL_AF_INET6
 		case AF_INET6:
 #endif
 			return (inet_net_ntop_ipv6(src, bits, dst, size));

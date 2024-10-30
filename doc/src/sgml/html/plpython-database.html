@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>46.7. Database Access</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plpython-trigger.html" title="46.6. Trigger Functions" /><link rel="next" href="plpython-subtransaction.html" title="46.8. Explicit Subtransactions" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">46.7. Database Access</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpython-trigger.html" title="46.6. Trigger Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpython.html" title="Chapter 46. PL/Python - Python Procedural Language">Up</a></td><th width="60%" align="center">Chapter 46. PL/Python - Python Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpython-subtransaction.html" title="46.8. Explicit Subtransactions">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPYTHON-DATABASE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">46.7. Database Access</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpython-database.html#id-1.8.11.15.3">46.7.1. Database Access Functions</a></span></dt><dt><span class="sect2"><a href="plpython-database.html#PLPYTHON-TRAPPING">46.7.2. Trapping Errors</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>46.6. Database Access</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="plpython-trigger.html" title="46.5. Trigger Functions" /><link rel="next" href="plpython-subtransaction.html" title="46.7. Explicit Subtransactions" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">46.6. Database Access</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpython-trigger.html" title="46.5. Trigger Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpython.html" title="Chapter 46. PL/Python — Python Procedural Language">Up</a></td><th width="60%" align="center">Chapter 46. PL/Python — Python Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpython-subtransaction.html" title="46.7. Explicit Subtransactions">Next</a></td></tr></table><hr /></div><div class="sect1" id="PLPYTHON-DATABASE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">46.6. Database Access <a href="#PLPYTHON-DATABASE" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpython-database.html#PLPYTHON-DATABASE-ACCESS-FUNCS">46.6.1. Database Access Functions</a></span></dt><dt><span class="sect2"><a href="plpython-database.html#PLPYTHON-TRAPPING">46.6.2. Trapping Errors</a></span></dt></dl></div><p>
    The PL/Python language module automatically imports a Python module
    called <code class="literal">plpy</code>.  The functions and constants in
    this module are available to you in the Python code as
    <code class="literal">plpy.<em class="replaceable"><code>foo</code></em></code>.
-  </p><div class="sect2" id="id-1.8.11.15.3"><div class="titlepage"><div><div><h3 class="title">46.7.1. Database Access Functions</h3></div></div></div><p>
+  </p><div class="sect2" id="PLPYTHON-DATABASE-ACCESS-FUNCS"><div class="titlepage"><div><div><h3 class="title">46.6.1. Database Access Functions <a href="#PLPYTHON-DATABASE-ACCESS-FUNCS" class="id_link">#</a></h3></div></div></div><p>
    The <code class="literal">plpy</code> module provides several functions to execute
    database commands:
-  </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">plpy.<code class="function">execute</code>(<em class="replaceable"><code>query</code></em> [, <em class="replaceable"><code>max-rows</code></em>])</code></span></dt><dd><p>
+  </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">plpy.<code class="function">execute</code>(<em class="replaceable"><code>query</code></em> [, <em class="replaceable"><code>limit</code></em>])</code></span></dt><dd><p>
       Calling <code class="function">plpy.execute</code> with a query string and an
       optional row limit argument causes that query to be run and the result to
       be returned in a result object.
+     </p><p>
+      If <em class="replaceable"><code>limit</code></em> is specified and is greater than
+      zero, then <code class="function">plpy.execute</code> retrieves at
+      most <em class="replaceable"><code>limit</code></em> rows, much as if the query
+      included a <code class="literal">LIMIT</code>
+      clause.  Omitting <em class="replaceable"><code>limit</code></em> or specifying it as
+      zero results in no row limit.
      </p><p>
       The result object emulates a list or dictionary object.  The result
       object can be accessed by row number and column name.  For example:
@@ -57,8 +64,8 @@ foo = rv[i]["my_column"]
       risk excessive memory usage when fetching large results,
       use <code class="literal">plpy.cursor</code> rather
       than <code class="literal">plpy.execute</code>.
-     </p></dd><dt><span class="term"><code class="literal">plpy.<code class="function">prepare</code>(<em class="replaceable"><code>query</code></em> [, <em class="replaceable"><code>argtypes</code></em>])</code><br /></span><span class="term"><code class="literal">plpy.<code class="function">execute</code>(<em class="replaceable"><code>plan</code></em> [, <em class="replaceable"><code>arguments</code></em> [, <em class="replaceable"><code>max-rows</code></em>]])</code></span></dt><dd><p>
-      <a id="id-1.8.11.15.3.3.2.3.1.1" class="indexterm"></a>
+     </p></dd><dt><span class="term"><code class="literal">plpy.<code class="function">prepare</code>(<em class="replaceable"><code>query</code></em> [, <em class="replaceable"><code>argtypes</code></em>])</code><br /></span><span class="term"><code class="literal">plpy.<code class="function">execute</code>(<em class="replaceable"><code>plan</code></em> [, <em class="replaceable"><code>arguments</code></em> [, <em class="replaceable"><code>limit</code></em>]])</code></span></dt><dd><p>
+      <a id="id-1.8.11.14.3.3.2.3.1.1" class="indexterm"></a>
       <code class="function">plpy.prepare</code> prepares the execution plan for a
       query.  It is called with a query string and a list of parameter types,
       if you have parameter references in the query.  For example:
@@ -86,14 +93,14 @@ rv = plan.execute(["name"], 5)
 </pre><p>
      </p><p>
       Query parameters and result row fields are converted between PostgreSQL
-      and Python data types as described in <a class="xref" href="plpython-data.html" title="46.3. Data Values">Section 46.3</a>.
+      and Python data types as described in <a class="xref" href="plpython-data.html" title="46.2. Data Values">Section 46.2</a>.
      </p><p>
       When you prepare a plan using the PL/Python module it is automatically
       saved.  Read the SPI documentation (<a class="xref" href="spi.html" title="Chapter 47. Server Programming Interface">Chapter 47</a>) for a
       description of what this means.  In order to make effective use of this
       across function calls one needs to use one of the persistent storage
       dictionaries <code class="literal">SD</code> or <code class="literal">GD</code> (see
-      <a class="xref" href="plpython-sharing.html" title="46.4. Sharing Data">Section 46.4</a>). For example:
+      <a class="xref" href="plpython-sharing.html" title="46.3. Sharing Data">Section 46.3</a>). For example:
 </p><pre class="programlisting">
 CREATE FUNCTION usesavedplan() RETURNS trigger AS $$
     if "plan" in SD:
@@ -102,7 +109,7 @@ CREATE FUNCTION usesavedplan() RETURNS trigger AS $$
         plan = plpy.prepare("SELECT 1")
         SD["plan"] = plan
     # rest of function
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;
 </pre><p>
      </p></dd><dt><span class="term"><code class="literal">plpy.<code class="function">cursor</code>(<em class="replaceable"><code>query</code></em>)</code><br /></span><span class="term"><code class="literal">plpy.<code class="function">cursor</code>(<em class="replaceable"><code>plan</code></em> [, <em class="replaceable"><code>arguments</code></em>])</code></span></dt><dd><p>
       The <code class="literal">plpy.cursor</code> function accepts the same arguments
@@ -133,7 +140,7 @@ for row in plpy.cursor("select num from largetable"):
     if row['num'] % 2:
          odd += 1
 return odd
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;
 
 CREATE FUNCTION count_odd_fetch(batch_size integer) RETURNS integer AS $$
 odd = 0
@@ -146,7 +153,7 @@ while True:
         if row['num'] % 2:
             odd += 1
 return odd
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;
 
 CREATE FUNCTION count_odd_prepared() RETURNS integer AS $$
 odd = 0
@@ -154,7 +161,7 @@ plan = plpy.prepare("select num from largetable where num % $1 &lt;&gt; 0", ["in
 rows = list(plpy.cursor(plan, [2]))  # or: = list(plan.cursor([2]))
 
 return len(rows)
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;
 </pre><p>
      </p><p>
       Cursors are automatically disposed of.  But if you want to explicitly
@@ -166,7 +173,7 @@ $$ LANGUAGE plpythonu;
         the <a class="ulink" href="https://www.python.org/dev/peps/pep-0249/" target="_top">Python
         Database API specification</a>.  They don't have anything in common
         except for the name.
-      </p></div></dd></dl></div></div><div class="sect2" id="PLPYTHON-TRAPPING"><div class="titlepage"><div><div><h3 class="title">46.7.2. Trapping Errors</h3></div></div></div><p>
+      </p></div></dd></dl></div></div><div class="sect2" id="PLPYTHON-TRAPPING"><div class="titlepage"><div><div><h3 class="title">46.6.2. Trapping Errors <a href="#PLPYTHON-TRAPPING" class="id_link">#</a></h3></div></div></div><p>
     Functions accessing the database might encounter errors, which
     will cause them to abort and raise an exception.  Both
     <code class="function">plpy.execute</code> and
@@ -183,7 +190,7 @@ CREATE FUNCTION try_adding_joe() RETURNS text AS $$
         return "something went wrong"
     else:
         return "Joe added"
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;
 </pre><p>
    </p><p>
     The actual class of the exception being raised corresponds to the
@@ -210,11 +217,11 @@ except spiexceptions.DivisionByZero:
     return "denominator cannot equal zero"
 except spiexceptions.UniqueViolation:
     return "already have that fraction"
-except plpy.SPIError, e:
+except plpy.SPIError as e:
     return "other error, SQLSTATE %s" % e.sqlstate
 else:
     return "fraction inserted"
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;
 </pre><p>
     Note that because all exceptions from
     the <code class="literal">plpy.spiexceptions</code> module inherit
@@ -228,4 +235,4 @@ $$ LANGUAGE plpythonu;
     the exception object.  This attribute is a string value containing
     the <span class="quote">“<span class="quote">SQLSTATE</span>”</span> error code.  This approach provides
     approximately the same functionality
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpython-trigger.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpython.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpython-subtransaction.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">46.6. Trigger Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 46.8. Explicit Subtransactions</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpython-trigger.html" title="46.5. Trigger Functions">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpython.html" title="Chapter 46. PL/Python — Python Procedural Language">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpython-subtransaction.html" title="46.7. Explicit Subtransactions">Next</a></td></tr><tr><td width="40%" align="left" valign="top">46.5. Trigger Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 46.7. Explicit Subtransactions</td></tr></table></div></body></html>

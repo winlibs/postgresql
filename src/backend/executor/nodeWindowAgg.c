@@ -23,7 +23,7 @@
  * aggregate function over all rows in the current row's window frame.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -42,11 +42,13 @@
 #include "miscadmin.h"
 #include "nodes/nodeFuncs.h"
 #include "optimizer/clauses.h"
+#include "optimizer/optimizer.h"
 #include "parser/parse_agg.h"
 #include "parser/parse_coerce.h"
 #include "utils/acl.h"
 #include "utils/builtins.h"
 #include "utils/datum.h"
+#include "utils/expandeddatum.h"
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
 #include "utils/regproc.h"
@@ -93,7 +95,7 @@ typedef struct WindowStatePerFuncData
 	bool		resulttypeByVal;
 
 	bool		plain_agg;		/* is it just a plain aggregate function? */
-	int			aggno;			/* if so, index of its PerAggData */
+	int			aggno;			/* if so, index of its WindowStatePerAggData */
 
 	WindowObject winobj;		/* object used in window function API */
 }			WindowStatePerFuncData;
@@ -142,7 +144,7 @@ typedef struct WindowStatePerAggData
 				resulttypeByVal,
 				transtypeByVal;
 
-	int			wfuncno;		/* index of associated PerFuncData */
+	int			wfuncno;		/* index of associated WindowStatePerFuncData */
 
 	/* Context holding transition value and possibly other subsidiary data */
 	MemoryContext aggcontext;	/* may be private, or winstate->aggcontext */
@@ -158,43 +160,43 @@ typedef struct WindowStatePerAggData
 } WindowStatePerAggData;
 
 static void initialize_windowaggregate(WindowAggState *winstate,
-						   WindowStatePerFunc perfuncstate,
-						   WindowStatePerAgg peraggstate);
+									   WindowStatePerFunc perfuncstate,
+									   WindowStatePerAgg peraggstate);
 static void advance_windowaggregate(WindowAggState *winstate,
-						WindowStatePerFunc perfuncstate,
-						WindowStatePerAgg peraggstate);
+									WindowStatePerFunc perfuncstate,
+									WindowStatePerAgg peraggstate);
 static bool advance_windowaggregate_base(WindowAggState *winstate,
-							 WindowStatePerFunc perfuncstate,
-							 WindowStatePerAgg peraggstate);
+										 WindowStatePerFunc perfuncstate,
+										 WindowStatePerAgg peraggstate);
 static void finalize_windowaggregate(WindowAggState *winstate,
-						 WindowStatePerFunc perfuncstate,
-						 WindowStatePerAgg peraggstate,
-						 Datum *result, bool *isnull);
+									 WindowStatePerFunc perfuncstate,
+									 WindowStatePerAgg peraggstate,
+									 Datum *result, bool *isnull);
 
 static void eval_windowaggregates(WindowAggState *winstate);
 static void eval_windowfunction(WindowAggState *winstate,
-					WindowStatePerFunc perfuncstate,
-					Datum *result, bool *isnull);
+								WindowStatePerFunc perfuncstate,
+								Datum *result, bool *isnull);
 
 static void begin_partition(WindowAggState *winstate);
 static void spool_tuples(WindowAggState *winstate, int64 pos);
 static void release_partition(WindowAggState *winstate);
 
-static int row_is_in_frame(WindowAggState *winstate, int64 pos,
-				TupleTableSlot *slot);
+static int	row_is_in_frame(WindowAggState *winstate, int64 pos,
+							TupleTableSlot *slot);
 static void update_frameheadpos(WindowAggState *winstate);
 static void update_frametailpos(WindowAggState *winstate);
 static void update_grouptailpos(WindowAggState *winstate);
 
 static WindowStatePerAggData *initialize_peragg(WindowAggState *winstate,
-				  WindowFunc *wfunc,
-				  WindowStatePerAgg peraggstate);
+												WindowFunc *wfunc,
+												WindowStatePerAgg peraggstate);
 static Datum GetAggInitVal(Datum textInitVal, Oid transtype);
 
 static bool are_peers(WindowAggState *winstate, TupleTableSlot *slot1,
-		  TupleTableSlot *slot2);
+					  TupleTableSlot *slot2);
 static bool window_gettupleslot(WindowObject winobj, int64 pos,
-					TupleTableSlot *slot);
+								TupleTableSlot *slot);
 
 
 /*
@@ -241,10 +243,9 @@ advance_windowaggregate(WindowAggState *winstate,
 						WindowStatePerFunc perfuncstate,
 						WindowStatePerAgg peraggstate)
 {
+	LOCAL_FCINFO(fcinfo, FUNC_MAX_ARGS);
 	WindowFuncExprState *wfuncstate = perfuncstate->wfuncstate;
 	int			numArguments = perfuncstate->numArguments;
-	FunctionCallInfoData fcinfodata;
-	FunctionCallInfo fcinfo = &fcinfodata;
 	Datum		newVal;
 	ListCell   *arg;
 	int			i;
@@ -273,8 +274,8 @@ advance_windowaggregate(WindowAggState *winstate,
 	{
 		ExprState  *argstate = (ExprState *) lfirst(arg);
 
-		fcinfo->arg[i] = ExecEvalExpr(argstate, econtext,
-									  &fcinfo->argnull[i]);
+		fcinfo->args[i].value = ExecEvalExpr(argstate, econtext,
+											 &fcinfo->args[i].isnull);
 		i++;
 	}
 
@@ -287,7 +288,7 @@ advance_windowaggregate(WindowAggState *winstate,
 		 */
 		for (i = 1; i <= numArguments; i++)
 		{
-			if (fcinfo->argnull[i])
+			if (fcinfo->args[i].isnull)
 			{
 				MemoryContextSwitchTo(oldContext);
 				return;
@@ -306,7 +307,7 @@ advance_windowaggregate(WindowAggState *winstate,
 		if (peraggstate->transValueCount == 0 && peraggstate->transValueIsNull)
 		{
 			MemoryContextSwitchTo(peraggstate->aggcontext);
-			peraggstate->transValue = datumCopy(fcinfo->arg[1],
+			peraggstate->transValue = datumCopy(fcinfo->args[1].value,
 												peraggstate->transtypeByVal,
 												peraggstate->transtypeLen);
 			peraggstate->transValueIsNull = false;
@@ -339,8 +340,8 @@ advance_windowaggregate(WindowAggState *winstate,
 							 numArguments + 1,
 							 perfuncstate->winCollation,
 							 (void *) winstate, NULL);
-	fcinfo->arg[0] = peraggstate->transValue;
-	fcinfo->argnull[0] = peraggstate->transValueIsNull;
+	fcinfo->args[0].value = peraggstate->transValue;
+	fcinfo->args[0].isnull = peraggstate->transValueIsNull;
 	winstate->curaggcontext = peraggstate->aggcontext;
 	newVal = FunctionCallInvoke(fcinfo);
 	winstate->curaggcontext = NULL;
@@ -367,7 +368,8 @@ advance_windowaggregate(WindowAggState *winstate,
 	 * free the prior transValue.  But if transfn returned a pointer to its
 	 * first input, we don't need to do anything.  Also, if transfn returned a
 	 * pointer to a R/W expanded object that is already a child of the
-	 * aggcontext, assume we can adopt that value without copying it.
+	 * aggcontext, assume we can adopt that value without copying it.  (See
+	 * comments for ExecAggCopyTransValue, which this code duplicates.)
 	 */
 	if (!peraggstate->transtypeByVal &&
 		DatumGetPointer(newVal) != DatumGetPointer(peraggstate->transValue))
@@ -418,10 +420,9 @@ advance_windowaggregate_base(WindowAggState *winstate,
 							 WindowStatePerFunc perfuncstate,
 							 WindowStatePerAgg peraggstate)
 {
+	LOCAL_FCINFO(fcinfo, FUNC_MAX_ARGS);
 	WindowFuncExprState *wfuncstate = perfuncstate->wfuncstate;
 	int			numArguments = perfuncstate->numArguments;
-	FunctionCallInfoData fcinfodata;
-	FunctionCallInfo fcinfo = &fcinfodata;
 	Datum		newVal;
 	ListCell   *arg;
 	int			i;
@@ -450,8 +451,8 @@ advance_windowaggregate_base(WindowAggState *winstate,
 	{
 		ExprState  *argstate = (ExprState *) lfirst(arg);
 
-		fcinfo->arg[i] = ExecEvalExpr(argstate, econtext,
-									  &fcinfo->argnull[i]);
+		fcinfo->args[i].value = ExecEvalExpr(argstate, econtext,
+											 &fcinfo->args[i].isnull);
 		i++;
 	}
 
@@ -464,7 +465,7 @@ advance_windowaggregate_base(WindowAggState *winstate,
 		 */
 		for (i = 1; i <= numArguments; i++)
 		{
-			if (fcinfo->argnull[i])
+			if (fcinfo->args[i].isnull)
 			{
 				MemoryContextSwitchTo(oldContext);
 				return true;
@@ -510,8 +511,8 @@ advance_windowaggregate_base(WindowAggState *winstate,
 							 numArguments + 1,
 							 perfuncstate->winCollation,
 							 (void *) winstate, NULL);
-	fcinfo->arg[0] = peraggstate->transValue;
-	fcinfo->argnull[0] = peraggstate->transValueIsNull;
+	fcinfo->args[0].value = peraggstate->transValue;
+	fcinfo->args[0].isnull = peraggstate->transValueIsNull;
 	winstate->curaggcontext = peraggstate->aggcontext;
 	newVal = FunctionCallInvoke(fcinfo);
 	winstate->curaggcontext = NULL;
@@ -533,7 +534,8 @@ advance_windowaggregate_base(WindowAggState *winstate,
 	 * free the prior transValue.  But if invtransfn returned a pointer to its
 	 * first input, we don't need to do anything.  Also, if invtransfn
 	 * returned a pointer to a R/W expanded object that is already a child of
-	 * the aggcontext, assume we can adopt that value without copying it.
+	 * the aggcontext, assume we can adopt that value without copying it. (See
+	 * comments for ExecAggCopyTransValue, which this code duplicates.)
 	 *
 	 * Note: the checks for null values here will never fire, but it seems
 	 * best to have this stanza look just like advance_windowaggregate.
@@ -591,30 +593,31 @@ finalize_windowaggregate(WindowAggState *winstate,
 	 */
 	if (OidIsValid(peraggstate->finalfn_oid))
 	{
+		LOCAL_FCINFO(fcinfo, FUNC_MAX_ARGS);
 		int			numFinalArgs = peraggstate->numFinalArgs;
-		FunctionCallInfoData fcinfo;
 		bool		anynull;
 		int			i;
 
-		InitFunctionCallInfoData(fcinfo, &(peraggstate->finalfn),
+		InitFunctionCallInfoData(fcinfodata.fcinfo, &(peraggstate->finalfn),
 								 numFinalArgs,
 								 perfuncstate->winCollation,
 								 (void *) winstate, NULL);
-		fcinfo.arg[0] = MakeExpandedObjectReadOnly(peraggstate->transValue,
-												   peraggstate->transValueIsNull,
-												   peraggstate->transtypeLen);
-		fcinfo.argnull[0] = peraggstate->transValueIsNull;
+		fcinfo->args[0].value =
+			MakeExpandedObjectReadOnly(peraggstate->transValue,
+									   peraggstate->transValueIsNull,
+									   peraggstate->transtypeLen);
+		fcinfo->args[0].isnull = peraggstate->transValueIsNull;
 		anynull = peraggstate->transValueIsNull;
 
 		/* Fill any remaining argument positions with nulls */
 		for (i = 1; i < numFinalArgs; i++)
 		{
-			fcinfo.arg[i] = (Datum) 0;
-			fcinfo.argnull[i] = true;
+			fcinfo->args[i].value = (Datum) 0;
+			fcinfo->args[i].isnull = true;
 			anynull = true;
 		}
 
-		if (fcinfo.flinfo->fn_strict && anynull)
+		if (fcinfo->flinfo->fn_strict && anynull)
 		{
 			/* don't call a strict function with NULL inputs */
 			*result = (Datum) 0;
@@ -622,28 +625,26 @@ finalize_windowaggregate(WindowAggState *winstate,
 		}
 		else
 		{
+			Datum		res;
+
 			winstate->curaggcontext = peraggstate->aggcontext;
-			*result = FunctionCallInvoke(&fcinfo);
+			res = FunctionCallInvoke(fcinfo);
 			winstate->curaggcontext = NULL;
-			*isnull = fcinfo.isnull;
+			*isnull = fcinfo->isnull;
+			*result = MakeExpandedObjectReadOnly(res,
+												 fcinfo->isnull,
+												 peraggstate->resulttypeLen);
 		}
 	}
 	else
 	{
-		/* Don't need MakeExpandedObjectReadOnly; datumCopy will copy it */
-		*result = peraggstate->transValue;
+		*result =
+			MakeExpandedObjectReadOnly(peraggstate->transValue,
+									   peraggstate->transValueIsNull,
+									   peraggstate->transtypeLen);
 		*isnull = peraggstate->transValueIsNull;
 	}
 
-	/*
-	 * If result is pass-by-ref, make sure it is in the right context.
-	 */
-	if (!peraggstate->resulttypeByVal && !*isnull &&
-		!MemoryContextContains(CurrentMemoryContext,
-							   DatumGetPointer(*result)))
-		*result = datumCopy(*result,
-							peraggstate->resulttypeByVal,
-							peraggstate->resulttypeLen);
 	MemoryContextSwitchTo(oldContext);
 }
 
@@ -1032,7 +1033,7 @@ static void
 eval_windowfunction(WindowAggState *winstate, WindowStatePerFunc perfuncstate,
 					Datum *result, bool *isnull)
 {
-	FunctionCallInfoData fcinfo;
+	LOCAL_FCINFO(fcinfo, FUNC_MAX_ARGS);
 	MemoryContext oldContext;
 
 	oldContext = MemoryContextSwitchTo(winstate->ss.ps.ps_ExprContext->ecxt_per_tuple_memory);
@@ -1043,26 +1044,28 @@ eval_windowfunction(WindowAggState *winstate, WindowStatePerFunc perfuncstate,
 	 * implementations to support varying numbers of arguments.  The real info
 	 * goes through the WindowObject, which is passed via fcinfo->context.
 	 */
-	InitFunctionCallInfoData(fcinfo, &(perfuncstate->flinfo),
+	InitFunctionCallInfoData(*fcinfo, &(perfuncstate->flinfo),
 							 perfuncstate->numArguments,
 							 perfuncstate->winCollation,
 							 (void *) perfuncstate->winobj, NULL);
 	/* Just in case, make all the regular argument slots be null */
-	memset(fcinfo.argnull, true, perfuncstate->numArguments);
+	for (int argno = 0; argno < perfuncstate->numArguments; argno++)
+		fcinfo->args[argno].isnull = true;
 	/* Window functions don't have a current aggregate context, either */
 	winstate->curaggcontext = NULL;
 
-	*result = FunctionCallInvoke(&fcinfo);
-	*isnull = fcinfo.isnull;
+	*result = FunctionCallInvoke(fcinfo);
+	*isnull = fcinfo->isnull;
 
 	/*
-	 * Make sure pass-by-ref data is allocated in the appropriate context. (We
-	 * need this in case the function returns a pointer into some short-lived
-	 * tuple, as is entirely possible.)
+	 * The window function might have returned a pass-by-ref result that's
+	 * just a pointer into one of the WindowObject's temporary slots.  That's
+	 * not a problem if it's the only window function using the WindowObject;
+	 * but if there's more than one function, we'd better copy the result to
+	 * ensure it's not clobbered by later window functions.
 	 */
-	if (!perfuncstate->resulttypeByVal && !fcinfo.isnull &&
-		!MemoryContextContains(CurrentMemoryContext,
-							   DatumGetPointer(*result)))
+	if (!perfuncstate->resulttypeByVal && !fcinfo->isnull &&
+		winstate->numfuncs > 1)
 		*result = datumCopy(*result,
 							perfuncstate->resulttypeByVal,
 							perfuncstate->resulttypeLen);
@@ -1248,6 +1251,20 @@ spool_tuples(WindowAggState *winstate, int64 pos)
 		return;					/* whole partition done already */
 
 	/*
+	 * When in pass-through mode we can just exhaust all tuples in the current
+	 * partition.  We don't need these tuples for any further window function
+	 * evaluation, however, we do need to keep them around if we're not the
+	 * top-level window as another WindowAgg node above must see these.
+	 */
+	if (winstate->status != WINDOWAGG_RUN)
+	{
+		Assert(winstate->status == WINDOWAGG_PASSTHROUGH ||
+			   winstate->status == WINDOWAGG_PASSTHROUGH_STRICT);
+
+		pos = -1;
+	}
+
+	/*
 	 * If the tuplestore has spilled to disk, alternate reading and writing
 	 * becomes quite expensive due to frequent buffer flushes.  It's cheaper
 	 * to force the entire partition to get spooled in one go.
@@ -1255,7 +1272,7 @@ spool_tuples(WindowAggState *winstate, int64 pos)
 	 * XXX this is a horrid kluge --- it'd be better to fix the performance
 	 * problem inside tuplestore.  FIXME
 	 */
-	if (!tuplestore_in_memory(winstate->buffer))
+	else if (!tuplestore_in_memory(winstate->buffer))
 		pos = -1;
 
 	outerPlan = outerPlanState(winstate);
@@ -1294,9 +1311,16 @@ spool_tuples(WindowAggState *winstate, int64 pos)
 			}
 		}
 
-		/* Still in partition, so save it into the tuplestore */
-		tuplestore_puttupleslot(winstate->buffer, outerslot);
-		winstate->spooled_rows++;
+		/*
+		 * Remember the tuple unless we're the top-level window and we're in
+		 * pass-through mode.
+		 */
+		if (winstate->status != WINDOWAGG_PASSTHROUGH_STRICT)
+		{
+			/* Still in partition, so save it into the tuplestore */
+			tuplestore_puttupleslot(winstate->buffer, outerslot);
+			winstate->spooled_rows++;
+		}
 	}
 
 	MemoryContextSwitchTo(oldcontext);
@@ -2022,13 +2046,14 @@ static TupleTableSlot *
 ExecWindowAgg(PlanState *pstate)
 {
 	WindowAggState *winstate = castNode(WindowAggState, pstate);
+	TupleTableSlot *slot;
 	ExprContext *econtext;
 	int			i;
 	int			numfuncs;
 
 	CHECK_FOR_INTERRUPTS();
 
-	if (winstate->all_done)
+	if (winstate->status == WINDOWAGG_DONE)
 		return NULL;
 
 	/*
@@ -2039,11 +2064,12 @@ ExecWindowAgg(PlanState *pstate)
 	if (winstate->all_first)
 	{
 		int			frameOptions = winstate->frameOptions;
-		ExprContext *econtext = winstate->ss.ps.ps_ExprContext;
 		Datum		value;
 		bool		isnull;
 		int16		len;
 		bool		byval;
+
+		econtext = winstate->ss.ps.ps_ExprContext;
 
 		if (frameOptions & FRAMEOPTION_START_OFFSET)
 		{
@@ -2098,143 +2124,244 @@ ExecWindowAgg(PlanState *pstate)
 		winstate->all_first = false;
 	}
 
-	if (winstate->buffer == NULL)
+	/* We need to loop as the runCondition or qual may filter out tuples */
+	for (;;)
 	{
-		/* Initialize for first partition and set current row = 0 */
-		begin_partition(winstate);
-		/* If there are no input rows, we'll detect that and exit below */
-	}
-	else
-	{
-		/* Advance current row within partition */
-		winstate->currentpos++;
-		/* This might mean that the frame moves, too */
-		winstate->framehead_valid = false;
-		winstate->frametail_valid = false;
-		/* we don't need to invalidate grouptail here; see below */
-	}
-
-	/*
-	 * Spool all tuples up to and including the current row, if we haven't
-	 * already
-	 */
-	spool_tuples(winstate, winstate->currentpos);
-
-	/* Move to the next partition if we reached the end of this partition */
-	if (winstate->partition_spooled &&
-		winstate->currentpos >= winstate->spooled_rows)
-	{
-		release_partition(winstate);
-
-		if (winstate->more_partitions)
+		if (winstate->buffer == NULL)
 		{
+			/* Initialize for first partition and set current row = 0 */
 			begin_partition(winstate);
-			Assert(winstate->spooled_rows > 0);
+			/* If there are no input rows, we'll detect that and exit below */
 		}
 		else
 		{
-			winstate->all_done = true;
-			return NULL;
+			/* Advance current row within partition */
+			winstate->currentpos++;
+			/* This might mean that the frame moves, too */
+			winstate->framehead_valid = false;
+			winstate->frametail_valid = false;
+			/* we don't need to invalidate grouptail here; see below */
 		}
-	}
 
-	/* final output execution is in ps_ExprContext */
-	econtext = winstate->ss.ps.ps_ExprContext;
+		/*
+		 * Spool all tuples up to and including the current row, if we haven't
+		 * already
+		 */
+		spool_tuples(winstate, winstate->currentpos);
 
-	/* Clear the per-output-tuple context for current row */
-	ResetExprContext(econtext);
-
-	/*
-	 * Read the current row from the tuplestore, and save in ScanTupleSlot.
-	 * (We can't rely on the outerplan's output slot because we may have to
-	 * read beyond the current row.  Also, we have to actually copy the row
-	 * out of the tuplestore, since window function evaluation might cause the
-	 * tuplestore to dump its state to disk.)
-	 *
-	 * In GROUPS mode, or when tracking a group-oriented exclusion clause, we
-	 * must also detect entering a new peer group and update associated state
-	 * when that happens.  We use temp_slot_2 to temporarily hold the previous
-	 * row for this purpose.
-	 *
-	 * Current row must be in the tuplestore, since we spooled it above.
-	 */
-	tuplestore_select_read_pointer(winstate->buffer, winstate->current_ptr);
-	if ((winstate->frameOptions & (FRAMEOPTION_GROUPS |
-								   FRAMEOPTION_EXCLUDE_GROUP |
-								   FRAMEOPTION_EXCLUDE_TIES)) &&
-		winstate->currentpos > 0)
-	{
-		ExecCopySlot(winstate->temp_slot_2, winstate->ss.ss_ScanTupleSlot);
-		if (!tuplestore_gettupleslot(winstate->buffer, true, true,
-									 winstate->ss.ss_ScanTupleSlot))
-			elog(ERROR, "unexpected end of tuplestore");
-		if (!are_peers(winstate, winstate->temp_slot_2,
-					   winstate->ss.ss_ScanTupleSlot))
+		/* Move to the next partition if we reached the end of this partition */
+		if (winstate->partition_spooled &&
+			winstate->currentpos >= winstate->spooled_rows)
 		{
-			winstate->currentgroup++;
-			winstate->groupheadpos = winstate->currentpos;
-			winstate->grouptail_valid = false;
+			release_partition(winstate);
+
+			if (winstate->more_partitions)
+			{
+				begin_partition(winstate);
+				Assert(winstate->spooled_rows > 0);
+
+				/* Come out of pass-through mode when changing partition */
+				winstate->status = WINDOWAGG_RUN;
+			}
+			else
+			{
+				/* No further partitions?  We're done */
+				winstate->status = WINDOWAGG_DONE;
+				return NULL;
+			}
 		}
-		ExecClearTuple(winstate->temp_slot_2);
+
+		/* final output execution is in ps_ExprContext */
+		econtext = winstate->ss.ps.ps_ExprContext;
+
+		/* Clear the per-output-tuple context for current row */
+		ResetExprContext(econtext);
+
+		/*
+		 * Read the current row from the tuplestore, and save in
+		 * ScanTupleSlot. (We can't rely on the outerplan's output slot
+		 * because we may have to read beyond the current row.  Also, we have
+		 * to actually copy the row out of the tuplestore, since window
+		 * function evaluation might cause the tuplestore to dump its state to
+		 * disk.)
+		 *
+		 * In GROUPS mode, or when tracking a group-oriented exclusion clause,
+		 * we must also detect entering a new peer group and update associated
+		 * state when that happens.  We use temp_slot_2 to temporarily hold
+		 * the previous row for this purpose.
+		 *
+		 * Current row must be in the tuplestore, since we spooled it above.
+		 */
+		tuplestore_select_read_pointer(winstate->buffer, winstate->current_ptr);
+		if ((winstate->frameOptions & (FRAMEOPTION_GROUPS |
+									   FRAMEOPTION_EXCLUDE_GROUP |
+									   FRAMEOPTION_EXCLUDE_TIES)) &&
+			winstate->currentpos > 0)
+		{
+			ExecCopySlot(winstate->temp_slot_2, winstate->ss.ss_ScanTupleSlot);
+			if (!tuplestore_gettupleslot(winstate->buffer, true, true,
+										 winstate->ss.ss_ScanTupleSlot))
+				elog(ERROR, "unexpected end of tuplestore");
+			if (!are_peers(winstate, winstate->temp_slot_2,
+						   winstate->ss.ss_ScanTupleSlot))
+			{
+				winstate->currentgroup++;
+				winstate->groupheadpos = winstate->currentpos;
+				winstate->grouptail_valid = false;
+			}
+			ExecClearTuple(winstate->temp_slot_2);
+		}
+		else
+		{
+			if (!tuplestore_gettupleslot(winstate->buffer, true, true,
+										 winstate->ss.ss_ScanTupleSlot))
+				elog(ERROR, "unexpected end of tuplestore");
+		}
+
+		/* don't evaluate the window functions when we're in pass-through mode */
+		if (winstate->status == WINDOWAGG_RUN)
+		{
+			/*
+			 * Evaluate true window functions
+			 */
+			numfuncs = winstate->numfuncs;
+			for (i = 0; i < numfuncs; i++)
+			{
+				WindowStatePerFunc perfuncstate = &(winstate->perfunc[i]);
+
+				if (perfuncstate->plain_agg)
+					continue;
+				eval_windowfunction(winstate, perfuncstate,
+									&(econtext->ecxt_aggvalues[perfuncstate->wfuncstate->wfuncno]),
+									&(econtext->ecxt_aggnulls[perfuncstate->wfuncstate->wfuncno]));
+			}
+
+			/*
+			 * Evaluate aggregates
+			 */
+			if (winstate->numaggs > 0)
+				eval_windowaggregates(winstate);
+		}
+
+		/*
+		 * If we have created auxiliary read pointers for the frame or group
+		 * boundaries, force them to be kept up-to-date, because we don't know
+		 * whether the window function(s) will do anything that requires that.
+		 * Failing to advance the pointers would result in being unable to
+		 * trim data from the tuplestore, which is bad.  (If we could know in
+		 * advance whether the window functions will use frame boundary info,
+		 * we could skip creating these pointers in the first place ... but
+		 * unfortunately the window function API doesn't require that.)
+		 */
+		if (winstate->framehead_ptr >= 0)
+			update_frameheadpos(winstate);
+		if (winstate->frametail_ptr >= 0)
+			update_frametailpos(winstate);
+		if (winstate->grouptail_ptr >= 0)
+			update_grouptailpos(winstate);
+
+		/*
+		 * Truncate any no-longer-needed rows from the tuplestore.
+		 */
+		tuplestore_trim(winstate->buffer);
+
+		/*
+		 * Form and return a projection tuple using the windowfunc results and
+		 * the current row.  Setting ecxt_outertuple arranges that any Vars
+		 * will be evaluated with respect to that row.
+		 */
+		econtext->ecxt_outertuple = winstate->ss.ss_ScanTupleSlot;
+
+		slot = ExecProject(winstate->ss.ps.ps_ProjInfo);
+
+		if (winstate->status == WINDOWAGG_RUN)
+		{
+			econtext->ecxt_scantuple = slot;
+
+			/*
+			 * Now evaluate the run condition to see if we need to go into
+			 * pass-through mode, or maybe stop completely.
+			 */
+			if (!ExecQual(winstate->runcondition, econtext))
+			{
+				/*
+				 * Determine which mode to move into.  If there is no
+				 * PARTITION BY clause and we're the top-level WindowAgg then
+				 * we're done.  This tuple and any future tuples cannot
+				 * possibly match the runcondition.  However, when there is a
+				 * PARTITION BY clause or we're not the top-level window we
+				 * can't just stop as we need to either process other
+				 * partitions or ensure WindowAgg nodes above us receive all
+				 * of the tuples they need to process their WindowFuncs.
+				 */
+				if (winstate->use_pass_through)
+				{
+					/*
+					 * STRICT pass-through mode is required for the top window
+					 * when there is a PARTITION BY clause.  Otherwise we must
+					 * ensure we store tuples that don't match the
+					 * runcondition so they're available to WindowAggs above.
+					 */
+					if (winstate->top_window)
+					{
+						winstate->status = WINDOWAGG_PASSTHROUGH_STRICT;
+						continue;
+					}
+					else
+					{
+						winstate->status = WINDOWAGG_PASSTHROUGH;
+
+						/*
+						 * If we're not the top-window, we'd better NULLify
+						 * the aggregate results.  In pass-through mode we no
+						 * longer update these and this avoids the old stale
+						 * results lingering.  Some of these might be byref
+						 * types so we can't have them pointing to free'd
+						 * memory.  The planner insisted that quals used in
+						 * the runcondition are strict, so the top-level
+						 * WindowAgg will filter these NULLs out in the filter
+						 * clause.
+						 */
+						numfuncs = winstate->numfuncs;
+						for (i = 0; i < numfuncs; i++)
+						{
+							econtext->ecxt_aggvalues[i] = (Datum) 0;
+							econtext->ecxt_aggnulls[i] = true;
+						}
+					}
+				}
+				else
+				{
+					/*
+					 * Pass-through not required.  We can just return NULL.
+					 * Nothing else will match the runcondition.
+					 */
+					winstate->status = WINDOWAGG_DONE;
+					return NULL;
+				}
+			}
+
+			/*
+			 * Filter out any tuples we don't need in the top-level WindowAgg.
+			 */
+			if (!ExecQual(winstate->ss.ps.qual, econtext))
+			{
+				InstrCountFiltered1(winstate, 1);
+				continue;
+			}
+
+			break;
+		}
+
+		/*
+		 * When not in WINDOWAGG_RUN mode, we must still return this tuple if
+		 * we're anything apart from the top window.
+		 */
+		else if (!winstate->top_window)
+			break;
 	}
-	else
-	{
-		if (!tuplestore_gettupleslot(winstate->buffer, true, true,
-									 winstate->ss.ss_ScanTupleSlot))
-			elog(ERROR, "unexpected end of tuplestore");
-	}
 
-	/*
-	 * Evaluate true window functions
-	 */
-	numfuncs = winstate->numfuncs;
-	for (i = 0; i < numfuncs; i++)
-	{
-		WindowStatePerFunc perfuncstate = &(winstate->perfunc[i]);
-
-		if (perfuncstate->plain_agg)
-			continue;
-		eval_windowfunction(winstate, perfuncstate,
-							&(econtext->ecxt_aggvalues[perfuncstate->wfuncstate->wfuncno]),
-							&(econtext->ecxt_aggnulls[perfuncstate->wfuncstate->wfuncno]));
-	}
-
-	/*
-	 * Evaluate aggregates
-	 */
-	if (winstate->numaggs > 0)
-		eval_windowaggregates(winstate);
-
-	/*
-	 * If we have created auxiliary read pointers for the frame or group
-	 * boundaries, force them to be kept up-to-date, because we don't know
-	 * whether the window function(s) will do anything that requires that.
-	 * Failing to advance the pointers would result in being unable to trim
-	 * data from the tuplestore, which is bad.  (If we could know in advance
-	 * whether the window functions will use frame boundary info, we could
-	 * skip creating these pointers in the first place ... but unfortunately
-	 * the window function API doesn't require that.)
-	 */
-	if (winstate->framehead_ptr >= 0)
-		update_frameheadpos(winstate);
-	if (winstate->frametail_ptr >= 0)
-		update_frametailpos(winstate);
-	if (winstate->grouptail_ptr >= 0)
-		update_grouptailpos(winstate);
-
-	/*
-	 * Truncate any no-longer-needed rows from the tuplestore.
-	 */
-	tuplestore_trim(winstate->buffer);
-
-	/*
-	 * Form and return a projection tuple using the windowfunc results and the
-	 * current row.  Setting ecxt_outertuple arranges that any Vars will be
-	 * evaluated with respect to that row.
-	 */
-	econtext->ecxt_outertuple = winstate->ss.ss_ScanTupleSlot;
-
-	return ExecProject(winstate->ss.ps.ps_ProjInfo);
+	return slot;
 }
 
 /* -----------------
@@ -2272,6 +2399,9 @@ ExecInitWindowAgg(WindowAgg *node, EState *estate, int eflags)
 	winstate->ss.ps.state = estate;
 	winstate->ss.ps.ExecProcNode = ExecWindowAgg;
 
+	/* copy frame options to state node for easy access */
+	winstate->frameOptions = frameOptions;
+
 	/*
 	 * Create expression contexts.  We need two, one for per-input-tuple
 	 * processing and one for per-output-tuple processing.  We cheat a little
@@ -2299,12 +2429,32 @@ ExecInitWindowAgg(WindowAgg *node, EState *estate, int eflags)
 							  "WindowAgg Aggregates",
 							  ALLOCSET_DEFAULT_SIZES);
 
+	/* Only the top-level WindowAgg may have a qual */
+	Assert(node->plan.qual == NIL || node->topWindow);
+
+	/* Initialize the qual */
+	winstate->ss.ps.qual = ExecInitQual(node->plan.qual,
+										(PlanState *) winstate);
+
 	/*
-	 * WindowAgg nodes never have quals, since they can only occur at the
-	 * logical top level of a query (ie, after any WHERE or HAVING filters)
+	 * Setup the run condition, if we received one from the query planner.
+	 * When set, this may allow us to move into pass-through mode so that we
+	 * don't have to perform any further evaluation of WindowFuncs in the
+	 * current partition or possibly stop returning tuples altogether when all
+	 * tuples are in the same partition.
 	 */
-	Assert(node->plan.qual == NIL);
-	winstate->ss.ps.qual = NULL;
+	winstate->runcondition = ExecInitQual(node->runCondition,
+										  (PlanState *) winstate);
+
+	/*
+	 * When we're not the top-level WindowAgg node or we are but have a
+	 * PARTITION BY clause we must move into one of the WINDOWAGG_PASSTHROUGH*
+	 * modes when the runCondition becomes false.
+	 */
+	winstate->use_pass_through = !node->topWindow || node->partNumCols > 0;
+
+	/* remember if we're the top-window or we are below the top-window */
+	winstate->top_window = node->topWindow;
 
 	/*
 	 * initialize child nodes
@@ -2316,16 +2466,25 @@ ExecInitWindowAgg(WindowAgg *node, EState *estate, int eflags)
 	 * initialize source tuple type (which is also the tuple type that we'll
 	 * store in the tuplestore and use in all our working slots).
 	 */
-	ExecCreateScanSlotFromOuterPlan(estate, &winstate->ss);
+	ExecCreateScanSlotFromOuterPlan(estate, &winstate->ss, &TTSOpsMinimalTuple);
 	scanDesc = winstate->ss.ss_ScanTupleSlot->tts_tupleDescriptor;
+
+	/* the outer tuple isn't the child's tuple, but always a minimal tuple */
+	winstate->ss.ps.outeropsset = true;
+	winstate->ss.ps.outerops = &TTSOpsMinimalTuple;
+	winstate->ss.ps.outeropsfixed = true;
 
 	/*
 	 * tuple table initialization
 	 */
-	winstate->first_part_slot = ExecInitExtraTupleSlot(estate, scanDesc);
-	winstate->agg_row_slot = ExecInitExtraTupleSlot(estate, scanDesc);
-	winstate->temp_slot_1 = ExecInitExtraTupleSlot(estate, scanDesc);
-	winstate->temp_slot_2 = ExecInitExtraTupleSlot(estate, scanDesc);
+	winstate->first_part_slot = ExecInitExtraTupleSlot(estate, scanDesc,
+													   &TTSOpsMinimalTuple);
+	winstate->agg_row_slot = ExecInitExtraTupleSlot(estate, scanDesc,
+													&TTSOpsMinimalTuple);
+	winstate->temp_slot_1 = ExecInitExtraTupleSlot(estate, scanDesc,
+												   &TTSOpsMinimalTuple);
+	winstate->temp_slot_2 = ExecInitExtraTupleSlot(estate, scanDesc,
+												   &TTSOpsMinimalTuple);
 
 	/*
 	 * create frame head and tail slots only if needed (must create slots in
@@ -2339,17 +2498,19 @@ ExecInitWindowAgg(WindowAgg *node, EState *estate, int eflags)
 		if (((frameOptions & FRAMEOPTION_START_CURRENT_ROW) &&
 			 node->ordNumCols != 0) ||
 			(frameOptions & FRAMEOPTION_START_OFFSET))
-			winstate->framehead_slot = ExecInitExtraTupleSlot(estate, scanDesc);
+			winstate->framehead_slot = ExecInitExtraTupleSlot(estate, scanDesc,
+															  &TTSOpsMinimalTuple);
 		if (((frameOptions & FRAMEOPTION_END_CURRENT_ROW) &&
 			 node->ordNumCols != 0) ||
 			(frameOptions & FRAMEOPTION_END_OFFSET))
-			winstate->frametail_slot = ExecInitExtraTupleSlot(estate, scanDesc);
+			winstate->frametail_slot = ExecInitExtraTupleSlot(estate, scanDesc,
+															  &TTSOpsMinimalTuple);
 	}
 
 	/*
 	 * Initialize result slot, type and projection.
 	 */
-	ExecInitResultTupleSlotTL(estate, &winstate->ss.ps);
+	ExecInitResultTupleSlotTL(&winstate->ss.ps, &TTSOpsVirtual);
 	ExecAssignProjectionInfo(&winstate->ss.ps, NULL);
 
 	/* Set up data for comparing tuples */
@@ -2359,6 +2520,7 @@ ExecInitWindowAgg(WindowAgg *node, EState *estate, int eflags)
 								   node->partNumCols,
 								   node->partColIdx,
 								   node->partOperators,
+								   node->partCollations,
 								   &winstate->ss.ps);
 
 	if (node->ordNumCols > 0)
@@ -2367,6 +2529,7 @@ ExecInitWindowAgg(WindowAgg *node, EState *estate, int eflags)
 								   node->ordNumCols,
 								   node->ordColIdx,
 								   node->ordOperators,
+								   node->ordCollations,
 								   &winstate->ss.ps);
 
 	/*
@@ -2421,8 +2584,8 @@ ExecInitWindowAgg(WindowAgg *node, EState *estate, int eflags)
 		wfuncstate->wfuncno = wfuncno;
 
 		/* Check permission to call window function */
-		aclresult = pg_proc_aclcheck(wfunc->winfnoid, GetUserId(),
-									 ACL_EXECUTE);
+		aclresult = object_aclcheck(ProcedureRelationId, wfunc->winfnoid, GetUserId(),
+									ACL_EXECUTE);
 		if (aclresult != ACLCHECK_OK)
 			aclcheck_error(aclresult, OBJECT_FUNCTION,
 						   get_func_name(wfunc->winfnoid));
@@ -2432,11 +2595,6 @@ ExecInitWindowAgg(WindowAgg *node, EState *estate, int eflags)
 		perfuncstate->wfuncstate = wfuncstate;
 		perfuncstate->wfunc = wfunc;
 		perfuncstate->numArguments = list_length(wfuncstate->args);
-
-		fmgr_info_cxt(wfunc->winfnoid, &perfuncstate->flinfo,
-					  econtext->ecxt_per_query_memory);
-		fmgr_info_set_expr((Node *) wfunc, &perfuncstate->flinfo);
-
 		perfuncstate->winCollation = wfunc->inputcollid;
 
 		get_typlenbyval(wfunc->wintype,
@@ -2465,6 +2623,11 @@ ExecInitWindowAgg(WindowAgg *node, EState *estate, int eflags)
 			winobj->argstates = wfuncstate->args;
 			winobj->localmem = NULL;
 			perfuncstate->winobj = winobj;
+
+			/* It's a real window function, so set up to call it. */
+			fmgr_info_cxt(wfunc->winfnoid, &perfuncstate->flinfo,
+						  econtext->ecxt_per_query_memory);
+			fmgr_info_set_expr((Node *) wfunc, &perfuncstate->flinfo);
 		}
 	}
 
@@ -2486,8 +2649,8 @@ ExecInitWindowAgg(WindowAgg *node, EState *estate, int eflags)
 		winstate->agg_winobj = agg_winobj;
 	}
 
-	/* copy frame options to state node for easy access */
-	winstate->frameOptions = frameOptions;
+	/* Set the status to running */
+	winstate->status = WINDOWAGG_RUN;
 
 	/* initialize frame bound offset expressions */
 	winstate->startOffset = ExecInitExpr((Expr *) node->startOffset,
@@ -2565,7 +2728,7 @@ ExecReScanWindowAgg(WindowAggState *node)
 	PlanState  *outerPlan = outerPlanState(node);
 	ExprContext *econtext = node->ss.ps.ps_ExprContext;
 
-	node->all_done = false;
+	node->status = WINDOWAGG_RUN;
 	node->all_first = true;
 
 	/* release tuplestore et al */
@@ -2639,7 +2802,7 @@ initialize_peragg(WindowAggState *winstate, WindowFunc *wfunc,
 
 	/*
 	 * Figure out whether we want to use the moving-aggregate implementation,
-	 * and collect the right set of fields from the pg_attribute entry.
+	 * and collect the right set of fields from the pg_aggregate entry.
 	 *
 	 * It's possible that an aggregate would supply a safe moving-aggregate
 	 * implementation and an unsafe normal one, in which case our hand is
@@ -2648,6 +2811,12 @@ initialize_peragg(WindowAggState *winstate, WindowFunc *wfunc,
 	 * aggregate's arguments (and FILTER clause if any) contain any calls to
 	 * volatile functions.  Otherwise, the difference between restarting and
 	 * not restarting the aggregation would be user-visible.
+	 *
+	 * We also don't risk using moving aggregates when there are subplans in
+	 * the arguments or FILTER clause.  This is partly because
+	 * contain_volatile_functions() doesn't look inside subplans; but there
+	 * are other reasons why a subplan's output might be volatile.  For
+	 * example, syncscan mode can render the results nonrepeatable.
 	 */
 	if (!OidIsValid(aggform->aggminvtransfn))
 		use_ma_code = false;	/* sine qua non */
@@ -2658,6 +2827,8 @@ initialize_peragg(WindowAggState *winstate, WindowFunc *wfunc,
 		use_ma_code = false;	/* non-moving frame head */
 	else if (contain_volatile_functions((Node *) wfunc))
 		use_ma_code = false;	/* avoid possible behavioral change */
+	else if (contain_subplans((Node *) wfunc))
+		use_ma_code = false;	/* subplans might contain volatile functions */
 	else
 		use_ma_code = true;		/* yes, let's use it */
 	if (use_ma_code)
@@ -2699,8 +2870,8 @@ initialize_peragg(WindowAggState *winstate, WindowFunc *wfunc,
 		aggOwner = ((Form_pg_proc) GETSTRUCT(procTuple))->proowner;
 		ReleaseSysCache(procTuple);
 
-		aclresult = pg_proc_aclcheck(transfn_oid, aggOwner,
-									 ACL_EXECUTE);
+		aclresult = object_aclcheck(ProcedureRelationId, transfn_oid, aggOwner,
+									ACL_EXECUTE);
 		if (aclresult != ACLCHECK_OK)
 			aclcheck_error(aclresult, OBJECT_FUNCTION,
 						   get_func_name(transfn_oid));
@@ -2708,8 +2879,8 @@ initialize_peragg(WindowAggState *winstate, WindowFunc *wfunc,
 
 		if (OidIsValid(invtransfn_oid))
 		{
-			aclresult = pg_proc_aclcheck(invtransfn_oid, aggOwner,
-										 ACL_EXECUTE);
+			aclresult = object_aclcheck(ProcedureRelationId, invtransfn_oid, aggOwner,
+										ACL_EXECUTE);
 			if (aclresult != ACLCHECK_OK)
 				aclcheck_error(aclresult, OBJECT_FUNCTION,
 							   get_func_name(invtransfn_oid));
@@ -2718,8 +2889,8 @@ initialize_peragg(WindowAggState *winstate, WindowFunc *wfunc,
 
 		if (OidIsValid(finalfn_oid))
 		{
-			aclresult = pg_proc_aclcheck(finalfn_oid, aggOwner,
-										 ACL_EXECUTE);
+			aclresult = object_aclcheck(ProcedureRelationId, finalfn_oid, aggOwner,
+										ACL_EXECUTE);
 			if (aclresult != ACLCHECK_OK)
 				aclcheck_error(aclresult, OBJECT_FUNCTION,
 							   get_func_name(finalfn_oid));
@@ -2970,6 +3141,10 @@ window_gettupleslot(WindowObject winobj, int64 pos, TupleTableSlot *slot)
 	/*
 	 * Now we should be on the tuple immediately before or after the one we
 	 * want, so just fetch forwards or backwards as appropriate.
+	 *
+	 * Notice that we tell tuplestore_gettupleslot to make a physical copy of
+	 * the fetched tuple.  This ensures that the slot's contents remain valid
+	 * through manipulations of the tuplestore, which some callers depend on.
 	 */
 	if (winobj->seekpos > pos)
 	{

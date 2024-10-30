@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: COMMIT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "COMMIT" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "COMMIT" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ COMMIT \- commit the current transaction
 .SH "SYNOPSIS"
 .sp
 .nf
-COMMIT [ WORK | TRANSACTION ]
+COMMIT [ WORK | TRANSACTION ] [ AND [ NO ] CHAIN ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -46,6 +46,14 @@ TRANSACTION
 .RS 4
 Optional key words\&. They have no effect\&.
 .RE
+.PP
+AND CHAIN
+.RS 4
+If
+AND CHAIN
+is specified, a new transaction is immediately started with the same transaction characteristics (see
+SET TRANSACTION (\fBSET_TRANSACTION\fR(7))) as the just finished one\&. Otherwise, no new transaction is started\&.
+.RE
 .SH "NOTES"
 .PP
 Use
@@ -55,6 +63,8 @@ to abort a transaction\&.
 Issuing
 \fBCOMMIT\fR
 when not inside a transaction does no harm, but it will provoke a warning message\&.
+\fBCOMMIT AND CHAIN\fR
+when not inside a transaction is an error\&.
 .SH "EXAMPLES"
 .PP
 To commit the current transaction and make all changes permanent:
@@ -70,9 +80,10 @@ COMMIT;
 .\}
 .SH "COMPATIBILITY"
 .PP
-The SQL standard only specifies the two forms
-COMMIT
-and
-COMMIT WORK\&. Otherwise, this command is fully conforming\&.
+The command
+\fBCOMMIT\fR
+conforms to the SQL standard\&. The form
+COMMIT TRANSACTION
+is a PostgreSQL extension\&.
 .SH "SEE ALSO"
 \fBBEGIN\fR(7), \fBROLLBACK\fR(7)

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE SCHEMA
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATE SCHEMA" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE SCHEMA" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -40,6 +40,7 @@ CREATE SCHEMA IF NOT EXISTS AUTHORIZATION \fIrole_specification\fR
 where \fIrole_specification\fR can be:
 
     \fIuser_name\fR
+  | CURRENT_ROLE
   | CURRENT_USER
   | SESSION_USER
 .fi
@@ -72,7 +73,9 @@ pg_, as such names are reserved for system schemas\&.
 .PP
 \fIuser_name\fR
 .RS 4
-The role name of the user who will own the new schema\&. If omitted, defaults to the user executing the command\&. To create a schema owned by another role, you must be a direct or indirect member of that role, or be a superuser\&.
+The role name of the user who will own the new schema\&. If omitted, defaults to the user executing the command\&. To create a schema owned by another role, you must be able to
+SET ROLE
+to that role\&.
 .RE
 .PP
 \fIschema_element\fR

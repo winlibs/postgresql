@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ROLLBACK TO SAVEPOINT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ROLLBACK TO SAVEPOINT" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ROLLBACK TO SAVEPOINT" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,7 +36,7 @@ ROLLBACK [ WORK | TRANSACTION ] TO [ SAVEPOINT ] \fIsavepoint_name\fR
 .fi
 .SH "DESCRIPTION"
 .PP
-Roll back all commands that were executed after the savepoint was established\&. The savepoint remains valid and can be rolled back to again later, if needed\&.
+Roll back all commands that were executed after the savepoint was established and then start a new subtransaction at the same transaction level\&. The savepoint remains valid and can be rolled back to again later, if needed\&.
 .PP
 \fBROLLBACK TO SAVEPOINT\fR
 implicitly destroys all savepoints that were established after the named savepoint\&.
@@ -49,7 +49,7 @@ The savepoint to roll back to\&.
 .SH "NOTES"
 .PP
 Use
-RELEASE SAVEPOINT (\fBRELEASE_SAVEPOINT\fR(7))
+\fBRELEASE SAVEPOINT\fR
 to destroy a savepoint without discarding the effects of commands executed after it was established\&.
 .PP
 Specifying a savepoint name that has not been established is an error\&.
@@ -95,14 +95,14 @@ DECLARE foo CURSOR FOR SELECT 1 UNION SELECT 2;
 SAVEPOINT foo;
 
 FETCH 1 FROM foo;
- ?column? 
+ ?column?
 \-\-\-\-\-\-\-\-\-\-
         1
 
 ROLLBACK TO SAVEPOINT foo;
 
 FETCH 1 FROM foo;
- ?column? 
+ ?column?
 \-\-\-\-\-\-\-\-\-\-
         2
 

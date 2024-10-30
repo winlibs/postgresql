@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SPI_execute_plan_with_paramlist
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "SPI_EXECUTE_PLAN_WITH_PARAMLIST" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "SPI_EXECUTE_PLAN_WITH_PARAMLIST" "3" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -47,6 +47,9 @@ except that information about the parameter values to be passed to the query is 
 ParamListInfo
 representation can be convenient for passing down values that are already available in that format\&. It also supports use of dynamic parameter sets via hook functions specified in
 ParamListInfo\&.
+.PP
+This function is now deprecated in favor of
+\fBSPI_execute_plan_extended\fR\&.
 .SH "ARGUMENTS"
 .PP
 SPIPlanPtr \fIplan\fR

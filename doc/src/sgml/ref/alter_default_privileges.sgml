@@ -46,7 +46,8 @@ GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON TYPES
     TO { [ GROUP ] <replaceable class="parameter">role_name</replaceable> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
 
-GRANT { USAGE | CREATE | ALL [ PRIVILEGES ] }
+GRANT { { USAGE | CREATE }
+    [, ...] | ALL [ PRIVILEGES ] }
     ON SCHEMAS
     TO { [ GROUP ] <replaceable class="parameter">role_name</replaceable> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
 
@@ -77,7 +78,8 @@ REVOKE [ GRANT OPTION FOR ]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
-    { USAGE | CREATE | ALL [ PRIVILEGES ] }
+    { { USAGE | CREATE }
+    [, ...] | ALL [ PRIVILEGES ] }
     ON SCHEMAS
     FROM { [ GROUP ] <replaceable class="parameter">role_name</replaceable> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
@@ -88,9 +90,32 @@ REVOKE [ GRANT OPTION FOR ]
   <title>Description</title>
 
   <para>
-   <command>ALTER DEFAULT PRIVILEGES</command> allows you to set the privileges
-   that will be applied to objects created in the future.  (It does not
-   affect privileges assigned to already-existing objects.)  Currently,
+   <command>ALTER DEFAULT PRIVILEGES</command> allows you to set the
+   privileges that will be applied to objects created in the future.
+   (It does not affect privileges assigned to already-existing objects.)
+   Privileges can be set globally (i.e., for all objects created in the
+   current database), or just for objects created in specified schemas.
+  </para>
+
+  <para>
+   While you can change your own default privileges and the defaults of
+   roles that you are a member of, at object creation time, new object
+   permissions are only affected by the default privileges of the current
+   role, and are not inherited from any roles in which the current role
+   is a member.
+  </para>
+
+  <para>
+   As explained in <xref linkend="ddl-priv"/>,
+   the default privileges for any object type normally grant all grantable
+   permissions to the object owner, and may grant some privileges to
+   <literal>PUBLIC</literal> as well.  However, this behavior can be changed by
+   altering the global default privileges with
+   <command>ALTER DEFAULT PRIVILEGES</command>.
+  </para>
+
+  <para>
+   Currently,
    only the privileges for schemas, tables (including views and foreign
    tables), sequences, functions, and types (including domains) can be
    altered.  For this command, functions include aggregates and procedures.
@@ -103,21 +128,13 @@ REVOKE [ GRANT OPTION FOR ]
   </para>
 
   <para>
-   You can change default privileges only for objects that will be created by
-   yourself or by roles that you are a member of.  The privileges can be set
-   globally (i.e., for all objects created in the current database),
-   or just for objects created in specified schemas.  Default privileges
-   that are specified per-schema are added to whatever the global default
-   privileges are for the particular object type.
-  </para>
-
-  <para>
-   As explained under <xref linkend="sql-grant"/>,
-   the default privileges for any object type normally grant all grantable
-   permissions to the object owner, and may grant some privileges to
-   <literal>PUBLIC</literal> as well.  However, this behavior can be changed by
-   altering the global default privileges with
-   <command>ALTER DEFAULT PRIVILEGES</command>.
+   Default privileges that are specified per-schema are added to whatever
+   the global default privileges are for the particular object type.
+   This means you cannot revoke privileges per-schema if they are granted
+   globally (either by default, or according to a previous <command>ALTER
+   DEFAULT PRIVILEGES</command> command that did not specify a schema).
+   Per-schema <literal>REVOKE</literal> is only useful to reverse the
+   effects of a previous per-schema <literal>GRANT</literal>.
   </para>
 
  <refsect2>
@@ -128,8 +145,9 @@ REVOKE [ GRANT OPTION FOR ]
     <term><replaceable>target_role</replaceable></term>
     <listitem>
      <para>
-      The name of an existing role of which the current role is a member.
-      If <literal>FOR ROLE</literal> is omitted, the current role is assumed.
+      Change default privileges for objects created by the
+      <replaceable>target_role</replaceable>, or the current
+      role if unspecified.
      </para>
     </listitem>
    </varlistentry>
@@ -142,8 +160,8 @@ REVOKE [ GRANT OPTION FOR ]
       are altered for objects later created in that schema.
       If <literal>IN SCHEMA</literal> is omitted, the global default privileges
       are altered.
-      <literal>IN SCHEMA</literal> is not allowed when using <literal>ON SCHEMAS</literal>
-      as schemas can't be nested.
+      <literal>IN SCHEMA</literal> is not allowed when setting privileges
+      for schemas, since schemas can't be nested.
      </para>
     </listitem>
    </varlistentry>
@@ -173,9 +191,8 @@ REVOKE [ GRANT OPTION FOR ]
   <para>
    Use <xref linkend="app-psql"/>'s <command>\ddp</command> command
    to obtain information about existing assignments of default privileges.
-   The meaning of the privilege values is the same as explained for
-   <command>\dp</command> under
-   <xref linkend="sql-grant"/>.
+   The meaning of the privilege display is the same as explained for
+   <command>\dp</command> in <xref linkend="ddl-priv"/>.
   </para>
 
   <para>
@@ -213,10 +230,18 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA myschema REVOKE INSERT ON TABLES FROM webuser
   <para>
    Remove the public EXECUTE permission that is normally granted on functions,
    for all functions subsequently created by role <literal>admin</literal>:
-
 <programlisting>
 ALTER DEFAULT PRIVILEGES FOR ROLE admin REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
-</programlisting></para>
+</programlisting>
+   Note however that you <emphasis>cannot</emphasis> accomplish that effect
+   with a command limited to a single schema.  This command has no effect,
+   unless it is undoing a matching <literal>GRANT</literal>:
+<programlisting>
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+</programlisting>
+   That's because per-schema default privileges can only add privileges to
+   the global setting, not remove privileges granted by it.
+  </para>
  </refsect1>
 
  <refsect1>

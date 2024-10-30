@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_dump
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "PG_DUMP" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "PG_DUMP" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -94,7 +94,9 @@ This option is similar to, but for historical reasons not identical to, specifyi
 .PP
 \fB\-b\fR
 .br
-\fB\-\-blobs\fR
+\fB\-\-large\-objects\fR
+.br
+\fB\-\-blobs\fR (deprecated)
 .RS 4
 Include large objects in the dump\&. This is the default behavior except when
 \fB\-\-schema\fR,
@@ -102,7 +104,7 @@ Include large objects in the dump\&. This is the default behavior except when
 \fB\-\-schema\-only\fR
 is specified\&. The
 \fB\-b\fR
-switch is therefore only useful to add large objects to dumps where a specific schema or table has been requested\&. Note that blobs are considered data and therefore will be included when
+switch is therefore only useful to add large objects to dumps where a specific schema or table has been requested\&. Note that large objects are considered data and therefore will be included when
 \fB\-\-data\-only\fR
 is used, but not when
 \fB\-\-schema\-only\fR
@@ -111,7 +113,9 @@ is\&.
 .PP
 \fB\-B\fR
 .br
-\fB\-\-no\-blobs\fR
+\fB\-\-no\-large\-objects\fR
+.br
+\fB\-\-no\-blobs\fR (deprecated)
 .RS 4
 Exclude large objects in the dump\&.
 .sp
@@ -128,11 +132,13 @@ documentation\&.
 .br
 \fB\-\-clean\fR
 .RS 4
-Output commands to clean (drop) database objects prior to outputting the commands for creating them\&. (Unless
+Output commands to
+\fBDROP\fR
+all the dumped database objects prior to outputting the commands for creating them\&. This option is useful when the restore is to overwrite an existing database\&. If any of the objects do not exist in the destination database, ignorable error messages will be reported during restore, unless
 \fB\-\-if\-exists\fR
-is also specified, restore might generate some harmless error messages, if any objects were not present in the destination database\&.)
+is also specified\&.
 .sp
-This option is only meaningful for the plain\-text format\&. For the archive formats, you can specify the option when you call
+This option is ignored when emitting an archive (non\-text) output file\&. For the archive formats, you can specify the option when you call
 \fBpg_restore\fR\&.
 .RE
 .PP
@@ -153,8 +159,48 @@ commands that mention this database\&. Access privileges for the database itself
 \fB\-\-no\-acl\fR
 is specified\&.
 .sp
-This option is only meaningful for the plain\-text format\&. For the archive formats, you can specify the option when you call
+This option is ignored when emitting an archive (non\-text) output file\&. For the archive formats, you can specify the option when you call
 \fBpg_restore\fR\&.
+.RE
+.PP
+\fB\-e \fR\fB\fIpattern\fR\fR
+.br
+\fB\-\-extension=\fR\fB\fIpattern\fR\fR
+.RS 4
+Dump only extensions matching
+\fIpattern\fR\&. When this option is not specified, all non\-system extensions in the target database will be dumped\&. Multiple extensions can be selected by writing multiple
+\fB\-e\fR
+switches\&. The
+\fIpattern\fR
+parameter is interpreted as a pattern according to the same rules used by
+psql\*(Aqs
+\ed
+commands (see
+Patterns), so multiple extensions can also be selected by writing wildcard characters in the pattern\&. When using wildcards, be careful to quote the pattern if needed to prevent the shell from expanding the wildcards\&.
+.sp
+Any configuration relation registered by
+\fBpg_extension_config_dump\fR
+is included in the dump if its extension is specified by
+\fB\-\-extension\fR\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+When
+\fB\-e\fR
+is specified,
+pg_dump
+makes no attempt to dump any other database objects that the selected extension(s) might depend upon\&. Therefore, there is no guarantee that the results of a specific\-extension dump can be successfully restored by themselves into a clean database\&.
+.sp .5v
+.RE
 .RE
 .PP
 \fB\-E \fR\fB\fIencoding\fR\fR
@@ -163,7 +209,8 @@ This option is only meaningful for the plain\-text format\&. For the archive for
 .RS 4
 Create the dump in the specified character set encoding\&. By default, the dump is created in the database encoding\&. (Another way to get the same result is to set the
 \fBPGCLIENTENCODING\fR
-environment variable to the desired dump encoding\&.)
+environment variable to the desired dump encoding\&.) The supported encodings are described in
+Section\ \&24.3.1\&.
 .RE
 .PP
 \fB\-f \fR\fB\fIfile\fR\fR
@@ -205,11 +252,15 @@ d
 directory
 .RS 4
 Output a directory\-format archive suitable for input into
-pg_restore\&. This will create a directory with one file for each table and blob being dumped, plus a so\-called Table of Contents file describing the dumped objects in a machine\-readable format that
+pg_restore\&. This will create a directory with one file for each table and large object being dumped, plus a so\-called Table of Contents file describing the dumped objects in a machine\-readable format that
 pg_restore
 can read\&. A directory format archive can be manipulated with standard Unix tools; for example, files in an uncompressed archive can be compressed with the
+gzip,
+lz4, or
+zstd
+tools\&. This format is compressed by default using
 gzip
-tool\&. This format is compressed by default and also supports parallel dumps\&.
+and also supports parallel dumps\&.
 .RE
 .PP
 t
@@ -228,7 +279,7 @@ pg_restore\&. The tar format is compatible with the directory format: extracting
 .RS 4
 Run the dump in parallel by dumping
 \fInjobs\fR
-tables simultaneously\&. This option reduces the time of the dump but it also increases the load on the database server\&. You can only use this option with the directory output format because this is the only output format where multiple processes can write their data at the same time\&.
+tables simultaneously\&. This option may reduce the time needed to perform the dump but it also increases the load on the database server\&. You can only use this option with the directory output format because this is the only output format where multiple processes can write their data at the same time\&.
 .sp
 pg_dump
 will open
@@ -239,7 +290,7 @@ setting is high enough to accommodate all connections\&.
 .sp
 Requesting exclusive locks on database objects while running a parallel dump could cause the dump to fail\&. The reason is that the
 pg_dump
-master process requests shared locks on the objects that the worker processes are going to dump later in order to make sure that nobody deletes them and makes them go away while the dump is running\&. If another client then requests an exclusive lock on a table, that lock will not be granted but will be queued waiting for the shared lock of the master process to be released\&. Consequently any other access to the table will not be granted either and will queue after the exclusive lock request\&. This includes the worker process trying to dump the table\&. Without any precautions this would be a classic deadlock situation\&. To detect this conflict, the
+leader process requests shared locks (ACCESS SHARE) on the objects that the worker processes are going to dump later in order to make sure that nobody deletes them and makes them go away while the dump is running\&. If another client then requests an exclusive lock on a table, that lock will not be granted but will be queued waiting for the shared lock of the leader process to be released\&. Consequently any other access to the table will not be granted either and will queue after the exclusive lock request\&. This includes the worker process trying to dump the table\&. Without any precautions this would be a classic deadlock situation\&. To detect this conflict, the
 pg_dump
 worker process requests another shared lock using the
 NOWAIT
@@ -247,36 +298,29 @@ option\&. If the worker process is not granted this shared lock, somebody else m
 pg_dump
 has no choice but to abort the dump\&.
 .sp
-For a consistent backup, the database server needs to support synchronized snapshots, a feature that was introduced in
+To perform a parallel dump, the database server needs to support synchronized snapshots, a feature that was introduced in
 PostgreSQL
 9\&.2 for primary servers and 10 for standbys\&. With this feature, database clients can ensure they see the same data set even though they use different connections\&.
 \fBpg_dump \-j\fR
-uses multiple database connections; it connects to the database once with the master process and once again for each worker job\&. Without the synchronized snapshot feature, the different worker jobs wouldn\*(Aqt be guaranteed to see the same data in each connection, which could lead to an inconsistent backup\&.
-.sp
-If you want to run a parallel dump of a pre\-9\&.2 server, you need to make sure that the database content doesn\*(Aqt change from between the time the master connects to the database until the last worker job has connected to the database\&. The easiest way to do this is to halt any data modifying processes (DDL and DML) accessing the database before starting the backup\&. You also need to specify the
-\fB\-\-no\-synchronized\-snapshots\fR
-parameter when running
-\fBpg_dump \-j\fR
-against a pre\-9\&.2
-PostgreSQL
-server\&.
+uses multiple database connections; it connects to the database once with the leader process and once again for each worker job\&. Without the synchronized snapshot feature, the different worker jobs wouldn\*(Aqt be guaranteed to see the same data in each connection, which could lead to an inconsistent backup\&.
 .RE
 .PP
-\fB\-n \fR\fB\fIschema\fR\fR
+\fB\-n \fR\fB\fIpattern\fR\fR
 .br
-\fB\-\-schema=\fR\fB\fIschema\fR\fR
+\fB\-\-schema=\fR\fB\fIpattern\fR\fR
 .RS 4
 Dump only schemas matching
-\fIschema\fR; this selects both the schema itself, and all its contained objects\&. When this option is not specified, all non\-system schemas in the target database will be dumped\&. Multiple schemas can be selected by writing multiple
+\fIpattern\fR; this selects both the schema itself, and all its contained objects\&. When this option is not specified, all non\-system schemas in the target database will be dumped\&. Multiple schemas can be selected by writing multiple
 \fB\-n\fR
-switches\&. Also, the
-\fIschema\fR
+switches\&. The
+\fIpattern\fR
 parameter is interpreted as a pattern according to the same rules used by
 psql\*(Aqs
 \ed
 commands (see
 Patterns), so multiple schemas can also be selected by writing wildcard characters in the pattern\&. When using wildcards, be careful to quote the pattern if needed to prevent the shell from expanding the wildcards; see
-EXAMPLES\&.
+Examples
+below\&.
 .if n \{\
 .sp
 .\}
@@ -308,22 +352,21 @@ makes no attempt to dump any other database objects that the selected schema(s) 
 \fBNote\fR
 .ps -1
 .br
-Non\-schema objects such as blobs are not dumped when
+Non\-schema objects such as large objects are not dumped when
 \fB\-n\fR
-is specified\&. You can add blobs back to the dump with the
-\fB\-\-blobs\fR
+is specified\&. You can add large objects back to the dump with the
+\fB\-\-large\-objects\fR
 switch\&.
 .sp .5v
 .RE
 .RE
 .PP
-\fB\-N \fR\fB\fIschema\fR\fR
+\fB\-N \fR\fB\fIpattern\fR\fR
 .br
-\fB\-\-exclude\-schema=\fR\fB\fIschema\fR\fR
+\fB\-\-exclude\-schema=\fR\fB\fIpattern\fR\fR
 .RS 4
-Do not dump any schemas matching the
-\fIschema\fR
-pattern\&. The pattern is interpreted according to the same rules as for
+Do not dump any schemas matching
+\fIpattern\fR\&. The pattern is interpreted according to the same rules as for
 \fB\-n\fR\&.
 \fB\-N\fR
 can be given more than once to exclude schemas matching any of several patterns\&.
@@ -344,15 +387,6 @@ appears without
 are excluded from what is otherwise a normal dump\&.
 .RE
 .PP
-\fB\-o\fR
-.br
-\fB\-\-oids\fR
-.RS 4
-Dump object identifiers (OIDs) as part of the data for every table\&. Use this option if your application references the
-OID
-columns in some way (e\&.g\&., in a foreign key constraint)\&. Otherwise, this option should not be used\&.
-.RE
-.PP
 \fB\-O\fR
 .br
 \fB\-\-no\-owner\fR
@@ -366,7 +400,7 @@ or
 statements to set ownership of created database objects\&. These statements will fail when the script is run unless it is started by a superuser (or the same user that owns all of the objects in the script)\&. To make a script that can be restored by any user, but will give that user ownership of all the objects, specify
 \fB\-O\fR\&.
 .sp
-This option is only meaningful for the plain\-text format\&. For the archive formats, you can specify the option when you call
+This option is ignored when emitting an archive (non\-text) output file\&. For the archive formats, you can specify the option when you call
 \fBpg_restore\fR\&.
 .RE
 .PP
@@ -406,23 +440,25 @@ Specify the superuser user name to use when disabling triggers\&. This is releva
 is used\&. (Usually, it\*(Aqs better to leave this out, and instead start the resulting script as superuser\&.)
 .RE
 .PP
-\fB\-t \fR\fB\fItable\fR\fR
+\fB\-t \fR\fB\fIpattern\fR\fR
 .br
-\fB\-\-table=\fR\fB\fItable\fR\fR
+\fB\-\-table=\fR\fB\fIpattern\fR\fR
 .RS 4
 Dump only tables with names matching
-\fItable\fR\&. For this purpose,
-\(lqtable\(rq
-includes views, materialized views, sequences, and foreign tables\&. Multiple tables can be selected by writing multiple
+\fIpattern\fR\&. Multiple tables can be selected by writing multiple
 \fB\-t\fR
-switches\&. Also, the
-\fItable\fR
+switches\&. The
+\fIpattern\fR
 parameter is interpreted as a pattern according to the same rules used by
 psql\*(Aqs
 \ed
 commands (see
 Patterns), so multiple tables can also be selected by writing wildcard characters in the pattern\&. When using wildcards, be careful to quote the pattern if needed to prevent the shell from expanding the wildcards; see
-EXAMPLES\&.
+Examples
+below\&.
+.sp
+As well as tables, this option can be used to dump the definition of matching views, materialized views, foreign tables, and sequences\&. It will not dump the contents of views or materialized views, and the contents of foreign tables will only be dumped if the corresponding foreign server is specified with
+\fB\-\-include\-foreign\-data\fR\&.
 .sp
 The
 \fB\-n\fR
@@ -452,41 +488,14 @@ pg_dump
 makes no attempt to dump any other database objects that the selected table(s) might depend upon\&. Therefore, there is no guarantee that the results of a specific\-table dump can be successfully restored by themselves into a clean database\&.
 .sp .5v
 .RE
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBNote\fR
-.ps -1
-.br
-The behavior of the
-\fB\-t\fR
-switch is not entirely upward compatible with pre\-8\&.2
-PostgreSQL
-versions\&. Formerly, writing
-\-t tab
-would dump all tables named
-tab, but now it just dumps whichever one is visible in your default search path\&. To get the old behavior you can write
-\-t \*(Aq*\&.tab\*(Aq\&. Also, you must write something like
-\-t sch\&.tab
-to select a table in a particular schema, rather than the old locution of
-\-n sch \-t tab\&.
-.sp .5v
-.RE
 .RE
 .PP
-\fB\-T \fR\fB\fItable\fR\fR
+\fB\-T \fR\fB\fIpattern\fR\fR
 .br
-\fB\-\-exclude\-table=\fR\fB\fItable\fR\fR
+\fB\-\-exclude\-table=\fR\fB\fIpattern\fR\fR
 .RS 4
-Do not dump any tables matching the
-\fItable\fR
-pattern\&. The pattern is interpreted according to the same rules as for
+Do not dump any tables matching
+\fIpattern\fR\&. The pattern is interpreted according to the same rules as for
 \fB\-t\fR\&.
 \fB\-T\fR
 can be given more than once to exclude tables matching any of several patterns\&.
@@ -513,7 +522,7 @@ are excluded from what is otherwise a normal dump\&.
 .RS 4
 Specifies verbose mode\&. This will cause
 pg_dump
-to output detailed object comments and start/stop times to the dump file, and progress messages to standard error\&.
+to output detailed object comments and start/stop times to the dump file, and progress messages to standard error\&. Repeating the option causes additional debug\-level messages to appear on standard error\&.
 .RE
 .PP
 \fB\-V\fR
@@ -534,12 +543,43 @@ version and exit\&.
 Prevent dumping of access privileges (grant/revoke commands)\&.
 .RE
 .PP
-\fB\-Z \fR\fB\fI0\&.\&.9\fR\fR
+\fB\-Z \fR\fB\fIlevel\fR\fR
 .br
-\fB\-\-compress=\fR\fB\fI0\&.\&.9\fR\fR
+\fB\-Z \fR\fB\fImethod\fR\fR[:\fIdetail\fR]
+.br
+\fB\-\-compress=\fR\fB\fIlevel\fR\fR
+.br
+\fB\-\-compress=\fR\fB\fImethod\fR\fR[:\fIdetail\fR]
 .RS 4
-Specify the compression level to use\&. Zero means no compression\&. For the custom archive format, this specifies compression of individual table\-data segments, and the default is to compress at a moderate level\&. For plain text output, setting a nonzero compression level causes the entire output file to be compressed, as though it had been fed through
-gzip; but the default is not to compress\&. The tar archive format currently does not support compression at all\&.
+Specify the compression method and/or the compression level to use\&. The compression method can be set to
+gzip,
+lz4,
+zstd, or
+none
+for no compression\&. A compression detail string can optionally be specified\&. If the detail string is an integer, it specifies the compression level\&. Otherwise, it should be a comma\-separated list of items, each of the form
+keyword
+or
+keyword=value\&. Currently, the supported keywords are
+level
+and
+long\&.
+.sp
+If no compression level is specified, the default compression level will be used\&. If only a level is specified without mentioning an algorithm,
+gzip
+compression will be used if the level is greater than
+0, and no compression will be used if the level is
+0\&.
+.sp
+For the custom and directory archive formats, this specifies compression of individual table\-data segments, and the default is to compress using
+gzip
+at a moderate level\&. For plain text output, setting a nonzero compression level causes the entire output file to be compressed, as though it had been fed through
+gzip,
+lz4, or
+zstd; but the default is not to compress\&. With zstd compression,
+long
+mode may improve the compression ratio, at the cost of increased memory use\&.
+.sp
+The tar archive format currently does not support compression at all\&.
 .RE
 .PP
 \fB\-\-binary\-upgrade\fR
@@ -554,7 +594,9 @@ This option is for use by in\-place upgrade utilities\&. Its use for other purpo
 Dump data as
 \fBINSERT\fR
 commands with explicit column names (INSERT INTO \fItable\fR (\fIcolumn\fR, \&.\&.\&.) VALUES \&.\&.\&.)\&. This will make restoration very slow; it is mainly useful for making dumps that can be loaded into non\-PostgreSQL
-databases\&. However, since this option generates a separate command for each row, an error in reloading a row causes only that row to be lost rather than the entire table contents\&.
+databases\&. Any error during restoring will cause only rows that are part of the problematic
+\fBINSERT\fR
+to be lost, rather than the entire table contents\&.
 .RE
 .PP
 \fB\-\-disable\-dollar\-quoting\fR
@@ -566,14 +608,14 @@ This option disables the use of dollar quoting for function bodies, and forces t
 .RS 4
 This option is relevant only when creating a data\-only dump\&. It instructs
 pg_dump
-to include commands to temporarily disable triggers on the target tables while the data is reloaded\&. Use this if you have referential integrity checks or other triggers on the tables that you do not want to invoke during data reload\&.
+to include commands to temporarily disable triggers on the target tables while the data is restored\&. Use this if you have referential integrity checks or other triggers on the tables that you do not want to invoke during data restore\&.
 .sp
 Presently, the commands emitted for
 \fB\-\-disable\-triggers\fR
 must be done as superuser\&. So, you should also specify a superuser name with
 \fB\-S\fR, or preferably be careful to start the resulting script as a superuser\&.
 .sp
-This option is only meaningful for the plain\-text format\&. For the archive formats, you can specify the option when you call
+This option is ignored when emitting an archive (non\-text) output file\&. For the archive formats, you can specify the option when you call
 \fBpg_restore\fR\&.
 .RE
 .PP
@@ -596,11 +638,18 @@ format, as the
 during restore does not support row security\&.
 .RE
 .PP
-\fB\-\-exclude\-table\-data=\fR\fB\fItable\fR\fR
+\fB\-\-exclude\-table\-and\-children=\fR\fB\fIpattern\fR\fR
 .RS 4
-Do not dump data for any tables matching the
-\fItable\fR
-pattern\&. The pattern is interpreted according to the same rules as for
+This is the same as the
+\fB\-T\fR/\fB\-\-exclude\-table\fR
+option, except that it also excludes any partitions or inheritance child tables of the table(s) matching the
+\fIpattern\fR\&.
+.RE
+.PP
+\fB\-\-exclude\-table\-data=\fR\fB\fIpattern\fR\fR
+.RS 4
+Do not dump data for any tables matching
+\fIpattern\fR\&. The pattern is interpreted according to the same rules as for
 \fB\-t\fR\&.
 \fB\-\-exclude\-table\-data\fR
 can be given more than once to exclude tables matching any of several patterns\&. This option is useful when you need the definition of a particular table even though you do not need the data in it\&.
@@ -609,13 +658,85 @@ To exclude data for all tables in the database, see
 \fB\-\-schema\-only\fR\&.
 .RE
 .PP
+\fB\-\-exclude\-table\-data\-and\-children=\fR\fB\fIpattern\fR\fR
+.RS 4
+This is the same as the
+\fB\-\-exclude\-table\-data\fR
+option, except that it also excludes data of any partitions or inheritance child tables of the table(s) matching the
+\fIpattern\fR\&.
+.RE
+.PP
+\fB\-\-extra\-float\-digits=\fR\fB\fIndigits\fR\fR
+.RS 4
+Use the specified value of
+\fBextra_float_digits\fR
+when dumping floating\-point data, instead of the maximum available precision\&. Routine dumps made for backup purposes should not use this option\&.
+.RE
+.PP
 \fB\-\-if\-exists\fR
 .RS 4
-Use conditional commands (i\&.e\&. add an
-IF EXISTS
-clause) when cleaning database objects\&. This option is not valid unless
+Use
+DROP \&.\&.\&. IF EXISTS
+commands to drop objects in
+\fB\-\-clean\fR
+mode\&. This suppresses
+\(lqdoes not exist\(rq
+errors that might otherwise be reported\&. This option is not valid unless
 \fB\-\-clean\fR
 is also specified\&.
+.RE
+.PP
+\fB\-\-include\-foreign\-data=\fR\fB\fIforeignserver\fR\fR
+.RS 4
+Dump the data for any foreign table with a foreign server matching
+\fIforeignserver\fR
+pattern\&. Multiple foreign servers can be selected by writing multiple
+\fB\-\-include\-foreign\-data\fR
+switches\&. Also, the
+\fIforeignserver\fR
+parameter is interpreted as a pattern according to the same rules used by
+psql\*(Aqs
+\ed
+commands (see
+Patterns), so multiple foreign servers can also be selected by writing wildcard characters in the pattern\&. When using wildcards, be careful to quote the pattern if needed to prevent the shell from expanding the wildcards; see
+Examples
+below\&. The only exception is that an empty pattern is disallowed\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+Using wildcards in
+\fB\-\-include\-foreign\-data\fR
+may result in access to unexpected foreign servers\&. Also, to use this option securely, make sure that the named server must have a trusted owner\&.
+.sp .5v
+.RE
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+When
+\fB\-\-include\-foreign\-data\fR
+is specified,
+pg_dump
+does not check that the foreign table is writable\&. Therefore, there is no guarantee that the results of a foreign table dump can be successfully restored\&.
+.sp .5v
+.RE
 .RE
 .PP
 \fB\-\-inserts\fR
@@ -624,7 +745,9 @@ Dump data as
 \fBINSERT\fR
 commands (rather than
 \fBCOPY\fR)\&. This will make restoration very slow; it is mainly useful for making dumps that can be loaded into non\-PostgreSQL
-databases\&. However, since this option generates a separate command for each row, an error in reloading a row causes only that row to be lost rather than the entire table contents\&. Note that the restore might fail altogether if you have rearranged column order\&. The
+databases\&. Any error during restoring will cause only rows that are part of the problematic
+\fBINSERT\fR
+to be lost, rather than the entire table contents\&. Note that the restore might fail altogether if you have rearranged column order\&. The
 \fB\-\-column\-inserts\fR
 option is safe against column order changes, though even slower\&.
 .RE
@@ -635,11 +758,7 @@ When dumping data for a table partition, make the
 \fBCOPY\fR
 or
 \fBINSERT\fR
-statements target the root of the partitioning hierarchy that contains it, rather than the partition itself\&. This causes the appropriate partition to be re\-determined for each row when the data is loaded\&. This may be useful when reloading data on a server where rows do not always fall into the same partitions as they did on the original server\&. That could happen, for example, if the partitioning column is of type text and the two systems have different definitions of the collation used to sort the partitioning column\&.
-.sp
-It is best not to use parallelism when restoring from an archive made with this option, because
-pg_restore
-will not know exactly which partition(s) a given archive data item will load data into\&. This could result in inefficiency due to lock conflicts between parallel jobs, or perhaps even reload failures due to foreign key constraints being set up before all the relevant data is loaded\&.
+statements target the root of the partitioning hierarchy that contains it, rather than the partition itself\&. This causes the appropriate partition to be re\-determined for each row when the data is loaded\&. This may be useful when restoring data on a server where rows do not always fall into the same partitions as they did on the original server\&. That could happen, for example, if the partitioning column is of type text and the two systems have different definitions of the collation used to sort the partitioning column\&.
 .RE
 .PP
 \fB\-\-lock\-wait\-timeout=\fR\fB\fItimeout\fR\fR
@@ -678,26 +797,46 @@ will wait for all files to be written safely to disk\&. This option causes
 to return without waiting, which is faster, but means that a subsequent operating system crash can leave the dump corrupt\&. Generally, this option is useful for testing but should not be used when dumping data from production installation\&.
 .RE
 .PP
-\fB\-\-no\-synchronized\-snapshots\fR
+\fB\-\-no\-table\-access\-method\fR
 .RS 4
-This option allows running
-\fBpg_dump \-j\fR
-against a pre\-9\&.2 server, see the documentation of the
-\fB\-j\fR
-parameter for more details\&.
+Do not output commands to select table access methods\&. With this option, all objects will be created with whichever table access method is the default during restore\&.
+.sp
+This option is ignored when emitting an archive (non\-text) output file\&. For the archive formats, you can specify the option when you call
+\fBpg_restore\fR\&.
 .RE
 .PP
 \fB\-\-no\-tablespaces\fR
 .RS 4
 Do not output commands to select tablespaces\&. With this option, all objects will be created in whichever tablespace is the default during restore\&.
 .sp
-This option is only meaningful for the plain\-text format\&. For the archive formats, you can specify the option when you call
+This option is ignored when emitting an archive (non\-text) output file\&. For the archive formats, you can specify the option when you call
 \fBpg_restore\fR\&.
+.RE
+.PP
+\fB\-\-no\-toast\-compression\fR
+.RS 4
+Do not output commands to set
+TOAST
+compression methods\&. With this option, all columns will be restored with the default compression setting\&.
 .RE
 .PP
 \fB\-\-no\-unlogged\-table\-data\fR
 .RS 4
-Do not dump the contents of unlogged tables\&. This option has no effect on whether or not the table definitions (schema) are dumped; it only suppresses dumping the table data\&. Data in unlogged tables is always excluded when dumping from a standby server\&.
+Do not dump the contents of unlogged tables and sequences\&. This option has no effect on whether or not the table and sequence definitions (schema) are dumped; it only suppresses dumping the table and sequence data\&. Data in unlogged tables and sequences is always excluded when dumping from a standby server\&.
+.RE
+.PP
+\fB\-\-on\-conflict\-do\-nothing\fR
+.RS 4
+Add
+ON CONFLICT DO NOTHING
+to
+\fBINSERT\fR
+commands\&. This option is not valid unless
+\fB\-\-inserts\fR,
+\fB\-\-column\-inserts\fR
+or
+\fB\-\-rows\-per\-insert\fR
+is also specified\&.
 .RE
 .PP
 \fB\-\-quote\-all\-identifiers\fR
@@ -710,6 +849,18 @@ pg_dump
 quotes only identifiers that are reserved words in its own major version\&. This sometimes results in compatibility issues when dealing with servers of other versions that may have slightly different sets of reserved words\&. Using
 \fB\-\-quote\-all\-identifiers\fR
 prevents such issues, at the price of a harder\-to\-read dump script\&.
+.RE
+.PP
+\fB\-\-rows\-per\-insert=\fR\fB\fInrows\fR\fR
+.RS 4
+Dump data as
+\fBINSERT\fR
+commands (rather than
+\fBCOPY\fR)\&. Controls the maximum number of rows per
+\fBINSERT\fR
+command\&. The value specified must be a number greater than zero\&. Any error during restoring will cause only rows that are part of the problematic
+\fBINSERT\fR
+to be lost, rather than the entire table contents\&.
 .RE
 .PP
 \fB\-\-section=\fR\fB\fIsectionname\fR\fR
@@ -739,7 +890,7 @@ This option will make no difference if there are no read\-write transactions act
 \fB\-\-snapshot=\fR\fB\fIsnapshotname\fR\fR
 .RS 4
 Use the specified synchronized snapshot when making a dump of the database (see
-Table\ \&9.82
+Table\ \&9.94
 for more details)\&.
 .sp
 This option is useful when needing to synchronize the dump with a logical replication slot (see
@@ -750,7 +901,7 @@ In the case of a parallel dump, the snapshot name defined by this option is used
 .PP
 \fB\-\-strict\-names\fR
 .RS 4
-Require that each schema (\fB\-n\fR/\fB\-\-schema\fR) and table (\fB\-t\fR/\fB\-\-table\fR) qualifier match at least one schema/table in the database to be dumped\&. Note that if none of the schema/table qualifiers find matches,
+Require that each extension (\fB\-e\fR/\fB\-\-extension\fR), schema (\fB\-n\fR/\fB\-\-schema\fR) and table (\fB\-t\fR/\fB\-\-table\fR) pattern match at least one extension/schema/table in the database to be dumped\&. Note that if none of the extension/schema/table patterns find matches,
 pg_dump
 will generate an error even without
 \fB\-\-strict\-names\fR\&.
@@ -759,6 +910,14 @@ This option has no effect on
 \fB\-N\fR/\fB\-\-exclude\-schema\fR,
 \fB\-T\fR/\fB\-\-exclude\-table\fR, or
 \fB\-\-exclude\-table\-data\fR\&. An exclude pattern failing to match any objects is not considered an error\&.
+.RE
+.PP
+\fB\-\-table\-and\-children=\fR\fB\fIpattern\fR\fR
+.RS 4
+This is the same as the
+\fB\-t\fR/\fB\-\-table\fR
+option, except that it also includes any partitions or inheritance child tables of the table(s) matching the
+\fIpattern\fR\&.
 .RE
 .PP
 \fB\-\-use\-set\-session\-authorization\fR
@@ -791,19 +950,10 @@ The following command\-line options control the database connection parameters\&
 .RS 4
 Specifies the name of the database to connect to\&. This is equivalent to specifying
 \fIdbname\fR
-as the first non\-option argument on the command line\&.
-.sp
-If this parameter contains an
-=
-sign or starts with a valid
-URI
-prefix (postgresql://
-or
-postgres://), it is treated as a
-\fIconninfo\fR
-string\&. See
-Section\ \&34.1
-for more information\&.
+as the first non\-option argument on the command line\&. The
+\fIdbname\fR
+can be a
+connection string\&. If so, connection string parameters will override any conflicting command line options\&.
 .RE
 .PP
 \fB\-h \fR\fB\fIhost\fR\fR
@@ -883,12 +1033,21 @@ pg_dump, but can switch to a role with the required rights\&. Some installations
 Default connection parameters\&.
 .RE
 .PP
+\fBPG_COLOR\fR
+.RS 4
+Specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.RE
+.PP
 This utility, like most other
 PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section\ \&34.14)\&.
+Section\ \&34.15)\&.
 .SH "DIAGNOSTICS"
 .PP
 pg_dump
@@ -902,7 +1061,7 @@ front\-end library will apply\&.
 .PP
 The database activity of
 pg_dump
-is normally collected by the statistics collector\&. If this is undesirable, you can set parameter
+is normally collected by the cumulative statistics system\&. If this is undesirable, you can set parameter
 \fItrack_counts\fR
 to false via
 \fBPGOPTIONS\fR
@@ -941,9 +1100,9 @@ pg_dump
 does not contain the statistics used by the optimizer to make query planning decisions\&. Therefore, it is wise to run
 \fBANALYZE\fR
 after restoring from a dump file to ensure optimal performance; see
-Section\ \&24.1.3
+Section\ \&25.1.3
 and
-Section\ \&24.1.6
+Section\ \&25.1.6
 for more information\&.
 .PP
 Because
@@ -958,7 +1117,7 @@ pg_dump\*(Aqs version\&.
 pg_dump
 can also dump from
 PostgreSQL
-servers older than its own version\&. (Currently, servers back to version 8\&.0 are supported\&.) However,
+servers older than its own version\&. (Currently, servers back to version 9\&.2 are supported\&.) However,
 pg_dump
 cannot dump from
 PostgreSQL
@@ -975,12 +1134,17 @@ will generate
 \fBCREATE SUBSCRIPTION\fR
 commands that use the
 connect = false
-option, so that restoring the subscription does not make remote connections for creating a replication slot or for initial table copy\&. That way, the dump can be restored without requiring network access to the remote servers\&. It is then up to the user to reactivate the subscriptions in a suitable way\&. If the involved hosts have changed, the connection information might have to be changed\&. It might also be appropriate to truncate the target tables before initiating a new full table copy\&.
+option, so that restoring the subscription does not make remote connections for creating a replication slot or for initial table copy\&. That way, the dump can be restored without requiring network access to the remote servers\&. It is then up to the user to reactivate the subscriptions in a suitable way\&. If the involved hosts have changed, the connection information might have to be changed\&. It might also be appropriate to truncate the target tables before initiating a new full table copy\&. If users intend to copy initial data during refresh they must create the slot with
+two_phase = false\&. After the initial sync, the
+two_phase
+option will be automatically enabled by the subscriber if the subscription had been originally created with
+two_phase = true
+option\&.
 .SH "EXAMPLES"
 .PP
 To dump a database called
 mydb
-into a SQL\-script file:
+into an SQL\-script file:
 .sp
 .if n \{\
 .RS 4

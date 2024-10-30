@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>11.8. Partial Indexes</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="indexes-expressional.html" title="11.7. Indexes on Expressions" /><link rel="next" href="indexes-index-only-scans.html" title="11.9. Index-Only Scans and Covering Indexes" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">11.8. Partial Indexes</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="indexes-expressional.html" title="11.7. Indexes on Expressions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="indexes.html" title="Chapter 11. Indexes">Up</a></td><th width="60%" align="center">Chapter 11. Indexes</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="indexes-index-only-scans.html" title="11.9. Index-Only Scans and Covering Indexes">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="INDEXES-PARTIAL"><div class="titlepage"><div><div><h2 class="title" style="clear: both">11.8. Partial Indexes</h2></div></div></div><a id="id-1.5.10.11.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>11.8. Partial Indexes</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="indexes-expressional.html" title="11.7. Indexes on Expressions" /><link rel="next" href="indexes-index-only-scans.html" title="11.9. Index-Only Scans and Covering Indexes" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">11.8. Partial Indexes</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="indexes-expressional.html" title="11.7. Indexes on Expressions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="indexes.html" title="Chapter 11. Indexes">Up</a></td><th width="60%" align="center">Chapter 11. Indexes</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="indexes-index-only-scans.html" title="11.9. Index-Only Scans and Covering Indexes">Next</a></td></tr></table><hr /></div><div class="sect1" id="INDEXES-PARTIAL"><div class="titlepage"><div><div><h2 class="title" style="clear: both">11.8. Partial Indexes <a href="#INDEXES-PARTIAL" class="id_link">#</a></h2></div></div></div><a id="id-1.5.10.11.2" class="indexterm"></a><p>
    A <em class="firstterm">partial index</em> is an index built over a
    subset of a table; the subset is defined by a conditional
    expression (called the <em class="firstterm">predicate</em> of the
@@ -47,16 +47,18 @@ SELECT *
 FROM access_log
 WHERE url = '/index.html' AND client_ip = inet '212.78.10.32';
 </pre><p>
-    A query that cannot use this index is:
+    Here the query's IP address is covered by the partial index.  The
+    following query cannot use the partial index, as it uses an IP address
+    that is excluded from the index:
 </p><pre class="programlisting">
 SELECT *
 FROM access_log
-WHERE client_ip = inet '192.168.100.23';
+WHERE url = '/index.html' AND client_ip = inet '192.168.100.23';
 </pre><p>
    </p><p>
     Observe that this kind of partial index requires that the common
     values be predetermined, so such partial indexes are best used for
-    data distributions that do not change.  The indexes can be recreated
+    data distributions that do not change.  Such indexes can be recreated
     occasionally to adjust for new data distributions, but this adds
     maintenance effort.
    </p></div></div><br class="example-break" /><p>
@@ -149,7 +151,9 @@ CREATE UNIQUE INDEX tests_success_constraint ON tests (subject, target)
     WHERE success;
 </pre><p>
     This is a particularly efficient approach when there are few
-    successful tests and many unsuccessful ones.
+    successful tests and many unsuccessful ones.  It is also possible to
+    allow only one null in a column by creating a unique partial index
+    with an <code class="literal">IS NULL</code> restriction.
    </p></div></div><br class="example-break" /><p>
    Finally, a partial index can also be used to override the system's
    query plan choices.  Also, data sets with peculiar
@@ -166,8 +170,43 @@ CREATE UNIQUE INDEX tests_success_constraint ON tests (subject, target)
    know at least as much as the query planner knows, in particular you
    know when an index might be profitable.  Forming this knowledge
    requires experience and understanding of how indexes in
-   <span class="productname">PostgreSQL</span> work.  In most cases, the advantage of a
-   partial index over a regular index will be minimal.
-  </p><p>
+   <span class="productname">PostgreSQL</span> work.  In most cases, the
+   advantage of a partial index over a regular index will be minimal.
+   There are cases where they are quite counterproductive, as in <a class="xref" href="indexes-partial.html#INDEXES-PARTIAL-EX4" title="Example 11.4. Do Not Use Partial Indexes as a Substitute for Partitioning">Example 11.4</a>.
+  </p><div class="example" id="INDEXES-PARTIAL-EX4"><p class="title"><strong>Example 11.4. Do Not Use Partial Indexes as a Substitute for Partitioning</strong></p><div class="example-contents"><p>
+    You might be tempted to create a large set of non-overlapping partial
+    indexes, for example
+
+</p><pre class="programlisting">
+CREATE INDEX mytable_cat_1 ON mytable (data) WHERE category = 1;
+CREATE INDEX mytable_cat_2 ON mytable (data) WHERE category = 2;
+CREATE INDEX mytable_cat_3 ON mytable (data) WHERE category = 3;
+...
+CREATE INDEX mytable_cat_<em class="replaceable"><code>N</code></em> ON mytable (data) WHERE category = <em class="replaceable"><code>N</code></em>;
+</pre><p>
+
+    This is a bad idea!  Almost certainly, you'll be better off with a
+    single non-partial index, declared like
+
+</p><pre class="programlisting">
+CREATE INDEX mytable_cat_data ON mytable (category, data);
+</pre><p>
+
+    (Put the category column first, for the reasons described in
+    <a class="xref" href="indexes-multicolumn.html" title="11.3. Multicolumn Indexes">Section 11.3</a>.)  While a search in this larger
+    index might have to descend through a couple more tree levels than a
+    search in a smaller index, that's almost certainly going to be cheaper
+    than the planner effort needed to select the appropriate one of the
+    partial indexes.  The core of the problem is that the system does not
+    understand the relationship among the partial indexes, and will
+    laboriously test each one to see if it's applicable to the current
+    query.
+   </p><p>
+    If your table is large enough that a single index really is a bad idea,
+    you should look into using partitioning instead (see
+    <a class="xref" href="ddl-partitioning.html" title="5.11. Table Partitioning">Section 5.11</a>).  With that mechanism, the system
+    does understand that the tables and indexes are non-overlapping, so
+    far better performance is possible.
+   </p></div></div><br class="example-break" /><p>
    More information about partial indexes can be found in <a class="xref" href="biblio.html#STON89B">[ston89b]</a>, <a class="xref" href="biblio.html#OLSON93" title="Partial indexing in POSTGRES: research project">[olson93]</a>, and <a class="xref" href="biblio.html#SESHADRI95">[seshadri95]</a>.
-  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="indexes-expressional.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="indexes.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="indexes-index-only-scans.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">11.7. Indexes on Expressions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 11.9. Index-Only Scans and Covering Indexes</td></tr></table></div></body></html>
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="indexes-expressional.html" title="11.7. Indexes on Expressions">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="indexes.html" title="Chapter 11. Indexes">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="indexes-index-only-scans.html" title="11.9. Index-Only Scans and Covering Indexes">Next</a></td></tr><tr><td width="40%" align="left" valign="top">11.7. Indexes on Expressions </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 11.9. Index-Only Scans and Covering Indexes</td></tr></table></div></body></html>

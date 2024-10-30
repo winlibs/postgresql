@@ -28,7 +28,7 @@
  * For an introduction to using memory barriers within the PostgreSQL backend,
  * see src/backend/storage/lmgr/README.barrier
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/port/atomics.h
@@ -63,13 +63,10 @@
  * compiler barrier.
  *
  */
-#if defined(__arm__) || defined(__arm) || \
-	defined(__aarch64__) || defined(__aarch64)
+#if defined(__arm__) || defined(__arm) || defined(__aarch64__)
 #include "port/atomics/arch-arm.h"
 #elif defined(__i386__) || defined(__i386) || defined(__x86_64__)
 #include "port/atomics/arch-x86.h"
-#elif defined(__ia64__) || defined(__ia64)
-#include "port/atomics/arch-ia64.h"
 #elif defined(__ppc__) || defined(__powerpc__) || defined(__ppc64__) || defined(__powerpc64__)
 #include "port/atomics/arch-ppc.h"
 #elif defined(__hppa) || defined(__hppa__)
@@ -87,19 +84,14 @@
  * using compiler intrinsics are a good idea.
  */
 /*
- * Given a gcc-compatible xlc compiler, prefer the xlc implementation.  The
- * ppc64le "IBM XL C/C++ for Linux, V13.1.2" implements both interfaces, but
- * __sync_lock_test_and_set() of one-byte types elicits SIGSEGV.
+ * gcc or compatible, including clang and icc.  Exclude xlc.  The ppc64le "IBM
+ * XL C/C++ for Linux, V13.1.2" emulates gcc, but __sync_lock_test_and_set()
+ * of one-byte types elicits SIGSEGV.  That bug was gone by V13.1.5 (2016-12).
  */
-#if defined(__IBMC__) || defined(__IBMCPP__)
-#include "port/atomics/generic-xlc.h"
-/* gcc or compatible, including clang and icc */
-#elif defined(__GNUC__) || defined(__INTEL_COMPILER)
+#if (defined(__GNUC__) || defined(__INTEL_COMPILER)) && !(defined(__IBMC__) || defined(__IBMCPP__))
 #include "port/atomics/generic-gcc.h"
 #elif defined(_MSC_VER)
 #include "port/atomics/generic-msvc.h"
-#elif defined(__hpux) && defined(__ia64) && !defined(__GNUC__)
-#include "port/atomics/generic-acc.h"
 #elif defined(__SUNPRO_C) && !defined(__GNUC__)
 #include "port/atomics/generic-sunpro.h"
 #else
@@ -178,7 +170,7 @@ pg_atomic_init_flag(volatile pg_atomic_flag *ptr)
 }
 
 /*
- * pg_atomic_test_and_set_flag - TAS()
+ * pg_atomic_test_set_flag - TAS()
  *
  * Returns true if the flag has successfully been set, false otherwise.
  *

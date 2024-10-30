@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>70.1. Row Estimation Examples</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="planner-stats-details.html" title="Chapter 70. How the Planner Uses Statistics" /><link rel="next" href="multivariate-statistics-examples.html" title="70.2. Multivariate Statistics Examples" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">70.1. Row Estimation Examples</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="planner-stats-details.html" title="Chapter 70. How the Planner Uses Statistics">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="planner-stats-details.html" title="Chapter 70. How the Planner Uses Statistics">Up</a></td><th width="60%" align="center">Chapter 70. How the Planner Uses Statistics</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="multivariate-statistics-examples.html" title="70.2. Multivariate Statistics Examples">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="ROW-ESTIMATION-EXAMPLES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">70.1. Row Estimation Examples</h2></div></div></div><a id="id-1.10.22.4.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>76.1. Row Estimation Examples</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="planner-stats-details.html" title="Chapter 76. How the Planner Uses Statistics" /><link rel="next" href="multivariate-statistics-examples.html" title="76.2. Multivariate Statistics Examples" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">76.1. Row Estimation Examples</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="planner-stats-details.html" title="Chapter 76. How the Planner Uses Statistics">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="planner-stats-details.html" title="Chapter 76. How the Planner Uses Statistics">Up</a></td><th width="60%" align="center">Chapter 76. How the Planner Uses Statistics</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="multivariate-statistics-examples.html" title="76.2. Multivariate Statistics Examples">Next</a></td></tr></table><hr /></div><div class="sect1" id="ROW-ESTIMATION-EXAMPLES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">76.1. Row Estimation Examples <a href="#ROW-ESTIMATION-EXAMPLES" class="id_link">#</a></h2></div></div></div><a id="id-1.10.27.4.2" class="indexterm"></a><p>
    The examples shown below use tables in the <span class="productname">PostgreSQL</span>
    regression test database.
    The outputs shown are taken from version 8.3.
@@ -48,7 +48,7 @@ SELECT relpages, reltuples FROM pg_class WHERE relname = 'tenk1';
 EXPLAIN SELECT * FROM tenk1 WHERE unique1 &lt; 1000;
 
                                    QUERY PLAN
---------------------------------------------------------------------------------
+-------------------------------------------------------------------​-------------
  Bitmap Heap Scan on tenk1  (cost=24.06..394.64 rows=1007 width=244)
    Recheck Cond: (unique1 &lt; 1000)
    -&gt;  Bitmap Index Scan on tenk1_unique1  (cost=0.00..23.80 rows=1007 width=0)
@@ -80,7 +80,7 @@ WHERE tablename='tenk1' AND attname='unique1';
    into equal frequency buckets, so all we have to do is locate the bucket
    that our value is in and count <span class="emphasis"><em>part</em></span> of it and
    <span class="emphasis"><em>all</em></span> of the ones before. The value 1000 is clearly in
-   the second bucket (993-1997).  Assuming a linear distribution of
+   the second bucket (993–1997).  Assuming a linear distribution of
    values inside each bucket, we can calculate the selectivity as:
 
 </p><pre class="programlisting">
@@ -126,8 +126,8 @@ WHERE tablename='tenk1' AND attname='stringu1';
 
 null_frac         | 0
 n_distinct        | 676
-most_common_vals  | {EJAAAA,BBAAAA,CRAAAA,FCAAAA,FEAAAA,GSAAAA,JOAAAA,MCAAAA,NAAAAA,WGAAAA}
-most_common_freqs | {0.00333333,0.003,0.003,0.003,0.003,0.003,0.003,0.003,0.003,0.003}
+most_common_vals  | {EJAAAA,BBAAAA,CRAAAA,FCAAAA,FEAAAA,GSAAAA,​JOAAAA,MCAAAA,NAAAAA,WGAAAA}
+most_common_freqs | {0.00333333,0.003,0.003,0.003,0.003,0.003,​0.003,0.003,0.003,0.003}
 
 </pre><p>
 
@@ -167,7 +167,7 @@ EXPLAIN SELECT * FROM tenk1 WHERE stringu1 = 'xxx';
    <acronym class="acronym">MCV</acronym>s:
 
 </p><pre class="programlisting">
-selectivity = (1 - sum(mvf))/(num_distinct - num_mcv)
+selectivity = (1 - sum(mcv_freqs))/(num_distinct - num_mcv)
             = (1 - (0.00333333 + 0.003 + 0.003 + 0.003 + 0.003 + 0.003 +
                     0.003 + 0.003 + 0.003 + 0.003))/(676 - 10)
             = 0.0014559
@@ -223,8 +223,8 @@ SELECT histogram_bounds FROM pg_stats
 WHERE tablename='tenk1' AND attname='stringu1';
 
                                 histogram_bounds
---------------------------------------------------------------------------------
- {AAAAAA,CQAAAA,FRAAAA,IBAAAA,KRAAAA,NFAAAA,PSAAAA,SGAAAA,VAAAAA,XLAAAA,ZZAAAA}
+-------------------------------------------------------------------​-------------
+ {AAAAAA,CQAAAA,FRAAAA,IBAAAA,KRAAAA,NFAAAA,PSAAAA,SGAAAA,VAAAAA,​XLAAAA,ZZAAAA}
 </pre><p>
 
    Checking the MCV list, we find that the condition <code class="literal">stringu1 &lt;
@@ -272,7 +272,7 @@ rows        = 10000 * 0.307669
 EXPLAIN SELECT * FROM tenk1 WHERE unique1 &lt; 1000 AND stringu1 = 'xxx';
 
                                    QUERY PLAN
---------------------------------------------------------------------------------
+-------------------------------------------------------------------​-------------
  Bitmap Heap Scan on tenk1  (cost=23.80..396.91 rows=1 width=244)
    Recheck Cond: (unique1 &lt; 1000)
    Filter: (stringu1 = 'xxx'::name)
@@ -304,7 +304,7 @@ EXPLAIN SELECT * FROM tenk1 t1, tenk2 t2
 WHERE t1.unique1 &lt; 50 AND t1.unique2 = t2.unique2;
 
                                       QUERY PLAN
---------------------------------------------------------------------------------------
+-------------------------------------------------------------------​-------------------
  Nested Loop  (cost=4.64..456.23 rows=50 width=488)
    -&gt;  Bitmap Heap Scan on tenk1 t1  (cost=4.64..142.17 rows=50 width=244)
          Recheck Cond: (unique1 &lt; 50)
@@ -396,4 +396,4 @@ rows = (outer_cardinality * inner_cardinality) * selectivity
    <code class="filename">src/backend/optimizer/path/clausesel.c</code>.  The
    operator-specific selectivity functions are mostly found
    in <code class="filename">src/backend/utils/adt/selfuncs.c</code>.
-  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="planner-stats-details.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="planner-stats-details.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="multivariate-statistics-examples.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 70. How the Planner Uses Statistics </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 70.2. Multivariate Statistics Examples</td></tr></table></div></body></html>
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="planner-stats-details.html" title="Chapter 76. How the Planner Uses Statistics">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="planner-stats-details.html" title="Chapter 76. How the Planner Uses Statistics">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="multivariate-statistics-examples.html" title="76.2. Multivariate Statistics Examples">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 76. How the Planner Uses Statistics </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 76.2. Multivariate Statistics Examples</td></tr></table></div></body></html>

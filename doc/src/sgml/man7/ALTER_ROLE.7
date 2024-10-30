@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER ROLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER ROLE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER ROLE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -57,6 +57,7 @@ ALTER ROLE { \fIrole_specification\fR | ALL } [ IN DATABASE \fIdatabase_name\fR 
 where \fIrole_specification\fR can be:
 
     \fIrole_name\fR
+  | CURRENT_ROLE
   | CURRENT_USER
   | SESSION_USER
 .fi
@@ -68,17 +69,25 @@ PostgreSQL
 role\&.
 .PP
 The first variant of this command listed in the synopsis can change many of the role attributes that can be specified in
-CREATE ROLE (\fBCREATE_ROLE\fR(7))\&. (All the possible attributes are covered, except that there are no options for adding or removing memberships; use
-\fBGRANT\fR(7)
+\fBCREATE ROLE\fR\&. (All the possible attributes are covered, except that there are no options for adding or removing memberships; use
+\fBGRANT\fR
 and
-\fBREVOKE\fR(7)
-for that\&.) Attributes not mentioned in the command retain their previous settings\&. Database superusers can change any of these settings for any role\&. Roles having
+\fBREVOKE\fR
+for that\&.) Attributes not mentioned in the command retain their previous settings\&. Database superusers can change any of these settings for any role\&. Non\-superuser roles having
 CREATEROLE
-privilege can change any of these settings, but only for non\-superuser and non\-replication roles\&. Ordinary roles can only change their own password\&.
+privilege can change most of these properties, but only for non\-superuser and non\-replication roles for which they have been granted
+ADMIN OPTION\&. Non\-superusers cannot change the
+SUPERUSER
+property and can change the
+CREATEDB,
+REPLICATION, and
+BYPASSRLS
+properties only if they possess the corresponding property themselves\&. Ordinary roles can only change their own password\&.
 .PP
 The second variant changes the name of the role\&. Database superusers can rename any role\&. Roles having
 CREATEROLE
-privilege can rename non\-superuser roles\&. The current session user cannot be renamed\&. (Connect as a different user if you need to do that\&.) Because
+privilege can rename non\-superuser roles for which they have been granted
+ADMIN OPTION\&. The current session user cannot be renamed\&. (Connect as a different user if you need to do that\&.) Because
 MD5\-encrypted passwords use the role name as cryptographic salt, renaming a role clears its password if the password is
 MD5\-encrypted\&.
 .PP
@@ -98,14 +107,15 @@ postgresql\&.conf
 or has been received from the
 \fBpostgres\fR
 command line\&. This only happens at login time; executing
-SET ROLE (\fBSET_ROLE\fR(7))
+\fBSET ROLE\fR
 or
-SET SESSION AUTHORIZATION (\fBSET_SESSION_AUTHORIZATION\fR(7))
+\fBSET SESSION AUTHORIZATION\fR
 does not cause new configuration values to be set\&. Settings set for all databases are overridden by database\-specific settings attached to a role\&. Settings for specific databases or specific roles override settings for all roles\&.
 .PP
 Superusers can change anyone\*(Aqs session defaults\&. Roles having
 CREATEROLE
-privilege can change defaults for non\-superuser roles\&. Ordinary roles can only set defaults for themselves\&. Certain configuration variables cannot be set this way, or can only be set if a superuser issues the command\&. Only superusers can change a setting for all roles in all databases\&.
+privilege can change defaults for non\-superuser roles for which they have been granted
+ADMIN OPTION\&. Ordinary roles can only set defaults for themselves\&. Certain configuration variables cannot be set this way, or can only be set if a superuser issues the command\&. Only superusers can change a setting for all roles in all databases\&.
 .SH "PARAMETERS"
 .PP
 \fIname\fR
@@ -113,6 +123,8 @@ privilege can change defaults for non\-superuser roles\&. Ordinary roles can onl
 The name of the role whose attributes are to be altered\&.
 .RE
 .PP
+CURRENT_ROLE
+.br
 CURRENT_USER
 .RS 4
 Alter the current user instead of an explicitly identified role\&.
@@ -160,7 +172,7 @@ PASSWORD NULL
 VALID UNTIL \*(Aq\fItimestamp\fR\*(Aq
 .RS 4
 These clauses alter attributes originally set by
-CREATE ROLE (\fBCREATE_ROLE\fR(7))\&. For more information, see the
+\fBCREATE ROLE\fR\&. For more information, see the
 \fBCREATE ROLE\fR
 reference page\&.
 .RE
@@ -194,30 +206,30 @@ IN DATABASE
 is specified, the configuration parameter is set or removed for the given role and database only\&.
 .sp
 Role\-specific variable settings take effect only at login;
-SET ROLE (\fBSET_ROLE\fR(7))
+\fBSET ROLE\fR
 and
-SET SESSION AUTHORIZATION (\fBSET_SESSION_AUTHORIZATION\fR(7))
+\fBSET SESSION AUTHORIZATION\fR
 do not process role\-specific variable settings\&.
 .sp
 See
 \fBSET\fR(7)
 and
-Chapter\ \&19
+Chapter\ \&20
 for more information about allowed parameter names and values\&.
 .RE
 .SH "NOTES"
 .PP
 Use
-CREATE ROLE (\fBCREATE_ROLE\fR(7))
+\fBCREATE ROLE\fR
 to add new roles, and
-DROP ROLE (\fBDROP_ROLE\fR(7))
+\fBDROP ROLE\fR
 to remove a role\&.
 .PP
 \fBALTER ROLE\fR
 cannot change a role\*(Aqs memberships\&. Use
-\fBGRANT\fR(7)
+\fBGRANT\fR
 and
-\fBREVOKE\fR(7)
+\fBREVOKE\fR
 to do that\&.
 .PP
 Caution must be exercised when specifying an unencrypted password with this command\&. The password will be transmitted to the server in cleartext, and it might also be logged in the client\*(Aqs command history or the server log\&.
@@ -279,7 +291,7 @@ ALTER ROLE fred VALID UNTIL \*(Aqinfinity\*(Aq;
 .RE
 .\}
 .PP
-Give a role the ability to create other roles and new databases:
+Give a role the ability to manage other roles and create new databases:
 .sp
 .if n \{\
 .RS 4

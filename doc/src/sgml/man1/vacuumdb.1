@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: vacuumdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "VACUUMDB" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "VACUUMDB" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,9 +31,11 @@
 vacuumdb \- garbage\-collect and analyze a PostgreSQL database
 .SH "SYNOPSIS"
 .HP \w'\fBvacuumdb\fR\ 'u
-\fBvacuumdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\ \fB\-\-table\fR\ |\ \fB\-t\fR\ \fItable\fR\ [(\ \fIcolumn\fR\ [,\&.\&.\&.]\ )]\ ]...  [\fIdbname\fR]
+\fBvacuumdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\ \fB\-t\fR\ |\ \fB\-\-table\fR\ \fItable\fR\ [(\ \fIcolumn\fR\ [,\&.\&.\&.]\ )]\ ]...  [\fIdbname\fR]
 .HP \w'\fBvacuumdb\fR\ 'u
-\fBvacuumdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] \fB\-\-all\fR | \fB\-a\fR 
+\fBvacuumdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\ [\ \fB\-n\fR\ |\ \fB\-\-schema\fR\ \fIschema\fR\ ]\ |\ [\ \fB\-N\fR\ |\ \fB\-\-exclude\-schema\fR\ \fIschema\fR\ ]\ ]...  [\fIdbname\fR]
+.HP \w'\fBvacuumdb\fR\ 'u
+\fBvacuumdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] \fB\-a\fR | \fB\-\-all\fR 
 .SH "DESCRIPTION"
 .PP
 vacuumdb
@@ -47,7 +49,7 @@ query optimizer\&.
 .PP
 vacuumdb
 is a wrapper around the SQL command
-\fBVACUUM\fR(7)\&. There is no effective difference between vacuuming and analyzing databases via this utility and via other methods for accessing the server\&.
+\fBVACUUM\fR\&. There is no effective difference between vacuuming and analyzing databases via this utility and via other methods for accessing the server\&.
 .SH "OPTIONS"
 .PP
 vacuumdb
@@ -60,15 +62,31 @@ accepts the following command\-line arguments:
 Vacuum all databases\&.
 .RE
 .PP
+\fB\-\-buffer\-usage\-limit \fR\fB\fIsize\fR\fR
+.RS 4
+Specifies the
+Buffer Access Strategy
+ring buffer size for a given invocation of
+vacuumdb\&. This size is used to calculate the number of shared buffers which will be reused as part of this strategy\&. See
+\fBVACUUM\fR(7)\&.
+.RE
+.PP
 \fB[\-d]\fR\fB \fR\fB\fIdbname\fR\fR
 .br
 \fB[\-\-dbname=]\fR\fB\fIdbname\fR\fR
 .RS 4
-Specifies the name of the database to be cleaned or analyzed\&. If this is not specified and
-\fB\-a\fR
-(or
-\fB\-\-all\fR) is not used, the database name is read from the environment variable
-\fBPGDATABASE\fR\&. If that is not set, the user name specified for the connection is used\&.
+Specifies the name of the database to be cleaned or analyzed, when
+\fB\-a\fR/\fB\-\-all\fR
+is not used\&. If this is not specified, the database name is read from the environment variable
+\fBPGDATABASE\fR\&. If that is not set, the user name specified for the connection is used\&. The
+\fIdbname\fR
+can be a
+connection string\&. If so, connection string parameters will override any conflicting command line options\&.
+.RE
+.PP
+\fB\-\-disable\-page\-skipping\fR
+.RS 4
+Disable skipping pages based on the contents of the visibility map\&.
 .RE
 .PP
 \fB\-e\fR
@@ -98,13 +116,18 @@ Aggressively
 tuples\&.
 .RE
 .PP
+\fB\-\-force\-index\-cleanup\fR
+.RS 4
+Always remove index entries pointing to dead tuples\&.
+.RE
+.PP
 \fB\-j \fR\fB\fInjobs\fR\fR
 .br
 \fB\-\-jobs=\fR\fB\fInjobs\fR\fR
 .RS 4
 Execute the vacuum or analyze commands in parallel by running
 \fInjobs\fR
-commands simultaneously\&. This option reduces the time of the processing but it also increases the load on the database server\&.
+commands simultaneously\&. This option may reduce the processing time but it also increases the load on the database server\&.
 .sp
 vacuumdb
 will open
@@ -118,11 +141,96 @@ Note that using this mode together with the
 (FULL) option might cause deadlock failures if certain system catalogs are processed in parallel\&.
 .RE
 .PP
+\fB\-\-min\-mxid\-age \fR\fB\fImxid_age\fR\fR
+.RS 4
+Only execute the vacuum or analyze commands on tables with a multixact ID age of at least
+\fImxid_age\fR\&. This setting is useful for prioritizing tables to process to prevent multixact ID wraparound (see
+Section\ \&25.1.5.1)\&.
+.sp
+For the purposes of this option, the multixact ID age of a relation is the greatest of the ages of the main relation and its associated
+TOAST
+table, if one exists\&. Since the commands issued by
+vacuumdb
+will also process the
+TOAST
+table for the relation if necessary, it does not need to be considered separately\&.
+.RE
+.PP
+\fB\-\-min\-xid\-age \fR\fB\fIxid_age\fR\fR
+.RS 4
+Only execute the vacuum or analyze commands on tables with a transaction ID age of at least
+\fIxid_age\fR\&. This setting is useful for prioritizing tables to process to prevent transaction ID wraparound (see
+Section\ \&25.1.5)\&.
+.sp
+For the purposes of this option, the transaction ID age of a relation is the greatest of the ages of the main relation and its associated
+TOAST
+table, if one exists\&. Since the commands issued by
+vacuumdb
+will also process the
+TOAST
+table for the relation if necessary, it does not need to be considered separately\&.
+.RE
+.PP
+\fB\-n \fR\fB\fIschema\fR\fR
+.br
+\fB\-\-schema=\fR\fB\fIschema\fR\fR
+.RS 4
+Clean or analyze all tables in
+\fIschema\fR
+only\&. Multiple schemas can be vacuumed by writing multiple
+\fB\-n\fR
+switches\&.
+.RE
+.PP
+\fB\-N \fR\fB\fIschema\fR\fR
+.br
+\fB\-\-exclude\-schema=\fR\fB\fIschema\fR\fR
+.RS 4
+Do not clean or analyze any tables in
+\fIschema\fR\&. Multiple schemas can be excluded by writing multiple
+\fB\-N\fR
+switches\&.
+.RE
+.PP
+\fB\-\-no\-index\-cleanup\fR
+.RS 4
+Do not remove index entries pointing to dead tuples\&.
+.RE
+.PP
+\fB\-\-no\-process\-main\fR
+.RS 4
+Skip the main relation\&.
+.RE
+.PP
+\fB\-\-no\-process\-toast\fR
+.RS 4
+Skip the TOAST table associated with the table to vacuum, if any\&.
+.RE
+.PP
+\fB\-\-no\-truncate\fR
+.RS 4
+Do not truncate empty pages at the end of the table\&.
+.RE
+.PP
+\fB\-P \fR\fB\fIparallel_workers\fR\fR
+.br
+\fB\-\-parallel=\fR\fB\fIparallel_workers\fR\fR
+.RS 4
+Specify the number of parallel workers for
+parallel vacuum\&. This allows the vacuum to leverage multiple CPUs to process indexes\&. See
+\fBVACUUM\fR(7)\&.
+.RE
+.PP
 \fB\-q\fR
 .br
 \fB\-\-quiet\fR
 .RS 4
 Do not display progress messages\&.
+.RE
+.PP
+\fB\-\-skip\-locked\fR
+.RS 4
+Skip relations that cannot be immediately locked for processing\&.
 .RE
 .PP
 \fB\-t \fR\fB\fItable\fR\fR\fB [ (\fR\fB\fIcolumn\fR\fR\fB [,\&.\&.\&.]) ]\fR
@@ -188,10 +296,11 @@ Only calculate statistics for use by the optimizer (no vacuum)\&.
 \fB\-\-analyze\-in\-stages\fR
 .RS 4
 Only calculate statistics for use by the optimizer (no vacuum), like
-\fB\-\-analyze\-only\fR\&. Run several (currently three) stages of analyze with different configuration settings, to produce usable statistics faster\&.
+\fB\-\-analyze\-only\fR\&. Run three stages of analyze; the first stage uses the lowest possible statistics target (see
+default_statistics_target) to produce usable statistics faster, and subsequent stages build the full statistics\&.
 .sp
-This option is useful to analyze a database that was newly populated from a restored dump or by
-\fBpg_upgrade\fR\&. This option will try to create some statistics as fast as possible, to make the database usable, and then produce full statistics in the subsequent stages\&.
+This option is only useful to analyze a database that currently has no statistics or has wholly incorrect ones, such as if it is newly populated from a restored dump or by
+\fBpg_upgrade\fR\&. Be aware that running with this option in a database with existing statistics may cause the query optimizer choices to become transiently worse due to the low statistics targets of the early stages\&.
 .RE
 .PP
 \fB\-?\fR
@@ -255,11 +364,14 @@ to avoid the extra connection attempt\&.
 .PP
 \fB\-\-maintenance\-db=\fR\fB\fIdbname\fR\fR
 .RS 4
-Specifies the name of the database to connect to discover what other databases should be vacuumed\&. If not specified, the
+Specifies the name of the database to connect to to discover which databases should be vacuumed, when
+\fB\-a\fR/\fB\-\-all\fR
+is used\&. If not specified, the
 postgres
-database will be used, and if that does not exist,
+database will be used, or if that does not exist,
 template1
-will be used\&.
+will be used\&. This can be a
+connection string\&. If so, connection string parameters will override any conflicting command line options\&. Also, connection string parameters other than the database name itself will be re\-used when connecting to other databases\&.
 .RE
 .SH "ENVIRONMENT"
 .PP
@@ -274,12 +386,21 @@ will be used\&.
 Default connection parameters
 .RE
 .PP
+\fBPG_COLOR\fR
+.RS 4
+Specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.RE
+.PP
 This utility, like most other
 PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section\ \&34.14)\&.
+Section\ \&34.15)\&.
 .SH "DIAGNOSTICS"
 .PP
 In case of difficulty, see
@@ -297,7 +418,7 @@ PostgreSQL
 server, asking for a password each time\&. It is convenient to have a
 ~/\&.pgpass
 file in such cases\&. See
-Section\ \&34.15
+Section\ \&34.16
 for more information\&.
 .SH "EXAMPLES"
 .PP
@@ -339,6 +460,23 @@ of the table for the optimizer:
 .\}
 .nf
 $ \fBvacuumdb \-\-analyze \-\-verbose \-\-table=\*(Aqfoo(bar)\*(Aq xyzzy\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To clean all tables in the
+foo
+and
+bar
+schemas in a database named
+xyzzy:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ \fBvacuumdb \-\-schema=\*(Aqfoo\*(Aq \-\-schema=\*(Aqbar\*(Aq xyzzy\fR
 .fi
 .if n \{\
 .RE

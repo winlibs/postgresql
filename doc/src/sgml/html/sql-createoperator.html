@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE OPERATOR</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-creatematerializedview.html" title="CREATE MATERIALIZED VIEW" /><link rel="next" href="sql-createopclass.html" title="CREATE OPERATOR CLASS" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE OPERATOR</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-creatematerializedview.html" title="CREATE MATERIALIZED VIEW">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createopclass.html" title="CREATE OPERATOR CLASS">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-CREATEOPERATOR"><div class="titlepage"></div><a id="id-1.9.3.72.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE OPERATOR</span></h2><p>CREATE OPERATOR — define a new operator</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE OPERATOR</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-creatematerializedview.html" title="CREATE MATERIALIZED VIEW" /><link rel="next" href="sql-createopclass.html" title="CREATE OPERATOR CLASS" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE OPERATOR</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-creatematerializedview.html" title="CREATE MATERIALIZED VIEW">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createopclass.html" title="CREATE OPERATOR CLASS">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-CREATEOPERATOR"><div class="titlepage"></div><a id="id-1.9.3.72.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE OPERATOR</span></h2><p>CREATE OPERATOR — define a new operator</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 CREATE OPERATOR <em class="replaceable"><code>name</code></em> (
     {FUNCTION|PROCEDURE} = <em class="replaceable"><code>function_name</code></em>
     [, LEFTARG = <em class="replaceable"><code>left_type</code></em> ] [, RIGHTARG = <em class="replaceable"><code>right_type</code></em> ]
@@ -21,7 +21,8 @@ CREATE OPERATOR <em class="replaceable"><code>name</code></em> (
 </p></div><p>
 
    There are a few restrictions on your choice of name:
-   </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="literal">--</code> and <code class="literal">/*</code> cannot appear anywhere in an operator name,
+   </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+     <code class="literal">--</code> and <code class="literal">/*</code> cannot appear anywhere in an operator name,
      since they will be taken as the start of a comment.
      </p></li><li class="listitem"><p>
      A multicharacter operator name cannot end in <code class="literal">+</code> or
@@ -35,19 +36,17 @@ CREATE OPERATOR <em class="replaceable"><code>name</code></em> (
      This restriction allows <span class="productname">PostgreSQL</span> to
      parse SQL-compliant commands without requiring spaces between tokens.
      </p></li><li class="listitem"><p>
-     The use of <code class="literal">=&gt;</code> as an operator name is deprecated.  It may
-     be disallowed altogether in a future release.
+     The symbol <code class="literal">=&gt;</code> is reserved by the SQL grammar,
+     so it cannot be used as an operator name.
      </p></li></ul></div><p>
   </p><p>
    The operator <code class="literal">!=</code> is mapped to
    <code class="literal">&lt;&gt;</code> on input, so these two names are always
    equivalent.
   </p><p>
-   At least one of <code class="literal">LEFTARG</code> and <code class="literal">RIGHTARG</code> must be defined.  For
-   binary operators, both must be defined. For right  unary
-   operators, only <code class="literal">LEFTARG</code> should be defined, while for left
-   unary operators only <code class="literal">RIGHTARG</code> should be defined.
-  </p><p>
+   For binary operators, both <code class="literal">LEFTARG</code> and
+   <code class="literal">RIGHTARG</code> must be defined.  For prefix operators only
+   <code class="literal">RIGHTARG</code> should be defined.
    The <em class="replaceable"><code>function_name</code></em>
    function must have been previously defined using <code class="command">CREATE
    FUNCTION</code> and must be defined to accept the correct number
@@ -60,7 +59,7 @@ CREATE OPERATOR <em class="replaceable"><code>name</code></em> (
    historical and deprecated.
   </p><p>
    The other clauses specify optional operator optimization clauses.
-   Their meaning is detailed in <a class="xref" href="xoper-optimization.html" title="38.14. Operator Optimization Information">Section 38.14</a>.
+   Their meaning is detailed in <a class="xref" href="xoper-optimization.html" title="38.15. Operator Optimization Information">Section 38.15</a>.
   </p><p>
    To be able to create an operator, you must have <code class="literal">USAGE</code>
    privilege on the argument types and the return type, as well
@@ -78,10 +77,9 @@ CREATE OPERATOR <em class="replaceable"><code>name</code></em> (
         The function used to implement this operator.
        </p></dd><dt><span class="term"><em class="replaceable"><code>left_type</code></em></span></dt><dd><p>
         The data type of the operator's left operand, if any.
-        This option would be omitted for a left-unary operator.
+        This option would be omitted for a prefix operator.
        </p></dd><dt><span class="term"><em class="replaceable"><code>right_type</code></em></span></dt><dd><p>
-        The data type of the operator's right operand, if any.
-        This option would be omitted for a right-unary operator.
+        The data type of the operator's right operand.
        </p></dd><dt><span class="term"><em class="replaceable"><code>com_op</code></em></span></dt><dd><p>
         The commutator of this operator.
        </p></dd><dt><span class="term"><em class="replaceable"><code>neg_op</code></em></span></dt><dd><p>
@@ -100,7 +98,7 @@ CREATE OPERATOR <em class="replaceable"><code>name</code></em> (
 </p><pre class="programlisting">
 COMMUTATOR = OPERATOR(myschema.===) ,
 </pre></div><div class="refsect1" id="id-1.9.3.72.7"><h2>Notes</h2><p>
-   Refer to <a class="xref" href="xoper.html" title="38.13. User-defined Operators">Section 38.13</a> for further information.
+   Refer to <a class="xref" href="xoper.html" title="38.14. User-Defined Operators">Section 38.14</a> for further information.
   </p><p>
    It is not possible to specify an operator's lexical precedence in
    <code class="command">CREATE OPERATOR</code>, because the parser's precedence behavior
@@ -114,8 +112,8 @@ COMMUTATOR = OPERATOR(myschema.===) ,
    instead.  If one of these options is given, it is ignored except
    for implicitly setting <code class="literal">MERGES</code> true.
   </p><p>
-   Use <a class="xref" href="sql-dropoperator.html" title="DROP OPERATOR"><span class="refentrytitle">DROP OPERATOR</span></a> to delete user-defined operators
-   from a database.  Use <a class="xref" href="sql-alteroperator.html" title="ALTER OPERATOR"><span class="refentrytitle">ALTER OPERATOR</span></a> to modify operators in a
+   Use <a class="link" href="sql-dropoperator.html" title="DROP OPERATOR"><code class="command">DROP OPERATOR</code></a> to delete user-defined operators
+   from a database.  Use <a class="link" href="sql-alteroperator.html" title="ALTER OPERATOR"><code class="command">ALTER OPERATOR</code></a> to modify operators in a
    database.
   </p></div><div class="refsect1" id="id-1.9.3.72.8"><h2>Examples</h2><p>
    The following command defines a new operator, area-equality, for
@@ -135,4 +133,4 @@ CREATE OPERATOR === (
    <code class="command">CREATE OPERATOR</code> is a
    <span class="productname">PostgreSQL</span> extension.  There are no
    provisions for user-defined operators in the SQL standard.
-  </p></div><div class="refsect1" id="id-1.9.3.72.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-alteroperator.html" title="ALTER OPERATOR"><span class="refentrytitle">ALTER OPERATOR</span></a>, <a class="xref" href="sql-createopclass.html" title="CREATE OPERATOR CLASS"><span class="refentrytitle">CREATE OPERATOR CLASS</span></a>, <a class="xref" href="sql-dropoperator.html" title="DROP OPERATOR"><span class="refentrytitle">DROP OPERATOR</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-creatematerializedview.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createopclass.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE MATERIALIZED VIEW </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> CREATE OPERATOR CLASS</td></tr></table></div></body></html>
+  </p></div><div class="refsect1" id="id-1.9.3.72.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-alteroperator.html" title="ALTER OPERATOR"><span class="refentrytitle">ALTER OPERATOR</span></a>, <a class="xref" href="sql-createopclass.html" title="CREATE OPERATOR CLASS"><span class="refentrytitle">CREATE OPERATOR CLASS</span></a>, <a class="xref" href="sql-dropoperator.html" title="DROP OPERATOR"><span class="refentrytitle">DROP OPERATOR</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-creatematerializedview.html" title="CREATE MATERIALIZED VIEW">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createopclass.html" title="CREATE OPERATOR CLASS">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE MATERIALIZED VIEW </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> CREATE OPERATOR CLASS</td></tr></table></div></body></html>

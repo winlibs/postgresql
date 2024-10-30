@@ -4,7 +4,7 @@
  *	  prototypes for policy.c.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/commands/policy.h
@@ -23,13 +23,13 @@ extern void RelationBuildRowSecurity(Relation relation);
 
 extern void RemovePolicyById(Oid policy_id);
 
-extern bool RemoveRoleFromObjectPolicy(Oid roleid, Oid classid, Oid objid);
+extern bool RemoveRoleFromObjectPolicy(Oid roleid, Oid classid, Oid policy_id);
 
 extern ObjectAddress CreatePolicy(CreatePolicyStmt *stmt);
 extern ObjectAddress AlterPolicy(AlterPolicyStmt *stmt);
 
-extern Oid get_relation_policy_oid(Oid relid, const char *policy_name,
-						bool missing_ok);
+extern Oid	get_relation_policy_oid(Oid relid, const char *policy_name,
+									bool missing_ok);
 
 extern ObjectAddress rename_policy(RenameStmt *stmt);
 

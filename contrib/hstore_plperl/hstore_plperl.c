@@ -1,15 +1,10 @@
 #include "postgres.h"
 
-#undef _
-
 #include "fmgr.h"
-#include "plperl.h"
-#include "plperl_helpers.h"
 #include "hstore/hstore.h"
+#include "plperl.h"
 
 PG_MODULE_MAGIC;
-
-extern void _PG_init(void);
 
 /* Linkage to functions in hstore module */
 typedef HStore *(*hstoreUpgrade_t) (Datum orig);
@@ -118,7 +113,7 @@ plperl_to_hstore(PG_FUNCTION_ARGS)
 	if (SvTYPE(in) != SVt_PVHV)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 (errmsg("cannot transform non-hash Perl value to hstore"))));
+				 errmsg("cannot transform non-hash Perl value to hstore")));
 	hv = (HV *) in;
 
 	pcount = hv_iterinit(hv);

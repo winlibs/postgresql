@@ -6,11 +6,14 @@
 #include "postgres.h"
 
 #include "access/gist.h"
+#include "access/reloptions.h"
 #include "access/stratnum.h"
 #include "crc32.h"
 #include "ltree.h"
+#include "utils/array.h"
 
 #define NEXTVAL(x) ( (lquery*)( (char*)(x) + INTALIGN( VARSIZE(x) ) ) )
+#define ISEQ(a,b)	( (a)->numlevel == (b)->numlevel && ltree_compare(a,b)==0 )
 
 PG_FUNCTION_INFO_V1(ltree_gist_in);
 PG_FUNCTION_INFO_V1(ltree_gist_out);
@@ -20,8 +23,9 @@ ltree_gist_in(PG_FUNCTION_ARGS)
 {
 	ereport(ERROR,
 			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			 errmsg("ltree_gist_in() not implemented")));
-	PG_RETURN_DATUM(0);
+			 errmsg("cannot accept a value of type %s", "ltree_gist")));
+
+	PG_RETURN_VOID();			/* keep compiler quiet */
 }
 
 Datum
@@ -29,8 +33,50 @@ ltree_gist_out(PG_FUNCTION_ARGS)
 {
 	ereport(ERROR,
 			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			 errmsg("ltree_gist_out() not implemented")));
-	PG_RETURN_DATUM(0);
+			 errmsg("cannot display a value of type %s", "ltree_gist")));
+
+	PG_RETURN_VOID();			/* keep compiler quiet */
+}
+
+ltree_gist *
+ltree_gist_alloc(bool isalltrue, BITVECP sign, int siglen,
+				 ltree *left, ltree *right)
+{
+	int32		size = LTG_HDRSIZE + (isalltrue ? 0 : siglen) +
+		(left ? VARSIZE(left) + (right ? VARSIZE(right) : 0) : 0);
+	ltree_gist *result = palloc(size);
+
+	SET_VARSIZE(result, size);
+
+	if (siglen)
+	{
+		result->flag = 0;
+
+		if (isalltrue)
+			result->flag |= LTG_ALLTRUE;
+		else if (sign)
+			memcpy(LTG_SIGN(result), sign, siglen);
+		else
+			memset(LTG_SIGN(result), 0, siglen);
+
+		if (left)
+		{
+			memcpy(LTG_LNODE(result, siglen), left, VARSIZE(left));
+
+			if (!right || left == right || ISEQ(left, right))
+				result->flag |= LTG_NORIGHT;
+			else
+				memcpy(LTG_RNODE(result, siglen), right, VARSIZE(right));
+		}
+	}
+	else
+	{
+		Assert(left);
+		result->flag = LTG_ONENODE;
+		memcpy(LTG_NODE(result), left, VARSIZE(left));
+	}
+
+	return result;
 }
 
 PG_FUNCTION_INFO_V1(ltree_compress);
@@ -40,8 +86,8 @@ PG_FUNCTION_INFO_V1(ltree_union);
 PG_FUNCTION_INFO_V1(ltree_penalty);
 PG_FUNCTION_INFO_V1(ltree_picksplit);
 PG_FUNCTION_INFO_V1(ltree_consistent);
+PG_FUNCTION_INFO_V1(ltree_gist_options);
 
-#define ISEQ(a,b)	( (a)->numlevel == (b)->numlevel && ltree_compare(a,b)==0 )
 #define GETENTRY(vec,pos) ((ltree_gist *) DatumGetPointer((vec)->vector[(pos)].key))
 
 Datum
@@ -52,14 +98,8 @@ ltree_compress(PG_FUNCTION_ARGS)
 
 	if (entry->leafkey)
 	{							/* ltree */
-		ltree_gist *key;
 		ltree	   *val = DatumGetLtreeP(entry->key);
-		int32		len = LTG_HDRSIZE + VARSIZE(val);
-
-		key = (ltree_gist *) palloc0(len);
-		SET_VARSIZE(key, len);
-		key->flag = LTG_ONENODE;
-		memcpy((void *) LTG_NODE(key), (void *) val, VARSIZE(val));
+		ltree_gist *key = ltree_gist_alloc(false, NULL, 0, val, 0);
 
 		retval = (GISTENTRY *) palloc(sizeof(GISTENTRY));
 		gistentryinit(*retval, PointerGetDatum(key),
@@ -93,13 +133,14 @@ ltree_same(PG_FUNCTION_ARGS)
 	ltree_gist *a = (ltree_gist *) PG_GETARG_POINTER(0);
 	ltree_gist *b = (ltree_gist *) PG_GETARG_POINTER(1);
 	bool	   *result = (bool *) PG_GETARG_POINTER(2);
+	int			siglen = LTREE_GET_SIGLEN();
 
 	*result = false;
 	if (LTG_ISONENODE(a) != LTG_ISONENODE(b))
 		PG_RETURN_POINTER(result);
 
 	if (LTG_ISONENODE(a))
-		*result = (ISEQ(LTG_NODE(a), LTG_NODE(b))) ? true : false;
+		*result = ISEQ(LTG_NODE(a), LTG_NODE(b));
 	else
 	{
 		int32		i;
@@ -109,15 +150,15 @@ ltree_same(PG_FUNCTION_ARGS)
 		if (LTG_ISALLTRUE(a) != LTG_ISALLTRUE(b))
 			PG_RETURN_POINTER(result);
 
-		if (!ISEQ(LTG_LNODE(a), LTG_LNODE(b)))
+		if (!ISEQ(LTG_LNODE(a, siglen), LTG_LNODE(b, siglen)))
 			PG_RETURN_POINTER(result);
-		if (!ISEQ(LTG_RNODE(a), LTG_RNODE(b)))
+		if (!ISEQ(LTG_RNODE(a, siglen), LTG_RNODE(b, siglen)))
 			PG_RETURN_POINTER(result);
 
 		*result = true;
 		if (!LTG_ISALLTRUE(a))
 		{
-			LOOPBYTE
+			LOOPBYTE(siglen)
 			{
 				if (sa[i] != sb[i])
 				{
@@ -132,7 +173,7 @@ ltree_same(PG_FUNCTION_ARGS)
 }
 
 static void
-hashing(BITVECP sign, ltree *t)
+hashing(BITVECP sign, ltree *t, int siglen)
 {
 	int			tlen = t->numlevel;
 	ltree_level *cur = LTREE_FIRST(t);
@@ -141,7 +182,7 @@ hashing(BITVECP sign, ltree *t)
 	while (tlen > 0)
 	{
 		hash = ltree_crc32_sz(cur->name, cur->len);
-		HASH(sign, hash);
+		HASH(sign, hash, siglen);
 		cur = LEVEL_NEXT(cur);
 		tlen--;
 	}
@@ -152,7 +193,8 @@ ltree_union(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	int		   *size = (int *) PG_GETARG_POINTER(1);
-	BITVEC		base;
+	int			siglen = LTREE_GET_SIGLEN();
+	BITVECP		base = palloc0(siglen);
 	int32		i,
 				j;
 	ltree_gist *result,
@@ -161,16 +203,14 @@ ltree_union(PG_FUNCTION_ARGS)
 			   *right = NULL,
 			   *curtree;
 	bool		isalltrue = false;
-	bool		isleqr;
 
-	MemSet((void *) base, 0, sizeof(BITVEC));
 	for (j = 0; j < entryvec->n; j++)
 	{
 		cur = GETENTRY(entryvec, j);
 		if (LTG_ISONENODE(cur))
 		{
 			curtree = LTG_NODE(cur);
-			hashing(base, curtree);
+			hashing(base, curtree, siglen);
 			if (!left || ltree_compare(left, curtree) > 0)
 				left = curtree;
 			if (!right || ltree_compare(right, curtree) < 0)
@@ -184,14 +224,14 @@ ltree_union(PG_FUNCTION_ARGS)
 			{
 				BITVECP		sc = LTG_SIGN(cur);
 
-				LOOPBYTE
+				LOOPBYTE(siglen)
 					((unsigned char *) base)[i] |= sc[i];
 			}
 
-			curtree = LTG_LNODE(cur);
+			curtree = LTG_LNODE(cur, siglen);
 			if (!left || ltree_compare(left, curtree) > 0)
 				left = curtree;
-			curtree = LTG_RNODE(cur);
+			curtree = LTG_RNODE(cur, siglen);
 			if (!right || ltree_compare(right, curtree) < 0)
 				right = curtree;
 		}
@@ -200,7 +240,7 @@ ltree_union(PG_FUNCTION_ARGS)
 	if (isalltrue == false)
 	{
 		isalltrue = true;
-		LOOPBYTE
+		LOOPBYTE(siglen)
 		{
 			if (((unsigned char *) base)[i] != 0xff)
 			{
@@ -210,23 +250,9 @@ ltree_union(PG_FUNCTION_ARGS)
 		}
 	}
 
-	isleqr = (left == right || ISEQ(left, right)) ? true : false;
-	*size = LTG_HDRSIZE + ((isalltrue) ? 0 : SIGLEN) + VARSIZE(left) + ((isleqr) ? 0 : VARSIZE(right));
+	result = ltree_gist_alloc(isalltrue, base, siglen, left, right);
 
-	result = (ltree_gist *) palloc0(*size);
-	SET_VARSIZE(result, *size);
-	result->flag = 0;
-
-	if (isalltrue)
-		result->flag |= LTG_ALLTRUE;
-	else
-		memcpy((void *) LTG_SIGN(result), base, SIGLEN);
-
-	memcpy((void *) LTG_LNODE(result), (void *) left, VARSIZE(left));
-	if (isleqr)
-		result->flag |= LTG_NORIGHT;
-	else
-		memcpy((void *) LTG_RNODE(result), (void *) right, VARSIZE(right));
+	*size = VARSIZE(result);
 
 	PG_RETURN_POINTER(result);
 }
@@ -237,11 +263,12 @@ ltree_penalty(PG_FUNCTION_ARGS)
 	ltree_gist *origval = (ltree_gist *) DatumGetPointer(((GISTENTRY *) PG_GETARG_POINTER(0))->key);
 	ltree_gist *newval = (ltree_gist *) DatumGetPointer(((GISTENTRY *) PG_GETARG_POINTER(1))->key);
 	float	   *penalty = (float *) PG_GETARG_POINTER(2);
+	int			siglen = LTREE_GET_SIGLEN();
 	int32		cmpr,
 				cmpl;
 
-	cmpl = ltree_compare(LTG_GETLNODE(origval), LTG_GETLNODE(newval));
-	cmpr = ltree_compare(LTG_GETRNODE(newval), LTG_GETRNODE(origval));
+	cmpl = ltree_compare(LTG_GETLNODE(origval, siglen), LTG_GETLNODE(newval, siglen));
+	cmpr = ltree_compare(LTG_GETRNODE(newval, siglen), LTG_GETRNODE(origval, siglen));
 
 	*penalty = Max(cmpl, 0) + Max(cmpr, 0);
 
@@ -258,10 +285,8 @@ typedef struct rix
 static int
 treekey_cmp(const void *a, const void *b)
 {
-	return ltree_compare(
-						 ((const RIX *) a)->r,
-						 ((const RIX *) b)->r
-		);
+	return ltree_compare(((const RIX *) a)->r,
+						 ((const RIX *) b)->r);
 }
 
 
@@ -270,26 +295,23 @@ ltree_picksplit(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
+	int			siglen = LTREE_GET_SIGLEN();
 	OffsetNumber j;
 	int32		i;
 	RIX		   *array;
 	OffsetNumber maxoff;
 	int			nbytes;
-	int			size;
 	ltree	   *lu_l,
 			   *lu_r,
 			   *ru_l,
 			   *ru_r;
 	ltree_gist *lu,
 			   *ru;
-	BITVEC		ls,
-				rs;
+	BITVECP		ls = palloc0(siglen),
+				rs = palloc0(siglen);
 	bool		lisat = false,
-				risat = false,
-				isleqr;
+				risat = false;
 
-	memset((void *) ls, 0, sizeof(BITVEC));
-	memset((void *) rs, 0, sizeof(BITVEC));
 	maxoff = entryvec->n - 1;
 	nbytes = (maxoff + 2) * sizeof(OffsetNumber);
 	v->spl_left = (OffsetNumber *) palloc(nbytes);
@@ -303,10 +325,10 @@ ltree_picksplit(PG_FUNCTION_ARGS)
 	{
 		array[j].index = j;
 		lu = GETENTRY(entryvec, j); /* use as tmp val */
-		array[j].r = LTG_GETLNODE(lu);
+		array[j].r = LTG_GETLNODE(lu, siglen);
 	}
 
-	qsort((void *) &array[FirstOffsetNumber], maxoff - FirstOffsetNumber + 1,
+	qsort(&array[FirstOffsetNumber], maxoff - FirstOffsetNumber + 1,
 		  sizeof(RIX), treekey_cmp);
 
 	lu_l = lu_r = ru_l = ru_r = NULL;
@@ -317,10 +339,10 @@ ltree_picksplit(PG_FUNCTION_ARGS)
 		{
 			v->spl_left[v->spl_nleft] = array[j].index;
 			v->spl_nleft++;
-			if (lu_r == NULL || ltree_compare(LTG_GETRNODE(lu), lu_r) > 0)
-				lu_r = LTG_GETRNODE(lu);
+			if (lu_r == NULL || ltree_compare(LTG_GETRNODE(lu, siglen), lu_r) > 0)
+				lu_r = LTG_GETRNODE(lu, siglen);
 			if (LTG_ISONENODE(lu))
-				hashing(ls, LTG_NODE(lu));
+				hashing(ls, LTG_NODE(lu), siglen);
 			else
 			{
 				if (lisat || LTG_ISALLTRUE(lu))
@@ -329,7 +351,7 @@ ltree_picksplit(PG_FUNCTION_ARGS)
 				{
 					BITVECP		sc = LTG_SIGN(lu);
 
-					LOOPBYTE
+					LOOPBYTE(siglen)
 						((unsigned char *) ls)[i] |= sc[i];
 				}
 			}
@@ -338,10 +360,10 @@ ltree_picksplit(PG_FUNCTION_ARGS)
 		{
 			v->spl_right[v->spl_nright] = array[j].index;
 			v->spl_nright++;
-			if (ru_r == NULL || ltree_compare(LTG_GETRNODE(lu), ru_r) > 0)
-				ru_r = LTG_GETRNODE(lu);
+			if (ru_r == NULL || ltree_compare(LTG_GETRNODE(lu, siglen), ru_r) > 0)
+				ru_r = LTG_GETRNODE(lu, siglen);
 			if (LTG_ISONENODE(lu))
-				hashing(rs, LTG_NODE(lu));
+				hashing(rs, LTG_NODE(lu), siglen);
 			else
 			{
 				if (risat || LTG_ISALLTRUE(lu))
@@ -350,7 +372,7 @@ ltree_picksplit(PG_FUNCTION_ARGS)
 				{
 					BITVECP		sc = LTG_SIGN(lu);
 
-					LOOPBYTE
+					LOOPBYTE(siglen)
 						((unsigned char *) rs)[i] |= sc[i];
 				}
 			}
@@ -360,7 +382,7 @@ ltree_picksplit(PG_FUNCTION_ARGS)
 	if (lisat == false)
 	{
 		lisat = true;
-		LOOPBYTE
+		LOOPBYTE(siglen)
 		{
 			if (((unsigned char *) ls)[i] != 0xff)
 			{
@@ -373,7 +395,7 @@ ltree_picksplit(PG_FUNCTION_ARGS)
 	if (risat == false)
 	{
 		risat = true;
-		LOOPBYTE
+		LOOPBYTE(siglen)
 		{
 			if (((unsigned char *) rs)[i] != 0xff)
 			{
@@ -383,38 +405,14 @@ ltree_picksplit(PG_FUNCTION_ARGS)
 		}
 	}
 
-	lu_l = LTG_GETLNODE(GETENTRY(entryvec, array[FirstOffsetNumber].index));
-	isleqr = (lu_l == lu_r || ISEQ(lu_l, lu_r)) ? true : false;
-	size = LTG_HDRSIZE + ((lisat) ? 0 : SIGLEN) + VARSIZE(lu_l) + ((isleqr) ? 0 : VARSIZE(lu_r));
-	lu = (ltree_gist *) palloc0(size);
-	SET_VARSIZE(lu, size);
-	lu->flag = 0;
-	if (lisat)
-		lu->flag |= LTG_ALLTRUE;
-	else
-		memcpy((void *) LTG_SIGN(lu), ls, SIGLEN);
-	memcpy((void *) LTG_LNODE(lu), (void *) lu_l, VARSIZE(lu_l));
-	if (isleqr)
-		lu->flag |= LTG_NORIGHT;
-	else
-		memcpy((void *) LTG_RNODE(lu), (void *) lu_r, VARSIZE(lu_r));
+	lu_l = LTG_GETLNODE(GETENTRY(entryvec, array[FirstOffsetNumber].index), siglen);
+	lu = ltree_gist_alloc(lisat, ls, siglen, lu_l, lu_r);
 
+	ru_l = LTG_GETLNODE(GETENTRY(entryvec, array[1 + ((maxoff - FirstOffsetNumber + 1) / 2)].index), siglen);
+	ru = ltree_gist_alloc(risat, rs, siglen, ru_l, ru_r);
 
-	ru_l = LTG_GETLNODE(GETENTRY(entryvec, array[1 + ((maxoff - FirstOffsetNumber + 1) / 2)].index));
-	isleqr = (ru_l == ru_r || ISEQ(ru_l, ru_r)) ? true : false;
-	size = LTG_HDRSIZE + ((risat) ? 0 : SIGLEN) + VARSIZE(ru_l) + ((isleqr) ? 0 : VARSIZE(ru_r));
-	ru = (ltree_gist *) palloc0(size);
-	SET_VARSIZE(ru, size);
-	ru->flag = 0;
-	if (risat)
-		ru->flag |= LTG_ALLTRUE;
-	else
-		memcpy((void *) LTG_SIGN(ru), rs, SIGLEN);
-	memcpy((void *) LTG_LNODE(ru), (void *) ru_l, VARSIZE(ru_l));
-	if (isleqr)
-		ru->flag |= LTG_NORIGHT;
-	else
-		memcpy((void *) LTG_RNODE(ru), (void *) ru_r, VARSIZE(ru_r));
+	pfree(ls);
+	pfree(rs);
 
 	v->spl_ldatum = PointerGetDatum(lu);
 	v->spl_rdatum = PointerGetDatum(ru);
@@ -423,7 +421,7 @@ ltree_picksplit(PG_FUNCTION_ARGS)
 }
 
 static bool
-gist_isparent(ltree_gist *key, ltree *query)
+gist_isparent(ltree_gist *key, ltree *query, int siglen)
 {
 	int32		numlevel = query->numlevel;
 	int			i;
@@ -431,7 +429,8 @@ gist_isparent(ltree_gist *key, ltree *query)
 	for (i = query->numlevel; i >= 0; i--)
 	{
 		query->numlevel = i;
-		if (ltree_compare(query, LTG_GETLNODE(key)) >= 0 && ltree_compare(query, LTG_GETRNODE(key)) <= 0)
+		if (ltree_compare(query, LTG_GETLNODE(key, siglen)) >= 0 &&
+			ltree_compare(query, LTG_GETRNODE(key, siglen)) <= 0)
 		{
 			query->numlevel = numlevel;
 			return true;
@@ -452,10 +451,10 @@ copy_ltree(ltree *src)
 }
 
 static bool
-gist_ischild(ltree_gist *key, ltree *query)
+gist_ischild(ltree_gist *key, ltree *query, int siglen)
 {
-	ltree	   *left = copy_ltree(LTG_GETLNODE(key));
-	ltree	   *right = copy_ltree(LTG_GETRNODE(key));
+	ltree	   *left = copy_ltree(LTG_GETLNODE(key, siglen));
+	ltree	   *right = copy_ltree(LTG_GETRNODE(key, siglen));
 	bool		res = true;
 
 	if (left->numlevel > query->numlevel)
@@ -477,7 +476,7 @@ gist_ischild(ltree_gist *key, ltree *query)
 }
 
 static bool
-gist_qe(ltree_gist *key, lquery *query)
+gist_qe(ltree_gist *key, lquery *query, int siglen)
 {
 	lquery_level *curq = LQUERY_FIRST(query);
 	BITVECP		sign = LTG_SIGN(key);
@@ -496,7 +495,7 @@ gist_qe(ltree_gist *key, lquery *query)
 
 			while (vlen > 0)
 			{
-				if (GETBIT(sign, HASHVAL(curv->val)))
+				if (GETBIT(sign, HASHVAL(curv->val, siglen)))
 				{
 					isexist = true;
 					break;
@@ -545,41 +544,52 @@ gist_tqcmp(ltree *t, lquery *q)
 }
 
 static bool
-gist_between(ltree_gist *key, lquery *query)
+gist_between(ltree_gist *key, lquery *query, int siglen)
 {
 	if (query->firstgood == 0)
 		return true;
 
-	if (gist_tqcmp(LTG_GETLNODE(key), query) > 0)
+	if (gist_tqcmp(LTG_GETLNODE(key, siglen), query) > 0)
 		return false;
 
-	if (gist_tqcmp(LTG_GETRNODE(key), query) < 0)
+	if (gist_tqcmp(LTG_GETRNODE(key, siglen), query) < 0)
 		return false;
 
 	return true;
 }
 
-static bool
-checkcondition_bit(void *checkval, ITEM *val)
+typedef struct LtreeSignature
 {
-	return (FLG_CANLOOKSIGN(val->flag)) ? GETBIT(checkval, HASHVAL(val->val)) : true;
+	BITVECP		sign;
+	int			siglen;
+} LtreeSignature;
+
+static bool
+checkcondition_bit(void *cxt, ITEM *val)
+{
+	LtreeSignature *sig = cxt;
+
+	return (FLG_CANLOOKSIGN(val->flag)) ? GETBIT(sig->sign, HASHVAL(val->val, sig->siglen)) : true;
 }
 
 static bool
-gist_qtxt(ltree_gist *key, ltxtquery *query)
+gist_qtxt(ltree_gist *key, ltxtquery *query, int siglen)
 {
+	LtreeSignature sig;
+
 	if (LTG_ISALLTRUE(key))
 		return true;
 
-	return ltree_execute(
-						 GETQUERY(query),
-						 (void *) LTG_SIGN(key), false,
-						 checkcondition_bit
-		);
+	sig.sign = LTG_SIGN(key);
+	sig.siglen = siglen;
+
+	return ltree_execute(GETQUERY(query),
+						 &sig, false,
+						 checkcondition_bit);
 }
 
 static bool
-arrq_cons(ltree_gist *key, ArrayType *_query)
+arrq_cons(ltree_gist *key, ArrayType *_query, int siglen)
 {
 	lquery	   *query = (lquery *) ARR_DATA_PTR(_query);
 	int			num = ArrayGetNItems(ARR_NDIM(_query), ARR_DIMS(_query));
@@ -595,7 +605,7 @@ arrq_cons(ltree_gist *key, ArrayType *_query)
 
 	while (num > 0)
 	{
-		if (gist_qe(key, query) && gist_between(key, query))
+		if (gist_qe(key, query, siglen) && gist_between(key, query, siglen))
 			return true;
 		num--;
 		query = NEXTVAL(query);
@@ -611,6 +621,7 @@ ltree_consistent(PG_FUNCTION_ARGS)
 
 	/* Oid		subtype = PG_GETARG_OID(3); */
 	bool	   *recheck = (bool *) PG_GETARG_POINTER(4);
+	int			siglen = LTREE_GET_SIGLEN();
 	ltree_gist *key = (ltree_gist *) DatumGetPointer(entry->key);
 	void	   *query = NULL;
 	bool		res = false;
@@ -625,47 +636,45 @@ ltree_consistent(PG_FUNCTION_ARGS)
 			res = (GIST_LEAF(entry)) ?
 				(ltree_compare((ltree *) query, LTG_NODE(key)) > 0)
 				:
-				(ltree_compare((ltree *) query, LTG_GETLNODE(key)) >= 0);
+				(ltree_compare((ltree *) query, LTG_GETLNODE(key, siglen)) >= 0);
 			break;
 		case BTLessEqualStrategyNumber:
 			query = PG_GETARG_LTREE_P(1);
-			res = (ltree_compare((ltree *) query, LTG_GETLNODE(key)) >= 0);
+			res = (ltree_compare((ltree *) query, LTG_GETLNODE(key, siglen)) >= 0);
 			break;
 		case BTEqualStrategyNumber:
 			query = PG_GETARG_LTREE_P(1);
 			if (GIST_LEAF(entry))
 				res = (ltree_compare((ltree *) query, LTG_NODE(key)) == 0);
 			else
-				res = (
-					   ltree_compare((ltree *) query, LTG_GETLNODE(key)) >= 0
+				res = (ltree_compare((ltree *) query, LTG_GETLNODE(key, siglen)) >= 0
 					   &&
-					   ltree_compare((ltree *) query, LTG_GETRNODE(key)) <= 0
-					);
+					   ltree_compare((ltree *) query, LTG_GETRNODE(key, siglen)) <= 0);
 			break;
 		case BTGreaterEqualStrategyNumber:
 			query = PG_GETARG_LTREE_P(1);
-			res = (ltree_compare((ltree *) query, LTG_GETRNODE(key)) <= 0);
+			res = (ltree_compare((ltree *) query, LTG_GETRNODE(key, siglen)) <= 0);
 			break;
 		case BTGreaterStrategyNumber:
 			query = PG_GETARG_LTREE_P(1);
 			res = (GIST_LEAF(entry)) ?
-				(ltree_compare((ltree *) query, LTG_GETRNODE(key)) < 0)
+				(ltree_compare((ltree *) query, LTG_GETRNODE(key, siglen)) < 0)
 				:
-				(ltree_compare((ltree *) query, LTG_GETRNODE(key)) <= 0);
+				(ltree_compare((ltree *) query, LTG_GETRNODE(key, siglen)) <= 0);
 			break;
 		case 10:
 			query = PG_GETARG_LTREE_P_COPY(1);
 			res = (GIST_LEAF(entry)) ?
 				inner_isparent((ltree *) query, LTG_NODE(key))
 				:
-				gist_isparent(key, (ltree *) query);
+				gist_isparent(key, (ltree *) query, siglen);
 			break;
 		case 11:
 			query = PG_GETARG_LTREE_P(1);
 			res = (GIST_LEAF(entry)) ?
 				inner_isparent(LTG_NODE(key), (ltree *) query)
 				:
-				gist_ischild(key, (ltree *) query);
+				gist_ischild(key, (ltree *) query, siglen);
 			break;
 		case 12:
 		case 13:
@@ -676,7 +685,8 @@ ltree_consistent(PG_FUNCTION_ARGS)
 													   PointerGetDatum((lquery *) query)
 													   ));
 			else
-				res = (gist_qe(key, (lquery *) query) && gist_between(key, (lquery *) query));
+				res = (gist_qe(key, (lquery *) query, siglen) &&
+					   gist_between(key, (lquery *) query, siglen));
 			break;
 		case 14:
 		case 15:
@@ -687,7 +697,7 @@ ltree_consistent(PG_FUNCTION_ARGS)
 													   PointerGetDatum((ltxtquery *) query)
 													   ));
 			else
-				res = gist_qtxt(key, (ltxtquery *) query);
+				res = gist_qtxt(key, (ltxtquery *) query, siglen);
 			break;
 		case 16:
 		case 17:
@@ -698,7 +708,7 @@ ltree_consistent(PG_FUNCTION_ARGS)
 													   PointerGetDatum((ArrayType *) query)
 													   ));
 			else
-				res = arrq_cons(key, (ArrayType *) query);
+				res = arrq_cons(key, (ArrayType *) query, siglen);
 			break;
 		default:
 			/* internal error */
@@ -707,4 +717,33 @@ ltree_consistent(PG_FUNCTION_ARGS)
 
 	PG_FREE_IF_COPY(query, 1);
 	PG_RETURN_BOOL(res);
+}
+
+static void
+ltree_gist_relopts_validator(void *parsed_options, relopt_value *vals,
+							 int nvals)
+{
+	LtreeGistOptions *options = (LtreeGistOptions *) parsed_options;
+
+	if (options->siglen != INTALIGN(options->siglen))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("siglen value must be a multiple of %d", ALIGNOF_INT)));
+}
+
+Datum
+ltree_gist_options(PG_FUNCTION_ARGS)
+{
+	local_relopts *relopts = (local_relopts *) PG_GETARG_POINTER(0);
+
+	init_local_reloptions(relopts, sizeof(LtreeGistOptions));
+	add_local_int_reloption(relopts, "siglen",
+							"signature length in bytes",
+							LTREE_SIGLEN_DEFAULT,
+							INTALIGN(1),
+							LTREE_SIGLEN_MAX,
+							offsetof(LtreeGistOptions, siglen));
+	register_reloptions_validator(relopts, ltree_gist_relopts_validator);
+
+	PG_RETURN_VOID();
 }

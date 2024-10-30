@@ -5,10 +5,12 @@
 
 #include <ctype.h>
 
-#include "trgm.h"
-
 #include "catalog/pg_type.h"
+#include "lib/qunique.h"
+#include "miscadmin.h"
+#include "trgm.h"
 #include "tsearch/ts_locale.h"
+#include "utils/guc.h"
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
 #include "utils/pg_crc.h"
@@ -19,8 +21,6 @@ PG_MODULE_MAGIC;
 double		similarity_threshold = 0.3f;
 double		word_similarity_threshold = 0.6f;
 double		strict_word_similarity_threshold = 0.5f;
-
-void		_PG_init(void);
 
 PG_FUNCTION_INFO_V1(set_limit);
 PG_FUNCTION_INFO_V1(show_limit);
@@ -68,7 +68,7 @@ _PG_init(void)
 							 "Sets the threshold used by the % operator.",
 							 "Valid range is 0.0 .. 1.0.",
 							 &similarity_threshold,
-							 0.3,
+							 0.3f,
 							 0.0,
 							 1.0,
 							 PGC_USERSET,
@@ -80,7 +80,7 @@ _PG_init(void)
 							 "Sets the threshold used by the <% operator.",
 							 "Valid range is 0.0 .. 1.0.",
 							 &word_similarity_threshold,
-							 0.6,
+							 0.6f,
 							 0.0,
 							 1.0,
 							 PGC_USERSET,
@@ -92,7 +92,7 @@ _PG_init(void)
 							 "Sets the threshold used by the <<% operator.",
 							 "Valid range is 0.0 .. 1.0.",
 							 &strict_word_similarity_threshold,
-							 0.5,
+							 0.5f,
 							 0.0,
 							 1.0,
 							 PGC_USERSET,
@@ -100,6 +100,8 @@ _PG_init(void)
 							 NULL,
 							 NULL,
 							 NULL);
+
+	MarkGUCPrefixReserved("pg_trgm");
 }
 
 /*
@@ -161,26 +163,6 @@ static int
 comp_trgm(const void *a, const void *b)
 {
 	return CMPTRGM(a, b);
-}
-
-static int
-unique_array(trgm *a, int len)
-{
-	trgm	   *curend,
-			   *tmp;
-
-	curend = tmp = a;
-	while (tmp - a < len)
-		if (CMPTRGM(tmp, curend))
-		{
-			curend++;
-			CPTRGM(curend, tmp);
-			tmp++;
-		}
-		else
-			tmp++;
-
-	return curend + 1 - a;
 }
 
 /*
@@ -394,8 +376,8 @@ generate_trgm(char *str, int slen)
 	 */
 	if (len > 1)
 	{
-		qsort((void *) GETARR(trg), len, sizeof(trgm), comp_trgm);
-		len = unique_array(GETARR(trg), len);
+		qsort(GETARR(trg), len, sizeof(trgm), comp_trgm);
+		len = qunique(GETARR(trg), len, sizeof(trgm), comp_trgm);
 	}
 
 	SET_VARSIZE(trg, CALCGTSIZE(ARRKEY, len));
@@ -461,14 +443,15 @@ comp_ptrgm(const void *v1, const void *v2)
 
 /*
  * Iterative search function which calculates maximum similarity with word in
- * the string. But maximum similarity is calculated only if check_only == false.
+ * the string. Maximum similarity is only calculated only if the flag
+ * WORD_SIMILARITY_CHECK_ONLY isn't set.
  *
  * trg2indexes: array which stores indexes of the array "found".
  * found: array which stores true of false values.
  * ulen1: count of unique trigrams of array "trg1".
  * len2: length of array "trg2" and array "trg2indexes".
  * len: length of the array "found".
- * lags: set of boolean flags parametrizing similarity calculation.
+ * flags: set of boolean flags parameterizing similarity calculation.
  * bounds: whether each trigram is left/right bound of word.
  *
  * Returns word similarity.
@@ -500,7 +483,7 @@ iterate_word_similarity(int *trg2indexes,
 		word_similarity_threshold;
 
 	/*
-	 * Consider first trigram as initial lower bount for strict word
+	 * Consider first trigram as initial lower bound for strict word
 	 * similarity, or initialize it later with first trigram present for plain
 	 * word similarity.
 	 */
@@ -512,8 +495,12 @@ iterate_word_similarity(int *trg2indexes,
 
 	for (i = 0; i < len2; i++)
 	{
+		int			trgindex;
+
+		CHECK_FOR_INTERRUPTS();
+
 		/* Get index of next trigram */
-		int			trgindex = trg2indexes[i];
+		trgindex = trg2indexes[i];
 
 		/* Update last position of this trigram */
 		if (lower >= 0 || found[trgindex])
@@ -633,7 +620,7 @@ iterate_word_similarity(int *trg2indexes,
  *
  * str1: search pattern string, of length slen1 bytes.
  * str2: text in which we are looking for a word, of length slen2 bytes.
- * flags: set of boolean flags parametrizing similarity calculation.
+ * flags: set of boolean flags parameterizing similarity calculation.
  *
  * Returns word similarity.
  */
@@ -942,8 +929,8 @@ generate_wildcard_trgm(const char *str, int slen)
 	 */
 	if (len > 1)
 	{
-		qsort((void *) GETARR(trg), len, sizeof(trgm), comp_trgm);
-		len = unique_array(GETARR(trg), len);
+		qsort(GETARR(trg), len, sizeof(trgm), comp_trgm);
+		len = qunique(GETARR(trg), len, sizeof(trgm), comp_trgm);
 	}
 
 	SET_VARSIZE(trg, CALCGTSIZE(ARRKEY, len));
@@ -995,14 +982,7 @@ show_trgm(PG_FUNCTION_ARGS)
 		d[i] = PointerGetDatum(item);
 	}
 
-	a = construct_array(
-						d,
-						ARRNELEM(trg),
-						TEXTOID,
-						-1,
-						false,
-						'i'
-		);
+	a = construct_array_builtin(d, ARRNELEM(trg), TEXTOID);
 
 	for (i = 0; i < ARRNELEM(trg); i++)
 		pfree(DatumGetPointer(d[i]));

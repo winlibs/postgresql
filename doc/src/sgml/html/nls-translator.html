@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>55.1. For the Translator</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="nls.html" title="Chapter 55. Native Language Support" /><link rel="next" href="nls-programmer.html" title="55.2. For the Programmer" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">55.1. For the Translator</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="nls.html" title="Chapter 55. Native Language Support">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="nls.html" title="Chapter 55. Native Language Support">Up</a></td><th width="60%" align="center">Chapter 55. Native Language Support</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="nls-programmer.html" title="55.2. For the Programmer">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="NLS-TRANSLATOR"><div class="titlepage"><div><div><h2 class="title" style="clear: both">55.1. For the Translator</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="nls-translator.html#id-1.10.7.2.3">55.1.1. Requirements</a></span></dt><dt><span class="sect2"><a href="nls-translator.html#id-1.10.7.2.4">55.1.2. Concepts</a></span></dt><dt><span class="sect2"><a href="nls-translator.html#id-1.10.7.2.5">55.1.3. Creating and Maintaining Message Catalogs</a></span></dt><dt><span class="sect2"><a href="nls-translator.html#id-1.10.7.2.6">55.1.4. Editing the PO Files</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>57.1. For the Translator</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="nls.html" title="Chapter 57. Native Language Support" /><link rel="next" href="nls-programmer.html" title="57.2. For the Programmer" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">57.1. For the Translator</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="nls.html" title="Chapter 57. Native Language Support">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="nls.html" title="Chapter 57. Native Language Support">Up</a></td><th width="60%" align="center">Chapter 57. Native Language Support</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="nls-programmer.html" title="57.2. For the Programmer">Next</a></td></tr></table><hr /></div><div class="sect1" id="NLS-TRANSLATOR"><div class="titlepage"><div><div><h2 class="title" style="clear: both">57.1. For the Translator <a href="#NLS-TRANSLATOR" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="nls-translator.html#NLS-TRANSLATOR-REQUIREMENTS">57.1.1. Requirements</a></span></dt><dt><span class="sect2"><a href="nls-translator.html#NLS-TRANSLATOR-CONCEPTS">57.1.2. Concepts</a></span></dt><dt><span class="sect2"><a href="nls-translator.html#NLS-TRANSLATOR-MESSAGE-CATALOGS">57.1.3. Creating and Maintaining Message Catalogs</a></span></dt><dt><span class="sect2"><a href="nls-translator.html#NLS-TRANSLATOR-EDITING-PO">57.1.4. Editing the PO Files</a></span></dt></dl></div><p>
    <span class="productname">PostgreSQL</span>
    programs (server and client) can issue their messages in
    your favorite language — if the messages have been translated.
@@ -8,7 +8,7 @@
    the <span class="productname">PostgreSQL</span> effort.  You do not have to be a
    programmer at all
    to do this.  This section explains how to help.
-  </p><div class="sect2" id="id-1.10.7.2.3"><div class="titlepage"><div><div><h3 class="title">55.1.1. Requirements</h3></div></div></div><p>
+  </p><div class="sect2" id="NLS-TRANSLATOR-REQUIREMENTS"><div class="titlepage"><div><div><h3 class="title">57.1.1. Requirements <a href="#NLS-TRANSLATOR-REQUIREMENTS" class="id_link">#</a></h3></div></div></div><p>
     We won't judge your language skills — this section is about
     software tools.  Theoretically, you only need a text editor.  But
     this is only in the unlikely event that you do not want to try out
@@ -31,7 +31,7 @@
     Your local gettext implementation should come with its own
     documentation.  Some of that is probably duplicated in what
     follows, but for additional details you should look there.
-   </p></div><div class="sect2" id="id-1.10.7.2.4"><div class="titlepage"><div><div><h3 class="title">55.1.2. Concepts</h3></div></div></div><p>
+   </p></div><div class="sect2" id="NLS-TRANSLATOR-CONCEPTS"><div class="titlepage"><div><div><h3 class="title">57.1.2. Concepts <a href="#NLS-TRANSLATOR-CONCEPTS" class="id_link">#</a></h3></div></div></div><p>
     The pairs of original (English) messages and their (possibly)
     translated equivalents are kept in <em class="firstterm">message
     catalogs</em>, one for each program (although related
@@ -64,7 +64,7 @@ msgstr "another translated"
 
 ...
 </pre><p>
-    The msgid's are extracted from the program source.  (They need not
+    The msgid lines are extracted from the program source.  (They need not
     be, but this is the most common way.)  The msgstr lines are
     initially empty and are filled in with useful strings by the
     translator.  The strings can contain C-style escape characters and
@@ -85,7 +85,7 @@ msgstr "another translated"
     The #. style comments are extracted from the source file where the
     message is used.  Possibly the programmer has inserted information
     for the translator, such as about expected alignment.  The #:
-    comment indicates the exact location(s) where the message is used
+    comments indicate the exact locations where the message is used
     in the source.  The translator need not look at the program
     source, but can if there is doubt about the correct
     translation.  The #, comments contain flags that describe the
@@ -99,7 +99,7 @@ msgstr "another translated"
     template.  This means that the translation should also be a format
     string with the same number and type of placeholders.  There are
     tools that can verify this, which key off the c-format flag.
-   </p></div><div class="sect2" id="id-1.10.7.2.5"><div class="titlepage"><div><div><h3 class="title">55.1.3. Creating and Maintaining Message Catalogs</h3></div></div></div><p>
+   </p></div><div class="sect2" id="NLS-TRANSLATOR-MESSAGE-CATALOGS"><div class="titlepage"><div><div><h3 class="title">57.1.3. Creating and Maintaining Message Catalogs <a href="#NLS-TRANSLATOR-MESSAGE-CATALOGS" class="id_link">#</a></h3></div></div></div><p>
     OK, so how does one create a <span class="quote">“<span class="quote">blank</span>”</span> message
     catalog?  First, go into the directory that contains the program
     whose messages you want to translate.  If there is a file
@@ -110,7 +110,7 @@ msgstr "another translated"
     someone has already done some translation work.  The files are
     named <code class="filename"><em class="replaceable"><code>language</code></em>.po</code>,
     where <em class="replaceable"><code>language</code></em> is the
-    <a class="ulink" href="http://www.loc.gov/standards/iso639-2/php/English_list.php" target="_top">
+    <a class="ulink" href="https://www.loc.gov/standards/iso639-2/php/English_list.php" target="_top">
     ISO 639-1 two-letter language code (in lower case)</a>, e.g.,
     <code class="filename">fr.po</code> for French.  If there is really a need
     for more than one translation effort per language then the files
@@ -137,10 +137,11 @@ make init-po
     Copy this file to
     <code class="filename"><em class="replaceable"><code>language</code></em>.po</code> and
     edit it.  To make it known that the new language is available,
-    also edit the file <code class="filename">nls.mk</code> and add the
-    language (or language and country) code to the line that looks like:
+    also edit the file <code class="filename">po/LINGUAS</code> and add the
+    language (or language and country) code next to languages already listed,
+    like:
 </p><pre class="programlisting">
-AVAIL_LANGUAGES := de fr
+de fr
 </pre><p>
     (Other languages can appear, of course.)
    </p><p>
@@ -155,12 +156,15 @@ make update-po
     If the merge algorithm is not sure about a particular message it
     marks it <span class="quote">“<span class="quote">fuzzy</span>”</span> as explained above.  The new PO file
     is saved with a <code class="filename">.po.new</code> extension.
-   </p></div><div class="sect2" id="id-1.10.7.2.6"><div class="titlepage"><div><div><h3 class="title">55.1.4. Editing the PO Files</h3></div></div></div><p>
-    The PO files can be edited with a regular text editor.  The
-    translator should only change the area between the quotes after
-    the msgstr directive, add comments, and alter the fuzzy flag.
-    There is (unsurprisingly) a PO mode for Emacs, which I find quite
+   </p></div><div class="sect2" id="NLS-TRANSLATOR-EDITING-PO"><div class="titlepage"><div><div><h3 class="title">57.1.4. Editing the PO Files <a href="#NLS-TRANSLATOR-EDITING-PO" class="id_link">#</a></h3></div></div></div><p>
+    The PO files can be edited with a regular text editor. There are also
+    several specialized editors for PO files which can help the process with
+    translation-specific features.
+    There is (unsurprisingly) a PO mode for Emacs, which can be quite
     useful.
+   </p><p>
+    The translator should only change the area between the quotes after
+    the msgstr directive, add comments, and alter the fuzzy flag.
    </p><p>
     The PO files need not be completely filled in.  The software will
     automatically fall back to the original string if no translation
@@ -208,11 +212,11 @@ msgstr "Die Datei %2$s hat %1$u Zeichen."
        open file %s</code>) should probably not start with a
        capital letter (if your language distinguishes letter case) or
        end with a period (if your language uses punctuation marks).
-       It might help to read <a class="xref" href="error-style-guide.html" title="54.3. Error Message Style Guide">Section 54.3</a>.
+       It might help to read <a class="xref" href="error-style-guide.html" title="56.3. Error Message Style Guide">Section 56.3</a>.
       </p></li><li class="listitem"><p>
        If you don't know what a message means, or if it is ambiguous,
        ask on the developers' mailing list.  Chances are that English
        speaking end users might also not understand it or find it
        ambiguous, so it's best to improve the message.
       </p></li></ul></div><p>
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="nls.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="nls.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="nls-programmer.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 55. Native Language Support </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 55.2. For the Programmer</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="nls.html" title="Chapter 57. Native Language Support">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="nls.html" title="Chapter 57. Native Language Support">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="nls-programmer.html" title="57.2. For the Programmer">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 57. Native Language Support </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 57.2. For the Programmer</td></tr></table></div></body></html>

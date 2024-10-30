@@ -39,13 +39,17 @@ ifndef FOP
 FOP = $(missing) fop
 endif
 
-XMLINCLUDE = --path .
+XMLINCLUDE = --path . --path $(srcdir)
 
-ifndef XMLLINT
+ifdef XMLLINT
+XMLLINT := $(XMLLINT) --nonet
+else
 XMLLINT = $(missing) xmllint
 endif
 
-ifndef XSLTPROC
+ifdef XSLTPROC
+XSLTPROC := $(XSLTPROC) --nonet
+else
 XSLTPROC = $(missing) xsltproc
 endif
 
@@ -53,9 +57,20 @@ override XSLTPROCFLAGS += --stringparam pg.version '$(VERSION)'
 
 
 GENERATED_SGML = version.sgml \
-	features-supported.sgml features-unsupported.sgml errcodes-table.sgml
+	features-supported.sgml features-unsupported.sgml errcodes-table.sgml \
+	keywords-table.sgml
 
 ALLSGML := $(wildcard $(srcdir)/*.sgml $(srcdir)/ref/*.sgml) $(GENERATED_SGML)
+
+ALL_IMAGES := $(wildcard $(srcdir)/images/*.svg)
+
+
+# Run validation only once, common to all subsequent targets.  While
+# we're at it, also resolve all entities (that is, copy all included
+# files into one big file).  This helps tools that don't understand
+# vpath builds (such as dbtoepub).
+postgres-full.xml: postgres.sgml $(ALLSGML)
+	$(XMLLINT) $(XMLINCLUDE) --output $@ --noent --valid $<
 
 
 ##
@@ -64,9 +79,8 @@ ALLSGML := $(wildcard $(srcdir)/*.sgml $(srcdir)/ref/*.sgml) $(GENERATED_SGML)
 
 man distprep-man: man-stamp
 
-man-stamp: stylesheet-man.xsl postgres.sgml $(ALLSGML)
-	$(XMLLINT) $(XMLINCLUDE) --noout --valid $(word 2,$^)
-	$(XSLTPROC) $(XMLINCLUDE) $(XSLTPROCFLAGS) $(XSLTPROC_MAN_FLAGS) $(wordlist 1,2,$^)
+man-stamp: stylesheet-man.xsl postgres-full.xml
+	$(XSLTPROC) $(XMLINCLUDE) $(XSLTPROCFLAGS) $(XSLTPROC_MAN_FLAGS) $^
 	touch $@
 
 
@@ -94,30 +108,27 @@ features-unsupported.sgml: $(top_srcdir)/src/backend/catalog/sql_feature_package
 errcodes-table.sgml: $(top_srcdir)/src/backend/utils/errcodes.txt generate-errcodes-table.pl
 	$(PERL) $(srcdir)/generate-errcodes-table.pl $< > $@
 
+keywords-table.sgml: $(top_srcdir)/src/include/parser/kwlist.h $(wildcard $(srcdir)/keywords/sql*.txt) generate-keywords-table.pl
+	$(PERL) $(srcdir)/generate-keywords-table.pl $(srcdir) > $@
+
 
 ##
 ## Generation of some text files.
 ##
 
 ICONV = iconv
-LYNX = lynx
+PANDOC = pandoc
 
-# The documentation may contain non-ASCII characters (mostly for
-# contributor names), which lynx converts to the encoding determined
-# by the current locale.  To get text output that is deterministic and
-# easily readable by everyone, we make lynx produce LATIN1 and then
-# convert that to ASCII with transliteration for the non-ASCII characters.
-# Official releases were historically built on FreeBSD, which has limited
-# locale support and is very picky about locale name spelling.  The
-# below has been finely tuned to run on FreeBSD and Linux/glibc.
 INSTALL: % : %.html
-	$(PERL) -p -e 's,<h(1|2) class="title",<h\1 align=center,g' $< | LC_ALL=en_US.ISO8859-1 $(LYNX) -force_html -dump -nolist -stdin | $(ICONV) -f latin1 -t us-ascii//TRANSLIT > $@
+	$(PANDOC) -t plain -o $@.tmp $<
+	$(ICONV) -f utf8 -t us-ascii//TRANSLIT $@.tmp > $@
+	rm $@.tmp
 
 INSTALL.html: %.html : stylesheet-text.xsl %.xml
 	$(XMLLINT) --noout --valid $*.xml
 	$(XSLTPROC) $(XSLTPROCFLAGS) $(XSLTPROC_HTML_FLAGS) $^ >$@
 
-INSTALL.xml: standalone-profile.xsl standalone-install.xml postgres.sgml $(ALLSGML)
+INSTALL.xml: standalone-profile.xsl standalone-install.xml postgres-full.xml
 	$(XSLTPROC) $(XMLINCLUDE) $(XSLTPROCFLAGS) --xinclude $(wordlist 1,2,$^) >$@
 
 
@@ -131,24 +142,17 @@ endif
 
 html: html-stamp
 
-html-stamp: stylesheet.xsl postgres.sgml $(ALLSGML)
-	$(XMLLINT) $(XMLINCLUDE) --noout --valid $(word 2,$^)
+html-stamp: stylesheet.xsl postgres-full.xml $(ALL_IMAGES)
 	$(XSLTPROC) $(XMLINCLUDE) $(XSLTPROCFLAGS) $(XSLTPROC_HTML_FLAGS) $(wordlist 1,2,$^)
-	cp $(srcdir)/stylesheet.css html/
 	touch $@
 
-htmlhelp: stylesheet-hh.xsl postgres.sgml $(ALLSGML)
-	$(XMLLINT) $(XMLINCLUDE) --noout --valid $(word 2,$^)
-	$(XSLTPROC) $(XMLINCLUDE) $(XSLTPROCFLAGS) $(wordlist 1,2,$^)
-
 # single-page HTML
-postgres.html: stylesheet-html-nochunk.xsl postgres.sgml $(ALLSGML)
-	$(XMLLINT) $(XMLINCLUDE) --noout --valid $(word 2,$^)
+postgres.html: stylesheet-html-nochunk.xsl postgres-full.xml $(ALL_IMAGES)
 	$(XSLTPROC) $(XMLINCLUDE) $(XSLTPROCFLAGS) $(XSLTPROC_HTML_FLAGS) -o $@ $(wordlist 1,2,$^)
 
 # single-page text
 postgres.txt: postgres.html
-	$(LYNX) -force_html -dump -nolist $< > $@
+	$(PANDOC) -t plain -o $@ $<
 
 
 ##
@@ -158,15 +162,15 @@ postgres.txt: postgres.html
 postgres.pdf:
 	$(error Invalid target;  use postgres-A4.pdf or postgres-US.pdf as targets)
 
-%-A4.fo: stylesheet-fo.xsl %.sgml $(ALLSGML)
-	$(XMLLINT) $(XMLINCLUDE) --noout --valid $(word 2,$^)
-	$(XSLTPROC) $(XMLINCLUDE) $(XSLTPROCFLAGS) --stringparam paper.type A4 -o $@ $(wordlist 1,2,$^)
+XSLTPROC_FO_FLAGS += --stringparam img.src.path '$(srcdir)/'
 
-%-US.fo: stylesheet-fo.xsl %.sgml $(ALLSGML)
-	$(XMLLINT) $(XMLINCLUDE) --noout --valid $(word 2,$^)
-	$(XSLTPROC) $(XMLINCLUDE) $(XSLTPROCFLAGS) --stringparam paper.type USletter -o $@ $(wordlist 1,2,$^)
+%-A4.fo: stylesheet-fo.xsl %-full.xml
+	$(XSLTPROC) $(XMLINCLUDE) $(XSLTPROCFLAGS) $(XSLTPROC_FO_FLAGS) --stringparam paper.type A4 -o $@ $^
 
-%.pdf: %.fo
+%-US.fo: stylesheet-fo.xsl %-full.xml
+	$(XSLTPROC) $(XMLINCLUDE) $(XSLTPROCFLAGS) $(XSLTPROC_FO_FLAGS) --stringparam paper.type USletter -o $@ $^
+
+%.pdf: %.fo $(ALL_IMAGES)
 	$(FOP) -fo $< -pdf $@
 
 
@@ -175,8 +179,11 @@ postgres.pdf:
 ##
 
 epub: postgres.epub
-postgres.epub: postgres.sgml $(ALLSGML)
-	$(XMLLINT) --noout --valid $<
+postgres.epub: postgres-full.xml $(ALL_IMAGES)
+ifeq ($(vpath_build),yes)
+	$(MKDIR_P) images
+	cp $(ALL_IMAGES) images/
+endif
 	$(DBTOEPUB) -o $@ $<
 
 
@@ -188,12 +195,11 @@ DB2X_TEXIXML = db2x_texixml
 DB2X_XSLTPROC = db2x_xsltproc
 MAKEINFO = makeinfo
 
-%.texixml: %.sgml $(ALLSGML)
-	$(XMLLINT) --noout --valid $<
+%.texixml: %-full.xml
 	$(DB2X_XSLTPROC) -s texi -g output-file=$(basename $@) $< -o $@
 
 %.texi: %.texixml
-	$(DB2X_TEXIXML) --encoding=iso-8859-1//TRANSLIT $< --to-stdout > $@
+	$(DB2X_TEXIXML) --encoding=utf-8 $< --to-stdout > $@
 
 %.info: %.texi
 	$(MAKEINFO) --enable-encoding --no-split --no-validate $< -o $@
@@ -276,6 +282,7 @@ check-tabs:
 # This allows removing some files from the distribution tarballs while
 # keeping the dependencies satisfied.
 .SECONDARY: $(GENERATED_SGML)
+.SECONDARY: postgres-full.xml
 .SECONDARY: INSTALL.html INSTALL.xml
 .SECONDARY: postgres-A4.fo postgres-US.fo
 
@@ -289,8 +296,7 @@ clean:
 	rm -f *.fo *.pdf
 # generated SGML files
 	rm -f $(GENERATED_SGML)
-# HTML Help
-	rm -f htmlhelp.hhp toc.hhc index.hhk
+	rm -f postgres-full.xml
 # EPUB
 	rm -f postgres.epub
 # Texinfo

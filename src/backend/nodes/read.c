@@ -4,7 +4,7 @@
  *	  routines to convert a string (legal ascii representation of node) back
  *	  to nodes
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -22,24 +22,37 @@
 #include <ctype.h>
 
 #include "common/string.h"
+#include "nodes/bitmapset.h"
 #include "nodes/pg_list.h"
 #include "nodes/readfuncs.h"
 #include "nodes/value.h"
 
 
 /* Static state for pg_strtok */
-static char *pg_strtok_ptr = NULL;
+static const char *pg_strtok_ptr = NULL;
+
+/* State flag that determines how readfuncs.c should treat location fields */
+#ifdef WRITE_READ_PARSE_PLAN_TREES
+bool		restore_location_fields = false;
+#endif
 
 
 /*
  * stringToNode -
- *	  returns a Node with a given legal ASCII representation
+ *	  builds a Node tree from its string representation (assumed valid)
+ *
+ * restore_loc_fields instructs readfuncs.c whether to restore location
+ * fields rather than set them to -1.  This is currently only supported
+ * in builds with the WRITE_READ_PARSE_PLAN_TREES debugging flag set.
  */
-void *
-stringToNode(char *str)
+static void *
+stringToNodeInternal(const char *str, bool restore_loc_fields)
 {
-	char	   *save_strtok;
 	void	   *retval;
+	const char *save_strtok;
+#ifdef WRITE_READ_PARSE_PLAN_TREES
+	bool		save_restore_location_fields;
+#endif
 
 	/*
 	 * We save and restore the pre-existing state of pg_strtok. This makes the
@@ -51,12 +64,44 @@ stringToNode(char *str)
 
 	pg_strtok_ptr = str;		/* point pg_strtok at the string to read */
 
+	/*
+	 * If enabled, likewise save/restore the location field handling flag.
+	 */
+#ifdef WRITE_READ_PARSE_PLAN_TREES
+	save_restore_location_fields = restore_location_fields;
+	restore_location_fields = restore_loc_fields;
+#endif
+
 	retval = nodeRead(NULL, 0); /* do the reading */
 
 	pg_strtok_ptr = save_strtok;
 
+#ifdef WRITE_READ_PARSE_PLAN_TREES
+	restore_location_fields = save_restore_location_fields;
+#endif
+
 	return retval;
 }
+
+/*
+ * Externally visible entry points
+ */
+void *
+stringToNode(const char *str)
+{
+	return stringToNodeInternal(str, false);
+}
+
+#ifdef WRITE_READ_PARSE_PLAN_TREES
+
+void *
+stringToNodeWithLocations(const char *str)
+{
+	return stringToNodeInternal(str, true);
+}
+
+#endif
+
 
 /*****************************************************************************
  *
@@ -104,11 +149,11 @@ stringToNode(char *str)
  * code should add backslashes to a string constant to ensure it is treated
  * as a single token.
  */
-char *
+const char *
 pg_strtok(int *length)
 {
-	char	   *local_str;		/* working pointer to string */
-	char	   *ret_str;		/* start of token to return */
+	const char *local_str;		/* working pointer to string */
+	const char *ret_str;		/* start of token to return */
 
 	local_str = pg_strtok_ptr;
 
@@ -166,7 +211,7 @@ pg_strtok(int *length)
  *	  any protective backslashes in the token are removed.
  */
 char *
-debackslash(char *token, int length)
+debackslash(const char *token, int length)
 {
 	char	   *result = palloc(length + 1);
 	char	   *ptr = result;
@@ -191,17 +236,17 @@ debackslash(char *token, int length)
  * nodeTokenType -
  *	  returns the type of the node token contained in token.
  *	  It returns one of the following valid NodeTags:
- *		T_Integer, T_Float, T_String, T_BitString
+ *		T_Integer, T_Float, T_Boolean, T_String, T_BitString
  *	  and some of its own:
  *		RIGHT_PAREN, LEFT_PAREN, LEFT_BRACE, OTHER_TOKEN
  *
  *	  Assumption: the ascii representation is legal
  */
 static NodeTag
-nodeTokenType(char *token, int length)
+nodeTokenType(const char *token, int length)
 {
 	NodeTag		retval;
-	char	   *numptr;
+	const char *numptr;
 	int			numlen;
 
 	/*
@@ -223,7 +268,7 @@ nodeTokenType(char *token, int length)
 		char	   *endptr;
 
 		errno = 0;
-		(void) strtoint(token, &endptr, 10);
+		(void) strtoint(numptr, &endptr, 10);
 		if (endptr != token + length || errno == ERANGE)
 			return T_Float;
 		return T_Integer;
@@ -239,9 +284,12 @@ nodeTokenType(char *token, int length)
 		retval = RIGHT_PAREN;
 	else if (*token == '{')
 		retval = LEFT_BRACE;
+	else if ((length == 4 && strncmp(token, "true", 4) == 0) ||
+			 (length == 5 && strncmp(token, "false", 5) == 0))
+		retval = T_Boolean;
 	else if (*token == '"' && length > 1 && token[length - 1] == '"')
 		retval = T_String;
-	else if (*token == 'b')
+	else if (*token == 'b' || *token == 'x')
 		retval = T_BitString;
 	else
 		retval = OTHER_TOKEN;
@@ -254,10 +302,10 @@ nodeTokenType(char *token, int length)
  *
  * This routine applies some semantic knowledge on top of the purely
  * lexical tokenizer pg_strtok().   It can read
- *	* Value token nodes (integers, floats, or strings);
+ *	* Value token nodes (integers, floats, booleans, or strings);
  *	* General nodes (via parseNodeString() from readfuncs.c);
  *	* Lists of the above;
- *	* Lists of integers or OIDs.
+ *	* Lists of integers, OIDs, or TransactionIds.
  * The return value is declared void *, not Node *, to avoid having to
  * cast it explicitly in callers that assign to fields of different types.
  *
@@ -269,7 +317,7 @@ nodeTokenType(char *token, int length)
  * this should only be invoked from within a stringToNode operation).
  */
 void *
-nodeRead(char *token, int tok_len)
+nodeRead(const char *token, int tok_len)
 {
 	Node	   *result;
 	NodeTag		type;
@@ -299,6 +347,8 @@ nodeRead(char *token, int tok_len)
 				/*----------
 				 * Could be an integer list:	(i int int ...)
 				 * or an OID list:				(o int int ...)
+				 * or an XID list:				(x int int ...)
+				 * or a bitmapset:				(b int int ...)
 				 * or a list of nodes/values:	(node node ...)
 				 *----------
 				 */
@@ -324,6 +374,7 @@ nodeRead(char *token, int tok_len)
 								 tok_len, token);
 						l = lappend_int(l, val);
 					}
+					result = (Node *) l;
 				}
 				else if (tok_len == 1 && token[0] == 'o')
 				{
@@ -344,6 +395,51 @@ nodeRead(char *token, int tok_len)
 								 tok_len, token);
 						l = lappend_oid(l, val);
 					}
+					result = (Node *) l;
+				}
+				else if (tok_len == 1 && token[0] == 'x')
+				{
+					/* List of TransactionIds */
+					for (;;)
+					{
+						TransactionId val;
+						char	   *endptr;
+
+						token = pg_strtok(&tok_len);
+						if (token == NULL)
+							elog(ERROR, "unterminated List structure");
+						if (token[0] == ')')
+							break;
+						val = (TransactionId) strtoul(token, &endptr, 10);
+						if (endptr != token + tok_len)
+							elog(ERROR, "unrecognized Xid: \"%.*s\"",
+								 tok_len, token);
+						l = lappend_xid(l, val);
+					}
+					result = (Node *) l;
+				}
+				else if (tok_len == 1 && token[0] == 'b')
+				{
+					/* Bitmapset -- see also _readBitmapset() */
+					Bitmapset  *bms = NULL;
+
+					for (;;)
+					{
+						int			val;
+						char	   *endptr;
+
+						token = pg_strtok(&tok_len);
+						if (token == NULL)
+							elog(ERROR, "unterminated Bitmapset structure");
+						if (tok_len == 1 && token[0] == ')')
+							break;
+						val = (int) strtol(token, &endptr, 10);
+						if (endptr != token + tok_len)
+							elog(ERROR, "unrecognized integer: \"%.*s\"",
+								 tok_len, token);
+						bms = bms_add_member(bms, val);
+					}
+					result = (Node *) bms;
 				}
 				else
 				{
@@ -358,8 +454,8 @@ nodeRead(char *token, int tok_len)
 						if (token == NULL)
 							elog(ERROR, "unterminated List structure");
 					}
+					result = (Node *) l;
 				}
-				result = (Node *) l;
 				break;
 			}
 		case RIGHT_PAREN:
@@ -394,20 +490,17 @@ nodeRead(char *token, int tok_len)
 				result = (Node *) makeFloat(fval);
 			}
 			break;
+		case T_Boolean:
+			result = (Node *) makeBoolean(token[0] == 't');
+			break;
 		case T_String:
 			/* need to remove leading and trailing quotes, and backslashes */
 			result = (Node *) makeString(debackslash(token + 1, tok_len - 2));
 			break;
 		case T_BitString:
-			{
-				char	   *val = palloc(tok_len);
-
-				/* skip leading 'b' */
-				memcpy(val, token + 1, tok_len - 1);
-				val[tok_len - 1] = '\0';
-				result = (Node *) makeBitString(val);
-				break;
-			}
+			/* need to remove backslashes, but there are no quotes */
+			result = (Node *) makeBitString(debackslash(token, tok_len));
+			break;
 		default:
 			elog(ERROR, "unrecognized node type: %d", (int) type);
 			result = NULL;		/* keep compiler happy */

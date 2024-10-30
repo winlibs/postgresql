@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.8. citext</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="btree-gist.html" title="F.7. btree_gist" /><link rel="next" href="cube.html" title="F.9. cube" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.8. citext</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="btree-gist.html" title="F.7. btree_gist">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="cube.html" title="F.9. cube">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="CITEXT"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.8. citext</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="citext.html#id-1.11.7.17.4">F.8.1. Rationale</a></span></dt><dt><span class="sect2"><a href="citext.html#id-1.11.7.17.5">F.8.2. How to Use It</a></span></dt><dt><span class="sect2"><a href="citext.html#id-1.11.7.17.6">F.8.3. String Comparison Behavior</a></span></dt><dt><span class="sect2"><a href="citext.html#id-1.11.7.17.7">F.8.4. Limitations</a></span></dt><dt><span class="sect2"><a href="citext.html#id-1.11.7.17.8">F.8.5. Author</a></span></dt></dl></div><a id="id-1.11.7.17.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.10. citext — a case-insensitive character string type</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="btree-gist.html" title="F.9. btree_gist — GiST operator classes with B-tree behavior" /><link rel="next" href="cube.html" title="F.11. cube — a multi-dimensional cube data type" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.10. citext — a case-insensitive character string type</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="btree-gist.html" title="F.9. btree_gist — GiST operator classes with B-tree behavior">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules and Extensions">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules and Extensions</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="cube.html" title="F.11. cube — a multi-dimensional cube data type">Next</a></td></tr></table><hr /></div><div class="sect1" id="CITEXT"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.10. citext — a case-insensitive character string type <a href="#CITEXT" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="citext.html#CITEXT-RATIONALE">F.10.1. Rationale</a></span></dt><dt><span class="sect2"><a href="citext.html#CITEXT-HOW-TO-USE-IT">F.10.2. How to Use It</a></span></dt><dt><span class="sect2"><a href="citext.html#CITEXT-STRING-COMPARISON-BEHAVIOR">F.10.3. String Comparison Behavior</a></span></dt><dt><span class="sect2"><a href="citext.html#CITEXT-LIMITATIONS">F.10.4. Limitations</a></span></dt><dt><span class="sect2"><a href="citext.html#CITEXT-AUTHOR">F.10.5. Author</a></span></dt></dl></div><a id="id-1.11.7.20.2" class="indexterm"></a><p>
   The <code class="filename">citext</code> module provides a case-insensitive
   character string type, <code class="type">citext</code>. Essentially, it internally calls
   <code class="function">lower</code> when comparing values. Otherwise, it behaves almost
   exactly like <code class="type">text</code>.
- </p><div class="sect2" id="id-1.11.7.17.4"><div class="titlepage"><div><div><h3 class="title">F.8.1. Rationale</h3></div></div></div><p>
+ </p><div class="tip"><h3 class="title">Tip</h3><p>
+   Consider using <em class="firstterm">nondeterministic collations</em> (see
+   <a class="xref" href="collation.html#COLLATION-NONDETERMINISTIC" title="24.2.2.4. Nondeterministic Collations">Section 24.2.2.4</a>) instead of this module.  They
+   can be used for case-insensitive comparisons, accent-insensitive
+   comparisons, and other combinations, and they handle more Unicode special
+   cases correctly.
+  </p></div><p>
+  This module is considered <span class="quote">“<span class="quote">trusted</span>”</span>, that is, it can be
+  installed by non-superusers who have <code class="literal">CREATE</code> privilege
+  on the current database.
+ </p><div class="sect2" id="CITEXT-RATIONALE"><div class="titlepage"><div><div><h3 class="title">F.10.1. Rationale <a href="#CITEXT-RATIONALE" class="id_link">#</a></h3></div></div></div><p>
    The standard approach to doing case-insensitive matches
    in <span class="productname">PostgreSQL</span> has been to use the <code class="function">lower</code>
    function when comparing values, for example
@@ -35,7 +45,7 @@ SELECT * FROM tab WHERE lower(col) = LOWER(?);
     identical to the use of <code class="function">lower</code> in queries. But because it's
     done transparently by the data type, you don't have to remember to do
     anything special in your queries.
-   </p></div><div class="sect2" id="id-1.11.7.17.5"><div class="titlepage"><div><div><h3 class="title">F.8.2. How to Use It</h3></div></div></div><p>
+   </p></div><div class="sect2" id="CITEXT-HOW-TO-USE-IT"><div class="titlepage"><div><div><h3 class="title">F.10.2. How to Use It <a href="#CITEXT-HOW-TO-USE-IT" class="id_link">#</a></h3></div></div></div><p>
    Here's a simple example of usage:
 
 </p><pre class="programlisting">
@@ -56,7 +66,7 @@ SELECT * FROM users WHERE nick = 'Larry';
    The <code class="command">SELECT</code> statement will return one tuple, even though
    the <code class="structfield">nick</code> column was set to <code class="literal">larry</code> and the query
    was for <code class="literal">Larry</code>.
-  </p></div><div class="sect2" id="id-1.11.7.17.6"><div class="titlepage"><div><div><h3 class="title">F.8.3. String Comparison Behavior</h3></div></div></div><p>
+  </p></div><div class="sect2" id="CITEXT-STRING-COMPARISON-BEHAVIOR"><div class="titlepage"><div><div><h3 class="title">F.10.3. String Comparison Behavior <a href="#CITEXT-STRING-COMPARISON-BEHAVIOR" class="id_link">#</a></h3></div></div></div><p>
    <code class="type">citext</code> performs comparisons by converting each string to lower
    case (as though <code class="function">lower</code> were called) and then comparing the
    results normally.  Thus, for example, two strings are considered equal
@@ -98,7 +108,7 @@ SELECT * FROM users WHERE nick = 'Larry';
    specify the <span class="quote">“<span class="quote">c</span>”</span> flag to force a case-sensitive match.  Otherwise,
    you must cast to <code class="type">text</code> before using one of these functions if
    you want case-sensitive behavior.
-  </p></div><div class="sect2" id="id-1.11.7.17.7"><div class="titlepage"><div><div><h3 class="title">F.8.4. Limitations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+  </p></div><div class="sect2" id="CITEXT-LIMITATIONS"><div class="titlepage"><div><div><h3 class="title">F.10.4. Limitations <a href="#CITEXT-LIMITATIONS" class="id_link">#</a></h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
       <code class="type">citext</code>'s case-folding behavior depends on
       the <code class="literal">LC_CTYPE</code> setting of your database. How it compares
       values is therefore determined when the database is created.
@@ -122,9 +132,10 @@ SELECT * FROM users WHERE nick = 'Larry';
      </p></li><li class="listitem"><p>
        <code class="type">citext</code> is not as efficient as <code class="type">text</code> because the
        operator functions and the B-tree comparison functions must make copies
-       of the data and convert it to lower case for comparisons. It is,
-       however, slightly more efficient than using <code class="function">lower</code> to get
-       case-insensitive matching.
+       of the data and convert it to lower case for comparisons.  Also, only
+       <code class="type">text</code> can support B-Tree deduplication.  However,
+       <code class="type">citext</code> is slightly more efficient than using
+       <code class="function">lower</code> to get case-insensitive matching.
      </p></li><li class="listitem"><p>
       <code class="type">citext</code> doesn't help much if you need data to compare
       case-sensitively in some contexts and case-insensitively in other
@@ -141,8 +152,15 @@ SELECT * FROM users WHERE nick = 'Larry';
       in the current <code class="varname">search_path</code> (typically <code class="literal">public</code>);
       if it is not, the normal case-sensitive <code class="type">text</code> operators
       will be invoked instead.
-    </p></li></ul></div></div><div class="sect2" id="id-1.11.7.17.8"><div class="titlepage"><div><div><h3 class="title">F.8.5. Author</h3></div></div></div><p>
+    </p></li><li class="listitem"><p>
+      The approach of lower-casing strings for comparison does not handle some
+      Unicode special cases correctly, for example when one upper-case letter
+      has two lower-case letter equivalents.  Unicode distinguishes between
+      <em class="firstterm">case mapping</em> and <em class="firstterm">case
+      folding</em> for this reason.  Use nondeterministic collations
+      instead of <code class="type">citext</code> to handle that correctly.
+     </p></li></ul></div></div><div class="sect2" id="CITEXT-AUTHOR"><div class="titlepage"><div><div><h3 class="title">F.10.5. Author <a href="#CITEXT-AUTHOR" class="id_link">#</a></h3></div></div></div><p>
    David E. Wheeler <code class="email">&lt;<a class="email" href="mailto:david@kineticode.com">david@kineticode.com</a>&gt;</code>
   </p><p>
     Inspired by the original <code class="type">citext</code> module by Donald Fraser.
-  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="btree-gist.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="cube.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.7. btree_gist </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> F.9. cube</td></tr></table></div></body></html>
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="btree-gist.html" title="F.9. btree_gist — GiST operator classes with B-tree behavior">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules and Extensions">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="cube.html" title="F.11. cube — a multi-dimensional cube data type">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.9. btree_gist — GiST operator classes with B-tree behavior </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> F.11. cube — a multi-dimensional cube data type</td></tr></table></div></body></html>

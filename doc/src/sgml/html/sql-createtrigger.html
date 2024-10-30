@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE TRIGGER</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-createtransform.html" title="CREATE TRANSFORM" /><link rel="next" href="sql-createtype.html" title="CREATE TYPE" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE TRIGGER</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createtransform.html" title="CREATE TRANSFORM">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createtype.html" title="CREATE TYPE">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-CREATETRIGGER"><div class="titlepage"></div><a id="id-1.9.3.93.1" class="indexterm"></a><a id="id-1.9.3.93.2" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE TRIGGER</span></h2><p>CREATE TRIGGER — define a new trigger</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
-CREATE [ CONSTRAINT ] TRIGGER <em class="replaceable"><code>name</code></em> { BEFORE | AFTER | INSTEAD OF } { <em class="replaceable"><code>event</code></em> [ OR ... ] }
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE TRIGGER</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-createtransform.html" title="CREATE TRANSFORM" /><link rel="next" href="sql-createtype.html" title="CREATE TYPE" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE TRIGGER</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createtransform.html" title="CREATE TRANSFORM">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createtype.html" title="CREATE TYPE">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-CREATETRIGGER"><div class="titlepage"></div><a id="id-1.9.3.93.1" class="indexterm"></a><a id="id-1.9.3.93.2" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE TRIGGER</span></h2><p>CREATE TRIGGER — define a new trigger</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+CREATE [ OR REPLACE ] [ CONSTRAINT ] TRIGGER <em class="replaceable"><code>name</code></em> { BEFORE | AFTER | INSTEAD OF } { <em class="replaceable"><code>event</code></em> [ OR ... ] }
     ON <em class="replaceable"><code>table_name</code></em>
     [ FROM <em class="replaceable"><code>referenced_table_name</code></em> ]
     [ NOT DEFERRABLE | [ DEFERRABLE ] [ INITIALLY IMMEDIATE | INITIALLY DEFERRED ] ]
@@ -16,11 +16,17 @@ CREATE [ CONSTRAINT ] TRIGGER <em class="replaceable"><code>name</code></em> { B
     DELETE
     TRUNCATE
 </pre></div><div class="refsect1" id="id-1.9.3.93.6"><h2>Description</h2><p>
-   <code class="command">CREATE TRIGGER</code> creates a new trigger.  The
+   <code class="command">CREATE TRIGGER</code> creates a new trigger.
+   <code class="command">CREATE OR REPLACE TRIGGER</code> will either create a
+   new trigger, or replace an existing trigger.  The
    trigger will be associated with the specified table, view, or foreign table
    and will execute the specified
    function <em class="replaceable"><code>function_name</code></em> when
    certain operations are performed on that table.
+  </p><p>
+   To replace the current definition of an existing trigger, use
+   <code class="command">CREATE OR REPLACE TRIGGER</code>, specifying the existing
+   trigger's name and parent table.  All other properties are replaced.
   </p><p>
    The trigger can be specified to fire before the
    operation is attempted on a row (before constraints are checked and
@@ -59,7 +65,7 @@ CREATE [ CONSTRAINT ] TRIGGER <em class="replaceable"><code>name</code></em> { B
   </p><p>
    The following table summarizes which types of triggers may be used on
    tables, views, and foreign tables:
-  </p><div class="informaltable" id="SUPPORTED-TRIGGER-TYPES"><table class="informaltable" border="1"><colgroup><col /><col /><col /><col /></colgroup><thead><tr><th>When</th><th>Event</th><th>Row-level</th><th>Statement-level</th></tr></thead><tbody><tr><td rowspan="2" align="center"><code class="literal">BEFORE</code></td><td align="center"><code class="command">INSERT</code>/<code class="command">UPDATE</code>/<code class="command">DELETE</code></td><td align="center">Tables and foreign tables</td><td align="center">Tables, views, and foreign tables</td></tr><tr><td align="center"><code class="command">TRUNCATE</code></td><td align="center">—</td><td align="center">Tables</td></tr><tr><td rowspan="2" align="center"><code class="literal">AFTER</code></td><td align="center"><code class="command">INSERT</code>/<code class="command">UPDATE</code>/<code class="command">DELETE</code></td><td align="center">Tables and foreign tables</td><td align="center">Tables, views, and foreign tables</td></tr><tr><td align="center"><code class="command">TRUNCATE</code></td><td align="center">—</td><td align="center">Tables</td></tr><tr><td rowspan="2" align="center"><code class="literal">INSTEAD OF</code></td><td align="center"><code class="command">INSERT</code>/<code class="command">UPDATE</code>/<code class="command">DELETE</code></td><td align="center">Views</td><td align="center">—</td></tr><tr><td align="center"><code class="command">TRUNCATE</code></td><td align="center">—</td><td align="center">—</td></tr></tbody></table></div><p>
+  </p><div class="informaltable" id="SUPPORTED-TRIGGER-TYPES"><table class="informaltable" border="1"><colgroup><col /><col /><col /><col /></colgroup><thead><tr><th>When</th><th>Event</th><th>Row-level</th><th>Statement-level</th></tr></thead><tbody><tr><td rowspan="2" align="center"><code class="literal">BEFORE</code></td><td align="center"><code class="command">INSERT</code>/<code class="command">UPDATE</code>/<code class="command">DELETE</code></td><td align="center">Tables and foreign tables</td><td align="center">Tables, views, and foreign tables</td></tr><tr><td align="center"><code class="command">TRUNCATE</code></td><td align="center">—</td><td align="center">Tables and foreign tables</td></tr><tr><td rowspan="2" align="center"><code class="literal">AFTER</code></td><td align="center"><code class="command">INSERT</code>/<code class="command">UPDATE</code>/<code class="command">DELETE</code></td><td align="center">Tables and foreign tables</td><td align="center">Tables, views, and foreign tables</td></tr><tr><td align="center"><code class="command">TRUNCATE</code></td><td align="center">—</td><td align="center">Tables and foreign tables</td></tr><tr><td rowspan="2" align="center"><code class="literal">INSTEAD OF</code></td><td align="center"><code class="command">INSERT</code>/<code class="command">UPDATE</code>/<code class="command">DELETE</code></td><td align="center">Views</td><td align="center">—</td></tr><tr><td align="center"><code class="command">TRUNCATE</code></td><td align="center">—</td><td align="center">—</td></tr></tbody></table></div><p>
    Also, a trigger definition can specify a Boolean <code class="literal">WHEN</code>
    condition, which will be tested to see whether the trigger should
    be fired.  In row-level triggers the <code class="literal">WHEN</code> condition can
@@ -72,9 +78,10 @@ CREATE [ CONSTRAINT ] TRIGGER <em class="replaceable"><code>name</code></em> { B
    they will be fired in alphabetical order by name.
   </p><p>
    When the <code class="literal">CONSTRAINT</code> option is specified, this command creates a
-   <em class="firstterm">constraint trigger</em>.  This is the same as a regular trigger
+   <em class="firstterm">constraint trigger</em>.<a id="id-1.9.3.93.6.12.3" class="indexterm"></a>
+   This is the same as a regular trigger
    except that the timing of the trigger firing can be adjusted using
-   <a class="xref" href="sql-set-constraints.html" title="SET CONSTRAINTS"><span class="refentrytitle">SET CONSTRAINTS</span></a>.
+   <a class="link" href="sql-set-constraints.html" title="SET CONSTRAINTS"><code class="command">SET CONSTRAINTS</code></a>.
    Constraint triggers must be <code class="literal">AFTER ROW</code> triggers on plain
    tables (not foreign tables).  They
    can be fired either at the end of the statement causing the triggering
@@ -131,7 +138,9 @@ CREATE [ CONSTRAINT ] TRIGGER <em class="replaceable"><code>name</code></em> { B
 UPDATE OF <em class="replaceable"><code>column_name1</code></em> [, <em class="replaceable"><code>column_name2</code></em> ... ]
 </pre><p>
       The trigger will only fire if at least one of the listed columns
-      is mentioned as a target of the <code class="command">UPDATE</code> command.
+      is mentioned as a target of the <code class="command">UPDATE</code> command
+      or if one of the listed columns is a generated column that depends on a
+      column that is the target of the <code class="command">UPDATE</code>.
      </p><p>
       <code class="literal">INSTEAD OF UPDATE</code> events do not allow a list of columns.
       A column list cannot be specified when requesting transition relations,
@@ -206,11 +215,20 @@ UPDATE OF <em class="replaceable"><code>column_name1</code></em> [, <em class="r
       can be accessed within the function; it might be different from
       normal function arguments.
      </p></dd></dl></div></div><div class="refsect1" id="SQL-CREATETRIGGER-NOTES"><h2>Notes</h2><p>
-   To create a trigger on a table, the user must have the
+   To create or replace a trigger on a table, the user must have the
    <code class="literal">TRIGGER</code> privilege on the table.  The user must
    also have <code class="literal">EXECUTE</code> privilege on the trigger function.
   </p><p>
-   Use <a class="xref" href="sql-droptrigger.html" title="DROP TRIGGER"><span class="refentrytitle">DROP TRIGGER</span></a> to remove a trigger.
+   Use <a class="link" href="sql-droptrigger.html" title="DROP TRIGGER"><code class="command">DROP TRIGGER</code></a> to remove a trigger.
+  </p><p>
+   Creating a row-level trigger on a partitioned table will cause an
+   identical <span class="quote">“<span class="quote">clone</span>”</span> trigger to be created on each of its
+   existing partitions; and any partitions created or attached later will have
+   an identical trigger, too.  If there is a conflictingly-named trigger on a
+   child partition already, an error occurs unless <code class="command">CREATE OR REPLACE
+   TRIGGER</code> is used, in which case that trigger is replaced with a
+   clone trigger.  When a partition is detached from its parent, its clone
+   triggers are removed.
   </p><p>
    A column-specific trigger (one defined using the <code class="literal">UPDATE OF
    <em class="replaceable"><code>column_name</code></em></code> syntax) will fire when any
@@ -229,7 +247,7 @@ UPDATE OF <em class="replaceable"><code>column_name1</code></em> [, <em class="r
    that the <code class="literal">NEW</code> row seen by the condition is the current value,
    as possibly modified by earlier triggers.  Also, a <code class="literal">BEFORE</code>
    trigger's <code class="literal">WHEN</code> condition is not allowed to examine the
-   system columns of the <code class="literal">NEW</code> row (such as <code class="literal">oid</code>),
+   system columns of the <code class="literal">NEW</code> row (such as <code class="literal">ctid</code>),
    because those won't have been set yet.
   </p><p>
    In an <code class="literal">AFTER</code> trigger, the <code class="literal">WHEN</code> condition is
@@ -254,7 +272,7 @@ UPDATE OF <em class="replaceable"><code>column_name1</code></em> [, <em class="r
    as <code class="literal">ON UPDATE CASCADE</code> or <code class="literal">ON DELETE SET NULL</code>, are
    treated as part of the SQL command that caused them (note that such
    actions are never deferred).  Relevant triggers on the affected table will
-   be fired, so that this provides another way in which a SQL command might
+   be fired, so that this provides another way in which an SQL command might
    fire triggers not directly matching its type.  In simple cases, triggers
    that request transition relations will see all changes caused in their
    table by a single original SQL command as a single transition relation.
@@ -277,11 +295,6 @@ UPDATE OF <em class="replaceable"><code>column_name1</code></em> [, <em class="r
    view's base table, so that the base table's statement-level triggers are
    the ones that are fired.
   </p><p>
-   Creating a row-level trigger on a partitioned table will cause identical
-   triggers to be created in all its existing partitions; and any partitions
-   created or attached later will contain an identical trigger, too.
-   Triggers on partitioned tables may only be <code class="literal">AFTER</code>.
-  </p><p>
    Modifying a partitioned table or a table with inheritance children fires
    statement-level triggers attached to the explicitly named table, but not
    statement-level triggers for its partitions or child tables.  In contrast,
@@ -291,16 +304,24 @@ UPDATE OF <em class="replaceable"><code>column_name1</code></em> [, <em class="r
    named by a <code class="literal">REFERENCING</code> clause, then before and after
    images of rows are visible from all affected partitions or child tables.
    In the case of inheritance children, the row images include only columns
-   that are present in the table that the trigger is attached to.  Currently,
-   row-level triggers with transition relations cannot be defined on
-   partitions or inheritance child tables.
+   that are present in the table that the trigger is attached to.
   </p><p>
-   In <span class="productname">PostgreSQL</span> versions before 7.3, it was
-   necessary to declare trigger functions as returning the placeholder
-   type <code class="type">opaque</code>, rather than <code class="type">trigger</code>.  To support loading
-   of old dump files, <code class="command">CREATE TRIGGER</code> will accept a function
-   declared as returning <code class="type">opaque</code>, but it will issue a notice and
-   change the function's declared return type to <code class="type">trigger</code>.
+   Currently, row-level triggers with transition relations cannot be defined
+   on partitions or inheritance child tables.  Also, triggers on partitioned
+   tables may not be <code class="literal">INSTEAD OF</code>.
+  </p><p>
+   Currently, the <code class="literal">OR REPLACE</code> option is not supported for
+   constraint triggers.
+  </p><p>
+   Replacing an existing trigger within a transaction that has already
+   performed updating actions on the trigger's table is not recommended.
+   Trigger firing decisions, or portions of firing decisions, that have
+   already been made will not be reconsidered, so the effects could be
+   surprising.
+  </p><p>
+   There are a few built-in trigger functions that can be used to
+   solve common problems without having to write your own trigger code;
+   see <a class="xref" href="functions-trigger.html" title="9.28. Trigger Functions">Section 9.28</a>.
   </p></div><div class="refsect1" id="SQL-CREATETRIGGER-EXAMPLES"><h2>Examples</h2><p>
    Execute the function <code class="function">check_account_update</code> whenever
    a row of the table <code class="literal">accounts</code> is about to be updated:
@@ -312,11 +333,12 @@ CREATE TRIGGER check_update
     EXECUTE FUNCTION check_account_update();
 </pre><p>
 
-   The same, but only execute the function if column <code class="literal">balance</code>
-   is specified as a target in the <code class="command">UPDATE</code> command:
+   Modify that trigger definition to only execute the function if
+   column <code class="literal">balance</code> is specified as a target in
+   the <code class="command">UPDATE</code> command:
 
 </p><pre class="programlisting">
-CREATE TRIGGER check_update
+CREATE OR REPLACE TRIGGER check_update
     BEFORE UPDATE OF balance ON accounts
     FOR EACH ROW
     EXECUTE FUNCTION check_account_update();
@@ -435,4 +457,5 @@ CREATE TRIGGER paired_items_update
    <code class="command">CREATE CONSTRAINT TRIGGER</code> is a
    <span class="productname">PostgreSQL</span> extension of the <acronym class="acronym">SQL</acronym>
    standard.
-  </p></div><div class="refsect1" id="id-1.9.3.93.11"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-altertrigger.html" title="ALTER TRIGGER"><span class="refentrytitle">ALTER TRIGGER</span></a>, <a class="xref" href="sql-droptrigger.html" title="DROP TRIGGER"><span class="refentrytitle">DROP TRIGGER</span></a>, <a class="xref" href="sql-createfunction.html" title="CREATE FUNCTION"><span class="refentrytitle">CREATE FUNCTION</span></a>, <a class="xref" href="sql-set-constraints.html" title="SET CONSTRAINTS"><span class="refentrytitle">SET CONSTRAINTS</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createtransform.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createtype.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE TRANSFORM </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> CREATE TYPE</td></tr></table></div></body></html>
+   So is the <code class="literal">OR REPLACE</code> option.
+  </p></div><div class="refsect1" id="id-1.9.3.93.11"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-altertrigger.html" title="ALTER TRIGGER"><span class="refentrytitle">ALTER TRIGGER</span></a>, <a class="xref" href="sql-droptrigger.html" title="DROP TRIGGER"><span class="refentrytitle">DROP TRIGGER</span></a>, <a class="xref" href="sql-createfunction.html" title="CREATE FUNCTION"><span class="refentrytitle">CREATE FUNCTION</span></a>, <a class="xref" href="sql-set-constraints.html" title="SET CONSTRAINTS"><span class="refentrytitle">SET CONSTRAINTS</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createtransform.html" title="CREATE TRANSFORM">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createtype.html" title="CREATE TYPE">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE TRANSFORM </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> CREATE TYPE</td></tr></table></div></body></html>

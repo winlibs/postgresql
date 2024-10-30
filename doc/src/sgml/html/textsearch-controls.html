@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>12.3. Controlling Text Search</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="textsearch-tables.html" title="12.2. Tables and Indexes" /><link rel="next" href="textsearch-features.html" title="12.4. Additional Features" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">12.3. Controlling Text Search</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="textsearch-tables.html" title="12.2. Tables and Indexes">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><th width="60%" align="center">Chapter 12. Full Text Search</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="textsearch-features.html" title="12.4. Additional Features">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TEXTSEARCH-CONTROLS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">12.3. Controlling Text Search</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="textsearch-controls.html#TEXTSEARCH-PARSING-DOCUMENTS">12.3.1. Parsing Documents</a></span></dt><dt><span class="sect2"><a href="textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES">12.3.2. Parsing Queries</a></span></dt><dt><span class="sect2"><a href="textsearch-controls.html#TEXTSEARCH-RANKING">12.3.3. Ranking Search Results</a></span></dt><dt><span class="sect2"><a href="textsearch-controls.html#TEXTSEARCH-HEADLINE">12.3.4. Highlighting Results</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>12.3. Controlling Text Search</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="textsearch-tables.html" title="12.2. Tables and Indexes" /><link rel="next" href="textsearch-features.html" title="12.4. Additional Features" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">12.3. Controlling Text Search</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="textsearch-tables.html" title="12.2. Tables and Indexes">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><th width="60%" align="center">Chapter 12. Full Text Search</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="textsearch-features.html" title="12.4. Additional Features">Next</a></td></tr></table><hr /></div><div class="sect1" id="TEXTSEARCH-CONTROLS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">12.3. Controlling Text Search <a href="#TEXTSEARCH-CONTROLS" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="textsearch-controls.html#TEXTSEARCH-PARSING-DOCUMENTS">12.3.1. Parsing Documents</a></span></dt><dt><span class="sect2"><a href="textsearch-controls.html#TEXTSEARCH-PARSING-QUERIES">12.3.2. Parsing Queries</a></span></dt><dt><span class="sect2"><a href="textsearch-controls.html#TEXTSEARCH-RANKING">12.3.3. Ranking Search Results</a></span></dt><dt><span class="sect2"><a href="textsearch-controls.html#TEXTSEARCH-HEADLINE">12.3.4. Highlighting Results</a></span></dt></dl></div><p>
    To implement full text searching there must be a function to create a
    <code class="type">tsvector</code> from a document and a <code class="type">tsquery</code> from a
    user query. Also, we need to return results in a useful order, so we need
@@ -7,7 +7,7 @@
    the query. It's also important to be able to display the results nicely.
    <span class="productname">PostgreSQL</span> provides support for all of these
    functions.
-  </p><div class="sect2" id="TEXTSEARCH-PARSING-DOCUMENTS"><div class="titlepage"><div><div><h3 class="title">12.3.1. Parsing Documents</h3></div></div></div><p>
+  </p><div class="sect2" id="TEXTSEARCH-PARSING-DOCUMENTS"><div class="titlepage"><div><div><h3 class="title">12.3.1. Parsing Documents <a href="#TEXTSEARCH-PARSING-DOCUMENTS" class="id_link">#</a></h3></div></div></div><p>
     <span class="productname">PostgreSQL</span> provides the
     function <code class="function">to_tsvector</code> for converting a document to
     the <code class="type">tsvector</code> data type.
@@ -86,7 +86,7 @@ UPDATE tt SET ti =
     the labeled <code class="type">tsvector</code> values using the <code class="type">tsvector</code>
     concatenation operator <code class="literal">||</code>.  (<a class="xref" href="textsearch-features.html#TEXTSEARCH-MANIPULATE-TSVECTOR" title="12.4.1. Manipulating Documents">Section 12.4.1</a> gives details about these
     operations.)
-   </p></div><div class="sect2" id="TEXTSEARCH-PARSING-QUERIES"><div class="titlepage"><div><div><h3 class="title">12.3.2. Parsing Queries</h3></div></div></div><p>
+   </p></div><div class="sect2" id="TEXTSEARCH-PARSING-QUERIES"><div class="titlepage"><div><div><h3 class="title">12.3.2. Parsing Queries <a href="#TEXTSEARCH-PARSING-QUERIES" class="id_link">#</a></h3></div></div></div><p>
     <span class="productname">PostgreSQL</span> provides the
     functions <code class="function">to_tsquery</code>,
     <code class="function">plainto_tsquery</code>,
@@ -117,7 +117,7 @@ to_tsquery([<span class="optional"> <em class="replaceable"><code>config</code><
 
 </p><pre class="screen">
 SELECT to_tsquery('english', 'The &amp; Fat &amp; Rats');
-  to_tsquery   
+  to_tsquery
 ---------------
  'fat' &amp; 'rat'
 </pre><p>
@@ -128,7 +128,7 @@ SELECT to_tsquery('english', 'The &amp; Fat &amp; Rats');
 
 </p><pre class="screen">
 SELECT to_tsquery('english', 'Fat | Rats:AB');
-    to_tsquery    
+    to_tsquery
 ------------------
  'fat' | 'rat':AB
 </pre><p>
@@ -137,7 +137,7 @@ SELECT to_tsquery('english', 'Fat | Rats:AB');
 
 </p><pre class="screen">
 SELECT to_tsquery('supern:*A &amp; star:A*B');
-        to_tsquery        
+        to_tsquery
 --------------------------
  'supern':*A &amp; 'star':*AB
 </pre><p>
@@ -174,7 +174,7 @@ plainto_tsquery([<span class="optional"> <em class="replaceable"><code>config</c
 
 </p><pre class="screen">
 SELECT plainto_tsquery('english', 'The Fat Rats');
- plainto_tsquery 
+ plainto_tsquery
 -----------------
  'fat' &amp; 'rat'
 </pre><p>
@@ -185,12 +185,12 @@ SELECT plainto_tsquery('english', 'The Fat Rats');
 
 </p><pre class="screen">
 SELECT plainto_tsquery('english', 'The Fat &amp; Rats:C');
-   plainto_tsquery   
+   plainto_tsquery
 ---------------------
  'fat' &amp; 'rat' &amp; 'c'
 </pre><p>
 
-    Here, all the input punctuation was discarded as being space symbols.
+    Here, all the input punctuation was discarded.
    </p><a id="id-1.5.11.6.4.11" class="indexterm"></a><pre class="synopsis">
 phraseto_tsquery([<span class="optional"> <em class="replaceable"><code>config</code></em> <code class="type">regconfig</code>, </span>] <em class="replaceable"><code>querytext</code></em> <code class="type">text</code>) returns <code class="type">tsquery</code>
 </pre><p>
@@ -232,25 +232,32 @@ websearch_to_tsquery([<span class="optional"> <em class="replaceable"><code>conf
     syntax in which simple unformatted text is a valid query.
     Unlike <code class="function">plainto_tsquery</code>
     and <code class="function">phraseto_tsquery</code>, it also recognizes certain
-    operators. Moreover, this function should never raise syntax errors,
+    operators. Moreover, this function will never raise syntax errors,
     which makes it possible to use raw user-supplied input for search.
     The following syntax is supported:
+
     </p><div class="itemizedlist"><ul class="itemizedlist compact" style="list-style-type: bullet; "><li class="listitem" style="list-style-type: disc"><p>
         <code class="literal">unquoted text</code>: text not inside quote marks will be
         converted to terms separated by <code class="literal">&amp;</code> operators, as
-        if processed by
-        <code class="function">plainto_tsquery</code>.
+        if processed by <code class="function">plainto_tsquery</code>.
       </p></li><li class="listitem" style="list-style-type: disc"><p>
         <code class="literal">"quoted text"</code>: text inside quote marks will be
         converted to terms separated by <code class="literal">&lt;-&gt;</code>
         operators, as if processed by <code class="function">phraseto_tsquery</code>.
       </p></li><li class="listitem" style="list-style-type: disc"><p>
-       <code class="literal">OR</code>: logical or will be converted to
+       <code class="literal">OR</code>: the word <span class="quote">“<span class="quote">or</span>”</span> will be converted to
        the <code class="literal">|</code> operator.
       </p></li><li class="listitem" style="list-style-type: disc"><p>
-       <code class="literal">-</code>: the logical not operator, converted to the
+       <code class="literal">-</code>: a dash will be converted to
        the <code class="literal">!</code> operator.
       </p></li></ul></div><p>
+
+    Other punctuation is ignored.  So
+    like <code class="function">plainto_tsquery</code>
+    and <code class="function">phraseto_tsquery</code>,
+    the <code class="function">websearch_to_tsquery</code> function will not
+    recognize <code class="type">tsquery</code> operators, weight labels, or prefix-match
+    labels in its input.
    </p><p>
     Examples:
 </p><pre class="screen">
@@ -284,7 +291,7 @@ SELECT websearch_to_tsquery('english', '""" )( dummy \\ query &lt;-&gt;');
  'dummi' &amp; 'queri'
 (1 row)
 </pre><p>
-    </p></div><div class="sect2" id="TEXTSEARCH-RANKING"><div class="titlepage"><div><div><h3 class="title">12.3.3. Ranking Search Results</h3></div></div></div><p>
+    </p></div><div class="sect2" id="TEXTSEARCH-RANKING"><div class="titlepage"><div><div><h3 class="title">12.3.3. Ranking Search Results <a href="#TEXTSEARCH-RANKING" class="id_link">#</a></h3></div></div></div><p>
     Ranking attempts to measure how relevant documents are to a particular
     query, so that when there are many matches the most relevant ones can be
     shown first.  <span class="productname">PostgreSQL</span> provides two
@@ -435,7 +442,7 @@ LIMIT 10;
     <code class="type">tsvector</code> of each matching document, which can be I/O bound and
     therefore slow. Unfortunately, it is almost impossible to avoid since
     practical queries often result in large numbers of matches.
-   </p></div><div class="sect2" id="TEXTSEARCH-HEADLINE"><div class="titlepage"><div><div><h3 class="title">12.3.4. Highlighting Results</h3></div></div></div><p>
+   </p></div><div class="sect2" id="TEXTSEARCH-HEADLINE"><div class="titlepage"><div><div><h3 class="title">12.3.4. Highlighting Results <a href="#TEXTSEARCH-HEADLINE" class="id_link">#</a></h3></div></div></div><p>
     To present search results it is ideal to show a part of each document and
     how it is related to the query. Usually, search engines show fragments of
     the document with marked search terms.  <span class="productname">PostgreSQL</span>
@@ -446,7 +453,10 @@ ts_headline([<span class="optional"> <em class="replaceable"><code>config</code>
 </pre><p>
     <code class="function">ts_headline</code> accepts a document along
     with a query, and returns an excerpt from
-    the document in which terms from the query are highlighted.  The
+    the document in which terms from the query are highlighted.
+    Specifically, the function will use the query to select relevant
+    text fragments, and then highlight all words that appear in the query,
+    even if those word positions do not match the query's restrictions.  The
     configuration to be used to parse the document can be specified by
     <em class="replaceable"><code>config</code></em>; if <em class="replaceable"><code>config</code></em>
     is omitted, the
@@ -458,47 +468,56 @@ ts_headline([<span class="optional"> <em class="replaceable"><code>config</code>
     The available options are:
 
     </p><div class="itemizedlist"><ul class="itemizedlist compact" style="list-style-type: bullet; "><li class="listitem" style="list-style-type: disc"><p>
-       <code class="literal">StartSel</code>, <code class="literal">StopSel</code>: the strings with
-       which to delimit query words appearing in the document, to distinguish
-       them from other excerpted words.  You must double-quote these strings
-       if they contain spaces or commas.
+       <code class="literal">MaxWords</code>, <code class="literal">MinWords</code> (integers):
+       these numbers determine the longest and shortest headlines to output.
+       The default values are 35 and 15.
       </p></li><li class="listitem" style="list-style-type: disc"><p>
-       <code class="literal">MaxWords</code>, <code class="literal">MinWords</code>: these numbers
-       determine the longest and shortest headlines to output.
+       <code class="literal">ShortWord</code> (integer): words of this length or less
+       will be dropped at the start and end of a headline, unless they are
+       query terms.  The default value of three eliminates common English
+       articles.
       </p></li><li class="listitem" style="list-style-type: disc"><p>
-       <code class="literal">ShortWord</code>: words of this length or less will be
-       dropped at the start and end of a headline. The default
-       value of three eliminates common English articles.
-      </p></li><li class="listitem" style="list-style-type: disc"><p>
-       <code class="literal">HighlightAll</code>: Boolean flag;  if
+       <code class="literal">HighlightAll</code> (boolean): if
        <code class="literal">true</code> the whole document will be used as the
-       headline, ignoring the preceding three parameters.
+       headline, ignoring the preceding three parameters.  The default
+       is <code class="literal">false</code>.
       </p></li><li class="listitem" style="list-style-type: disc"><p>
-       <code class="literal">MaxFragments</code>: maximum number of text excerpts
-       or fragments to display.  The default value of zero selects a
-       non-fragment-oriented headline generation method.  A value greater than
-       zero selects fragment-based headline generation.  This method
-       finds text fragments with as many query words as possible and
-       stretches those fragments around the query words.  As a result
-       query words are close to the middle of each fragment and have words on
-       each side. Each fragment will be of at most <code class="literal">MaxWords</code> and
-       words of length <code class="literal">ShortWord</code> or less are dropped at the start
-       and end of each fragment. If not all query words are found in the
-       document, then a single fragment of the first <code class="literal">MinWords</code>
-       in the document will be displayed.
+       <code class="literal">MaxFragments</code> (integer): maximum number of text
+       fragments to display.  The default value of zero selects a
+       non-fragment-based headline generation method.  A value greater
+       than zero selects fragment-based headline generation (see below).
       </p></li><li class="listitem" style="list-style-type: disc"><p>
-       <code class="literal">FragmentDelimiter</code>: When more than one fragment is
-       displayed, the fragments will be separated by this string.
+       <code class="literal">StartSel</code>, <code class="literal">StopSel</code> (strings):
+       the strings with which to delimit query words appearing in the
+       document, to distinguish them from other excerpted words.  The
+       default values are <span class="quote">“<span class="quote"><code class="literal">&lt;b&gt;</code></span>”</span> and
+       <span class="quote">“<span class="quote"><code class="literal">&lt;/b&gt;</code></span>”</span>, which can be suitable
+       for HTML output.
+      </p></li><li class="listitem" style="list-style-type: disc"><p>
+       <code class="literal">FragmentDelimiter</code> (string): When more than one
+       fragment is displayed, the fragments will be separated by this string.
+       The default is <span class="quote">“<span class="quote"><code class="literal"> ... </code></span>”</span>.
       </p></li></ul></div><p>
 
     These option names are recognized case-insensitively.
-    Any unspecified options receive these defaults:
-
-</p><pre class="programlisting">
-StartSel=&lt;b&gt;, StopSel=&lt;/b&gt;,
-MaxWords=35, MinWords=15, ShortWord=3, HighlightAll=FALSE,
-MaxFragments=0, FragmentDelimiter=" ... "
-</pre><p>
+    You must double-quote string values if they contain spaces or commas.
+   </p><p>
+    In non-fragment-based headline
+    generation, <code class="function">ts_headline</code> locates matches for the
+    given <em class="replaceable"><code>query</code></em> and chooses a
+    single one to display, preferring matches that have more query words
+    within the allowed headline length.
+    In fragment-based headline generation, <code class="function">ts_headline</code>
+    locates the query matches and splits each match
+    into <span class="quote">“<span class="quote">fragments</span>”</span> of no more than <code class="literal">MaxWords</code>
+    words each, preferring fragments with more query words, and when
+    possible <span class="quote">“<span class="quote">stretching</span>”</span> fragments to include surrounding
+    words.  The fragment-based mode is thus more useful when the query
+    matches span large sections of the document, or when it's desirable to
+    display multiple matches.
+    In either mode, if no query matches can be identified, then a single
+    fragment of the first <code class="literal">MinWords</code> words in the document
+    will be displayed.
    </p><p>
     For example:
 
@@ -508,28 +527,27 @@ SELECT ts_headline('english',
 is to find all documents containing given query terms
 and return them in order of their similarity to the
 query.',
-  to_tsquery('query &amp; similarity'));
-                        ts_headline                         
+  to_tsquery('english', 'query &amp; similarity'));
+                        ts_headline
 ------------------------------------------------------------
- containing given &lt;b&gt;query&lt;/b&gt; terms
- and return them in order of their &lt;b&gt;similarity&lt;/b&gt; to the
+ containing given &lt;b&gt;query&lt;/b&gt; terms                       +
+ and return them in order of their &lt;b&gt;similarity&lt;/b&gt; to the+
  &lt;b&gt;query&lt;/b&gt;.
 
 SELECT ts_headline('english',
-  'The most common type of search
-is to find all documents containing given query terms
-and return them in order of their similarity to the
-query.',
-  to_tsquery('query &amp; similarity'),
-  'StartSel = &lt;, StopSel = &gt;');
-                      ts_headline                      
--------------------------------------------------------
- containing given &lt;query&gt; terms
- and return them in order of their &lt;similarity&gt; to the
- &lt;query&gt;.
+  'Search terms may occur
+many times in a document,
+requiring ranking of the search matches to decide which
+occurrences to display in the result.',
+  to_tsquery('english', 'search &amp; term'),
+  'MaxFragments=10, MaxWords=7, MinWords=3, StartSel=&lt;&lt;, StopSel=&gt;&gt;');
+                        ts_headline
+------------------------------------------------------------
+ &lt;&lt;Search&gt;&gt; &lt;&lt;terms&gt;&gt; may occur                            +
+ many times ... ranking of the &lt;&lt;search&gt;&gt; matches to decide
 </pre><p>
    </p><p>
     <code class="function">ts_headline</code> uses the original document, not a
     <code class="type">tsvector</code> summary, so it can be slow and should be used with
     care.
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="textsearch-tables.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="textsearch.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="textsearch-features.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">12.2. Tables and Indexes </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 12.4. Additional Features</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="textsearch-tables.html" title="12.2. Tables and Indexes">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="textsearch-features.html" title="12.4. Additional Features">Next</a></td></tr><tr><td width="40%" align="left" valign="top">12.2. Tables and Indexes </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 12.4. Additional Features</td></tr></table></div></body></html>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.43. unaccent</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="tsm-system-time.html" title="F.42. tsm_system_time" /><link rel="next" href="uuid-ossp.html" title="F.44. uuid-ossp" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.43. unaccent</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="tsm-system-time.html" title="F.42. tsm_system_time">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="uuid-ossp.html" title="F.44. uuid-ossp">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="UNACCENT"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.43. unaccent</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="unaccent.html#id-1.11.7.52.5">F.43.1. Configuration</a></span></dt><dt><span class="sect2"><a href="unaccent.html#id-1.11.7.52.6">F.43.2. Usage</a></span></dt><dt><span class="sect2"><a href="unaccent.html#id-1.11.7.52.7">F.43.3. Functions</a></span></dt></dl></div><a id="id-1.11.7.52.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.48. unaccent — a text search dictionary which removes diacritics</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="tsm-system-time.html" title="F.47. tsm_system_time — the SYSTEM_TIME sampling method for TABLESAMPLE" /><link rel="next" href="uuid-ossp.html" title="F.49. uuid-ossp — a UUID generator" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.48. unaccent — a text search dictionary which removes diacritics</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="tsm-system-time.html" title="F.47. tsm_system_time —&#10;   the SYSTEM_TIME sampling method for TABLESAMPLE">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules and Extensions">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules and Extensions</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="uuid-ossp.html" title="F.49. uuid-ossp — a UUID generator">Next</a></td></tr></table><hr /></div><div class="sect1" id="UNACCENT"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.48. unaccent — a text search dictionary which removes diacritics <a href="#UNACCENT" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="unaccent.html#UNACCENT-CONFIGURATION">F.48.1. Configuration</a></span></dt><dt><span class="sect2"><a href="unaccent.html#UNACCENT-USAGE">F.48.2. Usage</a></span></dt><dt><span class="sect2"><a href="unaccent.html#UNACCENT-FUNCTIONS">F.48.3. Functions</a></span></dt></dl></div><a id="id-1.11.7.58.2" class="indexterm"></a><p>
   <code class="filename">unaccent</code> is a text search dictionary that removes accents
   (diacritic signs) from lexemes.
   It's a filtering dictionary, which means its output is
@@ -9,7 +9,11 @@
  </p><p>
   The current implementation of <code class="filename">unaccent</code> cannot be used as a
   normalizing dictionary for the <code class="filename">thesaurus</code> dictionary.
- </p><div class="sect2" id="id-1.11.7.52.5"><div class="titlepage"><div><div><h3 class="title">F.43.1. Configuration</h3></div></div></div><p>
+ </p><p>
+  This module is considered <span class="quote">“<span class="quote">trusted</span>”</span>, that is, it can be
+  installed by non-superusers who have <code class="literal">CREATE</code> privilege
+  on the current database.
+ </p><div class="sect2" id="UNACCENT-CONFIGURATION"><div class="titlepage"><div><div><h3 class="title">F.48.1. Configuration <a href="#UNACCENT-CONFIGURATION" class="id_link">#</a></h3></div></div></div><p>
    An <code class="literal">unaccent</code> dictionary accepts the following options:
   </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
      <code class="literal">RULES</code> is the base name of the file containing the list of
@@ -58,7 +62,7 @@
    to the same characters without accents, and it also expands ligatures
    into the equivalent series of simple characters (for example, Æ to
    AE).
-  </p></div><div class="sect2" id="id-1.11.7.52.6"><div class="titlepage"><div><div><h3 class="title">F.43.2. Usage</h3></div></div></div><p>
+  </p></div><div class="sect2" id="UNACCENT-USAGE"><div class="titlepage"><div><div><h3 class="title">F.48.2. Usage <a href="#UNACCENT-USAGE" class="id_link">#</a></h3></div></div></div><p>
    Installing the <code class="literal">unaccent</code> extension creates a text
    search template <code class="literal">unaccent</code> and a dictionary <code class="literal">unaccent</code>
    based on it.  The <code class="literal">unaccent</code> dictionary has the default
@@ -106,12 +110,12 @@ mydb=# select ts_headline('fr','Hôtel de la Mer',to_tsquery('fr','Hotels'));
  &lt;b&gt;Hôtel&lt;/b&gt; de la Mer
 (1 row)
 </pre><p>
-  </p></div><div class="sect2" id="id-1.11.7.52.7"><div class="titlepage"><div><div><h3 class="title">F.43.3. Functions</h3></div></div></div><p>
+  </p></div><div class="sect2" id="UNACCENT-FUNCTIONS"><div class="titlepage"><div><div><h3 class="title">F.48.3. Functions <a href="#UNACCENT-FUNCTIONS" class="id_link">#</a></h3></div></div></div><p>
   The <code class="function">unaccent()</code> function removes accents (diacritic signs) from
   a given string.  Basically, it's a wrapper around
   <code class="filename">unaccent</code>-type dictionaries, but it can be used outside normal
   text search contexts.
- </p><a id="id-1.11.7.52.7.3" class="indexterm"></a><pre class="synopsis">
+ </p><a id="id-1.11.7.58.8.3" class="indexterm"></a><pre class="synopsis">
 unaccent([<span class="optional"><em class="replaceable"><code>dictionary</code></em> <code class="type">regdictionary</code>, </span>] <em class="replaceable"><code>string</code></em> <code class="type">text</code>) returns <code class="type">text</code>
 </pre><p>
   If the <em class="replaceable"><code>dictionary</code></em> argument is
@@ -124,4 +128,5 @@ unaccent([<span class="optional"><em class="replaceable"><code>dictionary</code>
 SELECT unaccent('unaccent', 'Hôtel');
 SELECT unaccent('Hôtel');
 </pre><p>
- </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="tsm-system-time.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="uuid-ossp.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.42. tsm_system_time </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> F.44. uuid-ossp</td></tr></table></div></body></html>
+ </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="tsm-system-time.html" title="F.47. tsm_system_time —&#10;   the SYSTEM_TIME sampling method for TABLESAMPLE">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules and Extensions">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="uuid-ossp.html" title="F.49. uuid-ossp — a UUID generator">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.47. tsm_system_time —
+   the <code class="literal">SYSTEM_TIME</code> sampling method for <code class="literal">TABLESAMPLE</code> </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> F.49. uuid-ossp — a UUID generator</td></tr></table></div></body></html>

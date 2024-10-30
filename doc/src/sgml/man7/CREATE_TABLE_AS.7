@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE TABLE AS
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATE TABLE AS" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE TABLE AS" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,8 @@ CREATE_TABLE_AS \- define a new table from the results of a query
 .nf
 CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED ] TABLE [ IF NOT EXISTS ] \fItable_name\fR
     [ (\fIcolumn_name\fR [, \&.\&.\&.] ) ]
-    [ WITH ( \fIstorage_parameter\fR [= \fIvalue\fR] [, \&.\&.\&. ] ) | WITH OIDS | WITHOUT OIDS ]
+    [ USING \fImethod\fR ]
+    [ WITH ( \fIstorage_parameter\fR [= \fIvalue\fR] [, \&.\&.\&. ] ) | WITHOUT OIDS ]
     [ ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP } ]
     [ TABLESPACE \fItablespace_name\fR ]
     AS \fIquery\fR
@@ -53,6 +54,11 @@ command\&. The table columns have the names and data types associated with the o
 bears some resemblance to creating a view, but it is really quite different: it creates a new table and evaluates the query just once to fill the new table initially\&. The new table will not track subsequent changes to the source tables of the query\&. In contrast, a view re\-evaluates its defining
 \fBSELECT\fR
 statement whenever it is queried\&.
+.PP
+\fBCREATE TABLE AS\fR
+requires
+CREATE
+privilege on the schema used for the table\&.
 .SH "PARAMETERS"
 .PP
 GLOBAL or LOCAL
@@ -78,9 +84,7 @@ for details\&.
 .PP
 IF NOT EXISTS
 .RS 4
-Do not throw an error if a relation with the same name already exists\&. A notice is issued in this case\&. Refer to
-CREATE TABLE (\fBCREATE_TABLE\fR(7))
-for details\&.
+Do not throw an error if a relation with the same name already exists; simply issue a notice and leave the table unmodified\&.
 .RE
 .PP
 \fItable_name\fR
@@ -93,34 +97,37 @@ The name (optionally schema\-qualified) of the table to be created\&.
 The name of a column in the new table\&. If column names are not provided, they are taken from the output column names of the query\&.
 .RE
 .PP
+USING \fImethod\fR
+.RS 4
+This optional clause specifies the table access method to use to store the contents for the new table; the method needs be an access method of type
+TABLE\&. See
+Chapter\ \&63
+for more information\&. If this option is not specified, the default table access method is chosen for the new table\&. See
+default_table_access_method
+for more information\&.
+.RE
+.PP
 WITH ( \fIstorage_parameter\fR [= \fIvalue\fR] [, \&.\&.\&. ] )
 .RS 4
 This clause specifies optional storage parameters for the new table; see
 Storage Parameters
-for more information\&. The
-WITH
-clause can also include
-OIDS=TRUE
-(or just
-OIDS) to specify that rows of the new table should have OIDs (object identifiers) assigned to them, or
-OIDS=FALSE
-to specify that the rows should not have OIDs\&. See
+in the
 CREATE TABLE (\fBCREATE_TABLE\fR(7))
-for more information\&.
+documentation for more information\&. For backward\-compatibility the
+WITH
+clause for a table can also include
+OIDS=FALSE
+to specify that rows of the new table should contain no OIDs (object identifiers),
+OIDS=TRUE
+is not supported anymore\&.
 .RE
 .PP
-WITH OIDS
-.br
 WITHOUT OIDS
 .RS 4
-These are obsolescent syntaxes equivalent to
-WITH (OIDS)
-and
-WITH (OIDS=FALSE), respectively\&. If you wish to give both an
-OIDS
-setting and storage parameters, you must use the
-WITH ( \&.\&.\&. )
-syntax; see above\&.
+This is backward\-compatible syntax for declaring a table
+WITHOUT OIDS, creating a table
+WITH OIDS
+is not supported anymore\&.
 .RE
 .PP
 ON COMMIT
@@ -136,7 +143,7 @@ No special action is taken at the ends of transactions\&. This is the default be
 DELETE ROWS
 .RS 4
 All rows in the temporary table will be deleted at the end of each transaction block\&. Essentially, an automatic
-\fBTRUNCATE\fR(7)
+\fBTRUNCATE\fR
 is done at each commit\&.
 .RE
 .PP
@@ -160,11 +167,11 @@ if the table is temporary\&.
 \fIquery\fR
 .RS 4
 A
-\fBSELECT\fR(7),
-TABLE, or
-\fBVALUES\fR(7)
+\fBSELECT\fR,
+\fBTABLE\fR, or
+\fBVALUES\fR
 command, or an
-\fBEXECUTE\fR(7)
+\fBEXECUTE\fR
 command that runs a prepared
 \fBSELECT\fR,
 \fBTABLE\fR, or
@@ -185,12 +192,6 @@ syntax\&. Furthermore,
 \fBCREATE TABLE AS\fR
 offers a superset of the functionality offered by
 \fBSELECT INTO\fR\&.
-.PP
-The
-\fBCREATE TABLE AS\fR
-command allows the user to explicitly specify whether OIDs should be included\&. If the presence of OIDs is not explicitly specified, the
-default_with_oids
-configuration variable is used\&.
 .SH "EXAMPLES"
 .PP
 Create a new table
@@ -226,7 +227,7 @@ CREATE TABLE films2 AS
 .PP
 Create a new temporary table
 films_recent, consisting of only recent entries from the table
-films, using a prepared statement\&. The new table has OIDs and will be dropped at commit:
+films, using a prepared statement\&. The new table will be dropped at commit:
 .sp
 .if n \{\
 .RS 4
@@ -234,7 +235,7 @@ films, using a prepared statement\&. The new table has OIDs and will be dropped 
 .nf
 PREPARE recentfilms(date) AS
   SELECT * FROM films WHERE date_prod > $1;
-CREATE TEMP TABLE films_recent WITH (OIDS) ON COMMIT DROP AS
+CREATE TEMP TABLE films_recent ON COMMIT DROP AS
   EXECUTE recentfilms(\*(Aq2002\-01\-01\*(Aq);
 .fi
 .if n \{\
@@ -298,7 +299,7 @@ The
 WITH
 clause is a
 PostgreSQL
-extension; neither storage parameters nor OIDs are in the standard\&.
+extension; storage parameters are not in the standard\&.
 .RE
 .sp
 .RS 4

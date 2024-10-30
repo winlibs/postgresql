@@ -2,7 +2,7 @@
  *
  * rewriteManip.c
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -16,8 +16,8 @@
 #include "catalog/pg_type.h"
 #include "nodes/makefuncs.h"
 #include "nodes/nodeFuncs.h"
+#include "nodes/pathnodes.h"
 #include "nodes/plannodes.h"
-#include "optimizer/clauses.h"
 #include "parser/parse_coerce.h"
 #include "parser/parse_relation.h"
 #include "parser/parsetree.h"
@@ -40,16 +40,34 @@ typedef struct
 	int			win_location;
 } locate_windowfunc_context;
 
+typedef struct
+{
+	const Bitmapset *target_relids;
+	const Bitmapset *added_relids;
+	int			sublevels_up;
+} add_nulling_relids_context;
+
+typedef struct
+{
+	const Bitmapset *removable_relids;
+	const Bitmapset *except_relids;
+	int			sublevels_up;
+} remove_nulling_relids_context;
+
 static bool contain_aggs_of_level_walker(Node *node,
-							 contain_aggs_of_level_context *context);
+										 contain_aggs_of_level_context *context);
 static bool locate_agg_of_level_walker(Node *node,
-						   locate_agg_of_level_context *context);
+									   locate_agg_of_level_context *context);
 static bool contain_windowfuncs_walker(Node *node, void *context);
 static bool locate_windowfunc_walker(Node *node,
-						 locate_windowfunc_context *context);
+									 locate_windowfunc_context *context);
 static bool checkExprHasSubLink_walker(Node *node, void *context);
 static Relids offset_relid_set(Relids relids, int offset);
 static Relids adjust_relid_set(Relids relids, int oldrelid, int newrelid);
+static Node *add_nulling_relids_mutator(Node *node,
+										add_nulling_relids_context *context);
+static Node *remove_nulling_relids_mutator(Node *node,
+										   remove_nulling_relids_context *context);
 
 
 /*
@@ -316,13 +334,46 @@ contains_multiexpr_param(Node *node, void *context)
 	return expression_tree_walker(node, contains_multiexpr_param, context);
 }
 
+/*
+ * CombineRangeTables
+ * 		Adds the RTEs of 'src_rtable' into 'dst_rtable'
+ *
+ * This also adds the RTEPermissionInfos of 'src_perminfos' (belonging to the
+ * RTEs in 'src_rtable') into *dst_perminfos and also updates perminfoindex of
+ * the RTEs in 'src_rtable' to now point to the perminfos' indexes in
+ * *dst_perminfos.
+ *
+ * Note that this changes both 'dst_rtable' and 'dst_perminfos' destructively,
+ * so the caller should have better passed safe-to-modify copies.
+ */
+void
+CombineRangeTables(List **dst_rtable, List **dst_perminfos,
+				   List *src_rtable, List *src_perminfos)
+{
+	ListCell   *l;
+	int			offset = list_length(*dst_perminfos);
+
+	if (offset > 0)
+	{
+		foreach(l, src_rtable)
+		{
+			RangeTblEntry *rte = lfirst_node(RangeTblEntry, l);
+
+			if (rte->perminfoindex > 0)
+				rte->perminfoindex += offset;
+		}
+	}
+
+	*dst_perminfos = list_concat(*dst_perminfos, src_perminfos);
+	*dst_rtable = list_concat(*dst_rtable, src_rtable);
+}
 
 /*
  * OffsetVarNodes - adjust Vars when appending one query's RT to another
  *
  * Find all Var nodes in the given tree with varlevelsup == sublevels_up,
  * and increment their varno fields (rangetable indexes) by 'offset'.
- * The varnoold fields are adjusted similarly.  Also, adjust other nodes
+ * The varnosyn fields are adjusted similarly.  Also, adjust other nodes
  * that contain rangetable indexes, such as RangeTblRef and JoinExpr.
  *
  * NOTE: although this has the form of a walker, we cheat and modify the
@@ -348,7 +399,10 @@ OffsetVarNodes_walker(Node *node, OffsetVarNodes_context *context)
 		if (var->varlevelsup == context->sublevels_up)
 		{
 			var->varno += context->offset;
-			var->varnoold += context->offset;
+			var->varnullingrels = offset_relid_set(var->varnullingrels,
+												   context->offset);
+			if (var->varnosyn > 0)
+				var->varnosyn += context->offset;
 		}
 		return false;
 	}
@@ -385,6 +439,8 @@ OffsetVarNodes_walker(Node *node, OffsetVarNodes_context *context)
 		{
 			phv->phrels = offset_relid_set(phv->phrels,
 										   context->offset);
+			phv->phnullingrels = offset_relid_set(phv->phnullingrels,
+												  context->offset);
 		}
 		/* fall through to examine children */
 	}
@@ -485,7 +541,7 @@ offset_relid_set(Relids relids, int offset)
  *
  * Find all Var nodes in the given tree belonging to a specific relation
  * (identified by sublevels_up and rt_index), and change their varno fields
- * to 'new_index'.  The varnoold fields are changed too.  Also, adjust other
+ * to 'new_index'.  The varnosyn fields are changed too.  Also, adjust other
  * nodes that contain rangetable indexes, such as RangeTblRef and JoinExpr.
  *
  * NOTE: although this has the form of a walker, we cheat and modify the
@@ -509,11 +565,15 @@ ChangeVarNodes_walker(Node *node, ChangeVarNodes_context *context)
 	{
 		Var		   *var = (Var *) node;
 
-		if (var->varlevelsup == context->sublevels_up &&
-			var->varno == context->rt_index)
+		if (var->varlevelsup == context->sublevels_up)
 		{
-			var->varno = context->new_index;
-			var->varnoold = context->new_index;
+			if (var->varno == context->rt_index)
+				var->varno = context->new_index;
+			var->varnullingrels = adjust_relid_set(var->varnullingrels,
+												   context->rt_index,
+												   context->new_index);
+			if (var->varnosyn == context->rt_index)
+				var->varnosyn = context->new_index;
 		}
 		return false;
 	}
@@ -554,6 +614,9 @@ ChangeVarNodes_walker(Node *node, ChangeVarNodes_context *context)
 			phv->phrels = adjust_relid_set(phv->phrels,
 										   context->rt_index,
 										   context->new_index);
+			phv->phnullingrels = adjust_relid_set(phv->phnullingrels,
+												  context->rt_index,
+												  context->new_index);
 		}
 		/* fall through to examine children */
 	}
@@ -656,11 +719,16 @@ ChangeVarNodes(Node *node, int rt_index, int new_index, int sublevels_up)
 
 /*
  * Substitute newrelid for oldrelid in a Relid set
+ *
+ * Note: some extensions may pass a special varno such as INDEX_VAR for
+ * oldrelid.  bms_is_member won't like that, but we should tolerate it.
+ * (Perhaps newrelid could also be a special varno, but there had better
+ * not be a reason to inject that into a nullingrels or phrels set.)
  */
 static Relids
 adjust_relid_set(Relids relids, int oldrelid, int newrelid)
 {
-	if (bms_is_member(oldrelid, relids))
+	if (!IS_SPECIAL_VARNO(oldrelid) && bms_is_member(oldrelid, relids))
 	{
 		/* Ensure we have a modifiable copy */
 		relids = bms_copy(relids);
@@ -761,7 +829,7 @@ IncrementVarSublevelsUp_walker(Node *node,
 		result = query_tree_walker((Query *) node,
 								   IncrementVarSublevelsUp_walker,
 								   (void *) context,
-								   QTW_EXAMINE_RTES);
+								   QTW_EXAMINE_RTES_BEFORE);
 		context->min_sublevels_up--;
 		return result;
 	}
@@ -785,7 +853,7 @@ IncrementVarSublevelsUp(Node *node, int delta_sublevels_up,
 	query_or_expression_tree_walker(node,
 									IncrementVarSublevelsUp_walker,
 									(void *) &context,
-									QTW_EXAMINE_RTES);
+									QTW_EXAMINE_RTES_BEFORE);
 }
 
 /*
@@ -804,7 +872,7 @@ IncrementVarSublevelsUp_rtable(List *rtable, int delta_sublevels_up,
 	range_table_walker(rtable,
 					   IncrementVarSublevelsUp_walker,
 					   (void *) &context,
-					   QTW_EXAMINE_RTES);
+					   QTW_EXAMINE_RTES_BEFORE);
 }
 
 
@@ -830,7 +898,8 @@ rangeTableEntry_used_walker(Node *node,
 		Var		   *var = (Var *) node;
 
 		if (var->varlevelsup == context->sublevels_up &&
-			var->varno == context->rt_index)
+			(var->varno == context->rt_index ||
+			 bms_is_member(context->rt_index, var->varnullingrels)))
 			return true;
 		return false;
 	}
@@ -948,12 +1017,15 @@ getInsertSelectQuery(Query *parsetree, Query ***subquery_ptr)
 	if (list_length(parsetree->jointree->fromlist) != 1)
 		elog(ERROR, "expected to find SELECT subquery");
 	rtr = (RangeTblRef *) linitial(parsetree->jointree->fromlist);
-	Assert(IsA(rtr, RangeTblRef));
-	selectrte = rt_fetch(rtr->rtindex, parsetree->rtable);
-	selectquery = selectrte->subquery;
-	if (!(selectquery && IsA(selectquery, Query) &&
-		  selectquery->commandType == CMD_SELECT))
+	if (!IsA(rtr, RangeTblRef))
 		elog(ERROR, "expected to find SELECT subquery");
+	selectrte = rt_fetch(rtr->rtindex, parsetree->rtable);
+	if (!(selectrte->rtekind == RTE_SUBQUERY &&
+		  selectrte->subquery &&
+		  IsA(selectrte->subquery, Query) &&
+		  selectrte->subquery->commandType == CMD_SELECT))
+		elog(ERROR, "expected to find SELECT subquery");
+	selectquery = selectrte->subquery;
 	if (list_length(selectquery->rtable) >= 2 &&
 		strcmp(rt_fetch(PRS2_OLD_VARNO, selectquery->rtable)->eref->aliasname,
 			   "old") == 0 &&
@@ -1015,7 +1087,7 @@ AddQual(Query *parsetree, Node *qual)
 				 errmsg("conditional UNION/INTERSECT/EXCEPT statements are not implemented")));
 	}
 
-	/* INTERSECT want's the original, but we need to copy - Jan */
+	/* INTERSECT wants the original, but we need to copy - Jan */
 	copy = copyObject(qual);
 
 	parsetree->jointree->quals = make_and_qual(parsetree->jointree->quals,
@@ -1055,6 +1127,184 @@ AddInvertedQual(Query *parsetree, Node *qual)
 	invqual->location = -1;
 
 	AddQual(parsetree, (Node *) invqual);
+}
+
+
+/*
+ * add_nulling_relids() finds Vars and PlaceHolderVars that belong to any
+ * of the target_relids, and adds added_relids to their varnullingrels
+ * and phnullingrels fields.
+ */
+Node *
+add_nulling_relids(Node *node,
+				   const Bitmapset *target_relids,
+				   const Bitmapset *added_relids)
+{
+	add_nulling_relids_context context;
+
+	context.target_relids = target_relids;
+	context.added_relids = added_relids;
+	context.sublevels_up = 0;
+	return query_or_expression_tree_mutator(node,
+											add_nulling_relids_mutator,
+											&context,
+											0);
+}
+
+static Node *
+add_nulling_relids_mutator(Node *node,
+						   add_nulling_relids_context *context)
+{
+	if (node == NULL)
+		return NULL;
+	if (IsA(node, Var))
+	{
+		Var		   *var = (Var *) node;
+
+		if (var->varlevelsup == context->sublevels_up &&
+			bms_is_member(var->varno, context->target_relids))
+		{
+			Relids		newnullingrels = bms_union(var->varnullingrels,
+												   context->added_relids);
+
+			/* Copy the Var ... */
+			var = copyObject(var);
+			/* ... and replace the copy's varnullingrels field */
+			var->varnullingrels = newnullingrels;
+			return (Node *) var;
+		}
+		/* Otherwise fall through to copy the Var normally */
+	}
+	else if (IsA(node, PlaceHolderVar))
+	{
+		PlaceHolderVar *phv = (PlaceHolderVar *) node;
+
+		if (phv->phlevelsup == context->sublevels_up &&
+			bms_overlap(phv->phrels, context->target_relids))
+		{
+			Relids		newnullingrels = bms_union(phv->phnullingrels,
+												   context->added_relids);
+
+			/*
+			 * We don't modify the contents of the PHV's expression, only add
+			 * to phnullingrels.  This corresponds to assuming that the PHV
+			 * will be evaluated at the same level as before, then perhaps be
+			 * nulled as it bubbles up.  Hence, just flat-copy the node ...
+			 */
+			phv = makeNode(PlaceHolderVar);
+			memcpy(phv, node, sizeof(PlaceHolderVar));
+			/* ... and replace the copy's phnullingrels field */
+			phv->phnullingrels = newnullingrels;
+			return (Node *) phv;
+		}
+		/* Otherwise fall through to copy the PlaceHolderVar normally */
+	}
+	else if (IsA(node, Query))
+	{
+		/* Recurse into RTE or sublink subquery */
+		Query	   *newnode;
+
+		context->sublevels_up++;
+		newnode = query_tree_mutator((Query *) node,
+									 add_nulling_relids_mutator,
+									 (void *) context,
+									 0);
+		context->sublevels_up--;
+		return (Node *) newnode;
+	}
+	return expression_tree_mutator(node, add_nulling_relids_mutator,
+								   (void *) context);
+}
+
+/*
+ * remove_nulling_relids() removes mentions of the specified RT index(es)
+ * in Var.varnullingrels and PlaceHolderVar.phnullingrels fields within
+ * the given expression, except in nodes belonging to rels listed in
+ * except_relids.
+ */
+Node *
+remove_nulling_relids(Node *node,
+					  const Bitmapset *removable_relids,
+					  const Bitmapset *except_relids)
+{
+	remove_nulling_relids_context context;
+
+	context.removable_relids = removable_relids;
+	context.except_relids = except_relids;
+	context.sublevels_up = 0;
+	return query_or_expression_tree_mutator(node,
+											remove_nulling_relids_mutator,
+											&context,
+											0);
+}
+
+static Node *
+remove_nulling_relids_mutator(Node *node,
+							  remove_nulling_relids_context *context)
+{
+	if (node == NULL)
+		return NULL;
+	if (IsA(node, Var))
+	{
+		Var		   *var = (Var *) node;
+
+		if (var->varlevelsup == context->sublevels_up &&
+			!bms_is_member(var->varno, context->except_relids) &&
+			bms_overlap(var->varnullingrels, context->removable_relids))
+		{
+			/* Copy the Var ... */
+			var = copyObject(var);
+			/* ... and replace the copy's varnullingrels field */
+			var->varnullingrels = bms_difference(var->varnullingrels,
+												 context->removable_relids);
+			return (Node *) var;
+		}
+		/* Otherwise fall through to copy the Var normally */
+	}
+	else if (IsA(node, PlaceHolderVar))
+	{
+		PlaceHolderVar *phv = (PlaceHolderVar *) node;
+
+		if (phv->phlevelsup == context->sublevels_up &&
+			!bms_overlap(phv->phrels, context->except_relids))
+		{
+			/*
+			 * Note: it might seem desirable to remove the PHV altogether if
+			 * phnullingrels goes to empty.  Currently we dare not do that
+			 * because we use PHVs in some cases to enforce separate identity
+			 * of subexpressions; see wrap_non_vars usages in prepjointree.c.
+			 */
+			/* Copy the PlaceHolderVar and mutate what's below ... */
+			phv = (PlaceHolderVar *)
+				expression_tree_mutator(node,
+										remove_nulling_relids_mutator,
+										(void *) context);
+			/* ... and replace the copy's phnullingrels field */
+			phv->phnullingrels = bms_difference(phv->phnullingrels,
+												context->removable_relids);
+			/* We must also update phrels, if it contains a removable RTI */
+			phv->phrels = bms_difference(phv->phrels,
+										 context->removable_relids);
+			Assert(!bms_is_empty(phv->phrels));
+			return (Node *) phv;
+		}
+		/* Otherwise fall through to copy the PlaceHolderVar normally */
+	}
+	else if (IsA(node, Query))
+	{
+		/* Recurse into RTE or sublink subquery */
+		Query	   *newnode;
+
+		context->sublevels_up++;
+		newnode = query_tree_mutator((Query *) node,
+									 remove_nulling_relids_mutator,
+									 (void *) context,
+									 0);
+		context->sublevels_up--;
+		return (Node *) newnode;
+	}
+	return expression_tree_mutator(node, remove_nulling_relids_mutator,
+								   (void *) context);
 }
 
 
@@ -1208,7 +1458,7 @@ replace_rte_variables_mutator(Node *node,
  * a ConvertRowtypeExpr to map back to the rowtype expected by the expression.
  * (Therefore, to_rowtype had better be a child rowtype of the rowtype of the
  * RTE we're changing references to.)  Callers that don't provide to_rowtype
- * should report an error if *found_row_type is true; we don't do that here
+ * should report an error if *found_whole_row is true; we don't do that here
  * because we don't know exactly what wording for the error message would
  * be most appropriate.  The caller will be aware of the context.
  *
@@ -1221,8 +1471,7 @@ typedef struct
 {
 	int			target_varno;	/* RTE index to search for */
 	int			sublevels_up;	/* (current) nesting depth */
-	const AttrNumber *attno_map;	/* map array for user attnos */
-	int			map_length;		/* number of entries in attno_map[] */
+	const AttrMap *attno_map;	/* map array for user attnos */
 	Oid			to_rowtype;		/* change whole-row Vars to this type */
 	bool	   *found_whole_row;	/* output flag */
 } map_variable_attnos_context;
@@ -1249,11 +1498,14 @@ map_variable_attnos_mutator(Node *node,
 			if (attno > 0)
 			{
 				/* user-defined column, replace attno */
-				if (attno > context->map_length ||
-					context->attno_map[attno - 1] == 0)
+				if (attno > context->attno_map->maplen ||
+					context->attno_map->attnums[attno - 1] == 0)
 					elog(ERROR, "unexpected varattno %d in expression to be mapped",
 						 attno);
-				newvar->varattno = newvar->varoattno = context->attno_map[attno - 1];
+				newvar->varattno = context->attno_map->attnums[attno - 1];
+				/* If the syntactic referent is same RTE, fix it too */
+				if (newvar->varnosyn == context->target_varno)
+					newvar->varattnosyn = newvar->varattno;
 			}
 			else if (attno == 0)
 			{
@@ -1350,7 +1602,7 @@ map_variable_attnos_mutator(Node *node,
 Node *
 map_variable_attnos(Node *node,
 					int target_varno, int sublevels_up,
-					const AttrNumber *attno_map, int map_length,
+					const AttrMap *attno_map,
 					Oid to_rowtype, bool *found_whole_row)
 {
 	map_variable_attnos_context context;
@@ -1358,7 +1610,6 @@ map_variable_attnos(Node *node,
 	context.target_varno = target_varno;
 	context.sublevels_up = sublevels_up;
 	context.attno_map = attno_map;
-	context.map_length = map_length;
 	context.to_rowtype = to_rowtype;
 	context.found_whole_row = found_whole_row;
 
@@ -1420,8 +1671,8 @@ ReplaceVarsFromTargetList_callback(Var *var,
 		 * If generating an expansion for a var of a named rowtype (ie, this
 		 * is a plain relation RTE), then we must include dummy items for
 		 * dropped columns.  If the var is RECORD (ie, this is a JOIN), then
-		 * omit dropped columns.  Either way, attach column names to the
-		 * RowExpr for use of ruleutils.c.
+		 * omit dropped columns.  In the latter case, attach column names to
+		 * the RowExpr for use of the executor and ruleutils.c.
 		 */
 		expandRTE(rcon->target_rte,
 				  var->varno, var->varlevelsup, var->location,
@@ -1434,7 +1685,7 @@ ReplaceVarsFromTargetList_callback(Var *var,
 		rowexpr->args = fields;
 		rowexpr->row_typeid = var->vartype;
 		rowexpr->row_format = COERCE_IMPLICIT_CAST;
-		rowexpr->colnames = colnames;
+		rowexpr->colnames = (var->vartype == RECORDOID) ? colnames : NIL;
 		rowexpr->location = var->location;
 
 		return (Node *) rowexpr;
@@ -1455,7 +1706,7 @@ ReplaceVarsFromTargetList_callback(Var *var,
 			case REPLACEVARS_CHANGE_VARNO:
 				var = (Var *) copyObject(var);
 				var->varno = rcon->nomatch_varno;
-				var->varnoold = rcon->nomatch_varno;
+				/* we leave the syntactic referent alone */
 				return (Node *) var;
 
 			case REPLACEVARS_SUBSTITUTE_NULL:

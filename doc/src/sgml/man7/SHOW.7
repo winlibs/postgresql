@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SHOW
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "SHOW" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "SHOW" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -50,14 +50,14 @@ or a
 libpq\-based application), or through command\-line flags when starting the
 \fBpostgres\fR
 server\&. See
-Chapter\ \&19
+Chapter\ \&20
 for details\&.
 .SH "PARAMETERS"
 .PP
 \fIname\fR
 .RS 4
 The name of a run\-time parameter\&. Available parameters are documented in
-Chapter\ \&19
+Chapter\ \&20
 and on the
 \fBSET\fR(7)
 reference page\&. In addition, there are a few parameters that can be shown but not set:
@@ -97,7 +97,7 @@ Show the values of all configuration parameters, with descriptions\&.
 The function
 \fBcurrent_setting\fR
 produces equivalent output; see
-Section\ \&9.26\&. Also, the
+Section\ \&9.27.1\&. Also, the
 pg_settings
 system view produces the same information\&.
 .SH "EXAMPLES"
@@ -143,7 +143,7 @@ Show all settings:
 .\}
 .nf
 SHOW ALL;
-            name         | setting |                description                                                          
+            name         | setting |                description
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
  allow_system_table_mods | off     | Allows modifications of the structure of \&.\&.\&.
     \&.

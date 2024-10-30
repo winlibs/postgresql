@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DROP LANGUAGE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DROP LANGUAGE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DROP LANGUAGE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -56,7 +56,7 @@ As of
 PostgreSQL
 9\&.1, most procedural languages have been made into
 \(lqextensions\(rq, and should therefore be removed with
-DROP EXTENSION (\fBDROP_EXTENSION\fR(7))
+\fBDROP EXTENSION\fR
 not
 \fBDROP LANGUAGE\fR\&.
 .sp .5v
@@ -70,13 +70,13 @@ Do not throw an error if the language does not exist\&. A notice is issued in th
 .PP
 \fIname\fR
 .RS 4
-The name of an existing procedural language\&. For backward compatibility, the name can be enclosed by single quotes\&.
+The name of an existing procedural language\&.
 .RE
 .PP
 CASCADE
 .RS 4
 Automatically drop objects that depend on the language (such as functions in the language), and in turn all objects that depend on those objects (see
-Section\ \&5.13)\&.
+Section\ \&5.14)\&.
 .RE
 .PP
 RESTRICT

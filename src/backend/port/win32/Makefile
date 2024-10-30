@@ -12,9 +12,10 @@ subdir = src/backend/port/win32
 top_builddir = ../../../..
 include $(top_builddir)/src/Makefile.global
 
-OBJS = timer.o socket.o signal.o mingwcompat.o
-ifeq ($(have_win32_dbghelp), yes)
-OBJS += crashdump.o
-endif
+OBJS = \
+	crashdump.o \
+	signal.o \
+	socket.o \
+	timer.o
 
 include $(top_srcdir)/src/backend/common.mk

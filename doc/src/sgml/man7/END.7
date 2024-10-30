@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: END
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "END" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "END" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ END \- commit the current transaction
 .SH "SYNOPSIS"
 .sp
 .nf
-END [ WORK | TRANSACTION ]
+END [ WORK | TRANSACTION ] [ AND [ NO ] CHAIN ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -40,7 +40,7 @@ END [ WORK | TRANSACTION ]
 commits the current transaction\&. All changes made by the transaction become visible to others and are guaranteed to be durable if a crash occurs\&. This command is a
 PostgreSQL
 extension that is equivalent to
-\fBCOMMIT\fR(7)\&.
+\fBCOMMIT\fR\&.
 .SH "PARAMETERS"
 .PP
 WORK
@@ -49,10 +49,18 @@ TRANSACTION
 .RS 4
 Optional key words\&. They have no effect\&.
 .RE
+.PP
+AND CHAIN
+.RS 4
+If
+AND CHAIN
+is specified, a new transaction is immediately started with the same transaction characteristics (see
+SET TRANSACTION (\fBSET_TRANSACTION\fR(7))) as the just finished one\&. Otherwise, no new transaction is started\&.
+.RE
 .SH "NOTES"
 .PP
 Use
-\fBROLLBACK\fR(7)
+\fBROLLBACK\fR
 to abort a transaction\&.
 .PP
 Issuing
@@ -77,6 +85,6 @@ END;
 is a
 PostgreSQL
 extension that provides functionality equivalent to
-\fBCOMMIT\fR(7), which is specified in the SQL standard\&.
+\fBCOMMIT\fR, which is specified in the SQL standard\&.
 .SH "SEE ALSO"
 \fBBEGIN\fR(7), \fBCOMMIT\fR(7), \fBROLLBACK\fR(7)

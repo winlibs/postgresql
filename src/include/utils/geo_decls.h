@@ -3,13 +3,10 @@
  * geo_decls.h - Declarations for various 2D constructs.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/geo_decls.h
- *
- * NOTE
- *	  These routines do *not* use the float types from adt/.
  *
  *	  XXX These routines were not written by a numerical analyst.
  *
@@ -27,19 +24,60 @@
 
 /*--------------------------------------------------------------------
  * Useful floating point utilities and constants.
- *-------------------------------------------------------------------*/
-
+ *--------------------------------------------------------------------
+ *
+ * "Fuzzy" floating-point comparisons: values within EPSILON of each other
+ * are considered equal.  Beware of normal reasoning about the behavior of
+ * these comparisons, since for example FPeq does not behave transitively.
+ *
+ * Note that these functions are not NaN-aware and will give FALSE for
+ * any case involving NaN inputs.
+ *
+ * Also note that these will give sane answers for infinite inputs,
+ * where it's important to avoid computing Inf minus Inf; we do so
+ * by eliminating equality cases before subtracting.
+ */
 
 #define EPSILON					1.0E-06
 
 #ifdef EPSILON
 #define FPzero(A)				(fabs(A) <= EPSILON)
-#define FPeq(A,B)				(fabs((A) - (B)) <= EPSILON)
-#define FPne(A,B)				(fabs((A) - (B)) > EPSILON)
-#define FPlt(A,B)				((B) - (A) > EPSILON)
-#define FPle(A,B)				((A) - (B) <= EPSILON)
-#define FPgt(A,B)				((A) - (B) > EPSILON)
-#define FPge(A,B)				((B) - (A) <= EPSILON)
+
+static inline bool
+FPeq(double A, double B)
+{
+	return A == B || fabs(A - B) <= EPSILON;
+}
+
+static inline bool
+FPne(double A, double B)
+{
+	return A != B && fabs(A - B) > EPSILON;
+}
+
+static inline bool
+FPlt(double A, double B)
+{
+	return A + EPSILON < B;
+}
+
+static inline bool
+FPle(double A, double B)
+{
+	return A <= B + EPSILON;
+}
+
+static inline bool
+FPgt(double A, double B)
+{
+	return A > B + EPSILON;
+}
+
+static inline bool
+FPge(double A, double B)
+{
+	return A + EPSILON >= B;
+}
 #else
 #define FPzero(A)				((A) == 0)
 #define FPeq(A,B)				((A) == (B))
@@ -57,7 +95,7 @@
  *-------------------------------------------------------------------*/
 typedef struct
 {
-	double		x,
+	float8		x,
 				y;
 } Point;
 
@@ -89,7 +127,7 @@ typedef struct
  *-------------------------------------------------------------------*/
 typedef struct
 {
-	double		A,
+	float8		A,
 				B,
 				C;
 } LINE;
@@ -124,52 +162,116 @@ typedef struct
 typedef struct
 {
 	Point		center;
-	double		radius;
+	float8		radius;
 } CIRCLE;
 
 /*
- * fmgr interface macros
+ * fmgr interface functions
  *
  * Path and Polygon are toastable varlena types, the others are just
  * fixed-size pass-by-reference types.
  */
 
-#define DatumGetPointP(X)	 ((Point *) DatumGetPointer(X))
-#define PointPGetDatum(X)	 PointerGetDatum(X)
+static inline Point *
+DatumGetPointP(Datum X)
+{
+	return (Point *) DatumGetPointer(X);
+}
+static inline Datum
+PointPGetDatum(const Point *X)
+{
+	return PointerGetDatum(X);
+}
 #define PG_GETARG_POINT_P(n) DatumGetPointP(PG_GETARG_DATUM(n))
 #define PG_RETURN_POINT_P(x) return PointPGetDatum(x)
 
-#define DatumGetLsegP(X)	((LSEG *) DatumGetPointer(X))
-#define LsegPGetDatum(X)	PointerGetDatum(X)
+static inline LSEG *
+DatumGetLsegP(Datum X)
+{
+	return (LSEG *) DatumGetPointer(X);
+}
+static inline Datum
+LsegPGetDatum(const LSEG *X)
+{
+	return PointerGetDatum(X);
+}
 #define PG_GETARG_LSEG_P(n) DatumGetLsegP(PG_GETARG_DATUM(n))
 #define PG_RETURN_LSEG_P(x) return LsegPGetDatum(x)
 
-#define DatumGetPathP(X)		 ((PATH *) PG_DETOAST_DATUM(X))
-#define DatumGetPathPCopy(X)	 ((PATH *) PG_DETOAST_DATUM_COPY(X))
-#define PathPGetDatum(X)		 PointerGetDatum(X)
+static inline PATH *
+DatumGetPathP(Datum X)
+{
+	return (PATH *) PG_DETOAST_DATUM(X);
+}
+static inline PATH *
+DatumGetPathPCopy(Datum X)
+{
+	return (PATH *) PG_DETOAST_DATUM_COPY(X);
+}
+static inline Datum
+PathPGetDatum(const PATH *X)
+{
+	return PointerGetDatum(X);
+}
 #define PG_GETARG_PATH_P(n)		 DatumGetPathP(PG_GETARG_DATUM(n))
 #define PG_GETARG_PATH_P_COPY(n) DatumGetPathPCopy(PG_GETARG_DATUM(n))
 #define PG_RETURN_PATH_P(x)		 return PathPGetDatum(x)
 
-#define DatumGetLineP(X)	((LINE *) DatumGetPointer(X))
-#define LinePGetDatum(X)	PointerGetDatum(X)
+static inline LINE *
+DatumGetLineP(Datum X)
+{
+	return (LINE *) DatumGetPointer(X);
+}
+static inline Datum
+LinePGetDatum(const LINE *X)
+{
+	return PointerGetDatum(X);
+}
 #define PG_GETARG_LINE_P(n) DatumGetLineP(PG_GETARG_DATUM(n))
 #define PG_RETURN_LINE_P(x) return LinePGetDatum(x)
 
-#define DatumGetBoxP(X)    ((BOX *) DatumGetPointer(X))
-#define BoxPGetDatum(X)    PointerGetDatum(X)
+static inline BOX *
+DatumGetBoxP(Datum X)
+{
+	return (BOX *) DatumGetPointer(X);
+}
+static inline Datum
+BoxPGetDatum(const BOX *X)
+{
+	return PointerGetDatum(X);
+}
 #define PG_GETARG_BOX_P(n) DatumGetBoxP(PG_GETARG_DATUM(n))
 #define PG_RETURN_BOX_P(x) return BoxPGetDatum(x)
 
-#define DatumGetPolygonP(X)			((POLYGON *) PG_DETOAST_DATUM(X))
-#define DatumGetPolygonPCopy(X)		((POLYGON *) PG_DETOAST_DATUM_COPY(X))
-#define PolygonPGetDatum(X)			PointerGetDatum(X)
+static inline POLYGON *
+DatumGetPolygonP(Datum X)
+{
+	return (POLYGON *) PG_DETOAST_DATUM(X);
+}
+static inline POLYGON *
+DatumGetPolygonPCopy(Datum X)
+{
+	return (POLYGON *) PG_DETOAST_DATUM_COPY(X);
+}
+static inline Datum
+PolygonPGetDatum(const POLYGON *X)
+{
+	return PointerGetDatum(X);
+}
 #define PG_GETARG_POLYGON_P(n)		DatumGetPolygonP(PG_GETARG_DATUM(n))
 #define PG_GETARG_POLYGON_P_COPY(n) DatumGetPolygonPCopy(PG_GETARG_DATUM(n))
 #define PG_RETURN_POLYGON_P(x)		return PolygonPGetDatum(x)
 
-#define DatumGetCircleP(X)	  ((CIRCLE *) DatumGetPointer(X))
-#define CirclePGetDatum(X)	  PointerGetDatum(X)
+static inline CIRCLE *
+DatumGetCircleP(Datum X)
+{
+	return (CIRCLE *) DatumGetPointer(X);
+}
+static inline Datum
+CirclePGetDatum(const CIRCLE *X)
+{
+	return PointerGetDatum(X);
+}
 #define PG_GETARG_CIRCLE_P(n) DatumGetCircleP(PG_GETARG_DATUM(n))
 #define PG_RETURN_CIRCLE_P(x) return CirclePGetDatum(x)
 
@@ -178,10 +280,6 @@ typedef struct
  * in geo_ops.c
  */
 
-/* private routines */
-extern double point_dt(Point *pt1, Point *pt2);
-extern double point_sl(Point *pt1, Point *pt2);
-extern double pg_hypot(double x, double y);
-extern BOX *box_copy(BOX *box);
+extern float8 pg_hypot(float8 x, float8 y);
 
 #endif							/* GEO_DECLS_H */

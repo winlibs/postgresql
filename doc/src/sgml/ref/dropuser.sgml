@@ -35,14 +35,15 @@ PostgreSQL documentation
   <para>
    <application>dropuser</application> removes an existing
    <productname>PostgreSQL</productname> user.
-   Only superusers and users with the <literal>CREATEROLE</literal> privilege can
-   remove <productname>PostgreSQL</productname> users.  (To remove a
-   superuser, you must yourself be a superuser.)
+   Superusers can use this command to remove any role; otherwise, only
+   non-superuser roles can be removed, and only by a user who possesses
+   the <literal>CREATEROLE</literal> privilege and has been granted
+   <literal>ADMIN OPTION</literal> on the target role.
   </para>
 
   <para>
    <application>dropuser</application> is a wrapper around the
-   <acronym>SQL</acronym> command <xref linkend="sql-droprole"/>.
+   <acronym>SQL</acronym> command <link linkend="sql-droprole"><command>DROP ROLE</command></link>.
    There is no effective difference between dropping users via
    this utility and via other methods for accessing the server.
   </para>
@@ -217,6 +218,17 @@ PostgreSQL documentation
     <listitem>
      <para>
       Default connection parameters
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><envar>PG_COLOR</envar></term>
+    <listitem>
+     <para>
+      Specifies whether to use color in diagnostic messages. Possible values
+      are <literal>always</literal>, <literal>auto</literal> and
+      <literal>never</literal>.
      </para>
     </listitem>
    </varlistentry>

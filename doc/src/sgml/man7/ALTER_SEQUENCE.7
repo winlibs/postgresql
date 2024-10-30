@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER SEQUENCE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER SEQUENCE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER SEQUENCE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -40,7 +40,8 @@ ALTER SEQUENCE [ IF EXISTS ] \fIname\fR
     [ RESTART [ [ WITH ] \fIrestart\fR ] ]
     [ CACHE \fIcache\fR ] [ [ NO ] CYCLE ]
     [ OWNED BY { \fItable_name\fR\&.\fIcolumn_name\fR | NONE } ]
-ALTER SEQUENCE [ IF EXISTS ] \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+ALTER SEQUENCE [ IF EXISTS ] \fIname\fR SET { LOGGED | UNLOGGED }
+ALTER SEQUENCE [ IF EXISTS ] \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 ALTER SEQUENCE [ IF EXISTS ] \fIname\fR RENAME TO \fInew_name\fR
 ALTER SEQUENCE [ IF EXISTS ] \fIname\fR SET SCHEMA \fInew_schema\fR
 .fi
@@ -54,7 +55,9 @@ command retain their prior settings\&.
 You must own the sequence to use
 \fBALTER SEQUENCE\fR\&. To change a sequence\*(Aqs schema, you must also have
 CREATE
-privilege on the new schema\&. To alter the owner, you must also be a direct or indirect member of the new owning role, and that role must have
+privilege on the new schema\&. To alter the owner, you must be able to
+SET ROLE
+to the new owning role, and that role must have
 CREATE
 privilege on the sequence\*(Aqs schema\&. (These restrictions enforce that altering the owner doesn\*(Aqt do anything you couldn\*(Aqt do by dropping and recreating the sequence\&. However, a superuser can alter ownership of any sequence anyway\&.)
 .SH "PARAMETERS"
@@ -187,6 +190,12 @@ CYCLE
 or
 NO CYCLE
 are specified, the old cycle behavior will be maintained\&.
+.RE
+.PP
+SET { LOGGED | UNLOGGED }
+.RS 4
+This form changes the sequence from unlogged to logged or vice\-versa (see
+CREATE SEQUENCE (\fBCREATE_SEQUENCE\fR(7)))\&. It cannot be applied to a temporary sequence\&.
 .RE
 .PP
 OWNED BY \fItable_name\fR\&.\fIcolumn_name\fR

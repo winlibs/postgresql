@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER OPERATOR
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER OPERATOR" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER OPERATOR" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,13 +32,13 @@ ALTER_OPERATOR \- change the definition of an operator
 .SH "SYNOPSIS"
 .sp
 .nf
-ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , { \fIright_type\fR | NONE } )
-    OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , \fIright_type\fR )
+    OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 
-ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , { \fIright_type\fR | NONE } )
+ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , \fIright_type\fR )
     SET SCHEMA \fInew_schema\fR
 
-ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , { \fIright_type\fR | NONE } )
+ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , \fIright_type\fR )
     SET ( {  RESTRICT = { \fIres_proc\fR | NONE }
            | JOIN = { \fIjoin_proc\fR | NONE }
          } [, \&.\&.\&. ] )
@@ -49,7 +49,9 @@ ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , { \fIright_type\fR | NO
 changes the definition of an operator\&.
 .PP
 You must own the operator to use
-\fBALTER OPERATOR\fR\&. To alter the owner, you must also be a direct or indirect member of the new owning role, and that role must have
+\fBALTER OPERATOR\fR\&. To alter the owner, you must be able to
+SET ROLE
+to the new owning role, and that role must have
 CREATE
 privilege on the operator\*(Aqs schema\&. (These restrictions enforce that altering the owner doesn\*(Aqt do anything you couldn\*(Aqt do by dropping and recreating the operator\&. However, a superuser can alter ownership of any operator anyway\&.)
 .SH "PARAMETERS"
@@ -68,9 +70,7 @@ if the operator has no left operand\&.
 .PP
 \fIright_type\fR
 .RS 4
-The data type of the operator\*(Aqs right operand; write
-NONE
-if the operator has no right operand\&.
+The data type of the operator\*(Aqs right operand\&.
 .RE
 .PP
 \fInew_owner\fR

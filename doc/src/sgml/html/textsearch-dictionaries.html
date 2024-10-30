@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>12.6. Dictionaries</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="textsearch-parsers.html" title="12.5. Parsers" /><link rel="next" href="textsearch-configuration.html" title="12.7. Configuration Example" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">12.6. Dictionaries</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="textsearch-parsers.html" title="12.5. Parsers">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><th width="60%" align="center">Chapter 12. Full Text Search</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="textsearch-configuration.html" title="12.7. Configuration Example">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TEXTSEARCH-DICTIONARIES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">12.6. Dictionaries</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="textsearch-dictionaries.html#TEXTSEARCH-STOPWORDS">12.6.1. Stop Words</a></span></dt><dt><span class="sect2"><a href="textsearch-dictionaries.html#TEXTSEARCH-SIMPLE-DICTIONARY">12.6.2. Simple Dictionary</a></span></dt><dt><span class="sect2"><a href="textsearch-dictionaries.html#TEXTSEARCH-SYNONYM-DICTIONARY">12.6.3. Synonym Dictionary</a></span></dt><dt><span class="sect2"><a href="textsearch-dictionaries.html#TEXTSEARCH-THESAURUS">12.6.4. Thesaurus Dictionary</a></span></dt><dt><span class="sect2"><a href="textsearch-dictionaries.html#TEXTSEARCH-ISPELL-DICTIONARY">12.6.5. <span class="application">Ispell</span> Dictionary</a></span></dt><dt><span class="sect2"><a href="textsearch-dictionaries.html#TEXTSEARCH-SNOWBALL-DICTIONARY">12.6.6. <span class="application">Snowball</span> Dictionary</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>12.6. Dictionaries</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="textsearch-parsers.html" title="12.5. Parsers" /><link rel="next" href="textsearch-configuration.html" title="12.7. Configuration Example" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">12.6. Dictionaries</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="textsearch-parsers.html" title="12.5. Parsers">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><th width="60%" align="center">Chapter 12. Full Text Search</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="textsearch-configuration.html" title="12.7. Configuration Example">Next</a></td></tr></table><hr /></div><div class="sect1" id="TEXTSEARCH-DICTIONARIES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">12.6. Dictionaries <a href="#TEXTSEARCH-DICTIONARIES" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="textsearch-dictionaries.html#TEXTSEARCH-STOPWORDS">12.6.1. Stop Words</a></span></dt><dt><span class="sect2"><a href="textsearch-dictionaries.html#TEXTSEARCH-SIMPLE-DICTIONARY">12.6.2. Simple Dictionary</a></span></dt><dt><span class="sect2"><a href="textsearch-dictionaries.html#TEXTSEARCH-SYNONYM-DICTIONARY">12.6.3. Synonym Dictionary</a></span></dt><dt><span class="sect2"><a href="textsearch-dictionaries.html#TEXTSEARCH-THESAURUS">12.6.4. Thesaurus Dictionary</a></span></dt><dt><span class="sect2"><a href="textsearch-dictionaries.html#TEXTSEARCH-ISPELL-DICTIONARY">12.6.5. <span class="application">Ispell</span> Dictionary</a></span></dt><dt><span class="sect2"><a href="textsearch-dictionaries.html#TEXTSEARCH-SNOWBALL-DICTIONARY">12.6.6. <span class="application">Snowball</span> Dictionary</a></span></dt></dl></div><p>
    Dictionaries are used to eliminate words that should not be considered in a
    search (<em class="firstterm">stop words</em>), and to <em class="firstterm">normalize</em> words so
    that different derived forms of the same word will match.  A successfully
@@ -12,7 +12,7 @@
    Some examples of normalization:
 
    </p><div class="itemizedlist"><ul class="itemizedlist compact" style="list-style-type: bullet; "><li class="listitem" style="list-style-type: disc"><p>
-      Linguistic - Ispell dictionaries try to reduce input words to a
+      Linguistic — Ispell dictionaries try to reduce input words to a
       normalized form; stemmer dictionaries remove word endings
      </p></li><li class="listitem" style="list-style-type: disc"><p>
       <acronym class="acronym">URL</acronym> locations can be canonicalized to make
@@ -93,8 +93,8 @@ ALTER TEXT SEARCH CONFIGURATION astro_en
    end where it'd be useless.  Filtering dictionaries are useful to partially
    normalize words to simplify the task of later dictionaries.  For example,
    a filtering dictionary could be used to remove accents from accented
-   letters, as is done by the <a class="xref" href="unaccent.html" title="F.43. unaccent">unaccent</a> module.
-  </p><div class="sect2" id="TEXTSEARCH-STOPWORDS"><div class="titlepage"><div><div><h3 class="title">12.6.1. Stop Words</h3></div></div></div><p>
+   letters, as is done by the <a class="xref" href="unaccent.html" title="F.48. unaccent — a text search dictionary which removes diacritics">unaccent</a> module.
+  </p><div class="sect2" id="TEXTSEARCH-STOPWORDS"><div class="titlepage"><div><div><h3 class="title">12.6.1. Stop Words <a href="#TEXTSEARCH-STOPWORDS" class="id_link">#</a></h3></div></div></div><p>
     Stop words are words that are very common, appear in almost every
     document, and have no discrimination value. Therefore, they can be ignored
     in the context of full text searching. For example, every English text
@@ -103,7 +103,7 @@ ALTER TEXT SEARCH CONFIGURATION astro_en
     positions in <code class="type">tsvector</code>, which in turn affect ranking:
 
 </p><pre class="screen">
-SELECT to_tsvector('english','in the list of stop words');
+SELECT to_tsvector('english', 'in the list of stop words');
         to_tsvector
 ----------------------------
  'list':3 'stop':5 'word':6
@@ -113,12 +113,12 @@ SELECT to_tsvector('english','in the list of stop words');
     calculated for documents with and without stop words are quite different:
 
 </p><pre class="screen">
-SELECT ts_rank_cd (to_tsvector('english','in the list of stop words'), to_tsquery('list &amp; stop'));
+SELECT ts_rank_cd (to_tsvector('english', 'in the list of stop words'), to_tsquery('list &amp; stop'));
  ts_rank_cd
 ------------
        0.05
 
-SELECT ts_rank_cd (to_tsvector('english','list stop words'), to_tsquery('list &amp; stop'));
+SELECT ts_rank_cd (to_tsvector('english', 'list stop words'), to_tsquery('list &amp; stop'));
  ts_rank_cd
 ------------
         0.1
@@ -130,7 +130,7 @@ SELECT ts_rank_cd (to_tsvector('english','list stop words'), to_tsquery('list &a
     look at the list of stop words, while <code class="literal">Snowball</code> stemmers
     first check the list of stop words. The reason for the different
     behavior is an attempt to decrease noise.
-   </p></div><div class="sect2" id="TEXTSEARCH-SIMPLE-DICTIONARY"><div class="titlepage"><div><div><h3 class="title">12.6.2. Simple Dictionary</h3></div></div></div><p>
+   </p></div><div class="sect2" id="TEXTSEARCH-SIMPLE-DICTIONARY"><div class="titlepage"><div><div><h3 class="title">12.6.2. Simple Dictionary <a href="#TEXTSEARCH-SIMPLE-DICTIONARY" class="id_link">#</a></h3></div></div></div><p>
     The <code class="literal">simple</code> dictionary template operates by converting the
     input token to lower case and checking it against a file of stop words.
     If it is found in the file then an empty array is returned, causing
@@ -164,12 +164,12 @@ CREATE TEXT SEARCH DICTIONARY public.simple_dict (
     Now we can test our dictionary:
 
 </p><pre class="screen">
-SELECT ts_lexize('public.simple_dict','YeS');
+SELECT ts_lexize('public.simple_dict', 'YeS');
  ts_lexize
 -----------
  {yes}
 
-SELECT ts_lexize('public.simple_dict','The');
+SELECT ts_lexize('public.simple_dict', 'The');
  ts_lexize
 -----------
  {}
@@ -183,12 +183,12 @@ SELECT ts_lexize('public.simple_dict','The');
 </p><pre class="screen">
 ALTER TEXT SEARCH DICTIONARY public.simple_dict ( Accept = false );
 
-SELECT ts_lexize('public.simple_dict','YeS');
+SELECT ts_lexize('public.simple_dict', 'YeS');
  ts_lexize
 -----------
 
 
-SELECT ts_lexize('public.simple_dict','The');
+SELECT ts_lexize('public.simple_dict', 'The');
  ts_lexize
 -----------
  {}
@@ -211,7 +211,7 @@ SELECT ts_lexize('public.simple_dict','The');
      new contents, issue an <code class="command">ALTER TEXT SEARCH DICTIONARY</code> command
      on the dictionary.  This can be a <span class="quote">“<span class="quote">dummy</span>”</span> update that doesn't
      actually change any parameter values.
-    </p></div></div><div class="sect2" id="TEXTSEARCH-SYNONYM-DICTIONARY"><div class="titlepage"><div><div><h3 class="title">12.6.3. Synonym Dictionary</h3></div></div></div><p>
+    </p></div></div><div class="sect2" id="TEXTSEARCH-SYNONYM-DICTIONARY"><div class="titlepage"><div><div><h3 class="title">12.6.3. Synonym Dictionary <a href="#TEXTSEARCH-SYNONYM-DICTIONARY" class="id_link">#</a></h3></div></div></div><p>
     This dictionary template is used to create dictionaries that replace a
     word with a synonym. Phrases are not supported (use the thesaurus
     template (<a class="xref" href="textsearch-dictionaries.html#TEXTSEARCH-THESAURUS" title="12.6.4. Thesaurus Dictionary">Section 12.6.4</a>) for that).  A synonym
@@ -223,7 +223,7 @@ SELECT ts_lexize('public.simple_dict','The');
 
 </p><pre class="screen">
 SELECT * FROM ts_debug('english', 'Paris');
-   alias   |   description   | token |  dictionaries  |  dictionary  | lexemes 
+   alias   |   description   | token |  dictionaries  |  dictionary  | lexemes
 -----------+-----------------+-------+----------------+--------------+---------
  asciiword | Word, all ASCII | Paris | {english_stem} | english_stem | {pari}
 
@@ -237,7 +237,7 @@ ALTER TEXT SEARCH CONFIGURATION english
     WITH my_synonym, english_stem;
 
 SELECT * FROM ts_debug('english', 'Paris');
-   alias   |   description   | token |       dictionaries        | dictionary | lexemes 
+   alias   |   description   | token |       dictionaries        | dictionary | lexemes
 -----------+-----------------+-------+---------------------------+------------+---------
  asciiword | Word, all ASCII | Paris | {my_synonym,english_stem} | my_synonym | {paris}
 </pre><p>
@@ -279,7 +279,7 @@ indices index*
     Then we will get these results:
 </p><pre class="screen">
 mydb=# CREATE TEXT SEARCH DICTIONARY syn (template=synonym, synonyms='synonym_sample');
-mydb=# SELECT ts_lexize('syn','indices');
+mydb=# SELECT ts_lexize('syn', 'indices');
  ts_lexize
 -----------
  {index}
@@ -287,31 +287,31 @@ mydb=# SELECT ts_lexize('syn','indices');
 
 mydb=# CREATE TEXT SEARCH CONFIGURATION tst (copy=simple);
 mydb=# ALTER TEXT SEARCH CONFIGURATION tst ALTER MAPPING FOR asciiword WITH syn;
-mydb=# SELECT to_tsvector('tst','indices');
+mydb=# SELECT to_tsvector('tst', 'indices');
  to_tsvector
 -------------
  'index':1
 (1 row)
 
-mydb=# SELECT to_tsquery('tst','indices');
+mydb=# SELECT to_tsquery('tst', 'indices');
  to_tsquery
 ------------
  'index':*
 (1 row)
 
 mydb=# SELECT 'indexes are very useful'::tsvector;
-            tsvector             
+            tsvector
 ---------------------------------
  'are' 'indexes' 'useful' 'very'
 (1 row)
 
-mydb=# SELECT 'indexes are very useful'::tsvector @@ to_tsquery('tst','indices');
+mydb=# SELECT 'indexes are very useful'::tsvector @@ to_tsquery('tst', 'indices');
  ?column?
 ----------
  t
 (1 row)
 </pre><p>
-   </p></div><div class="sect2" id="TEXTSEARCH-THESAURUS"><div class="titlepage"><div><div><h3 class="title">12.6.4. Thesaurus Dictionary</h3></div></div></div><p>
+   </p></div><div class="sect2" id="TEXTSEARCH-THESAURUS"><div class="titlepage"><div><div><h3 class="title">12.6.4. Thesaurus Dictionary <a href="#TEXTSEARCH-THESAURUS" class="id_link">#</a></h3></div></div></div><p>
     A thesaurus dictionary (sometimes abbreviated as <acronym class="acronym">TZ</acronym>) is
     a collection of words that includes information about the relationships
     of words and phrases, i.e., broader terms (<acronym class="acronym">BT</acronym>), narrower
@@ -374,7 +374,7 @@ more sample word(s) : more indexed word(s)
      dictionary's parameters <span class="emphasis"><em>requires</em></span> reindexing.
      For most other dictionary types, small changes such as adding or
      removing stopwords does not force reindexing.
-    </p></div><div class="sect3" id="TEXTSEARCH-THESAURUS-CONFIG"><div class="titlepage"><div><div><h4 class="title">12.6.4.1. Thesaurus Configuration</h4></div></div></div><p>
+    </p></div><div class="sect3" id="TEXTSEARCH-THESAURUS-CONFIG"><div class="titlepage"><div><div><h4 class="title">12.6.4.1. Thesaurus Configuration <a href="#TEXTSEARCH-THESAURUS-CONFIG" class="id_link">#</a></h4></div></div></div><p>
     To define a new thesaurus dictionary, use the <code class="literal">thesaurus</code>
     template.  For example:
 
@@ -410,7 +410,7 @@ ALTER TEXT SEARCH CONFIGURATION russian
     ALTER MAPPING FOR asciiword, asciihword, hword_asciipart
     WITH thesaurus_simple;
 </pre><p>
-   </p></div><div class="sect3" id="TEXTSEARCH-THESAURUS-EXAMPLES"><div class="titlepage"><div><div><h4 class="title">12.6.4.2. Thesaurus Example</h4></div></div></div><p>
+   </p></div><div class="sect3" id="TEXTSEARCH-THESAURUS-EXAMPLES"><div class="titlepage"><div><div><h4 class="title">12.6.4.2. Thesaurus Example <a href="#TEXTSEARCH-THESAURUS-EXAMPLES" class="id_link">#</a></h4></div></div></div><p>
     Consider a simple astronomical thesaurus <code class="literal">thesaurus_astro</code>,
     which contains some astronomical word combinations:
 
@@ -478,7 +478,7 @@ SELECT plainto_tsquery('supernova star');
 -----------------------------
  'sn' &amp; 'supernova' &amp; 'star'
 </pre><p>
-   </p></div></div><div class="sect2" id="TEXTSEARCH-ISPELL-DICTIONARY"><div class="titlepage"><div><div><h3 class="title">12.6.5. <span class="application">Ispell</span> Dictionary</h3></div></div></div><p>
+   </p></div></div><div class="sect2" id="TEXTSEARCH-ISPELL-DICTIONARY"><div class="titlepage"><div><div><h3 class="title">12.6.5. <span class="application">Ispell</span> Dictionary <a href="#TEXTSEARCH-ISPELL-DICTIONARY" class="id_link">#</a></h3></div></div></div><p>
     The <span class="application">Ispell</span> dictionary template supports
     <em class="firstterm">morphological dictionaries</em>, which can normalize many
     different linguistic forms of a word into the same lexeme.  For example,
@@ -491,7 +491,7 @@ SELECT plainto_tsquery('supernova star');
     not include any <span class="application">Ispell</span> configuration files.
     Dictionaries for a large number of languages are available from <a class="ulink" href="https://www.cs.hmc.edu/~geoff/ispell.html" target="_top">Ispell</a>.
     Also, some more modern dictionary file formats are supported — <a class="ulink" href="https://en.wikipedia.org/wiki/MySpell" target="_top">MySpell</a> (OO &lt; 2.0.1)
-    and <a class="ulink" href="https://sourceforge.net/projects/hunspell/" target="_top">Hunspell</a>
+    and <a class="ulink" href="https://hunspell.github.io/" target="_top">Hunspell</a>
     (OO &gt;= 2.0.2).  A large list of dictionaries is available on the <a class="ulink" href="https://wiki.openoffice.org/wiki/Dictionaries" target="_top">OpenOffice
     Wiki</a>.
    </p><p>
@@ -629,11 +629,11 @@ largehearted
      <span class="application">Hunspell</span> has sophisticated support for compound words. At
      present, <span class="productname">PostgreSQL</span> implements only the basic
      compound word operations of Hunspell.
-    </p></div></div><div class="sect2" id="TEXTSEARCH-SNOWBALL-DICTIONARY"><div class="titlepage"><div><div><h3 class="title">12.6.6. <span class="application">Snowball</span> Dictionary</h3></div></div></div><p>
+    </p></div></div><div class="sect2" id="TEXTSEARCH-SNOWBALL-DICTIONARY"><div class="titlepage"><div><div><h3 class="title">12.6.6. <span class="application">Snowball</span> Dictionary <a href="#TEXTSEARCH-SNOWBALL-DICTIONARY" class="id_link">#</a></h3></div></div></div><p>
     The <span class="application">Snowball</span> dictionary template is based on a project
     by Martin Porter, inventor of the popular Porter's stemming algorithm
     for the English language.  Snowball now provides stemming algorithms for
-    many languages (see the <a class="ulink" href="http://snowballstem.org/" target="_top">Snowball
+    many languages (see the <a class="ulink" href="https://snowballstem.org/" target="_top">Snowball
     site</a> for more information).  Each algorithm understands how to
     reduce common variant forms of words to a base, or stem, spelling within
     its language.  A Snowball dictionary requires a <code class="literal">language</code>
@@ -658,4 +658,4 @@ CREATE TEXT SEARCH DICTIONARY english_stem (
     at the end of the dictionary list. It is useless to have it
     before any other dictionary because a token will never pass through it to
     the next dictionary.
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="textsearch-parsers.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="textsearch.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="textsearch-configuration.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">12.5. Parsers </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 12.7. Configuration Example</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="textsearch-parsers.html" title="12.5. Parsers">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="textsearch.html" title="Chapter 12. Full Text Search">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="textsearch-configuration.html" title="12.7. Configuration Example">Next</a></td></tr><tr><td width="40%" align="left" valign="top">12.5. Parsers </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 12.7. Configuration Example</td></tr></table></div></body></html>

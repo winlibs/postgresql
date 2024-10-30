@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DROP ROLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DROP ROLE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DROP ROLE" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -39,14 +39,16 @@ DROP ROLE [ IF EXISTS ] \fIname\fR [, \&.\&.\&.]
 \fBDROP ROLE\fR
 removes the specified role(s)\&. To drop a superuser role, you must be a superuser yourself; to drop non\-superuser roles, you must have
 CREATEROLE
-privilege\&.
+privilege and have been granted
+ADMIN OPTION
+on the role\&.
 .PP
 A role cannot be removed if it is still referenced in any database of the cluster; an error will be raised if so\&. Before dropping the role, you must drop all the objects it owns (or reassign their ownership) and revoke any privileges the role has been granted on other objects\&. The
-REASSIGN OWNED (\fBREASSIGN_OWNED\fR(7))
+\fBREASSIGN OWNED\fR
 and
-DROP OWNED (\fBDROP_OWNED\fR(7))
+\fBDROP OWNED\fR
 commands can be useful for this purpose; see
-Section\ \&21.4
+Section\ \&22.4
 for more discussion\&.
 .PP
 However, it is not necessary to remove role memberships involving the role;

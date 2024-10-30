@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>18.6. Upgrading a PostgreSQL Cluster</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="server-shutdown.html" title="18.5. Shutting Down the Server" /><link rel="next" href="preventing-server-spoofing.html" title="18.7. Preventing Server Spoofing" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">18.6. Upgrading a <span xmlns="http://www.w3.org/1999/xhtml" class="productname">PostgreSQL</span> Cluster</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="server-shutdown.html" title="18.5. Shutting Down the Server">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="runtime.html" title="Chapter 18. Server Setup and Operation">Up</a></td><th width="60%" align="center">Chapter 18. Server Setup and Operation</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="preventing-server-spoofing.html" title="18.7. Preventing Server Spoofing">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="UPGRADING"><div class="titlepage"><div><div><h2 class="title" style="clear: both">18.6. Upgrading a <span class="productname">PostgreSQL</span> Cluster</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="upgrading.html#UPGRADING-VIA-PGDUMPALL">18.6.1. Upgrading Data via <span class="application">pg_dumpall</span></a></span></dt><dt><span class="sect2"><a href="upgrading.html#UPGRADING-VIA-PG-UPGRADE">18.6.2. Upgrading Data via <span class="application">pg_upgrade</span></a></span></dt><dt><span class="sect2"><a href="upgrading.html#UPGRADING-VIA-REPLICATION">18.6.3. Upgrading Data via Replication</a></span></dt></dl></div><a id="id-1.6.5.8.2" class="indexterm"></a><a id="id-1.6.5.8.3" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>19.6. Upgrading a PostgreSQL Cluster</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="server-shutdown.html" title="19.5. Shutting Down the Server" /><link rel="next" href="preventing-server-spoofing.html" title="19.7. Preventing Server Spoofing" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">19.6. Upgrading a <span class="productname">PostgreSQL</span> Cluster</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="server-shutdown.html" title="19.5. Shutting Down the Server">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="runtime.html" title="Chapter 19. Server Setup and Operation">Up</a></td><th width="60%" align="center">Chapter 19. Server Setup and Operation</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="preventing-server-spoofing.html" title="19.7. Preventing Server Spoofing">Next</a></td></tr></table><hr /></div><div class="sect1" id="UPGRADING"><div class="titlepage"><div><div><h2 class="title" style="clear: both">19.6. Upgrading a <span class="productname">PostgreSQL</span> Cluster <a href="#UPGRADING" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="upgrading.html#UPGRADING-VIA-PGDUMPALL">19.6.1. Upgrading Data via <span class="application">pg_dumpall</span></a></span></dt><dt><span class="sect2"><a href="upgrading.html#UPGRADING-VIA-PG-UPGRADE">19.6.2. Upgrading Data via <span class="application">pg_upgrade</span></a></span></dt><dt><span class="sect2"><a href="upgrading.html#UPGRADING-VIA-REPLICATION">19.6.3. Upgrading Data via Replication</a></span></dt></dl></div><a id="id-1.6.6.9.2" class="indexterm"></a><a id="id-1.6.6.9.3" class="indexterm"></a><p>
    This section discusses how to upgrade your database data from one
    <span class="productname">PostgreSQL</span> release to a newer one.
   </p><p>
@@ -25,16 +25,20 @@
    For <span class="emphasis"><em>major</em></span> releases of <span class="productname">PostgreSQL</span>, the
    internal data storage format is subject to change, thus complicating
    upgrades.  The traditional method for moving data to a new major version
-   is to dump and reload the database, though this can be slow.  A
+   is to dump and restore the database, though this can be slow.  A
    faster method is <a class="xref" href="pgupgrade.html" title="pg_upgrade"><span class="refentrytitle"><span class="application">pg_upgrade</span></span></a>.  Replication methods are
    also available, as discussed below.
+   (If you are using a pre-packaged version
+   of <span class="productname">PostgreSQL</span>, it may provide scripts to
+   assist with major version upgrades.  Consult the package-level
+   documentation for details.)
   </p><p>
    New major versions also typically introduce some user-visible
    incompatibilities, so application programming changes might be required.
    All user-visible changes are listed in the release notes (<a class="xref" href="release.html" title="Appendix E. Release Notes">Appendix E</a>);  pay particular attention to the section
-   labeled "Migration".  If you are upgrading across several major
-   versions, be sure to read the release notes for each intervening
-   version.
+   labeled "Migration".  Though you can upgrade from one major version
+   to another without upgrading to intervening versions, you should read
+   the major release notes of all intervening versions.
   </p><p>
    Cautious users will want to test their client applications on the new
    version before switching over fully; therefore, it's often a good idea to
@@ -56,9 +60,9 @@
       This involves changes in the backend function API, which is written
       in the C programming language.  Such changes affect code that
       references backend functions deep inside the server.
-     </p></dd></dl></div><div class="sect2" id="UPGRADING-VIA-PGDUMPALL"><div class="titlepage"><div><div><h3 class="title">18.6.1. Upgrading Data via <span class="application">pg_dumpall</span></h3></div></div></div><p>
+     </p></dd></dl></div><div class="sect2" id="UPGRADING-VIA-PGDUMPALL"><div class="titlepage"><div><div><h3 class="title">19.6.1. Upgrading Data via <span class="application">pg_dumpall</span> <a href="#UPGRADING-VIA-PGDUMPALL" class="id_link">#</a></h3></div></div></div><p>
     One upgrade method is to dump data from one major version of
-    <span class="productname">PostgreSQL</span> and reload it in another —  to do
+    <span class="productname">PostgreSQL</span> and restore it in another —  to do
     this, you must use a <span class="emphasis"><em>logical</em></span> backup tool like
     <span class="application">pg_dumpall</span>; file system
     level backup methods will not work. (There are checks in place that prevent
@@ -71,7 +75,7 @@
     version of
     <span class="productname">PostgreSQL</span>, to take advantage of enhancements
     that might have been made in these programs.  Current releases of the
-    dump programs can read data from any server version back to 7.0.
+    dump programs can read data from any server version back to 9.2.
    </p><p>
     These instructions assume that your existing installation is under the
     <code class="filename">/usr/local/pgsql</code> directory, and that the data area is in
@@ -83,10 +87,10 @@
       data would of course not be included. If necessary, edit the
       permissions in the file <code class="filename">/usr/local/pgsql/data/pg_hba.conf</code>
       (or equivalent) to disallow access from everyone except you.
-      See <a class="xref" href="client-authentication.html" title="Chapter 20. Client Authentication">Chapter 20</a> for additional information on
+      See <a class="xref" href="client-authentication.html" title="Chapter 21. Client Authentication">Chapter 21</a> for additional information on
       access control.
      </p><p>
-      <a id="id-1.6.5.8.11.5.1.2.1" class="indexterm"></a>
+      <a id="id-1.6.6.9.11.5.1.2.1" class="indexterm"></a>
 
       To back up your database installation, type:
 </p><pre class="screen">
@@ -94,9 +98,9 @@
 </pre><p>
      </p><p>
       To make the backup, you can use the <span class="application">pg_dumpall</span>
-      command from the version you are currently running;  see <a class="xref" href="backup-dump.html#BACKUP-DUMP-ALL" title="25.1.2. Using pg_dumpall">Section 25.1.2</a> for more details.  For best
+      command from the version you are currently running;  see <a class="xref" href="backup-dump.html#BACKUP-DUMP-ALL" title="26.1.2. Using pg_dumpall">Section 26.1.2</a> for more details.  For best
       results, however, try to use the <span class="application">pg_dumpall</span>
-      command from <span class="productname">PostgreSQL</span> 11.4,
+      command from <span class="productname">PostgreSQL</span> 16.4,
       since this version contains bug fixes and improvements over older
       versions.  While this advice might seem idiosyncratic since you
       haven't installed the new version yet, it is advisable to follow
@@ -116,7 +120,7 @@
 </p><pre class="screen">
 <strong class="userinput"><code>/etc/rc.d/init.d/postgresql stop</code></strong>
 </pre><p>
-      See <a class="xref" href="runtime.html" title="Chapter 18. Server Setup and Operation">Chapter 18</a> for details about starting and
+      See <a class="xref" href="runtime.html" title="Chapter 19. Server Setup and Operation">Chapter 19</a> for details about starting and
       stopping the server.
      </p></li><li class="step"><p>
       If restoring from backup, rename or delete the old installation
@@ -132,7 +136,7 @@
      remain unchanged.)
      </p></li><li class="step"><p>
       Install the new version of <span class="productname">PostgreSQL</span> as
-      outlined in <a class="xref" href="install-procedure.html" title="16.4. Installation Procedure">Section 16.4</a>.
+      outlined in <a class="xref" href="installation.html" title="Chapter 17. Installation from Source Code">Chapter 17</a>.
      </p></li><li class="step"><p>
       Create a new database cluster if needed.  Remember that you must
       execute these commands while logged in to the special database user
@@ -164,22 +168,22 @@
 pg_dumpall -p 5432 | psql -d postgres -p 5433
 </pre><p>
     to transfer your data.
-   </p></div><div class="sect2" id="UPGRADING-VIA-PG-UPGRADE"><div class="titlepage"><div><div><h3 class="title">18.6.2. Upgrading Data via <span class="application">pg_upgrade</span></h3></div></div></div><p>
+   </p></div><div class="sect2" id="UPGRADING-VIA-PG-UPGRADE"><div class="titlepage"><div><div><h3 class="title">19.6.2. Upgrading Data via <span class="application">pg_upgrade</span> <a href="#UPGRADING-VIA-PG-UPGRADE" class="id_link">#</a></h3></div></div></div><p>
     The <a class="xref" href="pgupgrade.html" title="pg_upgrade"><span class="refentrytitle"><span class="application">pg_upgrade</span></span></a> module allows an installation to
     be migrated in-place from one major <span class="productname">PostgreSQL</span>
     version to another.  Upgrades can be performed in minutes,
     particularly with <code class="option">--link</code> mode.  It requires steps similar to
-    <span class="application">pg_dumpall</span> above, e.g.  starting/stopping the server,
+    <span class="application">pg_dumpall</span> above, e.g.,  starting/stopping the server,
     running <span class="application">initdb</span>.  The <span class="application">pg_upgrade</span> <a class="link" href="pgupgrade.html" title="pg_upgrade">documentation</a> outlines the necessary steps.
-   </p></div><div class="sect2" id="UPGRADING-VIA-REPLICATION"><div class="titlepage"><div><div><h3 class="title">18.6.3. Upgrading Data via Replication</h3></div></div></div><p>
+   </p></div><div class="sect2" id="UPGRADING-VIA-REPLICATION"><div class="titlepage"><div><div><h3 class="title">19.6.3. Upgrading Data via Replication <a href="#UPGRADING-VIA-REPLICATION" class="id_link">#</a></h3></div></div></div><p>
     It is also possible to use logical replication methods to create a standby
     server with the updated version of <span class="productname">PostgreSQL</span>.
     This is possible because logical replication supports
     replication between different major versions of
     <span class="productname">PostgreSQL</span>.  The standby can be on the same computer or
-    a different computer.  Once it has synced up with the master server
+    a different computer.  Once it has synced up with the primary server
     (running the older version of <span class="productname">PostgreSQL</span>), you can
-    switch masters and make the standby the master and shut down the older
+    switch primaries and make the standby the primary and shut down the older
     database instance.  Such a switch-over results in only several seconds
     of downtime for an upgrade.
    </p><p>
@@ -188,4 +192,4 @@ pg_dumpall -p 5432 | psql -d postgres -p 5433
     systems such as <span class="productname">pglogical</span>,
     <span class="productname">Slony</span>, <span class="productname">Londiste</span>, and
     <span class="productname">Bucardo</span>.
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="server-shutdown.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="runtime.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="preventing-server-spoofing.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">18.5. Shutting Down the Server </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 18.7. Preventing Server Spoofing</td></tr></table></div></body></html>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="server-shutdown.html" title="19.5. Shutting Down the Server">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="runtime.html" title="Chapter 19. Server Setup and Operation">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="preventing-server-spoofing.html" title="19.7. Preventing Server Spoofing">Next</a></td></tr><tr><td width="40%" align="left" valign="top">19.5. Shutting Down the Server </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 19.7. Preventing Server Spoofing</td></tr></table></div></body></html>

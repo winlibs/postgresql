@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>SET TRANSACTION</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-set-session-authorization.html" title="SET SESSION AUTHORIZATION" /><link rel="next" href="sql-show.html" title="SHOW" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">SET TRANSACTION</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-set-session-authorization.html" title="SET SESSION AUTHORIZATION">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-show.html" title="SHOW">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-SET-TRANSACTION"><div class="titlepage"></div><a id="id-1.9.3.177.1" class="indexterm"></a><a id="id-1.9.3.177.2" class="indexterm"></a><a id="id-1.9.3.177.3" class="indexterm"></a><a id="id-1.9.3.177.4" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">SET TRANSACTION</span></h2><p>SET TRANSACTION — set the characteristics of the current transaction</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>SET TRANSACTION</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-set-session-authorization.html" title="SET SESSION AUTHORIZATION" /><link rel="next" href="sql-show.html" title="SHOW" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">SET TRANSACTION</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-set-session-authorization.html" title="SET SESSION AUTHORIZATION">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-show.html" title="SHOW">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-SET-TRANSACTION"><div class="titlepage"></div><a id="id-1.9.3.178.1" class="indexterm"></a><a id="id-1.9.3.178.2" class="indexterm"></a><a id="id-1.9.3.178.3" class="indexterm"></a><a id="id-1.9.3.178.4" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">SET TRANSACTION</span></h2><p>SET TRANSACTION — set the characteristics of the current transaction</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 SET TRANSACTION <em class="replaceable"><code>transaction_mode</code></em> [, ...]
 SET TRANSACTION SNAPSHOT <em class="replaceable"><code>snapshot_id</code></em>
 SET SESSION CHARACTERISTICS AS TRANSACTION <em class="replaceable"><code>transaction_mode</code></em> [, ...]
@@ -9,7 +9,7 @@ SET SESSION CHARACTERISTICS AS TRANSACTION <em class="replaceable"><code>transac
     ISOLATION LEVEL { SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED }
     READ WRITE | READ ONLY
     [ NOT ] DEFERRABLE
-</pre></div><div class="refsect1" id="id-1.9.3.177.8"><h2>Description</h2><p>
+</pre></div><div class="refsect1" id="id-1.9.3.178.8"><h2>Description</h2><p>
    The <code class="command">SET TRANSACTION</code> command sets the
    characteristics of the current transaction. It has no effect on any
    subsequent transactions.  <code class="command">SET SESSION
@@ -52,7 +52,8 @@ SET SESSION CHARACTERISTICS AS TRANSACTION <em class="replaceable"><code>transac
    The transaction isolation level cannot be changed after the first query or
    data-modification statement (<code class="command">SELECT</code>,
    <code class="command">INSERT</code>, <code class="command">DELETE</code>,
-   <code class="command">UPDATE</code>, <code class="command">FETCH</code>, or
+   <code class="command">UPDATE</code>, <code class="command">MERGE</code>,
+   <code class="command">FETCH</code>, or
    <code class="command">COPY</code>) of a transaction has been executed.  See
    <a class="xref" href="mvcc.html" title="Chapter 13. Concurrency Control">Chapter 13</a> for more information about transaction
    isolation and concurrency control.
@@ -60,8 +61,9 @@ SET SESSION CHARACTERISTICS AS TRANSACTION <em class="replaceable"><code>transac
    The transaction access mode determines whether the transaction is
    read/write or read-only.  Read/write is the default.  When a
    transaction is read-only, the following SQL commands are
-   disallowed: <code class="literal">INSERT</code>, <code class="literal">UPDATE</code>,
-   <code class="literal">DELETE</code>, and <code class="literal">COPY FROM</code> if the
+   disallowed: <code class="command">INSERT</code>, <code class="command">UPDATE</code>,
+   <code class="command">DELETE</code>, <code class="command">MERGE</code>, and
+   <code class="command">COPY FROM</code> if the
    table they would write to is not a temporary table; all
    <code class="literal">CREATE</code>, <code class="literal">ALTER</code>, and
    <code class="literal">DROP</code> commands; <code class="literal">COMMENT</code>,
@@ -84,16 +86,17 @@ SET SESSION CHARACTERISTICS AS TRANSACTION <em class="replaceable"><code>transac
    The <code class="literal">SET TRANSACTION SNAPSHOT</code> command allows a new
    transaction to run with the same <em class="firstterm">snapshot</em> as an existing
    transaction.  The pre-existing transaction must have exported its snapshot
-   with the <code class="literal">pg_export_snapshot</code> function (see <a class="xref" href="functions-admin.html#FUNCTIONS-SNAPSHOT-SYNCHRONIZATION" title="9.26.5. Snapshot Synchronization Functions">Section 9.26.5</a>).  That function returns a
+   with the <code class="literal">pg_export_snapshot</code> function (see <a class="xref" href="functions-admin.html#FUNCTIONS-SNAPSHOT-SYNCHRONIZATION" title="9.27.5. Snapshot Synchronization Functions">Section 9.27.5</a>).  That function returns a
    snapshot identifier, which must be given to <code class="literal">SET TRANSACTION
    SNAPSHOT</code> to specify which snapshot is to be imported.  The
    identifier must be written as a string literal in this command, for example
-   <code class="literal">'000003A1-1'</code>.
+   <code class="literal">'00000003-0000001B-1'</code>.
    <code class="literal">SET TRANSACTION SNAPSHOT</code> can only be executed at the
    start of a transaction, before the first query or
    data-modification statement (<code class="command">SELECT</code>,
    <code class="command">INSERT</code>, <code class="command">DELETE</code>,
-   <code class="command">UPDATE</code>, <code class="command">FETCH</code>, or
+   <code class="command">UPDATE</code>, <code class="command">MERGE</code>,
+   <code class="command">FETCH</code>, or
    <code class="command">COPY</code>) of the transaction.  Furthermore, the transaction
    must already be set to <code class="literal">SERIALIZABLE</code> or
    <code class="literal">REPEATABLE READ</code> isolation level (otherwise, the snapshot
@@ -103,7 +106,7 @@ SET SESSION CHARACTERISTICS AS TRANSACTION <em class="replaceable"><code>transac
    exported the snapshot must also use that isolation level.  Also, a
    non-read-only serializable transaction cannot import a snapshot from a
    read-only transaction.
-  </p></div><div class="refsect1" id="id-1.9.3.177.9"><h2>Notes</h2><p>
+  </p></div><div class="refsect1" id="id-1.9.3.178.9"><h2>Notes</h2><p>
    If <code class="command">SET TRANSACTION</code> is executed without a prior
    <code class="command">START TRANSACTION</code> or <code class="command">BEGIN</code>,
    it emits a warning and otherwise has no effect.
@@ -114,16 +117,25 @@ SET SESSION CHARACTERISTICS AS TRANSACTION <em class="replaceable"><code>transac
    But that option is not available for <code class="command">SET TRANSACTION
    SNAPSHOT</code>.
   </p><p>
-   The session default transaction modes can also be set by setting the
+   The session default transaction modes can also be set or examined via the
    configuration parameters <a class="xref" href="runtime-config-client.html#GUC-DEFAULT-TRANSACTION-ISOLATION">default_transaction_isolation</a>,
    <a class="xref" href="runtime-config-client.html#GUC-DEFAULT-TRANSACTION-READ-ONLY">default_transaction_read_only</a>, and
    <a class="xref" href="runtime-config-client.html#GUC-DEFAULT-TRANSACTION-DEFERRABLE">default_transaction_deferrable</a>.
    (In fact <code class="command">SET SESSION CHARACTERISTICS</code> is just a
    verbose equivalent for setting these variables with <code class="command">SET</code>.)
    This means the defaults can be set in the configuration file, via
-   <code class="command">ALTER DATABASE</code>, etc.  Consult <a class="xref" href="runtime-config.html" title="Chapter 19. Server Configuration">Chapter 19</a>
+   <code class="command">ALTER DATABASE</code>, etc.  Consult <a class="xref" href="runtime-config.html" title="Chapter 20. Server Configuration">Chapter 20</a>
    for more information.
-  </p></div><div class="refsect1" id="id-1.9.3.177.10"><h2>Examples</h2><p>
+  </p><p>
+   The current transaction's modes can similarly be set or examined via the
+   configuration parameters <a class="xref" href="runtime-config-client.html#GUC-TRANSACTION-ISOLATION">transaction_isolation</a>,
+   <a class="xref" href="runtime-config-client.html#GUC-TRANSACTION-READ-ONLY">transaction_read_only</a>, and
+   <a class="xref" href="runtime-config-client.html#GUC-TRANSACTION-DEFERRABLE">transaction_deferrable</a>.  Setting one of these
+   parameters acts the same as the corresponding <code class="command">SET
+   TRANSACTION</code> option, with the same restrictions on when it can
+   be done.  However, these parameters cannot be set in the configuration
+   file, or from any source other than live SQL.
+  </p></div><div class="refsect1" id="id-1.9.3.178.10"><h2>Examples</h2><p>
    To begin a new transaction with the same snapshot as an already
    existing transaction, first export the snapshot from the existing
    transaction. That will return the snapshot identifier, for example:
@@ -164,4 +176,4 @@ SET TRANSACTION SNAPSHOT '00000003-0000001B-1';
    The SQL standard requires commas between successive <em class="replaceable"><code>transaction_modes</code></em>, but for historical
    reasons <span class="productname">PostgreSQL</span> allows the commas to be
    omitted.
-  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-set-session-authorization.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-show.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">SET SESSION AUTHORIZATION </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> SHOW</td></tr></table></div></body></html>
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-set-session-authorization.html" title="SET SESSION AUTHORIZATION">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-show.html" title="SHOW">Next</a></td></tr><tr><td width="40%" align="left" valign="top">SET SESSION AUTHORIZATION </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> SHOW</td></tr></table></div></body></html>

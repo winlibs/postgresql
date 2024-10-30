@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dropdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "DROPDB" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "DROPDB" "1" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -43,7 +43,7 @@ dropdb
 is a wrapper around the
 SQL
 command
-DROP DATABASE (\fBDROP_DATABASE\fR(7))\&. There is no effective difference between dropping databases via this utility and via other methods for accessing the server\&.
+\fBDROP DATABASE\fR\&. There is no effective difference between dropping databases via this utility and via other methods for accessing the server\&.
 .SH "OPTIONS"
 .PP
 dropdb
@@ -61,6 +61,15 @@ Specifies the name of the database to be removed\&.
 Echo the commands that
 dropdb
 generates and sends to the server\&.
+.RE
+.PP
+\fB\-f\fR
+.br
+\fB\-\-force\fR
+.RS 4
+Attempt to terminate all existing connections to the target database before dropping it\&. See
+DROP DATABASE (\fBDROP_DATABASE\fR(7))
+for more information on this option\&.
 .RE
 .PP
 \fB\-i\fR
@@ -149,7 +158,8 @@ Specifies the name of the database to connect to in order to drop the target dat
 postgres
 database will be used; if that does not exist (or is the database being dropped),
 template1
-will be used\&.
+will be used\&. This can be a
+connection string\&. If so, connection string parameters will override any conflicting command line options\&.
 .RE
 .SH "ENVIRONMENT"
 .PP
@@ -162,12 +172,21 @@ will be used\&.
 Default connection parameters
 .RE
 .PP
+\fBPG_COLOR\fR
+.RS 4
+Specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.RE
+.PP
 This utility, like most other
 PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section\ \&34.14)\&.
+Section\ \&34.15)\&.
 .SH "DIAGNOSTICS"
 .PP
 In case of difficulty, see

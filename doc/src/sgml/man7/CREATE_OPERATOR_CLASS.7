@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE OPERATOR CLASS
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "CREATE OPERATOR CLASS" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE OPERATOR CLASS" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -60,7 +60,7 @@ option in
 \fBCREATE OPERATOR CLASS\fR\&. Without this option, the new class is placed into a family named the same as the new class (creating that family if it doesn\*(Aqt already exist)\&.
 .PP
 Refer to
-Section\ \&38.15
+Section\ \&38.16
 for further information\&.
 .SH "PARAMETERS"
 .PP
@@ -105,11 +105,11 @@ In an
 OPERATOR
 clause, the operand data type(s) of the operator, or
 NONE
-to signify a left\-unary or right\-unary operator\&. The operand data types can be omitted in the normal case where they are the same as the operator class\*(Aqs data type\&.
+to signify a prefix operator\&. The operand data types can be omitted in the normal case where they are the same as the operator class\*(Aqs data type\&.
 .sp
 In a
 FUNCTION
-clause, the operand data type(s) the function is intended to support, if different from the input data type(s) of the function (for B\-tree comparison functions and hash functions) or the class\*(Aqs data type (for B\-tree sort support functions and all functions in GiST, SP\-GiST, GIN and BRIN operator classes)\&. These defaults are correct, and so
+clause, the operand data type(s) the function is intended to support, if different from the input data type(s) of the function (for B\-tree comparison functions and hash functions) or the class\*(Aqs data type (for B\-tree sort support functions, B\-tree equal image functions, and all functions in GiST, SP\-GiST, GIN and BRIN operator classes)\&. These defaults are correct, and so
 \fIop_type\fR
 need not be specified in
 FUNCTION
@@ -148,7 +148,7 @@ The parameter data type(s) of the function\&.
 .PP
 \fIstorage_type\fR
 .RS 4
-The data type actually stored in the index\&. Normally this is the same as the column data type, but some index methods (currently GiST, GIN and BRIN) allow it to be different\&. The
+The data type actually stored in the index\&. Normally this is the same as the column data type, but some index methods (currently GiST, GIN, SP\-GiST and BRIN) allow it to be different\&. The
 STORAGE
 clause must be omitted unless the index method allows a different type to be used\&. If the column
 \fIdata_type\fR
@@ -169,7 +169,7 @@ clauses can appear in any order\&.
 .PP
 Because the index machinery does not check access permissions on functions before using them, including a function or operator in an operator class is tantamount to granting public execute permission on it\&. This is usually not an issue for the sorts of functions that are useful in an operator class\&.
 .PP
-The operators should not be defined by SQL functions\&. A SQL function is likely to be inlined into the calling query, which will prevent the optimizer from recognizing that the query matches an index\&.
+The operators should not be defined by SQL functions\&. An SQL function is likely to be inlined into the calling query, which will prevent the optimizer from recognizing that the query matches an index\&.
 .PP
 Before
 PostgreSQL

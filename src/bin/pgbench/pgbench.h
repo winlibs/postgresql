@@ -2,7 +2,7 @@
  *
  * pgbench.h
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2023, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *-------------------------------------------------------------------------
@@ -99,7 +99,8 @@ typedef enum PgBenchFunction
 	PGBENCH_IS,
 	PGBENCH_CASE,
 	PGBENCH_HASH_FNV1A,
-	PGBENCH_HASH_MURMUR2
+	PGBENCH_HASH_MURMUR2,
+	PGBENCH_PERMUTE
 } PgBenchFunction;
 
 typedef struct PgBenchExpr PgBenchExpr;
@@ -140,26 +141,27 @@ struct PgBenchExprList
 extern PgBenchExpr *expr_parse_result;
 
 extern int	expr_yyparse(yyscan_t yyscanner);
-extern int	expr_yylex(union YYSTYPE *lvalp, yyscan_t yyscanner);
-extern void expr_yyerror(yyscan_t yyscanner, const char *str) pg_attribute_noreturn();
-extern void expr_yyerror_more(yyscan_t yyscanner, const char *str,
-				  const char *more) pg_attribute_noreturn();
+extern int	expr_yylex(union YYSTYPE *yylval_param, yyscan_t yyscanner);
+extern void expr_yyerror(yyscan_t yyscanner, const char *message) pg_attribute_noreturn();
+extern void expr_yyerror_more(yyscan_t yyscanner, const char *message,
+							  const char *more) pg_attribute_noreturn();
 extern bool expr_lex_one_word(PsqlScanState state, PQExpBuffer word_buf,
-				  int *offset);
+							  int *offset);
 extern yyscan_t expr_scanner_init(PsqlScanState state,
-				  const char *source, int lineno, int start_offset,
-				  const char *command);
+								  const char *source, int lineno, int start_offset,
+								  const char *command);
 extern void expr_scanner_finish(yyscan_t yyscanner);
 extern int	expr_scanner_offset(PsqlScanState state);
 extern char *expr_scanner_get_substring(PsqlScanState state,
-						   int start_offset, int end_offset,
-						   bool chomp);
+										int start_offset, int end_offset,
+										bool chomp);
 extern int	expr_scanner_get_lineno(PsqlScanState state, int offset);
 
 extern void syntax_error(const char *source, int lineno, const char *line,
-			 const char *cmd, const char *msg,
-			 const char *more, int col) pg_attribute_noreturn();
+						 const char *command, const char *msg,
+						 const char *more, int column) pg_attribute_noreturn();
 
-extern int64 strtoint64(const char *str);
+extern bool strtoint64(const char *str, bool errorOK, int64 *result);
+extern bool strtodouble(const char *str, bool errorOK, double *dv);
 
 #endif							/* PGBENCH_H */

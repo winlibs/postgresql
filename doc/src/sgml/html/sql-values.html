@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>VALUES</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-vacuum.html" title="VACUUM" /><link rel="next" href="reference-client.html" title="PostgreSQL Client Applications" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">VALUES</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-vacuum.html" title="VACUUM">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="reference-client.html" title="PostgreSQL Client Applications">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-VALUES"><div class="titlepage"></div><a id="id-1.9.3.184.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">VALUES</span></h2><p>VALUES — compute a set of rows</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>VALUES</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-vacuum.html" title="VACUUM" /><link rel="next" href="reference-client.html" title="PostgreSQL Client Applications" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">VALUES</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-vacuum.html" title="VACUUM">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="reference-client.html" title="PostgreSQL Client Applications">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-VALUES"><div class="titlepage"></div><a id="id-1.9.3.185.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">VALUES</span></h2><p>VALUES — compute a set of rows</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 VALUES ( <em class="replaceable"><code>expression</code></em> [, ...] ) [, ...]
     [ ORDER BY <em class="replaceable"><code>sort_expression</code></em> [ ASC | DESC | USING <em class="replaceable"><code>operator</code></em> ] [, ...] ]
     [ LIMIT { <em class="replaceable"><code>count</code></em> | ALL } ]
     [ OFFSET <em class="replaceable"><code>start</code></em> [ ROW | ROWS ] ]
     [ FETCH { FIRST | NEXT } [ <em class="replaceable"><code>count</code></em> ] { ROW | ROWS } ONLY ]
-</pre></div><div class="refsect1" id="id-1.9.3.184.5"><h2>Description</h2><p>
+</pre></div><div class="refsect1" id="id-1.9.3.185.5"><h2>Description</h2><p>
    <code class="command">VALUES</code> computes a row value or set of row values
    specified by value expressions.  It is most commonly used to generate
    a <span class="quote">“<span class="quote">constant table</span>”</span> within a larger command, but it can be
@@ -24,7 +24,7 @@ VALUES ( <em class="replaceable"><code>expression</code></em> [, ...] ) [, ...]
    equivalently <code class="literal">FETCH FIRST</code>),
    and <code class="literal">OFFSET</code> clauses with a
    <code class="command">VALUES</code> command.
-  </p></div><div class="refsect1" id="id-1.9.3.184.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>expression</code></em></span></dt><dd><p>
+  </p></div><div class="refsect1" id="id-1.9.3.185.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>expression</code></em></span></dt><dd><p>
       A constant or expression to compute and insert at the indicated place
       in the resulting table (set of rows).  In a <code class="command">VALUES</code> list
       appearing at the top level of an <code class="command">INSERT</code>, an
@@ -37,25 +37,28 @@ VALUES ( <em class="replaceable"><code>expression</code></em> [, ...] ) [, ...]
       rows.  This expression can refer to the columns of the
       <code class="command">VALUES</code> result as <code class="literal">column1</code>, <code class="literal">column2</code>,
       etc.  For more details see
-      <a class="xref" href="sql-select.html#SQL-ORDERBY" title="ORDER BY Clause"><code class="literal">ORDER BY</code> Clause</a>.
+      <a class="xref" href="sql-select.html#SQL-ORDERBY" title="ORDER BY Clause">ORDER BY Clause</a>
+      in the <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a> documentation.
      </p></dd><dt><span class="term"><em class="replaceable"><code>operator</code></em></span></dt><dd><p>
       A sorting operator.  For details see
-      <a class="xref" href="sql-select.html#SQL-ORDERBY" title="ORDER BY Clause"><code class="literal">ORDER BY</code> Clause</a>.
+      <a class="xref" href="sql-select.html#SQL-ORDERBY" title="ORDER BY Clause">ORDER BY Clause</a>
+      in the <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a> documentation.
      </p></dd><dt><span class="term"><em class="replaceable"><code>count</code></em></span></dt><dd><p>
       The maximum number of rows to return.  For details see
-      <a class="xref" href="sql-select.html#SQL-LIMIT" title="LIMIT Clause"><code class="literal">LIMIT</code> Clause</a>.
+      <a class="xref" href="sql-select.html#SQL-LIMIT" title="LIMIT Clause">LIMIT Clause</a>
+      in the <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a> documentation.
      </p></dd><dt><span class="term"><em class="replaceable"><code>start</code></em></span></dt><dd><p>
       The number of rows to skip before starting to return rows.
-      For details see
-      <a class="xref" href="sql-select.html#SQL-LIMIT" title="LIMIT Clause"><code class="literal">LIMIT</code> Clause</a>.
-     </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.184.7"><h2>Notes</h2><p>
+      For details see <a class="xref" href="sql-select.html#SQL-LIMIT" title="LIMIT Clause">LIMIT Clause</a>
+      in the <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a> documentation.
+     </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.185.7"><h2>Notes</h2><p>
    <code class="command">VALUES</code> lists with very large numbers of rows should be avoided,
    as you might encounter out-of-memory failures or poor performance.
    <code class="command">VALUES</code> appearing within <code class="command">INSERT</code> is a special case
    (because the desired column types are known from the <code class="command">INSERT</code>'s
    target table, and need not be inferred by scanning the <code class="command">VALUES</code>
    list), so it can handle larger lists than are practical in other contexts.
-  </p></div><div class="refsect1" id="id-1.9.3.184.8"><h2>Examples</h2><p>
+  </p></div><div class="refsect1" id="id-1.9.3.185.8"><h2>Examples</h2><p>
    A bare <code class="command">VALUES</code> command:
 
 </p><pre class="programlisting">
@@ -110,7 +113,7 @@ UPDATE employees SET salary = salary * v.increase
    <code class="command">SELECT</code>.  It is not required that the <code class="literal">AS</code> clause
    specify names for all the columns, but it's good practice to do so.
    (The default column names for <code class="command">VALUES</code> are <code class="literal">column1</code>,
-   <code class="literal">column2</code>, etc in <span class="productname">PostgreSQL</span>, but
+   <code class="literal">column2</code>, etc. in <span class="productname">PostgreSQL</span>, but
    these names might be different in other database systems.)
   </p><p>
    When <code class="command">VALUES</code> is used in <code class="command">INSERT</code>, the values are all
@@ -124,12 +127,12 @@ SELECT * FROM machines
 WHERE ip_address IN (VALUES('192.168.0.1'::inet), ('192.168.0.10'), ('192.168.1.43'));
 </pre><div class="tip"><h3 class="title">Tip</h3><p>
     For simple <code class="literal">IN</code> tests, it's better to rely on the
-    <a class="link" href="functions-comparisons.html#FUNCTIONS-COMPARISONS-IN-SCALAR" title="9.23.1. IN">list-of-scalars</a>
+    <a class="link" href="functions-comparisons.html#FUNCTIONS-COMPARISONS-IN-SCALAR" title="9.24.1. IN">list-of-scalars</a>
     form of <code class="literal">IN</code> than to write a <code class="command">VALUES</code>
     query as shown above.  The list of scalars method requires less writing
     and is often more efficient.
-   </p></div></div><div class="refsect1" id="id-1.9.3.184.9"><h2>Compatibility</h2><p><code class="command">VALUES</code> conforms to the SQL standard.
+   </p></div></div><div class="refsect1" id="id-1.9.3.185.9"><h2>Compatibility</h2><p><code class="command">VALUES</code> conforms to the SQL standard.
    <code class="literal">LIMIT</code> and <code class="literal">OFFSET</code> are
    <span class="productname">PostgreSQL</span> extensions; see also
    under <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a>.
-  </p></div><div class="refsect1" id="id-1.9.3.184.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-insert.html" title="INSERT"><span class="refentrytitle">INSERT</span></a>, <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-vacuum.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="reference-client.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">VACUUM </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> PostgreSQL Client Applications</td></tr></table></div></body></html>
+  </p></div><div class="refsect1" id="id-1.9.3.185.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-insert.html" title="INSERT"><span class="refentrytitle">INSERT</span></a>, <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-vacuum.html" title="VACUUM">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="reference-client.html" title="PostgreSQL Client Applications">Next</a></td></tr><tr><td width="40%" align="left" valign="top">VACUUM </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> PostgreSQL Client Applications</td></tr></table></div></body></html>

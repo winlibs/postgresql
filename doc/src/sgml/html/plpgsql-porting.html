@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.13. Porting from Oracle PL/SQL</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plpgsql-development-tips.html" title="43.12. Tips for Developing in PL/pgSQL" /><link rel="next" href="pltcl.html" title="Chapter 44. PL/Tcl - Tcl Procedural Language" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.13. Porting from <span xmlns="http://www.w3.org/1999/xhtml" class="productname">Oracle</span> PL/SQL</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-development-tips.html" title="43.12. Tips for Developing in PL/pgSQL">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL - SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> - <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="pltcl.html" title="Chapter 44. PL/Tcl - Tcl Procedural Language">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPGSQL-PORTING"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.13. Porting from <span class="productname">Oracle</span> PL/SQL</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-porting.html#id-1.8.8.15.6">43.13.1. Porting Examples</a></span></dt><dt><span class="sect2"><a href="plpgsql-porting.html#PLPGSQL-PORTING-OTHER">43.13.2. Other Things to Watch For</a></span></dt><dt><span class="sect2"><a href="plpgsql-porting.html#PLPGSQL-PORTING-APPENDIX">43.13.3. Appendix</a></span></dt></dl></div><a id="id-1.8.8.15.2" class="indexterm"></a><a id="id-1.8.8.15.3" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.13. Porting from Oracle PL/SQL</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="plpgsql-development-tips.html" title="43.12. Tips for Developing in PL/pgSQL" /><link rel="next" href="pltcl.html" title="Chapter 44. PL/Tcl — Tcl Procedural Language" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.13. Porting from <span class="productname">Oracle</span> PL/SQL</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-development-tips.html" title="43.12. Tips for Developing in PL/pgSQL">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL — SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span class="application">PL/pgSQL</span> — <acronym class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="pltcl.html" title="Chapter 44. PL/Tcl — Tcl Procedural Language">Next</a></td></tr></table><hr /></div><div class="sect1" id="PLPGSQL-PORTING"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.13. Porting from <span class="productname">Oracle</span> PL/SQL <a href="#PLPGSQL-PORTING" class="id_link">#</a></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-porting.html#PLPGSQL-PORTING-EXAMPLES">43.13.1. Porting Examples</a></span></dt><dt><span class="sect2"><a href="plpgsql-porting.html#PLPGSQL-PORTING-OTHER">43.13.2. Other Things to Watch For</a></span></dt><dt><span class="sect2"><a href="plpgsql-porting.html#PLPGSQL-PORTING-APPENDIX">43.13.3. Appendix</a></span></dt></dl></div><a id="id-1.8.8.15.2" class="indexterm"></a><a id="id-1.8.8.15.3" class="indexterm"></a><p>
    This section explains differences between
    <span class="productname">PostgreSQL</span>'s <span class="application">PL/pgSQL</span>
    language and Oracle's <span class="application">PL/SQL</span> language,
@@ -14,12 +14,13 @@
    <span class="application">PL/pgSQL</span> are:
 
     </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
-       If a name used in a SQL command could be either a column name of a
-       table or a reference to a variable of the function,
-       <span class="application">PL/SQL</span> treats it as a column name.  This corresponds
-       to <span class="application">PL/pgSQL</span>'s
+       If a name used in an SQL command could be either a column name of a
+       table used in the command or a reference to a variable of the function,
+       <span class="application">PL/SQL</span> treats it as a column name.
+       By default, <span class="application">PL/pgSQL</span> will throw an error
+       complaining that the name is ambiguous.  You can specify
        <code class="literal">plpgsql.variable_conflict</code> = <code class="literal">use_column</code>
-       behavior, which is not the default,
+       to change this behavior to match <span class="application">PL/SQL</span>,
        as explained in <a class="xref" href="plpgsql-implementation.html#PLPGSQL-VAR-SUBST" title="43.11.1. Variable Substitution">Section 43.11.1</a>.
        It's often best to avoid such ambiguities in the first place,
        but if you have to port a large amount of code that depends on
@@ -60,7 +61,7 @@
        There are various notational differences for the use of cursor
        variables.
       </p></li></ul></div><p>
-   </p><div class="sect2" id="id-1.8.8.15.6"><div class="titlepage"><div><div><h3 class="title">43.13.1. Porting Examples</h3></div></div></div><p>
+   </p><div class="sect2" id="PLPGSQL-PORTING-EXAMPLES"><div class="titlepage"><div><div><h3 class="title">43.13.1. Porting Examples <a href="#PLPGSQL-PORTING-EXAMPLES" class="id_link">#</a></h3></div></div></div><p>
     <a class="xref" href="plpgsql-porting.html#PGSQL-PORTING-EX1" title="Example 43.9. Porting a Simple Function from PL/SQL to PL/pgSQL">Example 43.9</a> shows how to port a simple
     function from <span class="application">PL/SQL</span> to <span class="application">PL/pgSQL</span>.
    </p><div class="example" id="PGSQL-PORTING-EX1"><p class="title"><strong>Example 43.9. Porting a Simple Function from <span class="application">PL/SQL</span> to <span class="application">PL/pgSQL</span></strong></p><div class="example-contents"><p>
@@ -330,7 +331,7 @@ BEGIN
     INSERT INTO cs_active_job(job_id) VALUES (v_job_id);
 
     BEGIN
-        INSERT INTO cs_jobs (job_id, start_stamp) VALUES (v_job_id, sysdate);
+        INSERT INTO cs_jobs (job_id, start_stamp) VALUES (v_job_id, now());
     EXCEPTION
         WHEN dup_val_on_index THEN NULL; -- don't worry if it already exists
     END;
@@ -382,11 +383,11 @@ $$ LANGUAGE plpgsql;
        is not currently a way to declare user-defined exception names,
        although you can throw user-chosen SQLSTATE values instead.
       </p></td></tr></table></div><p>
-   </p></div></div><br class="example-break" /></div><div class="sect2" id="PLPGSQL-PORTING-OTHER"><div class="titlepage"><div><div><h3 class="title">43.13.2. Other Things to Watch For</h3></div></div></div><p>
+   </p></div></div><br class="example-break" /></div><div class="sect2" id="PLPGSQL-PORTING-OTHER"><div class="titlepage"><div><div><h3 class="title">43.13.2. Other Things to Watch For <a href="#PLPGSQL-PORTING-OTHER" class="id_link">#</a></h3></div></div></div><p>
     This section explains a few other things to watch for when porting
     Oracle <span class="application">PL/SQL</span> functions to
     <span class="productname">PostgreSQL</span>.
-   </p><div class="sect3" id="PLPGSQL-PORTING-EXCEPTIONS"><div class="titlepage"><div><div><h4 class="title">43.13.2.1. Implicit Rollback after Exceptions</h4></div></div></div><p>
+   </p><div class="sect3" id="PLPGSQL-PORTING-EXCEPTIONS"><div class="titlepage"><div><div><h4 class="title">43.13.2.1. Implicit Rollback after Exceptions <a href="#PLPGSQL-PORTING-EXCEPTIONS" class="id_link">#</a></h4></div></div></div><p>
      In <span class="application">PL/pgSQL</span>, when an exception is caught by an
      <code class="literal">EXCEPTION</code> clause, all database changes since the block's
      <code class="literal">BEGIN</code> are automatically rolled back.  That is, the behavior
@@ -412,7 +413,7 @@ END;
      <code class="command">ROLLBACK TO</code>.  If you have a procedure that uses
      <code class="command">SAVEPOINT</code> and <code class="command">ROLLBACK TO</code> in a different way
      then some actual thought will be required.
-    </p></div><div class="sect3" id="id-1.8.8.15.7.4"><div class="titlepage"><div><div><h4 class="title">43.13.2.2. <code class="command">EXECUTE</code></h4></div></div></div><p>
+    </p></div><div class="sect3" id="PLPGSQL-PORTING-OTHER-EXECUTE"><div class="titlepage"><div><div><h4 class="title">43.13.2.2. <code class="command">EXECUTE</code> <a href="#PLPGSQL-PORTING-OTHER-EXECUTE" class="id_link">#</a></h4></div></div></div><p>
      The <span class="application">PL/pgSQL</span> version of
      <code class="command">EXECUTE</code> works similarly to the
      <span class="application">PL/SQL</span> version, but you have to remember to use
@@ -420,7 +421,7 @@ END;
      <code class="function">quote_ident</code> as described in <a class="xref" href="plpgsql-statements.html#PLPGSQL-STATEMENTS-EXECUTING-DYN" title="43.5.4. Executing Dynamic Commands">Section 43.5.4</a>.  Constructs of the
      type <code class="literal">EXECUTE 'SELECT * FROM $1';</code> will not work
      reliably unless you use these functions.
-    </p></div><div class="sect3" id="PLPGSQL-PORTING-OPTIMIZATION"><div class="titlepage"><div><div><h4 class="title">43.13.2.3. Optimizing <span class="application">PL/pgSQL</span> Functions</h4></div></div></div><p>
+    </p></div><div class="sect3" id="PLPGSQL-PORTING-OPTIMIZATION"><div class="titlepage"><div><div><h4 class="title">43.13.2.3. Optimizing <span class="application">PL/pgSQL</span> Functions <a href="#PLPGSQL-PORTING-OPTIMIZATION" class="id_link">#</a></h4></div></div></div><p>
      <span class="productname">PostgreSQL</span> gives you two function creation
      modifiers to optimize execution: <span class="quote">“<span class="quote">volatility</span>”</span> (whether
      the function always returns the same result when given the same
@@ -437,7 +438,7 @@ CREATE FUNCTION foo(...) RETURNS integer AS $$
 ...
 $$ LANGUAGE plpgsql STRICT IMMUTABLE;
 </pre><p>
-    </p></div></div><div class="sect2" id="PLPGSQL-PORTING-APPENDIX"><div class="titlepage"><div><div><h3 class="title">43.13.3. Appendix</h3></div></div></div><p>
+    </p></div></div><div class="sect2" id="PLPGSQL-PORTING-APPENDIX"><div class="titlepage"><div><div><h3 class="title">43.13.3. Appendix <a href="#PLPGSQL-PORTING-APPENDIX" class="id_link">#</a></h3></div></div></div><p>
     This section contains the code for a set of Oracle-compatible
     <code class="function">instr</code> functions that you can use to simplify
     your porting efforts.
@@ -556,4 +557,4 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STRICT IMMUTABLE;
 
-</pre></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-development-tips.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="pltcl.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.12. Tips for Developing in <span class="application">PL/pgSQL</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 44. PL/Tcl - Tcl Procedural Language</td></tr></table></div></body></html>
+</pre></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-development-tips.html" title="43.12. Tips for Developing in PL/pgSQL">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL — SQL Procedural Language">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="pltcl.html" title="Chapter 44. PL/Tcl — Tcl Procedural Language">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.12. Tips for Developing in <span class="application">PL/pgSQL</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> Chapter 44. PL/Tcl — Tcl Procedural Language</td></tr></table></div></body></html>

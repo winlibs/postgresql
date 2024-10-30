@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>30.4. WAL Configuration</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="wal-async-commit.html" title="30.3. Asynchronous Commit" /><link rel="next" href="wal-internals.html" title="30.5. WAL Internals" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">30.4. <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">WAL</acronym> Configuration</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="wal-async-commit.html" title="30.3. Asynchronous Commit">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="wal.html" title="Chapter 30. Reliability and the Write-Ahead Log">Up</a></td><th width="60%" align="center">Chapter 30. Reliability and the Write-Ahead Log</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="wal-internals.html" title="30.5. WAL Internals">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="WAL-CONFIGURATION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">30.4. <acronym class="acronym">WAL</acronym> Configuration</h2></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>30.5. WAL Configuration</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="wal-async-commit.html" title="30.4. Asynchronous Commit" /><link rel="next" href="wal-internals.html" title="30.6. WAL Internals" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">30.5. <acronym class="acronym">WAL</acronym> Configuration</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="wal-async-commit.html" title="30.4. Asynchronous Commit">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="wal.html" title="Chapter 30. Reliability and the Write-Ahead Log">Up</a></td><th width="60%" align="center">Chapter 30. Reliability and the Write-Ahead Log</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="wal-internals.html" title="30.6. WAL Internals">Next</a></td></tr></table><hr /></div><div class="sect1" id="WAL-CONFIGURATION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">30.5. <acronym class="acronym">WAL</acronym> Configuration <a href="#WAL-CONFIGURATION" class="id_link">#</a></h2></div></div></div><p>
    There are several <acronym class="acronym">WAL</acronym>-related configuration parameters that
    affect database performance. This section explains their use.
-   Consult <a class="xref" href="runtime-config.html" title="Chapter 19. Server Configuration">Chapter 19</a> for general information about
+   Consult <a class="xref" href="runtime-config.html" title="Chapter 20. Server Configuration">Chapter 20</a> for general information about
    setting server configuration parameters.
   </p><p>
-   <em class="firstterm">Checkpoints</em><a id="id-1.6.17.6.3.2" class="indexterm"></a>
+   <em class="firstterm">Checkpoints</em><a id="id-1.6.17.7.3.2" class="indexterm"></a>
    are points in the sequence of transactions at which it is guaranteed
    that the heap and index data files have been updated with all
    information written before that checkpoint.  At checkpoint time, all
    dirty data pages are flushed to disk and a special checkpoint record is
-   written to the log file.  (The change records were previously flushed
+   written to the WAL file.  (The change records were previously flushed
    to the <acronym class="acronym">WAL</acronym> files.)
    In the event of a crash, the crash recovery procedure looks at the latest
-   checkpoint record to determine the point in the log (known as the redo
+   checkpoint record to determine the point in the WAL (known as the redo
    record) from which it should start the REDO operation.  Any changes made to
    data files before that point are guaranteed to be already on disk.
-   Hence, after a checkpoint, log segments preceding the one containing
+   Hence, after a checkpoint, WAL segments preceding the one containing
    the redo record are no longer needed and can be recycled or removed. (When
-   <acronym class="acronym">WAL</acronym> archiving is being done, the log segments must be
+   <acronym class="acronym">WAL</acronym> archiving is being done, the WAL segments must be
    archived before being recycled or removed.)
   </p><p>
    The checkpoint requirement of flushing all dirty data pages to disk
@@ -50,7 +50,7 @@
    another factor to consider. To ensure data page consistency,
    the first modification of a data page after each checkpoint results in
    logging the entire page content. In that case,
-   a smaller checkpoint interval increases the volume of output to the WAL log,
+   a smaller checkpoint interval increases the volume of output to the WAL,
    partially negating the goal of using a smaller interval,
    and in any case causing more disk I/O.
   </p><p>
@@ -74,22 +74,29 @@
    writing dirty buffers during a checkpoint is spread over a period of time.
    That period is controlled by
    <a class="xref" href="runtime-config-wal.html#GUC-CHECKPOINT-COMPLETION-TARGET">checkpoint_completion_target</a>, which is
-   given as a fraction of the checkpoint interval.
+   given as a fraction of the checkpoint interval (configured by using
+   <code class="varname">checkpoint_timeout</code>).
    The I/O rate is adjusted so that the checkpoint finishes when the
    given fraction of
    <code class="varname">checkpoint_timeout</code> seconds have elapsed, or before
    <code class="varname">max_wal_size</code> is exceeded, whichever is sooner.
-   With the default value of 0.5,
+   With the default value of 0.9,
    <span class="productname">PostgreSQL</span> can be expected to complete each checkpoint
-   in about half the time before the next checkpoint starts.  On a system
-   that's very close to maximum I/O throughput during normal operation,
-   you might want to increase <code class="varname">checkpoint_completion_target</code>
-   to reduce the I/O load from checkpoints.  The disadvantage of this is that
-   prolonging checkpoints affects recovery time, because more WAL segments
-   will need to be kept around for possible use in recovery.  Although
-   <code class="varname">checkpoint_completion_target</code> can be set as high as 1.0,
-   it is best to keep it less than that (perhaps 0.9 at most) since
-   checkpoints include some other activities besides writing dirty buffers.
+   a bit before the next scheduled checkpoint (at around 90% of the last checkpoint's
+   duration).  This spreads out the I/O as much as possible so that the checkpoint
+   I/O load is consistent throughout the checkpoint interval.  The disadvantage of
+   this is that prolonging checkpoints affects recovery time, because more WAL
+   segments will need to be kept around for possible use in recovery.  A user
+   concerned about the amount of time required to recover might wish to reduce
+   <code class="varname">checkpoint_timeout</code> so that checkpoints occur more frequently
+   but still spread the I/O across the checkpoint interval.  Alternatively,
+   <code class="varname">checkpoint_completion_target</code> could be reduced, but this would
+   result in times of more intense I/O (during the checkpoint) and times of less I/O
+   (after the checkpoint completed but before the next scheduled checkpoint) and
+   therefore is not recommended.
+   Although <code class="varname">checkpoint_completion_target</code> could be set as high as
+   1.0, it is typically recommended to set it to no higher than 0.9 (the default)
+   since checkpoints include some other activities besides writing dirty buffers.
    A setting of 1.0 is quite likely to result in checkpoints not being
    completed on time, which would result in performance loss due to
    unexpected variation in the number of WAL segments needed.
@@ -105,10 +112,10 @@
   </p><p>
    The number of WAL segment files in <code class="filename">pg_wal</code> directory depends on
    <code class="varname">min_wal_size</code>, <code class="varname">max_wal_size</code> and
-   the amount of WAL generated in previous checkpoint cycles. When old log
+   the amount of WAL generated in previous checkpoint cycles. When old WAL
    segment files are no longer needed, they are removed or recycled (that is,
    renamed to become future segments in the numbered sequence). If, due to a
-   short-term peak of log output rate, <code class="varname">max_wal_size</code> is
+   short-term peak of WAL output rate, <code class="varname">max_wal_size</code> is
    exceeded, the unneeded segment files will be removed until the system
    gets back under this limit. Below that limit, the system recycles enough
    WAL files to cover the estimated need until the next checkpoint, and
@@ -122,24 +129,26 @@
    WAL is needed.
   </p><p>
    Independently of <code class="varname">max_wal_size</code>,
-   <a class="xref" href="runtime-config-replication.html#GUC-WAL-KEEP-SEGMENTS">wal_keep_segments</a> + 1 most recent WAL files are
-   kept at all times. Also, if WAL archiving is used, old segments can not be
+   the most recent <a class="xref" href="runtime-config-replication.html#GUC-WAL-KEEP-SIZE">wal_keep_size</a> megabytes of
+   WAL files plus one additional WAL file are
+   kept at all times. Also, if WAL archiving is used, old segments cannot be
    removed or recycled until they are archived. If WAL archiving cannot keep up
    with the pace that WAL is generated, or if <code class="varname">archive_command</code>
+   or <code class="varname">archive_library</code>
    fails repeatedly, old WAL files will accumulate in <code class="filename">pg_wal</code>
    until the situation is resolved. A slow or failed standby server that
    uses a replication slot will have the same effect (see
-   <a class="xref" href="warm-standby.html#STREAMING-REPLICATION-SLOTS" title="26.2.6. Replication Slots">Section 26.2.6</a>).
+   <a class="xref" href="warm-standby.html#STREAMING-REPLICATION-SLOTS" title="27.2.6. Replication Slots">Section 27.2.6</a>).
   </p><p>
    In archive recovery or standby mode, the server periodically performs
-   <em class="firstterm">restartpoints</em>,<a id="id-1.6.17.6.12.2" class="indexterm"></a>
+   <em class="firstterm">restartpoints</em>,<a id="id-1.6.17.7.12.2" class="indexterm"></a>
    which are similar to checkpoints in normal operation: the server forces
    all its state to disk, updates the <code class="filename">pg_control</code> file to
    indicate that the already-processed WAL data need not be scanned again,
-   and then recycles any old log segment files in the <code class="filename">pg_wal</code>
+   and then recycles any old WAL segment files in the <code class="filename">pg_wal</code>
    directory.
-   Restartpoints can't be performed more frequently than checkpoints in the
-   master because restartpoints can only be performed at checkpoint records.
+   Restartpoints can't be performed more frequently than checkpoints on the
+   primary because restartpoints can only be performed at checkpoint records.
    A restartpoint is triggered when a checkpoint record is reached if at
    least <code class="varname">checkpoint_timeout</code> seconds have passed since the last
    restartpoint, or if WAL size is about to exceed
@@ -160,12 +169,12 @@
    insertion) at a time when an exclusive lock is held on affected
    data pages, so the operation needs to be as fast as possible.  What
    is worse, writing <acronym class="acronym">WAL</acronym> buffers might also force the
-   creation of a new log segment, which takes even more
+   creation of a new WAL segment, which takes even more
    time. Normally, <acronym class="acronym">WAL</acronym> buffers should be written
    and flushed by an <code class="function">XLogFlush</code> request, which is
    made, for the most part, at transaction commit time to ensure that
    transaction records are flushed to permanent storage. On systems
-   with high log output, <code class="function">XLogFlush</code> requests might
+   with high WAL output, <code class="function">XLogFlush</code> requests might
    not occur often enough to prevent <code class="function">XLogInsertRecord</code>
    from having to do writes.  On such systems
    one should increase the number of <acronym class="acronym">WAL</acronym> buffers by
@@ -203,7 +212,7 @@
    <code class="varname">commit_delay</code>, so this value is recommended as the
    starting point to use when optimizing for a particular workload.  While
    tuning <code class="varname">commit_delay</code> is particularly useful when the
-   WAL log is stored on high-latency rotating disks, benefits can be
+   WAL is stored on high-latency rotating disks, benefits can be
    significant even on storage media with very fast sync times, such as
    solid-state drives or RAID arrays with a battery-backed write cache;
    but this should definitely be tested against a representative workload.
@@ -246,4 +255,41 @@
    <code class="function">XLogInsertRecord</code> and <code class="function">XLogFlush</code>
    <acronym class="acronym">WAL</acronym> call being logged to the server log. This
    option might be replaced by a more general mechanism in the future.
-  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="wal-async-commit.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="wal.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="wal-internals.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">30.3. Asynchronous Commit </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 30.5. WAL Internals</td></tr></table></div></body></html>
+  </p><p>
+   There are two internal functions to write WAL data to disk:
+   <code class="function">XLogWrite</code> and <code class="function">issue_xlog_fsync</code>.
+   When <a class="xref" href="runtime-config-statistics.html#GUC-TRACK-WAL-IO-TIMING">track_wal_io_timing</a> is enabled, the total
+   amounts of time <code class="function">XLogWrite</code> writes and
+   <code class="function">issue_xlog_fsync</code> syncs WAL data to disk are counted as
+   <code class="literal">wal_write_time</code> and <code class="literal">wal_sync_time</code> in
+   <a class="xref" href="monitoring-stats.html#PG-STAT-WAL-VIEW" title="Table 28.25. pg_stat_wal View">pg_stat_wal</a>, respectively.
+   <code class="function">XLogWrite</code> is normally called by
+   <code class="function">XLogInsertRecord</code> (when there is no space for the new
+   record in WAL buffers), <code class="function">XLogFlush</code> and the WAL writer,
+   to write WAL buffers to disk and call <code class="function">issue_xlog_fsync</code>.
+   <code class="function">issue_xlog_fsync</code> is normally called by
+   <code class="function">XLogWrite</code> to sync WAL files to disk.
+   If <code class="varname">wal_sync_method</code> is either
+   <code class="literal">open_datasync</code> or <code class="literal">open_sync</code>,
+   a write operation in <code class="function">XLogWrite</code> guarantees to sync written
+   WAL data to disk and <code class="function">issue_xlog_fsync</code> does nothing.
+   If <code class="varname">wal_sync_method</code> is either <code class="literal">fdatasync</code>,
+   <code class="literal">fsync</code>, or <code class="literal">fsync_writethrough</code>,
+   the write operation moves WAL buffers to kernel cache and
+   <code class="function">issue_xlog_fsync</code> syncs them to disk. Regardless
+   of the setting of <code class="varname">track_wal_io_timing</code>, the number
+   of times <code class="function">XLogWrite</code> writes and
+   <code class="function">issue_xlog_fsync</code> syncs WAL data to disk are also
+   counted as <code class="literal">wal_write</code> and <code class="literal">wal_sync</code>
+   in <code class="structname">pg_stat_wal</code>, respectively.
+  </p><p>
+   The <a class="xref" href="runtime-config-wal.html#GUC-RECOVERY-PREFETCH">recovery_prefetch</a> parameter can be used to reduce
+   I/O wait times during recovery by instructing the kernel to initiate reads
+   of disk blocks that will soon be needed but are not currently in
+   <span class="productname">PostgreSQL</span>'s buffer pool.
+   The <a class="xref" href="runtime-config-resource.html#GUC-MAINTENANCE-IO-CONCURRENCY">maintenance_io_concurrency</a> and
+   <a class="xref" href="runtime-config-wal.html#GUC-WAL-DECODE-BUFFER-SIZE">wal_decode_buffer_size</a> settings limit prefetching
+   concurrency and distance, respectively.  By default, it is set to
+   <code class="literal">try</code>, which enables the feature on systems where
+   <code class="function">posix_fadvise</code> is available.
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="wal-async-commit.html" title="30.4. Asynchronous Commit">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="wal.html" title="Chapter 30. Reliability and the Write-Ahead Log">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="wal-internals.html" title="30.6. WAL Internals">Next</a></td></tr><tr><td width="40%" align="left" valign="top">30.4. Asynchronous Commit </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 30.6. WAL Internals</td></tr></table></div></body></html>

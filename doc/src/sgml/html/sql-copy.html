@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>COPY</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-commit-prepared.html" title="COMMIT PREPARED" /><link rel="next" href="sql-create-access-method.html" title="CREATE ACCESS METHOD" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">COPY</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-commit-prepared.html" title="COMMIT PREPARED">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-create-access-method.html" title="CREATE ACCESS METHOD">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-COPY"><div class="titlepage"></div><a id="id-1.9.3.55.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">COPY</span></h2><p>COPY — copy data between a file and a table</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>COPY</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-commit-prepared.html" title="COMMIT PREPARED" /><link rel="next" href="sql-create-access-method.html" title="CREATE ACCESS METHOD" /></head><body id="docContent" class="container-fluid col-10"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">COPY</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-commit-prepared.html" title="COMMIT PREPARED">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-create-access-method.html" title="CREATE ACCESS METHOD">Next</a></td></tr></table><hr /></div><div class="refentry" id="SQL-COPY"><div class="titlepage"></div><a id="id-1.9.3.55.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">COPY</span></h2><p>COPY — copy data between a file and a table</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 COPY <em class="replaceable"><code>table_name</code></em> [ ( <em class="replaceable"><code>column_name</code></em> [, ...] ) ]
     FROM { '<em class="replaceable"><code>filename</code></em>' | PROGRAM '<em class="replaceable"><code>command</code></em>' | STDIN }
     [ [ WITH ] ( <em class="replaceable"><code>option</code></em> [, ...] ) ]
+    [ WHERE <em class="replaceable"><code>condition</code></em> ]
 
 COPY { <em class="replaceable"><code>table_name</code></em> [ ( <em class="replaceable"><code>column_name</code></em> [, ...] ) ] | ( <em class="replaceable"><code>query</code></em> ) }
     TO { '<em class="replaceable"><code>filename</code></em>' | PROGRAM '<em class="replaceable"><code>command</code></em>' | STDOUT }
@@ -11,11 +12,11 @@ COPY { <em class="replaceable"><code>table_name</code></em> [ ( <em class="repla
 <span class="phrase">where <em class="replaceable"><code>option</code></em> can be one of:</span>
 
     FORMAT <em class="replaceable"><code>format_name</code></em>
-    OIDS [ <em class="replaceable"><code>boolean</code></em> ]
     FREEZE [ <em class="replaceable"><code>boolean</code></em> ]
     DELIMITER '<em class="replaceable"><code>delimiter_character</code></em>'
     NULL '<em class="replaceable"><code>null_string</code></em>'
-    HEADER [ <em class="replaceable"><code>boolean</code></em> ]
+    DEFAULT '<em class="replaceable"><code>default_string</code></em>'
+    HEADER [ <em class="replaceable"><code>boolean</code></em> | MATCH ]
     QUOTE '<em class="replaceable"><code>quote_character</code></em>'
     ESCAPE '<em class="replaceable"><code>escape_character</code></em>'
     FORCE_QUOTE { ( <em class="replaceable"><code>column_name</code></em> [, ...] ) | * }
@@ -31,11 +32,11 @@ COPY { <em class="replaceable"><code>table_name</code></em> [ ( <em class="repla
    whatever is in the table already).  <code class="command">COPY TO</code>
    can also copy the results of a <code class="command">SELECT</code> query.
   </p><p>
-   If a list of columns is specified, <code class="command">COPY</code> will
-   only copy the data in the specified columns to or from the file.
-   If there are any columns in the table that are not in the column list,
-   <code class="command">COPY FROM</code> will insert the default values for
-   those columns.
+   If a column list is specified, <code class="command">COPY TO</code> copies only
+   the data in the specified columns to the file.  For <code class="command">COPY
+   FROM</code>, each field in the file is inserted, in order, into the
+   specified column.  Table columns not specified in the <code class="command">COPY
+   FROM</code> column list will receive their default values.
   </p><p>
    <code class="command">COPY</code> with a file name instructs the
    <span class="productname">PostgreSQL</span> server to directly read from
@@ -50,22 +51,29 @@ COPY { <em class="replaceable"><code>table_name</code></em> [ ( <em class="repla
    <code class="literal">STDIN</code> or <code class="literal">STDOUT</code> is
    specified, data is transmitted via the connection between the
    client and the server.
+  </p><p>
+    Each backend running <code class="command">COPY</code> will report its progress
+    in the <code class="structname">pg_stat_progress_copy</code> view. See
+    <a class="xref" href="progress-reporting.html#COPY-PROGRESS-REPORTING" title="28.4.3. COPY Progress Reporting">Section 28.4.3</a> for details.
   </p></div><div class="refsect1" id="id-1.9.3.55.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>table_name</code></em></span></dt><dd><p>
       The name (optionally schema-qualified) of an existing table.
      </p></dd><dt><span class="term"><em class="replaceable"><code>column_name</code></em></span></dt><dd><p>
       An optional list of columns to be copied.  If no column list is
-      specified, all columns of the table will be copied.
+      specified, all columns of the table except generated columns will be
+      copied.
      </p></dd><dt><span class="term"><em class="replaceable"><code>query</code></em></span></dt><dd><p>
-      A <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a>, <a class="xref" href="sql-values.html" title="VALUES"><span class="refentrytitle">VALUES</span></a>,
-      <a class="xref" href="sql-insert.html" title="INSERT"><span class="refentrytitle">INSERT</span></a>, <a class="xref" href="sql-update.html" title="UPDATE"><span class="refentrytitle">UPDATE</span></a> or
-      <a class="xref" href="sql-delete.html" title="DELETE"><span class="refentrytitle">DELETE</span></a> command whose results are to be
+      A <a class="link" href="sql-select.html" title="SELECT"><code class="command">SELECT</code></a>,
+      <a class="link" href="sql-values.html" title="VALUES"><code class="command">VALUES</code></a>,
+      <a class="link" href="sql-insert.html" title="INSERT"><code class="command">INSERT</code></a>,
+      <a class="link" href="sql-update.html" title="UPDATE"><code class="command">UPDATE</code></a>, or
+      <a class="link" href="sql-delete.html" title="DELETE"><code class="command">DELETE</code></a> command whose results are to be
       copied.  Note that parentheses are required around the query.
      </p><p>
       For <code class="command">INSERT</code>, <code class="command">UPDATE</code> and
-      <code class="command">DELETE</code> queries a RETURNING clause must be provided,
-      and the target relation must not have a conditional rule, nor
-      an <code class="literal">ALSO</code> rule, nor an <code class="literal">INSTEAD</code> rule
-      that expands to multiple statements.
+      <code class="command">DELETE</code> queries a <code class="literal">RETURNING</code> clause
+      must be provided, and the target relation must not have a conditional
+      rule, nor an <code class="literal">ALSO</code> rule, nor an
+      <code class="literal">INSTEAD</code> rule that expands to multiple statements.
      </p></dd><dt><span class="term"><em class="replaceable"><code>filename</code></em></span></dt><dd><p>
       The path name of the input or output file.  An input file name can be
       an absolute or relative path, but an output file name must be an absolute
@@ -77,10 +85,10 @@ COPY { <em class="replaceable"><code>table_name</code></em> [ ( <em class="repla
       the output is written to the standard input of the command.
      </p><p>
       Note that the command is invoked by the shell, so if you need to pass
-      any arguments to shell command that come from an untrusted source, you
+      any arguments that come from an untrusted source, you
       must be careful to strip or escape any special characters that might
       have a special meaning for the shell. For security reasons, it is best
-      to use a fixed command string, or at least avoid passing any user input
+      to use a fixed command string, or at least avoid including any user input
       in it.
      </p></dd><dt><span class="term"><code class="literal">STDIN</code></span></dt><dd><p>
       Specifies that input comes from the client application.
@@ -99,10 +107,6 @@ COPY { <em class="replaceable"><code>table_name</code></em> [ ( <em class="repla
       <code class="literal">csv</code> (Comma Separated Values),
       or <code class="literal">binary</code>.
       The default is <code class="literal">text</code>.
-     </p></dd><dt><span class="term"><code class="literal">OIDS</code></span></dt><dd><p>
-      Specifies copying the OID for each row.  (An error is raised if
-      <code class="literal">OIDS</code> is specified for a table that does not
-      have OIDs, or in the case of copying a <em class="replaceable"><code>query</code></em>.)
      </p></dd><dt><span class="term"><code class="literal">FREEZE</code></span></dt><dd><p>
       Requests copying the data with rows already frozen, just as they
       would be after running the <code class="command">VACUUM FREEZE</code> command.
@@ -115,7 +119,7 @@ COPY { <em class="replaceable"><code>table_name</code></em> [ ( <em class="repla
      </p><p>
       Note that all other sessions will immediately be able to see the data
       once it has been successfully loaded. This violates the normal rules
-      of MVCC visibility and users specifying should be aware of the
+      of MVCC visibility and users should be aware of the
       potential problems this might cause.
      </p></dd><dt><span class="term"><code class="literal">DELIMITER</code></span></dt><dd><p>
       Specifies the character that separates columns within each row
@@ -135,11 +139,23 @@ COPY { <em class="replaceable"><code>table_name</code></em> [ ( <em class="repla
        this string will be stored as a null value, so you should make
        sure that you use the same string as you used with
        <code class="command">COPY TO</code>.
-      </p></div></dd><dt><span class="term"><code class="literal">HEADER</code></span></dt><dd><p>
+      </p></div></dd><dt><span class="term"><code class="literal">DEFAULT</code></span></dt><dd><p>
+      Specifies the string that represents a default value. Each time the string
+      is found in the input file, the default value of the corresponding column
+      will be used.
+      This option is allowed only in <code class="command">COPY FROM</code>, and only when
+      not using <code class="literal">binary</code> format.
+     </p></dd><dt><span class="term"><code class="literal">HEADER</code></span></dt><dd><p>
       Specifies that the file contains a header line with the names of each
       column in the file.  On output, the first line contains the column
-      names from the table, and on input, the first line is ignored.
-      This option is allowed only when using <code class="literal">CSV</code> format.
+      names from the table.  On input, the first line is discarded when this
+      option is set to <code class="literal">true</code> (or equivalent Boolean value).
+      If this option is set to <code class="literal">MATCH</code>, the number and names
+      of the columns in the header line must match the actual column names of
+      the table, in order;  otherwise an error is raised.
+      This option is not allowed when using <code class="literal">binary</code> format.
+      The <code class="literal">MATCH</code> option is only valid for <code class="command">COPY
+      FROM</code> commands.
      </p></dd><dt><span class="term"><code class="literal">QUOTE</code></span></dt><dd><p>
       Specifies the quoting character to be used when a data value is quoted.
       The default is double-quote.
@@ -177,7 +193,23 @@ COPY { <em class="replaceable"><code>table_name</code></em> [ ( <em class="repla
       Specifies that the file is encoded in the <em class="replaceable"><code>encoding_name</code></em>.  If this option is
       omitted, the current client encoding is used. See the Notes below
       for more details.
-     </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.55.7"><h2>Outputs</h2><p>
+     </p></dd><dt><span class="term"><code class="literal">WHERE</code></span></dt><dd><p>
+    The optional <code class="literal">WHERE</code> clause has the general form
+</p><pre class="synopsis">
+WHERE <em class="replaceable"><code>condition</code></em>
+</pre><p>
+    where <em class="replaceable"><code>condition</code></em> is
+    any expression that evaluates to a result of type
+    <code class="type">boolean</code>.  Any row that does not satisfy this
+    condition will not be inserted to the table.  A row satisfies the
+    condition if it returns true when the actual row values are
+    substituted for any variable references.
+   </p><p>
+    Currently, subqueries are not allowed in <code class="literal">WHERE</code>
+    expressions, and the evaluation does not see any changes made by the
+    <code class="command">COPY</code> itself (this matters when the expression
+    contains calls to <code class="literal">VOLATILE</code> functions).
+   </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.55.7"><h2>Outputs</h2><p>
    On successful completion, a <code class="command">COPY</code> command returns a command
    tag of the form
 </p><pre class="screen">
@@ -192,21 +224,17 @@ COPY <em class="replaceable"><code>count</code></em>
     <code class="literal">\copy ... to stdout</code>.  This is to prevent confusing the
     command tag with the data that was just printed.
    </p></div></div><div class="refsect1" id="id-1.9.3.55.8"><h2>Notes</h2><p>
-    <code class="command">COPY TO</code> can only be used with plain tables, not
-    with views.  However, you can write <code class="literal">COPY (SELECT * FROM
-    <em class="replaceable"><code>viewname</code></em>) TO ...</code>
-    to copy the current contents of a view.
+    <code class="command">COPY TO</code> can be used only with plain
+    tables, not views, and does not copy rows from child tables
+    or child partitions.  For example, <code class="literal">COPY <em class="replaceable"><code>table</code></em> TO</code> copies
+    the same rows as <code class="literal">SELECT * FROM ONLY <em class="replaceable"><code>table</code></em></code>.
+    The syntax <code class="literal">COPY (SELECT * FROM <em class="replaceable"><code>table</code></em>) TO ...</code> can be used to
+    dump all of the rows in an inheritance hierarchy, partitioned table,
+    or view.
    </p><p>
     <code class="command">COPY FROM</code> can be used with plain, foreign, or
     partitioned tables or with views that have
     <code class="literal">INSTEAD OF INSERT</code> triggers.
-   </p><p>
-    <code class="command">COPY</code> only deals with the specific table named;
-    it does not copy data to or from child tables.  Thus for example
-    <code class="literal">COPY <em class="replaceable"><code>table</code></em> TO</code>
-    shows the same data as <code class="literal">SELECT * FROM ONLY <em class="replaceable"><code>table</code></em></code>.  But <code class="literal">COPY
-    (SELECT * FROM <em class="replaceable"><code>table</code></em>) TO ...</code>
-    can be used to dump all of the data in an inheritance hierarchy.
    </p><p>
     You must have select privilege on the table
     whose values are read by <code class="command">COPY TO</code>, and
@@ -231,7 +259,7 @@ COPY <em class="replaceable"><code>count</code></em>
     by the server, not by the client application, must be executable by the
     <span class="productname">PostgreSQL</span> user.
     <code class="command">COPY</code> naming a file or command is only allowed to
-    database superusers or users who are granted one of the default roles
+    database superusers or users who are granted one of the roles
     <code class="literal">pg_read_server_files</code>,
     <code class="literal">pg_write_server_files</code>,
     or <code class="literal">pg_execute_server_program</code>, since it allows reading
@@ -305,8 +333,6 @@ COPY <em class="replaceable"><code>count</code></em>
     place of columns that are null.
     <code class="command">COPY FROM</code> will raise an error if any line of the
     input file contains more or fewer columns than are expected.
-    If <code class="literal">OIDS</code> is specified, the OID is read or written as the first column,
-    preceding the user data columns.
    </p><p>
     End of data can be represented by a single line containing just
     backslash-period (<code class="literal">\.</code>).  An end-of-data marker is
@@ -332,8 +358,8 @@ COPY <em class="replaceable"><code>count</code></em>
     <code class="command">COPY FROM</code>:
 
    </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Sequence</th><th>Represents</th></tr></thead><tbody><tr><td><code class="literal">\b</code></td><td>Backspace (ASCII 8)</td></tr><tr><td><code class="literal">\f</code></td><td>Form feed (ASCII 12)</td></tr><tr><td><code class="literal">\n</code></td><td>Newline (ASCII 10)</td></tr><tr><td><code class="literal">\r</code></td><td>Carriage return (ASCII 13)</td></tr><tr><td><code class="literal">\t</code></td><td>Tab (ASCII 9)</td></tr><tr><td><code class="literal">\v</code></td><td>Vertical tab (ASCII 11)</td></tr><tr><td><code class="literal">\</code><em class="replaceable"><code>digits</code></em></td><td>Backslash followed by one to three octal digits specifies
-       the character with that numeric code</td></tr><tr><td><code class="literal">\x</code><em class="replaceable"><code>digits</code></em></td><td>Backslash <code class="literal">x</code> followed by one or two hex digits specifies
-       the character with that numeric code</td></tr></tbody></table></div><p>
+       the byte with that numeric code</td></tr><tr><td><code class="literal">\x</code><em class="replaceable"><code>digits</code></em></td><td>Backslash <code class="literal">x</code> followed by one or two hex digits specifies
+       the byte with that numeric code</td></tr></tbody></table></div><p>
 
     Presently, <code class="command">COPY TO</code> will never emit an octal or
     hex-digits backslash sequence, but it does use the other sequences
@@ -356,6 +382,10 @@ COPY <em class="replaceable"><code>count</code></em>
     transferred across different machines (for example, from Unix to Windows
     or vice versa).
    </p><p>
+     All backslash sequences are interpreted after encoding conversion.
+     The bytes specified with the octal and hex-digit backslash sequences must
+     form valid characters in the database encoding.
+   </p><p>
     <code class="command">COPY TO</code> will terminate each row with a Unix-style
     newline (<span class="quote">“<span class="quote"><code class="literal">\n</code></span>”</span>).  Servers running on Microsoft Windows instead
     output carriage return/newline (<span class="quote">“<span class="quote"><code class="literal">\r\n</code></span>”</span>), but only for
@@ -372,7 +402,7 @@ COPY <em class="replaceable"><code>count</code></em>
     Separated Value (<code class="literal">CSV</code>) file format used by many other
     programs, such as spreadsheets. Instead of the escaping rules used by
     <span class="productname">PostgreSQL</span>'s standard text format, it
-    produces and recognizes the common CSV escaping mechanism.
+    produces and recognizes the common <code class="literal">CSV</code> escaping mechanism.
    </p><p>
     The values in each record are separated by the <code class="literal">DELIMITER</code>
     character. If the value contains the delimiter character, the
@@ -417,12 +447,12 @@ COPY <em class="replaceable"><code>count</code></em>
      the trailing white space, before importing the data into
      <span class="productname">PostgreSQL</span>.
     </p></div><div class="note"><h3 class="title">Note</h3><p>
-     CSV format will both recognize and produce CSV files with quoted
+     <code class="literal">CSV</code> format will both recognize and produce <code class="literal">CSV</code> files with quoted
      values containing embedded carriage returns and line feeds. Thus
      the files are not strictly one line per table row like text-format
      files.
     </p></div><div class="note"><h3 class="title">Note</h3><p>
-     Many programs produce strange and occasionally perverse CSV files,
+     Many programs produce strange and occasionally perverse <code class="literal">CSV</code> files,
      so the file format is more a convention than a standard. Thus you
      might encounter some files that cannot be imported using this
      mechanism, and <code class="command">COPY</code> might produce files that other
@@ -459,13 +489,15 @@ filters, dropped zero bytes, dropped high bits, or parity changes.)
 are numbered from 0 (<acronym class="acronym">LSB</acronym>) to 31 (<acronym class="acronym">MSB</acronym>).  Note that
 this field is stored in network byte order (most significant byte first),
 as are all the integer fields used in the file format.  Bits
-16-31 are reserved to denote critical file format issues; a reader
-should abort if it finds an unexpected bit set in this range. Bits 0-15
+16–31 are reserved to denote critical file format issues; a reader
+should abort if it finds an unexpected bit set in this range. Bits 0–15
 are reserved to signal backwards-compatible format issues; a reader
 should simply ignore any unexpected bits set in this range. Currently
 only one flag bit is defined, and the rest must be zero:
         </p><div class="variablelist"><dl class="variablelist"><dt><span class="term">Bit 16</span></dt><dd><p>
-            if 1, OIDs are included in the data; if 0, not
+            If 1, OIDs are included in the data; if 0, not. Oid system columns
+            are not supported in <span class="productname">PostgreSQL</span>
+            anymore, but the format still contains the indicator.
            </p></dd></dl></div></dd><dt><span class="term">Header extension area length</span></dt><dd><p>
 32-bit integer, length in bytes of remainder of header, not including self.
 Currently, this is zero, and the first tuple follows
@@ -506,10 +538,9 @@ each column's data type (typically these functions are found in the
 distribution).
     </p><p>
 If OIDs are included in the file, the OID field immediately follows the
-field-count word.  It is a normal field except that it's not included
-in the field-count.  In particular it has a length word — this will allow
-handling of 4-byte vs. 8-byte OIDs without too much pain, and will allow
-OIDs to be shown as null if that ever proves desirable.
+field-count word.  It is a normal field except that it's not included in the
+field-count.  Note that oid system columns are not supported in current
+versions of <span class="productname">PostgreSQL</span>.
     </p></div><div class="refsect3" id="id-1.9.3.55.9.4.7"><h4>File Trailer</h4><p>
      The file trailer consists of a 16-bit integer word containing -1.  This
      is easily distinguished from a tuple's field-count word.
@@ -578,24 +609,22 @@ COPY <em class="replaceable"><code>table_name</code></em> [ ( <em class="replace
     FROM { '<em class="replaceable"><code>filename</code></em>' | STDIN }
     [ [ WITH ]
           [ BINARY ]
-          [ OIDS ]
-          [ DELIMITER [ AS ] '<em class="replaceable"><code>delimiter</code></em>' ]
-          [ NULL [ AS ] '<em class="replaceable"><code>null string</code></em>' ]
+          [ DELIMITER [ AS ] '<em class="replaceable"><code>delimiter_character</code></em>' ]
+          [ NULL [ AS ] '<em class="replaceable"><code>null_string</code></em>' ]
           [ CSV [ HEADER ]
-                [ QUOTE [ AS ] '<em class="replaceable"><code>quote</code></em>' ]
-                [ ESCAPE [ AS ] '<em class="replaceable"><code>escape</code></em>' ]
+                [ QUOTE [ AS ] '<em class="replaceable"><code>quote_character</code></em>' ]
+                [ ESCAPE [ AS ] '<em class="replaceable"><code>escape_character</code></em>' ]
                 [ FORCE NOT NULL <em class="replaceable"><code>column_name</code></em> [, ...] ] ] ]
 
 COPY { <em class="replaceable"><code>table_name</code></em> [ ( <em class="replaceable"><code>column_name</code></em> [, ...] ) ] | ( <em class="replaceable"><code>query</code></em> ) }
     TO { '<em class="replaceable"><code>filename</code></em>' | STDOUT }
     [ [ WITH ]
           [ BINARY ]
-          [ OIDS ]
-          [ DELIMITER [ AS ] '<em class="replaceable"><code>delimiter</code></em>' ]
-          [ NULL [ AS ] '<em class="replaceable"><code>null string</code></em>' ]
+          [ DELIMITER [ AS ] '<em class="replaceable"><code>delimiter_character</code></em>' ]
+          [ NULL [ AS ] '<em class="replaceable"><code>null_string</code></em>' ]
           [ CSV [ HEADER ]
-                [ QUOTE [ AS ] '<em class="replaceable"><code>quote</code></em>' ]
-                [ ESCAPE [ AS ] '<em class="replaceable"><code>escape</code></em>' ]
+                [ QUOTE [ AS ] '<em class="replaceable"><code>quote_character</code></em>' ]
+                [ ESCAPE [ AS ] '<em class="replaceable"><code>escape_character</code></em>' ]
                 [ FORCE QUOTE { <em class="replaceable"><code>column_name</code></em> [, ...] | * } ] ] ]
 </pre><p>
 
@@ -607,13 +636,13 @@ COPY { <em class="replaceable"><code>table_name</code></em> [ ( <em class="repla
    version 7.3 and is still supported:
 
 </p><pre class="synopsis">
-COPY [ BINARY ] <em class="replaceable"><code>table_name</code></em> [ WITH OIDS ]
+COPY [ BINARY ] <em class="replaceable"><code>table_name</code></em>
     FROM { '<em class="replaceable"><code>filename</code></em>' | STDIN }
-    [ [USING] DELIMITERS '<em class="replaceable"><code>delimiter</code></em>' ]
-    [ WITH NULL AS '<em class="replaceable"><code>null string</code></em>' ]
+    [ [USING] DELIMITERS '<em class="replaceable"><code>delimiter_character</code></em>' ]
+    [ WITH NULL AS '<em class="replaceable"><code>null_string</code></em>' ]
 
-COPY [ BINARY ] <em class="replaceable"><code>table_name</code></em> [ WITH OIDS ]
+COPY [ BINARY ] <em class="replaceable"><code>table_name</code></em>
     TO { '<em class="replaceable"><code>filename</code></em>' | STDOUT }
-    [ [USING] DELIMITERS '<em class="replaceable"><code>delimiter</code></em>' ]
-    [ WITH NULL AS '<em class="replaceable"><code>null string</code></em>' ]
-</pre></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-commit-prepared.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-create-access-method.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">COMMIT PREPARED </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> CREATE ACCESS METHOD</td></tr></table></div></body></html>
+    [ [USING] DELIMITERS '<em class="replaceable"><code>delimiter_character</code></em>' ]
+    [ WITH NULL AS '<em class="replaceable"><code>null_string</code></em>' ]
+</pre></div><div class="refsect1" id="id-1.9.3.55.12"><h2>See Also</h2><span class="simplelist"><a class="xref" href="progress-reporting.html#COPY-PROGRESS-REPORTING" title="28.4.3. COPY Progress Reporting">Section 28.4.3</a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-commit-prepared.html" title="COMMIT PREPARED">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-create-access-method.html" title="CREATE ACCESS METHOD">Next</a></td></tr><tr><td width="40%" align="left" valign="top">COMMIT PREPARED </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 16.4 Documentation">Home</a></td><td width="40%" align="right" valign="top"> CREATE ACCESS METHOD</td></tr></table></div></body></html>

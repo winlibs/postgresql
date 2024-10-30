@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SELECT INTO
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "SELECT INTO" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "SELECT INTO" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,12 +34,12 @@ SELECT_INTO \- define a new table from the results of a query
 .nf
 [ WITH [ RECURSIVE ] \fIwith_query\fR [, \&.\&.\&.] ]
 SELECT [ ALL | DISTINCT [ ON ( \fIexpression\fR [, \&.\&.\&.] ) ] ]
-    * | \fIexpression\fR [ [ AS ] \fIoutput_name\fR ] [, \&.\&.\&.]
+    [ { * | \fIexpression\fR [ [ AS ] \fIoutput_name\fR ] } [, \&.\&.\&.] ]
     INTO [ TEMPORARY | TEMP | UNLOGGED ] [ TABLE ] \fInew_table\fR
     [ FROM \fIfrom_item\fR [, \&.\&.\&.] ]
     [ WHERE \fIcondition\fR ]
     [ GROUP BY \fIexpression\fR [, \&.\&.\&.] ]
-    [ HAVING \fIcondition\fR [, \&.\&.\&.] ]
+    [ HAVING \fIcondition\fR ]
     [ WINDOW \fIwindow_name\fR AS ( \fIwindow_definition\fR ) [, \&.\&.\&.] ]
     [ { UNION | INTERSECT | EXCEPT } [ ALL | DISTINCT ] \fIselect\fR ]
     [ ORDER BY \fIexpression\fR [ ASC | DESC | USING \fIoperator\fR ] [ NULLS { FIRST | LAST } ] [, \&.\&.\&.] ]
@@ -79,7 +79,7 @@ All other parameters are described in detail under
 \fBSELECT\fR(7)\&.
 .SH "NOTES"
 .PP
-CREATE TABLE AS (\fBCREATE_TABLE_AS\fR(7))
+\fBCREATE TABLE AS\fR
 is functionally similar to
 \fBSELECT INTO\fR\&.
 \fBCREATE TABLE AS\fR
@@ -95,14 +95,17 @@ clause differently\&. Furthermore,
 offers a superset of the functionality provided by
 \fBSELECT INTO\fR\&.
 .PP
-To add OIDs to the table created by
-\fBSELECT INTO\fR, enable the
-default_with_oids
-configuration variable\&. Alternatively,
+In contrast to
+\fBCREATE TABLE AS\fR,
+\fBSELECT INTO\fR
+does not allow specifying properties like a table\*(Aqs access method with
+USING \fImethod\fR
+or the table\*(Aqs tablespace with
+TABLESPACE \fItablespace_name\fR\&. Use
 \fBCREATE TABLE AS\fR
-can be used with the
-WITH OIDS
-clause\&.
+if necessary\&. Therefore, the default table access method is chosen for the new table\&. See
+default_table_access_method
+for more information\&.
 .SH "EXAMPLES"
 .PP
 Create a new table
@@ -133,7 +136,11 @@ Chapter\ \&43)\&. The
 PostgreSQL
 usage of
 \fBSELECT INTO\fR
-to represent table creation is historical\&. It is best to use
+to represent table creation is historical\&. Some other SQL implementations also use
+\fBSELECT INTO\fR
+in this way (but most SQL implementations support
+\fBCREATE TABLE AS\fR
+instead)\&. Apart from such compatibility considerations, it is best to use
 \fBCREATE TABLE AS\fR
 for this purpose in new code\&.
 .SH "SEE ALSO"

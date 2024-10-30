@@ -3,7 +3,7 @@
  * jsonb.c
  *		I/O routines for jsonb type
  *
- * Copyright (c) 2014-2018, PostgreSQL Global Development Group
+ * Copyright (c) 2014-2023, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/backend/utils/adt/jsonb.c
@@ -12,20 +12,21 @@
  */
 #include "postgres.h"
 
-#include "miscadmin.h"
 #include "access/htup_details.h"
 #include "access/transam.h"
+#include "catalog/pg_proc.h"
 #include "catalog/pg_type.h"
 #include "funcapi.h"
 #include "libpq/pqformat.h"
+#include "miscadmin.h"
 #include "parser/parse_coerce.h"
 #include "utils/builtins.h"
 #include "utils/date.h"
 #include "utils/datetime.h"
-#include "utils/lsyscache.h"
 #include "utils/json.h"
-#include "utils/jsonapi.h"
 #include "utils/jsonb.h"
+#include "utils/jsonfuncs.h"
+#include "utils/lsyscache.h"
 #include "utils/syscache.h"
 #include "utils/typcache.h"
 
@@ -33,6 +34,7 @@ typedef struct JsonbInState
 {
 	JsonbParseState *parseState;
 	JsonbValue *res;
+	Node	   *escontext;
 } JsonbInState;
 
 /* unlike with json categories, we need to treat json and jsonb differently */
@@ -61,31 +63,31 @@ typedef struct JsonbAggState
 	Oid			val_output_func;
 } JsonbAggState;
 
-static inline Datum jsonb_from_cstring(char *json, int len);
-static size_t checkStringLen(size_t len);
-static void jsonb_in_object_start(void *pstate);
-static void jsonb_in_object_end(void *pstate);
-static void jsonb_in_array_start(void *pstate);
-static void jsonb_in_array_end(void *pstate);
-static void jsonb_in_object_field_start(void *pstate, char *fname, bool isnull);
+static inline Datum jsonb_from_cstring(char *json, int len, Node *escontext);
+static bool checkStringLen(size_t len, Node *escontext);
+static JsonParseErrorType jsonb_in_object_start(void *pstate);
+static JsonParseErrorType jsonb_in_object_end(void *pstate);
+static JsonParseErrorType jsonb_in_array_start(void *pstate);
+static JsonParseErrorType jsonb_in_array_end(void *pstate);
+static JsonParseErrorType jsonb_in_object_field_start(void *pstate, char *fname, bool isnull);
 static void jsonb_put_escaped_value(StringInfo out, JsonbValue *scalarVal);
-static void jsonb_in_scalar(void *pstate, char *token, JsonTokenType tokentype);
+static JsonParseErrorType jsonb_in_scalar(void *pstate, char *token, JsonTokenType tokentype);
 static void jsonb_categorize_type(Oid typoid,
-					  JsonbTypeCategory *tcategory,
-					  Oid *outfuncoid);
+								  JsonbTypeCategory *tcategory,
+								  Oid *outfuncoid);
 static void composite_to_jsonb(Datum composite, JsonbInState *result);
 static void array_dim_to_jsonb(JsonbInState *result, int dim, int ndims, int *dims,
-				   Datum *vals, bool *nulls, int *valcount,
-				   JsonbTypeCategory tcategory, Oid outfuncoid);
+							   Datum *vals, bool *nulls, int *valcount,
+							   JsonbTypeCategory tcategory, Oid outfuncoid);
 static void array_to_jsonb_internal(Datum array, JsonbInState *result);
 static void jsonb_categorize_type(Oid typoid,
-					  JsonbTypeCategory *tcategory,
-					  Oid *outfuncoid);
+								  JsonbTypeCategory *tcategory,
+								  Oid *outfuncoid);
 static void datum_to_jsonb(Datum val, bool is_null, JsonbInState *result,
-			   JsonbTypeCategory tcategory, Oid outfuncoid,
-			   bool key_scalar);
+						   JsonbTypeCategory tcategory, Oid outfuncoid,
+						   bool key_scalar);
 static void add_jsonb(Datum val, bool is_null, JsonbInState *result,
-		  Oid val_type, bool key_scalar);
+					  Oid val_type, bool key_scalar);
 static JsonbParseState *clone_parse_state(JsonbParseState *state);
 static char *JsonbToCStringWorker(StringInfo out, JsonbContainer *in, int estimated_len, bool indent);
 static void add_indent(StringInfo out, bool indent, int level);
@@ -98,7 +100,7 @@ jsonb_in(PG_FUNCTION_ARGS)
 {
 	char	   *json = PG_GETARG_CSTRING(0);
 
-	return jsonb_from_cstring(json, strlen(json));
+	return jsonb_from_cstring(json, strlen(json), fcinfo->context);
 }
 
 /*
@@ -122,7 +124,7 @@ jsonb_recv(PG_FUNCTION_ARGS)
 	else
 		elog(ERROR, "unsupported jsonb version number %d", version);
 
-	return jsonb_from_cstring(str, nbytes);
+	return jsonb_from_cstring(str, nbytes, NULL);
 }
 
 /*
@@ -164,6 +166,73 @@ jsonb_send(PG_FUNCTION_ARGS)
 }
 
 /*
+ * Get the type name of a jsonb container.
+ */
+static const char *
+JsonbContainerTypeName(JsonbContainer *jbc)
+{
+	JsonbValue	scalar;
+
+	if (JsonbExtractScalar(jbc, &scalar))
+		return JsonbTypeName(&scalar);
+	else if (JsonContainerIsArray(jbc))
+		return "array";
+	else if (JsonContainerIsObject(jbc))
+		return "object";
+	else
+	{
+		elog(ERROR, "invalid jsonb container type: 0x%08x", jbc->header);
+		return "unknown";
+	}
+}
+
+/*
+ * Get the type name of a jsonb value.
+ */
+const char *
+JsonbTypeName(JsonbValue *val)
+{
+	switch (val->type)
+	{
+		case jbvBinary:
+			return JsonbContainerTypeName(val->val.binary.data);
+		case jbvObject:
+			return "object";
+		case jbvArray:
+			return "array";
+		case jbvNumeric:
+			return "number";
+		case jbvString:
+			return "string";
+		case jbvBool:
+			return "boolean";
+		case jbvNull:
+			return "null";
+		case jbvDatetime:
+			switch (val->val.datetime.typid)
+			{
+				case DATEOID:
+					return "date";
+				case TIMEOID:
+					return "time without time zone";
+				case TIMETZOID:
+					return "time with time zone";
+				case TIMESTAMPOID:
+					return "timestamp without time zone";
+				case TIMESTAMPTZOID:
+					return "timestamp with time zone";
+				default:
+					elog(ERROR, "unrecognized jsonb value datetime type: %d",
+						 val->val.datetime.typid);
+			}
+			return "unknown";
+		default:
+			elog(ERROR, "unrecognized jsonb value type: %d", val->type);
+			return "unknown";
+	}
+}
+
+/*
  * SQL function jsonb_typeof(jsonb) -> text
  *
  * This function is here because the analog json function is in json.c, since
@@ -173,45 +242,7 @@ Datum
 jsonb_typeof(PG_FUNCTION_ARGS)
 {
 	Jsonb	   *in = PG_GETARG_JSONB_P(0);
-	JsonbIterator *it;
-	JsonbValue	v;
-	char	   *result;
-
-	if (JB_ROOT_IS_OBJECT(in))
-		result = "object";
-	else if (JB_ROOT_IS_ARRAY(in) && !JB_ROOT_IS_SCALAR(in))
-		result = "array";
-	else
-	{
-		Assert(JB_ROOT_IS_SCALAR(in));
-
-		it = JsonbIteratorInit(&in->root);
-
-		/*
-		 * A root scalar is stored as an array of one element, so we get the
-		 * array and then its first (and only) member.
-		 */
-		(void) JsonbIteratorNext(&it, &v, true);
-		Assert(v.type == jbvArray);
-		(void) JsonbIteratorNext(&it, &v, true);
-		switch (v.type)
-		{
-			case jbvNull:
-				result = "null";
-				break;
-			case jbvString:
-				result = "string";
-				break;
-			case jbvNumeric:
-				result = "number";
-				break;
-			case jbvBool:
-				result = "boolean";
-				break;
-			default:
-				elog(ERROR, "unknown jsonb scalar type");
-		}
-	}
+	const char *result = JsonbContainerTypeName(&in->root);
 
 	PG_RETURN_TEXT_P(cstring_to_text(result));
 }
@@ -222,9 +253,12 @@ jsonb_typeof(PG_FUNCTION_ARGS)
  * Turns json string into a jsonb Datum.
  *
  * Uses the json parser (with hooks) to construct a jsonb.
+ *
+ * If escontext points to an ErrorSaveContext, errors are reported there
+ * instead of being thrown.
  */
 static inline Datum
-jsonb_from_cstring(char *json, int len)
+jsonb_from_cstring(char *json, int len, Node *escontext)
 {
 	JsonLexContext *lex;
 	JsonbInState state;
@@ -232,8 +266,9 @@ jsonb_from_cstring(char *json, int len)
 
 	memset(&state, 0, sizeof(state));
 	memset(&sem, 0, sizeof(sem));
-	lex = makeJsonLexContextCstringLen(json, len, true);
+	lex = makeJsonLexContextCstringLen(json, len, GetDatabaseEncoding(), true);
 
+	state.escontext = escontext;
 	sem.semstate = (void *) &state;
 
 	sem.object_start = jsonb_in_object_start;
@@ -243,58 +278,67 @@ jsonb_from_cstring(char *json, int len)
 	sem.scalar = jsonb_in_scalar;
 	sem.object_field_start = jsonb_in_object_field_start;
 
-	pg_parse_json(lex, &sem);
+	if (!pg_parse_json_or_errsave(lex, &sem, escontext))
+		return (Datum) 0;
 
 	/* after parsing, the item member has the composed jsonb structure */
 	PG_RETURN_POINTER(JsonbValueToJsonb(state.res));
 }
 
-static size_t
-checkStringLen(size_t len)
+static bool
+checkStringLen(size_t len, Node *escontext)
 {
 	if (len > JENTRY_OFFLENMASK)
-		ereport(ERROR,
+		ereturn(escontext, false,
 				(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
 				 errmsg("string too long to represent as jsonb string"),
 				 errdetail("Due to an implementation restriction, jsonb strings cannot exceed %d bytes.",
 						   JENTRY_OFFLENMASK)));
 
-	return len;
+	return true;
 }
 
-static void
+static JsonParseErrorType
 jsonb_in_object_start(void *pstate)
 {
 	JsonbInState *_state = (JsonbInState *) pstate;
 
 	_state->res = pushJsonbValue(&_state->parseState, WJB_BEGIN_OBJECT, NULL);
+
+	return JSON_SUCCESS;
 }
 
-static void
+static JsonParseErrorType
 jsonb_in_object_end(void *pstate)
 {
 	JsonbInState *_state = (JsonbInState *) pstate;
 
 	_state->res = pushJsonbValue(&_state->parseState, WJB_END_OBJECT, NULL);
+
+	return JSON_SUCCESS;
 }
 
-static void
+static JsonParseErrorType
 jsonb_in_array_start(void *pstate)
 {
 	JsonbInState *_state = (JsonbInState *) pstate;
 
 	_state->res = pushJsonbValue(&_state->parseState, WJB_BEGIN_ARRAY, NULL);
+
+	return JSON_SUCCESS;
 }
 
-static void
+static JsonParseErrorType
 jsonb_in_array_end(void *pstate)
 {
 	JsonbInState *_state = (JsonbInState *) pstate;
 
 	_state->res = pushJsonbValue(&_state->parseState, WJB_END_ARRAY, NULL);
+
+	return JSON_SUCCESS;
 }
 
-static void
+static JsonParseErrorType
 jsonb_in_object_field_start(void *pstate, char *fname, bool isnull)
 {
 	JsonbInState *_state = (JsonbInState *) pstate;
@@ -302,10 +346,14 @@ jsonb_in_object_field_start(void *pstate, char *fname, bool isnull)
 
 	Assert(fname != NULL);
 	v.type = jbvString;
-	v.val.string.len = checkStringLen(strlen(fname));
+	v.val.string.len = strlen(fname);
+	if (!checkStringLen(v.val.string.len, _state->escontext))
+		return JSON_SEM_ACTION_FAILED;
 	v.val.string.val = fname;
 
 	_state->res = pushJsonbValue(&_state->parseState, WJB_KEY, &v);
+
+	return JSON_SUCCESS;
 }
 
 static void
@@ -338,7 +386,7 @@ jsonb_put_escaped_value(StringInfo out, JsonbValue *scalarVal)
 /*
  * For jsonb we always want the de-escaped value - that's what's in token
  */
-static void
+static JsonParseErrorType
 jsonb_in_scalar(void *pstate, char *token, JsonTokenType tokentype)
 {
 	JsonbInState *_state = (JsonbInState *) pstate;
@@ -351,7 +399,9 @@ jsonb_in_scalar(void *pstate, char *token, JsonTokenType tokentype)
 		case JSON_TOKEN_STRING:
 			Assert(token != NULL);
 			v.type = jbvString;
-			v.val.string.len = checkStringLen(strlen(token));
+			v.val.string.len = strlen(token);
+			if (!checkStringLen(v.val.string.len, _state->escontext))
+				return JSON_SEM_ACTION_FAILED;
 			v.val.string.val = token;
 			break;
 		case JSON_TOKEN_NUMBER:
@@ -362,10 +412,11 @@ jsonb_in_scalar(void *pstate, char *token, JsonTokenType tokentype)
 			 */
 			Assert(token != NULL);
 			v.type = jbvNumeric;
-			numd = DirectFunctionCall3(numeric_in,
-									   CStringGetDatum(token),
-									   ObjectIdGetDatum(InvalidOid),
-									   Int32GetDatum(-1));
+			if (!DirectInputFunctionCallSafe(numeric_in, token,
+											 InvalidOid, -1,
+											 _state->escontext,
+											 &numd))
+				return JSON_SEM_ACTION_FAILED;
 			v.val.numeric = DatumGetNumeric(numd);
 			break;
 		case JSON_TOKEN_TRUE:
@@ -414,6 +465,8 @@ jsonb_in_scalar(void *pstate, char *token, JsonTokenType tokentype)
 				elog(ERROR, "unexpected parent of nested structure");
 		}
 	}
+
+	return JSON_SUCCESS;
 }
 
 /*
@@ -574,11 +627,8 @@ add_indent(StringInfo out, bool indent, int level)
 {
 	if (indent)
 	{
-		int			i;
-
 		appendStringInfoCharMacro(out, '\n');
-		for (i = 0; i < level; i++)
-			appendBinaryStringInfo(out, "    ", 4);
+		appendStringInfoSpaces(out, level * 4);
 	}
 }
 
@@ -648,7 +698,7 @@ jsonb_categorize_type(Oid typoid,
 		default:
 			/* Check for arrays and composites */
 			if (OidIsValid(get_element_type(typoid)) || typoid == ANYARRAYOID
-				|| typoid == RECORDARRAYOID)
+				|| typoid == ANYCOMPATIBLEARRAYOID || typoid == RECORDARRAYOID)
 				*tcategory = JSONBTYPE_ARRAY;
 			else if (type_is_rowtype(typoid))	/* includes RECORDOID */
 				*tcategory = JSONBTYPE_COMPOSITE;
@@ -697,6 +747,9 @@ jsonb_categorize_type(Oid typoid,
  *
  * If key_scalar is true, the value is stored as a key, so insist
  * it's of an acceptable type, and force it to be a jbvString.
+ *
+ * Note: currently, we assume that result->escontext is NULL and errors
+ * will be thrown.
  */
 static void
 datum_to_jsonb(Datum val, bool is_null, JsonbInState *result,
@@ -794,17 +847,20 @@ datum_to_jsonb(Datum val, bool is_null, JsonbInState *result,
 				break;
 			case JSONBTYPE_DATE:
 				jb.type = jbvString;
-				jb.val.string.val = JsonEncodeDateTime(NULL, val, DATEOID);
+				jb.val.string.val = JsonEncodeDateTime(NULL, val,
+													   DATEOID, NULL);
 				jb.val.string.len = strlen(jb.val.string.val);
 				break;
 			case JSONBTYPE_TIMESTAMP:
 				jb.type = jbvString;
-				jb.val.string.val = JsonEncodeDateTime(NULL, val, TIMESTAMPOID);
+				jb.val.string.val = JsonEncodeDateTime(NULL, val,
+													   TIMESTAMPOID, NULL);
 				jb.val.string.len = strlen(jb.val.string.val);
 				break;
 			case JSONBTYPE_TIMESTAMPTZ:
 				jb.type = jbvString;
-				jb.val.string.val = JsonEncodeDateTime(NULL, val, TIMESTAMPTZOID);
+				jb.val.string.val = JsonEncodeDateTime(NULL, val,
+													   TIMESTAMPTZOID, NULL);
 				jb.val.string.len = strlen(jb.val.string.val);
 				break;
 			case JSONBTYPE_JSONCAST:
@@ -828,8 +884,7 @@ datum_to_jsonb(Datum val, bool is_null, JsonbInState *result,
 					sem.scalar = jsonb_in_scalar;
 					sem.object_field_start = jsonb_in_object_field_start;
 
-					pg_parse_json(lex, &sem);
-
+					pg_parse_json_or_ereport(lex, &sem);
 				}
 				break;
 			case JSONBTYPE_JSONB:
@@ -867,7 +922,8 @@ datum_to_jsonb(Datum val, bool is_null, JsonbInState *result,
 			default:
 				outputstr = OidOutputFunctionCall(outfuncoid, val);
 				jb.type = jbvString;
-				jb.val.string.len = checkStringLen(strlen(outputstr));
+				jb.val.string.len = strlen(outputstr);
+				(void) checkStringLen(jb.val.string.len, NULL);
 				jb.val.string.val = outputstr;
 				break;
 		}
@@ -1095,6 +1151,49 @@ add_jsonb(Datum val, bool is_null, JsonbInState *result,
 }
 
 /*
+ * Is the given type immutable when coming out of a JSONB context?
+ *
+ * At present, datetimes are all considered mutable, because they
+ * depend on timezone.  XXX we should also drill down into objects and
+ * arrays, but do not.
+ */
+bool
+to_jsonb_is_immutable(Oid typoid)
+{
+	JsonbTypeCategory tcategory;
+	Oid			outfuncoid;
+
+	jsonb_categorize_type(typoid, &tcategory, &outfuncoid);
+
+	switch (tcategory)
+	{
+		case JSONBTYPE_NULL:
+		case JSONBTYPE_BOOL:
+		case JSONBTYPE_JSON:
+		case JSONBTYPE_JSONB:
+			return true;
+
+		case JSONBTYPE_DATE:
+		case JSONBTYPE_TIMESTAMP:
+		case JSONBTYPE_TIMESTAMPTZ:
+			return false;
+
+		case JSONBTYPE_ARRAY:
+			return false;		/* TODO recurse into elements */
+
+		case JSONBTYPE_COMPOSITE:
+			return false;		/* TODO recurse into fields */
+
+		case JSONBTYPE_NUMERIC:
+		case JSONBTYPE_JSONCAST:
+		case JSONBTYPE_OTHER:
+			return func_volatile(outfuncoid) == PROVOLATILE_IMMUTABLE;
+	}
+
+	return false;				/* not reached */
+}
+
+/*
  * SQL function to_jsonb(anyvalue)
  */
 Datum
@@ -1121,42 +1220,43 @@ to_jsonb(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(JsonbValueToJsonb(result.res));
 }
 
-/*
- * SQL function jsonb_build_object(variadic "any")
- */
 Datum
-jsonb_build_object(PG_FUNCTION_ARGS)
+jsonb_build_object_worker(int nargs, Datum *args, bool *nulls, Oid *types,
+						  bool absent_on_null, bool unique_keys)
 {
-	int			nargs;
 	int			i;
 	JsonbInState result;
-	Datum	   *args;
-	bool	   *nulls;
-	Oid		   *types;
-
-	/* build argument values to build the object */
-	nargs = extract_variadic_args(fcinfo, 0, true, &args, &types, &nulls);
-
-	if (nargs < 0)
-		PG_RETURN_NULL();
 
 	if (nargs % 2 != 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				 errmsg("argument list must have even number of elements"),
-				 errhint("The arguments of jsonb_build_object() must consist of alternating keys and values.")));
+		/* translator: %s is a SQL function name */
+				 errhint("The arguments of %s must consist of alternating keys and values.",
+						 "jsonb_build_object()")));
 
 	memset(&result, 0, sizeof(JsonbInState));
 
 	result.res = pushJsonbValue(&result.parseState, WJB_BEGIN_OBJECT, NULL);
+	result.parseState->unique_keys = unique_keys;
+	result.parseState->skip_nulls = absent_on_null;
 
 	for (i = 0; i < nargs; i += 2)
 	{
 		/* process key */
+		bool		skip;
+
 		if (nulls[i])
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					 errmsg("argument %d: key must not be null", i + 1)));
+
+		/* skip null values if absent_on_null */
+		skip = absent_on_null && nulls[i + 1];
+
+		/* we need to save skipped keys for the key uniqueness check */
+		if (skip && !unique_keys)
+			continue;
 
 		add_jsonb(args[i], false, &result, types[i], true);
 
@@ -1166,7 +1266,27 @@ jsonb_build_object(PG_FUNCTION_ARGS)
 
 	result.res = pushJsonbValue(&result.parseState, WJB_END_OBJECT, NULL);
 
-	PG_RETURN_POINTER(JsonbValueToJsonb(result.res));
+	return JsonbPGetDatum(JsonbValueToJsonb(result.res));
+}
+
+/*
+ * SQL function jsonb_build_object(variadic "any")
+ */
+Datum
+jsonb_build_object(PG_FUNCTION_ARGS)
+{
+	Datum	   *args;
+	bool	   *nulls;
+	Oid		   *types;
+
+	/* build argument values to build the object */
+	int			nargs = extract_variadic_args(fcinfo, 0, true,
+											  &args, &types, &nulls);
+
+	if (nargs < 0)
+		PG_RETURN_NULL();
+
+	PG_RETURN_DATUM(jsonb_build_object_worker(nargs, args, nulls, types, false, false));
 }
 
 /*
@@ -1185,36 +1305,50 @@ jsonb_build_object_noargs(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(JsonbValueToJsonb(result.res));
 }
 
-/*
- * SQL function jsonb_build_array(variadic "any")
- */
 Datum
-jsonb_build_array(PG_FUNCTION_ARGS)
+jsonb_build_array_worker(int nargs, Datum *args, bool *nulls, Oid *types,
+						 bool absent_on_null)
 {
-	int			nargs;
 	int			i;
 	JsonbInState result;
-	Datum	   *args;
-	bool	   *nulls;
-	Oid		   *types;
-
-	/* build argument values to build the array */
-	nargs = extract_variadic_args(fcinfo, 0, true, &args, &types, &nulls);
-
-	if (nargs < 0)
-		PG_RETURN_NULL();
 
 	memset(&result, 0, sizeof(JsonbInState));
 
 	result.res = pushJsonbValue(&result.parseState, WJB_BEGIN_ARRAY, NULL);
 
 	for (i = 0; i < nargs; i++)
+	{
+		if (absent_on_null && nulls[i])
+			continue;
+
 		add_jsonb(args[i], nulls[i], &result, types[i], false);
+	}
 
 	result.res = pushJsonbValue(&result.parseState, WJB_END_ARRAY, NULL);
 
-	PG_RETURN_POINTER(JsonbValueToJsonb(result.res));
+	return JsonbPGetDatum(JsonbValueToJsonb(result.res));
 }
+
+/*
+ * SQL function jsonb_build_array(variadic "any")
+ */
+Datum
+jsonb_build_array(PG_FUNCTION_ARGS)
+{
+	Datum	   *args;
+	bool	   *nulls;
+	Oid		   *types;
+
+	/* build argument values to build the object */
+	int			nargs = extract_variadic_args(fcinfo, 0, true,
+											  &args, &types, &nulls);
+
+	if (nargs < 0)
+		PG_RETURN_NULL();
+
+	PG_RETURN_DATUM(jsonb_build_array_worker(nargs, args, nulls, types, false));
+}
+
 
 /*
  * degenerate case of jsonb_build_array where it gets 0 arguments.
@@ -1282,9 +1416,7 @@ jsonb_object(PG_FUNCTION_ARGS)
 					 errmsg("wrong number of array subscripts")));
 	}
 
-	deconstruct_array(in_array,
-					  TEXTOID, -1, false, 'i',
-					  &in_datums, &in_nulls, &in_count);
+	deconstruct_array_builtin(in_array, TEXTOID, &in_datums, &in_nulls, &in_count);
 
 	count = in_count / 2;
 
@@ -1370,13 +1502,8 @@ jsonb_object_two_arg(PG_FUNCTION_ARGS)
 	if (nkdims == 0)
 		goto close_object;
 
-	deconstruct_array(key_array,
-					  TEXTOID, -1, false, 'i',
-					  &key_datums, &key_nulls, &key_count);
-
-	deconstruct_array(val_array,
-					  TEXTOID, -1, false, 'i',
-					  &val_datums, &val_nulls, &val_count);
+	deconstruct_array_builtin(key_array, TEXTOID, &key_datums, &key_nulls, &key_count);
+	deconstruct_array_builtin(val_array, TEXTOID, &val_datums, &val_nulls, &val_count);
 
 	if (key_count != val_count)
 		ereport(ERROR,
@@ -1456,6 +1583,8 @@ clone_parse_state(JsonbParseState *state)
 	{
 		ocursor->contVal = icursor->contVal;
 		ocursor->size = icursor->size;
+		ocursor->unique_keys = icursor->unique_keys;
+		ocursor->skip_nulls = icursor->skip_nulls;
 		icursor = icursor->next;
 		if (icursor == NULL)
 			break;
@@ -1467,12 +1596,8 @@ clone_parse_state(JsonbParseState *state)
 	return result;
 }
 
-
-/*
- * jsonb_agg aggregate function
- */
-Datum
-jsonb_agg_transfn(PG_FUNCTION_ARGS)
+static Datum
+jsonb_agg_transfn_worker(FunctionCallInfo fcinfo, bool absent_on_null)
 {
 	MemoryContext oldcontext,
 				aggcontext;
@@ -1519,6 +1644,9 @@ jsonb_agg_transfn(PG_FUNCTION_ARGS)
 		state = (JsonbAggState *) PG_GETARG_POINTER(0);
 		result = state->res;
 	}
+
+	if (absent_on_null && PG_ARGISNULL(1))
+		PG_RETURN_POINTER(state);
 
 	/* turn the argument into jsonb in the normal function context */
 
@@ -1589,6 +1717,24 @@ jsonb_agg_transfn(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(state);
 }
 
+/*
+ * jsonb_agg aggregate function
+ */
+Datum
+jsonb_agg_transfn(PG_FUNCTION_ARGS)
+{
+	return jsonb_agg_transfn_worker(fcinfo, false);
+}
+
+/*
+ * jsonb_agg_strict aggregate function
+ */
+Datum
+jsonb_agg_strict_transfn(PG_FUNCTION_ARGS)
+{
+	return jsonb_agg_transfn_worker(fcinfo, true);
+}
+
 Datum
 jsonb_agg_finalfn(PG_FUNCTION_ARGS)
 {
@@ -1610,6 +1756,7 @@ jsonb_agg_finalfn(PG_FUNCTION_ARGS)
 	 * shallow clone is sufficient as we aren't going to change any of the
 	 * values, just add the final array end marker.
 	 */
+	memset(&result, 0, sizeof(JsonbInState));
 
 	result.parseState = clone_parse_state(arg->res->parseState);
 
@@ -1621,11 +1768,9 @@ jsonb_agg_finalfn(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(out);
 }
 
-/*
- * jsonb_object_agg aggregate function
- */
-Datum
-jsonb_object_agg_transfn(PG_FUNCTION_ARGS)
+static Datum
+jsonb_object_agg_transfn_worker(FunctionCallInfo fcinfo,
+								bool absent_on_null, bool unique_keys)
 {
 	MemoryContext oldcontext,
 				aggcontext;
@@ -1639,6 +1784,7 @@ jsonb_object_agg_transfn(PG_FUNCTION_ARGS)
 			   *jbval;
 	JsonbValue	v;
 	JsonbIteratorToken type;
+	bool		skip;
 
 	if (!AggCheckCallContext(fcinfo, &aggcontext))
 	{
@@ -1658,6 +1804,9 @@ jsonb_object_agg_transfn(PG_FUNCTION_ARGS)
 		state->res = result;
 		result->res = pushJsonbValue(&result->parseState,
 									 WJB_BEGIN_OBJECT, NULL);
+		result->parseState->unique_keys = unique_keys;
+		result->parseState->skip_nulls = absent_on_null;
+
 		MemoryContextSwitchTo(oldcontext);
 
 		arg_type = get_fn_expr_argtype(fcinfo->flinfo, 1);
@@ -1692,6 +1841,15 @@ jsonb_object_agg_transfn(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 				 errmsg("field name must not be null")));
+
+	/*
+	 * Skip null values if absent_on_null unless key uniqueness check is
+	 * needed (because we must save keys in this case).
+	 */
+	skip = absent_on_null && PG_ARGISNULL(2);
+
+	if (skip && !unique_keys)
+		PG_RETURN_POINTER(state);
 
 	val = PG_GETARG_DATUM(1);
 
@@ -1748,6 +1906,16 @@ jsonb_object_agg_transfn(PG_FUNCTION_ARGS)
 				}
 				result->res = pushJsonbValue(&result->parseState,
 											 WJB_KEY, &v);
+
+				if (skip)
+				{
+					v.type = jbvNull;
+					result->res = pushJsonbValue(&result->parseState,
+												 WJB_VALUE, &v);
+					MemoryContextSwitchTo(oldcontext);
+					PG_RETURN_POINTER(state);
+				}
+
 				break;
 			case WJB_END_ARRAY:
 				break;
@@ -1820,6 +1988,43 @@ jsonb_object_agg_transfn(PG_FUNCTION_ARGS)
 	PG_RETURN_POINTER(state);
 }
 
+/*
+ * jsonb_object_agg aggregate function
+ */
+Datum
+jsonb_object_agg_transfn(PG_FUNCTION_ARGS)
+{
+	return jsonb_object_agg_transfn_worker(fcinfo, false, false);
+}
+
+
+/*
+ * jsonb_object_agg_strict aggregate function
+ */
+Datum
+jsonb_object_agg_strict_transfn(PG_FUNCTION_ARGS)
+{
+	return jsonb_object_agg_transfn_worker(fcinfo, true, false);
+}
+
+/*
+ * jsonb_object_agg_unique aggregate function
+ */
+Datum
+jsonb_object_agg_unique_transfn(PG_FUNCTION_ARGS)
+{
+	return jsonb_object_agg_transfn_worker(fcinfo, false, true);
+}
+
+/*
+ * jsonb_object_agg_unique_strict aggregate function
+ */
+Datum
+jsonb_object_agg_unique_strict_transfn(PG_FUNCTION_ARGS)
+{
+	return jsonb_object_agg_transfn_worker(fcinfo, true, true);
+}
+
 Datum
 jsonb_object_agg_finalfn(PG_FUNCTION_ARGS)
 {
@@ -1842,6 +2047,7 @@ jsonb_object_agg_finalfn(PG_FUNCTION_ARGS)
 	 * going to change any of the values, just add the final object end
 	 * marker.
 	 */
+	memset(&result, 0, sizeof(JsonbInState));
 
 	result.parseState = clone_parse_state(arg->res->parseState);
 
@@ -1857,7 +2063,7 @@ jsonb_object_agg_finalfn(PG_FUNCTION_ARGS)
 /*
  * Extract scalar value from raw-scalar pseudo-array jsonb.
  */
-static bool
+bool
 JsonbExtractScalar(JsonbContainer *jbc, JsonbValue *res)
 {
 	JsonbIterator *it;

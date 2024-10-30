@@ -2,7 +2,7 @@
  *
  * UUID generation functions using the BSD, E2FS or OSSP UUID library
  *
- * Copyright (c) 2007-2018, PostgreSQL Global Development Group
+ * Copyright (c) 2007-2023, PostgreSQL Global Development Group
  *
  * Portions Copyright (c) 2009 Andrew Gierth
  *
@@ -14,9 +14,12 @@
 #include "postgres.h"
 
 #include "fmgr.h"
+#include "common/cryptohash.h"
+#include "common/sha1.h"
 #include "port/pg_bswap.h"
 #include "utils/builtins.h"
 #include "utils/uuid.h"
+#include "varatt.h"
 
 /*
  * It's possible that there's more than one uuid.h header file present.
@@ -38,16 +41,6 @@
 #endif
 
 #undef uuid_hash
-
-/*
- * Some BSD variants offer md5 and sha1 implementations but Linux does not,
- * so we use a copy of the ones from pgcrypto.  Not needed with OSSP, though.
- */
-#ifndef HAVE_UUID_OSSP
-#include "md5.h"
-#include "sha1.h"
-#endif
-
 
 /* Check our UUID length against OSSP's; better both be 16 */
 #if defined(HAVE_UUID_OSSP) && (UUID_LEN != UUID_LEN_BIN)
@@ -293,6 +286,18 @@ uuid_generate_internal(int v, unsigned char *ns, const char *ptr, int len)
 						strlcpy(strbuf, str, 37);
 
 						/*
+						 * In recent NetBSD, uuid_create() has started
+						 * producing v4 instead of v1 UUIDs.  Check the
+						 * version field and complain if it's not v1.
+						 */
+						if (strbuf[14] != '1')
+							ereport(ERROR,
+									(errcode(ERRCODE_EXTERNAL_ROUTINE_EXCEPTION),
+							/* translator: %c will be a hex digit */
+									 errmsg("uuid_create() produced a version %c UUID instead of the expected version 1",
+											strbuf[14])));
+
+						/*
 						 * PTR, if set, replaces the trailing characters of
 						 * the uuid; this is to support v1mc, where a random
 						 * multicast MAC is used instead of the physical one
@@ -300,8 +305,7 @@ uuid_generate_internal(int v, unsigned char *ns, const char *ptr, int len)
 						if (ptr && len <= 36)
 							strcpy(strbuf + (36 - len), ptr);
 					}
-					if (str)
-						free(str);
+					free(str);
 				}
 
 				if (status != uuid_s_ok)
@@ -324,23 +328,39 @@ uuid_generate_internal(int v, unsigned char *ns, const char *ptr, int len)
 
 				if (v == 3)
 				{
-					MD5_CTX		ctx;
+					pg_cryptohash_ctx *ctx = pg_cryptohash_create(PG_MD5);
 
-					MD5Init(&ctx);
-					MD5Update(&ctx, ns, sizeof(uu));
-					MD5Update(&ctx, (unsigned char *) ptr, len);
+					if (pg_cryptohash_init(ctx) < 0)
+						elog(ERROR, "could not initialize %s context: %s", "MD5",
+							 pg_cryptohash_error(ctx));
+					if (pg_cryptohash_update(ctx, ns, sizeof(uu)) < 0 ||
+						pg_cryptohash_update(ctx, (unsigned char *) ptr, len) < 0)
+						elog(ERROR, "could not update %s context: %s", "MD5",
+							 pg_cryptohash_error(ctx));
 					/* we assume sizeof MD5 result is 16, same as UUID size */
-					MD5Final((unsigned char *) &uu, &ctx);
+					if (pg_cryptohash_final(ctx, (unsigned char *) &uu,
+											sizeof(uu)) < 0)
+						elog(ERROR, "could not finalize %s context: %s", "MD5",
+							 pg_cryptohash_error(ctx));
+					pg_cryptohash_free(ctx);
 				}
 				else
 				{
-					SHA1_CTX	ctx;
-					unsigned char sha1result[SHA1_RESULTLEN];
+					pg_cryptohash_ctx *ctx = pg_cryptohash_create(PG_SHA1);
+					unsigned char sha1result[SHA1_DIGEST_LENGTH];
 
-					SHA1Init(&ctx);
-					SHA1Update(&ctx, ns, sizeof(uu));
-					SHA1Update(&ctx, (unsigned char *) ptr, len);
-					SHA1Final(sha1result, &ctx);
+					if (pg_cryptohash_init(ctx) < 0)
+						elog(ERROR, "could not initialize %s context: %s", "SHA1",
+							 pg_cryptohash_error(ctx));
+					if (pg_cryptohash_update(ctx, ns, sizeof(uu)) < 0 ||
+						pg_cryptohash_update(ctx, (unsigned char *) ptr, len) < 0)
+						elog(ERROR, "could not update %s context: %s", "SHA1",
+							 pg_cryptohash_error(ctx));
+					if (pg_cryptohash_final(ctx, sha1result, sizeof(sha1result)) < 0)
+						elog(ERROR, "could not finalize %s context: %s", "SHA1",
+							 pg_cryptohash_error(ctx));
+					pg_cryptohash_free(ctx);
+
 					memcpy(&uu, sha1result, sizeof(uu));
 				}
 
@@ -358,8 +378,7 @@ uuid_generate_internal(int v, unsigned char *ns, const char *ptr, int len)
 				if (status == uuid_s_ok)
 					strlcpy(strbuf, str, 37);
 
-				if (str)
-					free(str);
+				free(str);
 
 				if (status != uuid_s_ok)
 					ereport(ERROR,

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER USER
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2024
+.\"    Manual: PostgreSQL 16.4 Documentation
+.\"    Source: PostgreSQL 16.4
 .\"  Language: English
 .\"
-.TH "ALTER USER" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER USER" "7" "2024" "PostgreSQL 16.4" "PostgreSQL 16.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -57,6 +57,7 @@ ALTER USER { \fIrole_specification\fR | ALL } [ IN DATABASE \fIdatabase_name\fR 
 where \fIrole_specification\fR can be:
 
     \fIrole_name\fR
+  | CURRENT_ROLE
   | CURRENT_USER
   | SESSION_USER
 .fi
@@ -64,7 +65,7 @@ where \fIrole_specification\fR can be:
 .PP
 \fBALTER USER\fR
 is now an alias for
-ALTER ROLE (\fBALTER_ROLE\fR(7))\&.
+\fBALTER ROLE\fR\&.
 .SH "COMPATIBILITY"
 .PP
 The

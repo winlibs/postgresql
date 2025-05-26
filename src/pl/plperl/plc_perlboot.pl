@@ -1,8 +1,11 @@
+
+# Copyright (c) 2021, PostgreSQL Global Development Group
+
 #  src/pl/plperl/plc_perlboot.pl
 
 use strict;
+use warnings;
 
-use 5.008001;
 use vars qw(%_SHARED $_TD);
 
 PostgreSQL::InServer::Util::bootstrap();

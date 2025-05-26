@@ -1,9 +1,9 @@
 #include "postgres.h"
 
 #include "fmgr.h"
-#include "plpython.h"
-#include "plpy_typeio.h"
 #include "hstore/hstore.h"
+#include "plpy_typeio.h"
+#include "plpython.h"
 
 PG_MODULE_MAGIC;
 
@@ -128,12 +128,18 @@ Datum
 plpython_to_hstore(PG_FUNCTION_ARGS)
 {
 	PyObject   *dict;
-	PyObject *volatile items = NULL;
-	int32		pcount;
-	HStore	   *out;
+	PyObject   *volatile items;
+	Py_ssize_t	pcount;
+	HStore	   *volatile out;
 
 	dict = (PyObject *) PG_GETARG_POINTER(0);
-	if (!PyMapping_Check(dict))
+
+	/*
+	 * As of Python 3, PyMapping_Check() is unreliable unless one first checks
+	 * that the object isn't a sequence.  (Cleaner solutions exist, but not
+	 * before Python 3.10, which we're not prepared to require yet.)
+	 */
+	if (PySequence_Check(dict) || !PyMapping_Check(dict))
 		ereport(ERROR,
 				(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 				 errmsg("not a Python mapping")));
@@ -144,7 +150,7 @@ plpython_to_hstore(PG_FUNCTION_ARGS)
 	PG_TRY();
 	{
 		int32		buflen;
-		int32		i;
+		Py_ssize_t	i;
 		Pairs	   *pairs;
 
 		pairs = palloc(pcount * sizeof(*pairs));
@@ -176,15 +182,13 @@ plpython_to_hstore(PG_FUNCTION_ARGS)
 				pairs[i].isnull = false;
 			}
 		}
-		Py_DECREF(items);
 
 		pcount = hstoreUniquePairs(pairs, pcount, &buflen);
 		out = hstorePairs(pairs, pcount, buflen);
 	}
-	PG_CATCH();
+	PG_FINALLY();
 	{
 		Py_DECREF(items);
-		PG_RE_THROW();
 	}
 	PG_END_TRY();
 

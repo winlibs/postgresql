@@ -4,7 +4,7 @@
  *
  *	  Routines for aggregate-manipulation commands
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -24,7 +24,6 @@
 
 #include "access/htup_details.h"
 #include "catalog/dependency.h"
-#include "catalog/indexing.h"
 #include "catalog/pg_aggregate.h"
 #include "catalog/pg_proc.h"
 #include "catalog/pg_type.h"
@@ -54,7 +53,12 @@ static char extractModify(DefElem *defel);
  * "parameters" is a list of DefElem representing the agg's definition clauses.
  */
 ObjectAddress
-DefineAggregate(ParseState *pstate, List *name, List *args, bool oldstyle, List *parameters)
+DefineAggregate(ParseState *pstate,
+				List *name,
+				List *args,
+				bool oldstyle,
+				List *parameters,
+				bool replace)
 {
 	char	   *aggName;
 	Oid			aggNamespace;
@@ -308,9 +312,11 @@ DefineAggregate(ParseState *pstate, List *name, List *args, bool oldstyle, List 
 										  InvalidOid,
 										  OBJECT_AGGREGATE,
 										  &parameterTypes,
+										  NULL,
 										  &allParameterTypes,
 										  &parameterModes,
 										  &parameterNames,
+										  NULL,
 										  &parameterDefaults,
 										  &variadicArgType,
 										  &requiredResultType);
@@ -436,6 +442,7 @@ DefineAggregate(ParseState *pstate, List *name, List *args, bool oldstyle, List 
 	 */
 	return AggregateCreate(aggName, /* aggregate name */
 						   aggNamespace,	/* namespace */
+						   replace,
 						   aggKind,
 						   numArgs,
 						   numDirectArgs,

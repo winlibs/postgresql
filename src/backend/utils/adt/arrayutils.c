@@ -3,7 +3,7 @@
  * arrayutils.c
  *	  This file contains some support routines required for array functions.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -16,6 +16,7 @@
 #include "postgres.h"
 
 #include "catalog/pg_type.h"
+#include "common/int.h"
 #include "utils/array.h"
 #include "utils/builtins.h"
 #include "utils/memutils.h"
@@ -63,10 +64,6 @@ ArrayGetOffset0(int n, const int *tup, const int *scale)
  * This must do overflow checking, since it is used to validate that a user
  * dimensionality request doesn't overflow what we can handle.
  *
- * We limit array sizes to at most about a quarter billion elements,
- * so that it's not necessary to check for overflow in quite so many
- * places --- for instance when palloc'ing Datum arrays.
- *
  * The multiplication overflow check only works on machines that have int64
  * arithmetic, but that is nearly all platforms these days, and doing check
  * divides for those that don't seems way too expensive.
@@ -76,8 +73,6 @@ ArrayGetNItems(int ndim, const int *dims)
 {
 	int32		ret;
 	int			i;
-
-#define MaxArraySize ((Size) (MaxAllocSize / sizeof(Datum)))
 
 	if (ndim <= 0)
 		return 0;
@@ -109,6 +104,36 @@ ArrayGetNItems(int ndim, const int *dims)
 				 errmsg("array size exceeds the maximum allowed (%d)",
 						(int) MaxArraySize)));
 	return (int) ret;
+}
+
+/*
+ * Verify sanity of proposed lower-bound values for an array
+ *
+ * The lower-bound values must not be so large as to cause overflow when
+ * calculating subscripts, e.g. lower bound 2147483640 with length 10
+ * must be disallowed.  We actually insist that dims[i] + lb[i] be
+ * computable without overflow, meaning that an array with last subscript
+ * equal to INT_MAX will be disallowed.
+ *
+ * It is assumed that the caller already called ArrayGetNItems, so that
+ * overflowed (negative) dims[] values have been eliminated.
+ */
+void
+ArrayCheckBounds(int ndim, const int *dims, const int *lb)
+{
+	int			i;
+
+	for (i = 0; i < ndim; i++)
+	{
+		/* PG_USED_FOR_ASSERTS_ONLY prevents variable-isn't-read warnings */
+		int32		sum PG_USED_FOR_ASSERTS_ONLY;
+
+		if (pg_add_s32_overflow(dims[i], lb[i], &sum))
+			ereport(ERROR,
+					(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
+					 errmsg("array lower bound is too large: %d",
+							lb[i])));
+	}
 }
 
 /*
@@ -220,14 +245,13 @@ ArrayGetIntegerTypmods(ArrayType *arr, int *n)
 
 	/* hardwired knowledge about cstring's representation details here */
 	deconstruct_array(arr, CSTRINGOID,
-					  -2, false, 'c',
+					  -2, false, TYPALIGN_CHAR,
 					  &elem_values, NULL, n);
 
 	result = (int32 *) palloc(*n * sizeof(int32));
 
 	for (i = 0; i < *n; i++)
-		result[i] = pg_atoi(DatumGetCString(elem_values[i]),
-							sizeof(int32), '\0');
+		result[i] = pg_strtoint32(DatumGetCString(elem_values[i]));
 
 	pfree(elem_values);
 

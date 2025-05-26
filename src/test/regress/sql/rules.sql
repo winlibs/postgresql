@@ -775,10 +775,13 @@ drop table cchild;
 -- temporarily disable fancy output, so view changes create less diff noise
 \a\t
 
-SELECT viewname, definition FROM pg_views WHERE schemaname <> 'information_schema' ORDER BY viewname;
+SELECT viewname, definition FROM pg_views
+WHERE schemaname IN ('pg_catalog', 'public')
+ORDER BY viewname;
 
 SELECT tablename, rulename, definition FROM pg_rules
-	ORDER BY tablename, rulename;
+WHERE schemaname IN ('pg_catalog', 'public')
+ORDER BY tablename, rulename;
 
 -- restore normal output mode
 \a\t
@@ -898,15 +901,27 @@ select reltoastrelid, relkind, relfrozenxid
 
 drop view rules_fooview;
 
--- trying to convert a partitioned table to view is not allowed
+-- cannot convert an inheritance parent or child to a view, though
+create table rules_fooview (x int, y text);
+create table rules_fooview_child () inherits (rules_fooview);
+
+create rule "_RETURN" as on select to rules_fooview do instead
+  select 1 as x, 'aaa'::text as y;
+create rule "_RETURN" as on select to rules_fooview_child do instead
+  select 1 as x, 'aaa'::text as y;
+
+drop table rules_fooview cascade;
+
+-- likewise, converting a partitioned table or partition to view is not allowed
 create table rules_fooview (x int, y text) partition by list (x);
 create rule "_RETURN" as on select to rules_fooview do instead
   select 1 as x, 'aaa'::text as y;
 
--- nor can one convert a partition to view
 create table rules_fooview_part partition of rules_fooview for values in (1);
 create rule "_RETURN" as on select to rules_fooview_part do instead
   select 1 as x, 'aaa'::text as y;
+
+drop table rules_fooview;
 
 --
 -- check for planner problems with complex inherited UPDATES
@@ -936,9 +951,7 @@ update id_ordered set name = 'update 4' where id = 4;
 update id_ordered set name = 'update 5' where id = 5;
 select * from id_ordered;
 
-\set VERBOSITY terse \\ -- suppress cascade details
 drop table id cascade;
-\set VERBOSITY default
 
 --
 -- check corner case where an entirely-dummy subplan is created by
@@ -979,6 +992,20 @@ select * from only t1_2;
 
 reset constraint_exclusion;
 
+-- test FOR UPDATE in rules
+
+create table rules_base(f1 int, f2 int);
+insert into rules_base values(1,2), (11,12);
+create rule r1 as on update to rules_base do instead
+  select * from rules_base where f1 = 1 for update;
+update rules_base set f2 = f2 + 1;
+create or replace rule r1 as on update to rules_base do instead
+  select * from rules_base where f1 = 11 for update of rules_base;
+update rules_base set f2 = f2 + 1;
+create or replace rule r1 as on update to rules_base do instead
+  select * from rules_base where f1 = 11 for update of old; -- error
+drop table rules_base;
+
 -- test various flavors of pg_get_viewdef()
 
 select pg_get_viewdef('shoe'::regclass) as unpretty;
@@ -989,11 +1016,11 @@ select pg_get_viewdef('shoe'::regclass,0) as prettier;
 -- check multi-row VALUES in rules
 --
 
-create table rules_src(f1 int, f2 int);
-create table rules_log(f1 int, f2 int, tag text);
+create table rules_src(f1 int, f2 int default 0);
+create table rules_log(f1 int, f2 int, tag text, id serial);
 insert into rules_src values(1,2), (11,12);
 create rule r1 as on update to rules_src do also
-  insert into rules_log values(old.*, 'old'), (new.*, 'new');
+  insert into rules_log values(old.*, 'old', default), (new.*, 'new', default);
 update rules_src set f2 = f2 + 1;
 update rules_src set f2 = f2 * 10;
 select * from rules_src;
@@ -1001,17 +1028,59 @@ select * from rules_log;
 create rule r2 as on update to rules_src do also
   values(old.*, 'old'), (new.*, 'new');
 update rules_src set f2 = f2 / 10;
+create rule r3 as on insert to rules_src do also
+  insert into rules_log values(null, null, '-', default), (new.*, 'new', default);
+insert into rules_src values(22,23), (33,default);
 select * from rules_src;
 select * from rules_log;
-create rule r3 as on delete to rules_src do notify rules_src_deletion;
-\d+ rules_src
+create rule r4 as on delete to rules_src do notify rules_src_deletion;
 
 --
 -- Ensure an aliased target relation for insert is correctly deparsed.
 --
-create rule r4 as on insert to rules_src do instead insert into rules_log AS trgt SELECT NEW.* RETURNING trgt.f1, trgt.f2;
-create rule r5 as on update to rules_src do instead UPDATE rules_log AS trgt SET tag = 'updated' WHERE trgt.f1 = new.f1;
+create rule r5 as on insert to rules_src do instead insert into rules_log AS trgt SELECT NEW.* RETURNING trgt.f1, trgt.f2;
+create rule r6 as on update to rules_src do instead UPDATE rules_log AS trgt SET tag = 'updated' WHERE trgt.f1 = new.f1;
+
+--
+-- Check deparse disambiguation of INSERT/UPDATE/DELETE targets.
+--
+create rule r7 as on delete to rules_src do instead
+  with wins as (insert into int4_tbl as trgt values (0) returning *),
+       wupd as (update int4_tbl trgt set f1 = f1+1 returning *),
+       wdel as (delete from int4_tbl trgt where f1 = 0 returning *)
+  insert into rules_log AS trgt select old.* from wins, wupd, wdel
+  returning trgt.f1, trgt.f2;
+
+-- check display of all rules added above
 \d+ rules_src
+
+--
+-- Also check multiassignment deparsing.
+--
+create table rule_t1(f1 int, f2 int);
+create table rule_dest(f1 int, f2 int[], tag text);
+create rule rr as on update to rule_t1 do instead UPDATE rule_dest trgt
+  SET (f2[1], f1, tag) = (SELECT new.f2, new.f1, 'updated'::varchar)
+  WHERE trgt.f1 = new.f1 RETURNING new.*;
+\d+ rule_t1
+drop table rule_t1, rule_dest;
+
+--
+-- Test implicit LATERAL references to old/new in rules
+--
+CREATE TABLE rule_t1(a int, b text DEFAULT 'xxx', c int);
+CREATE VIEW rule_v1 AS SELECT * FROM rule_t1;
+CREATE RULE v1_ins AS ON INSERT TO rule_v1
+  DO ALSO INSERT INTO rule_t1
+  SELECT * FROM (SELECT a + 10 FROM rule_t1 WHERE a = NEW.a) tt;
+CREATE RULE v1_upd AS ON UPDATE TO rule_v1
+  DO ALSO UPDATE rule_t1 t
+  SET c = tt.a * 10
+  FROM (SELECT a FROM rule_t1 WHERE a = OLD.a) tt WHERE t.a = tt.a;
+INSERT INTO rule_v1 VALUES (1, 'a'), (2, 'b');
+UPDATE rule_v1 SET b = upper(b);
+SELECT * FROM rule_t1;
+DROP TABLE rule_t1 CASCADE;
 
 --
 -- check alter rename rule
@@ -1045,6 +1114,8 @@ DROP TABLE rule_t1;
 -- check display of VALUES in view definitions
 --
 create view rule_v1 as values(1,2);
+\d+ rule_v1
+alter table rule_v1 rename column column2 to q2;
 \d+ rule_v1
 drop view rule_v1;
 create view rule_v1(x) as values(1,2);
@@ -1132,7 +1203,7 @@ SELECT tablename, rulename, definition FROM pg_rules
 explain (costs off) INSERT INTO hats VALUES ('h8', 'forbidden') RETURNING *;
 
 -- ensure upserting into a rule, with a CTE (different offsets!) works
-WITH data(hat_name, hat_color) AS (
+WITH data(hat_name, hat_color) AS MATERIALIZED (
     VALUES ('h8', 'green'),
         ('h9', 'blue'),
         ('h7', 'forbidden')
@@ -1140,7 +1211,8 @@ WITH data(hat_name, hat_color) AS (
 INSERT INTO hats
     SELECT * FROM data
 RETURNING *;
-EXPLAIN (costs off) WITH data(hat_name, hat_color) AS (
+EXPLAIN (costs off)
+WITH data(hat_name, hat_color) AS MATERIALIZED (
     VALUES ('h8', 'green'),
         ('h9', 'blue'),
         ('h7', 'forbidden')

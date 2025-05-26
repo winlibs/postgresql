@@ -7,7 +7,7 @@
  *
  * src/backend/utils/misc/ps_status.c
  *
- * Copyright (c) 2000-2018, PostgreSQL Global Development Group
+ * Copyright (c) 2000-2021, PostgreSQL Global Development Group
  * various details abducted from various places
  *--------------------------------------------------------------------
  */
@@ -28,8 +28,9 @@
 
 #include "libpq/libpq.h"
 #include "miscadmin.h"
-#include "utils/ps_status.h"
+#include "pgstat.h"
 #include "utils/guc.h"
+#include "utils/ps_status.h"
 
 extern char **environ;
 bool		update_process_title = true;
@@ -38,6 +39,9 @@ bool		update_process_title = true;
 /*
  * Alternative ways of updating ps display:
  *
+ * PS_USE_SETPROCTITLE_FAST
+ *	   use the function setproctitle_fast(const char *, ...)
+ *	   (newer FreeBSD systems)
  * PS_USE_SETPROCTITLE
  *	   use the function setproctitle(const char *, ...)
  *	   (newer BSD systems)
@@ -59,7 +63,9 @@ bool		update_process_title = true;
  *	   don't update ps display
  *	   (This is the default, as it is safest.)
  */
-#if defined(HAVE_SETPROCTITLE)
+#if defined(HAVE_SETPROCTITLE_FAST)
+#define PS_USE_SETPROCTITLE_FAST
+#elif defined(HAVE_SETPROCTITLE)
 #define PS_USE_SETPROCTITLE
 #elif defined(HAVE_PSTAT) && defined(PSTAT_SETCMD)
 #define PS_USE_PSTAT
@@ -84,6 +90,8 @@ bool		update_process_title = true;
 #endif
 
 
+#ifndef PS_USE_NONE
+
 #ifndef PS_USE_CLOBBER_ARGV
 /* all but one option need a buffer to write their ps line in */
 #define PS_BUFFER_SIZE 256
@@ -99,6 +107,8 @@ static size_t ps_buffer_cur_len;	/* nominal strlen(ps_buffer) */
 
 static size_t ps_buffer_fixed_size; /* size of the constant prefix */
 
+#endif							/* not PS_USE_NONE */
+
 /* save the original argv[] location here */
 static int	save_argc;
 static char **save_argv;
@@ -112,7 +122,8 @@ static char **save_argv;
  * (The original argv[] will not be overwritten by this routine, but may be
  * overwritten during init_ps_display.  Also, the physical location of the
  * environment strings may be moved, so this should be called before any code
- * that might try to hang onto a getenv() result.)
+ * that might try to hang onto a getenv() result.  But see hack for musl
+ * within.)
  *
  * Note that in case of failure this cannot call elog() as that is not
  * initialized yet.  We rely on write_stderr() instead.
@@ -127,7 +138,7 @@ save_ps_display_args(int argc, char **argv)
 
 	/*
 	 * If we're going to overwrite the argv area, count the available space.
-	 * Also move the environment to make additional room.
+	 * Also move the environment strings to make additional room.
 	 */
 	{
 		char	   *end_of_area = NULL;
@@ -156,7 +167,33 @@ save_ps_display_args(int argc, char **argv)
 		for (i = 0; environ[i] != NULL; i++)
 		{
 			if (end_of_area + 1 == environ[i])
-				end_of_area = environ[i] + strlen(environ[i]);
+			{
+				/*
+				 * The musl dynamic linker keeps a static pointer to the
+				 * initial value of LD_LIBRARY_PATH, if that is defined in the
+				 * process's environment. Therefore, we must not overwrite the
+				 * value of that setting and thus cannot advance end_of_area
+				 * beyond it.  Musl does not define any identifying compiler
+				 * symbol, so we have to do this unless we see a symbol
+				 * identifying a Linux libc we know is safe.
+				 */
+#if defined(__linux__) && (!defined(__GLIBC__) && !defined(__UCLIBC__))
+				if (strncmp(environ[i], "LD_LIBRARY_PATH=", 16) == 0)
+				{
+					/*
+					 * We can overwrite the name, but stop at the equals sign.
+					 * Future loop iterations will not find any more
+					 * contiguous space, but we don't break early because we
+					 * need to count the total number of environ[] entries.
+					 */
+					end_of_area = environ[i] + 15;
+				}
+				else
+#endif
+				{
+					end_of_area = environ[i] + strlen(environ[i]);
+				}
+			}
 		}
 
 		ps_buffer = argv[0];
@@ -191,7 +228,7 @@ save_ps_display_args(int argc, char **argv)
 	 * If we're going to change the original argv[] then make a copy for
 	 * argument parsing purposes.
 	 *
-	 * (NB: do NOT think to remove the copying of argv[], even though
+	 * NB: do NOT think to remove the copying of argv[], even though
 	 * postmaster.c finishes looking at argv[] long before we ever consider
 	 * changing the ps display.  On some platforms, getopt() keeps pointers
 	 * into the argv array, and will get horribly confused when it is
@@ -238,15 +275,22 @@ save_ps_display_args(int argc, char **argv)
 
 /*
  * Call this once during subprocess startup to set the identification
- * values.  At this point, the original argv[] array may be overwritten.
+ * values.
+ *
+ * If fixed_part is NULL, a default will be obtained from MyBackendType.
+ *
+ * At this point, the original argv[] array may be overwritten.
  */
 void
-init_ps_display(const char *username, const char *dbname,
-				const char *host_info, const char *initial_str)
+init_ps_display(const char *fixed_part)
 {
-	Assert(username);
-	Assert(dbname);
-	Assert(host_info);
+#ifndef PS_USE_NONE
+	bool		save_update_process_title;
+#endif
+
+	Assert(fixed_part || MyBackendType);
+	if (!fixed_part)
+		fixed_part = GetBackendTypeDesc(MyBackendType);
 
 #ifndef PS_USE_NONE
 	/* no ps display for stand-alone backend */
@@ -286,7 +330,7 @@ init_ps_display(const char *username, const char *dbname,
 	 * Make fixed prefix of ps display.
 	 */
 
-#ifdef PS_USE_SETPROCTITLE
+#if defined(PS_USE_SETPROCTITLE) || defined(PS_USE_SETPROCTITLE_FAST)
 
 	/*
 	 * apparently setproctitle() already adds a `progname:' prefix to the ps
@@ -300,19 +344,25 @@ init_ps_display(const char *username, const char *dbname,
 	if (*cluster_name == '\0')
 	{
 		snprintf(ps_buffer, ps_buffer_size,
-				 PROGRAM_NAME_PREFIX "%s %s %s ",
-				 username, dbname, host_info);
+				 PROGRAM_NAME_PREFIX "%s ",
+				 fixed_part);
 	}
 	else
 	{
 		snprintf(ps_buffer, ps_buffer_size,
-				 PROGRAM_NAME_PREFIX "%s: %s %s %s ",
-				 cluster_name, username, dbname, host_info);
+				 PROGRAM_NAME_PREFIX "%s: %s ",
+				 cluster_name, fixed_part);
 	}
 
 	ps_buffer_cur_len = ps_buffer_fixed_size = strlen(ps_buffer);
 
-	set_ps_display(initial_str, true);
+	/*
+	 * On the first run, force the update.
+	 */
+	save_update_process_title = update_process_title;
+	update_process_title = true;
+	set_ps_display("");
+	update_process_title = save_update_process_title;
 #endif							/* not PS_USE_NONE */
 }
 
@@ -323,11 +373,11 @@ init_ps_display(const char *username, const char *dbname,
  * indication of what you're currently doing passed in the argument.
  */
 void
-set_ps_display(const char *activity, bool force)
+set_ps_display(const char *activity)
 {
 #ifndef PS_USE_NONE
-	/* update_process_title=off disables updates, unless force = true */
-	if (!force && !update_process_title)
+	/* update_process_title=off disables updates */
+	if (!update_process_title)
 		return;
 
 	/* no ps display for stand-alone backend */
@@ -349,6 +399,8 @@ set_ps_display(const char *activity, bool force)
 
 #ifdef PS_USE_SETPROCTITLE
 	setproctitle("%s", ps_buffer);
+#elif defined(PS_USE_SETPROCTITLE_FAST)
+	setproctitle_fast("%s", ps_buffer);
 #endif
 
 #ifdef PS_USE_PSTAT
@@ -413,7 +465,12 @@ get_ps_display(int *displen)
 	}
 #endif
 
+#ifndef PS_USE_NONE
 	*displen = (int) (ps_buffer_cur_len - ps_buffer_fixed_size);
 
 	return ps_buffer + ps_buffer_fixed_size;
+#else
+	*displen = 0;
+	return "";
+#endif
 }

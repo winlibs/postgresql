@@ -10,8 +10,24 @@
 <xsl:param name="tablecolumns.extension" select="0"></xsl:param>
 <xsl:param name="toc.max.depth">3</xsl:param>
 <xsl:param name="ulink.footnotes" select="1"></xsl:param>
+
+<!-- The release notes have too many ulinks to look good as footnotes in print mode -->
+<xsl:template match="sect1[starts-with(@id, 'release-')]//ulink[starts-with(@url, 'https://postgr.es/c/')]">
+  <!-- Do nothing for ulink to avoid footnotes -->
+</xsl:template>
+
+<!--
+Suppress the description of the commit link markers in print mode.
+Use "node()" to keep the paragraph but remove all content;  prevents
+an "Unresolved ID reference found" warning during PDF builds.
+-->
+<xsl:template match="appendix[@id='release']//para[@id='release-commit-links']//node()">
+  <!-- Output an empty para -->
+</xsl:template>
+
 <xsl:param name="use.extensions" select="1"></xsl:param>
 <xsl:param name="variablelist.as.blocks" select="1"></xsl:param>
+<xsl:param name="orderedlist.label.width">1.5em</xsl:param>
 
 <xsl:attribute-set name="monospace.verbatim.properties"
                    use-attribute-sets="verbatim.properties monospace.properties">
@@ -30,6 +46,11 @@
 
 <xsl:attribute-set name="admonition.title.properties">
   <xsl:attribute name="text-align">center</xsl:attribute>
+</xsl:attribute-set>
+
+<!-- Make all tables default to left alignment, for consistency with HTML -->
+<xsl:attribute-set name="table.table.properties">
+  <xsl:attribute name="text-align">left</xsl:attribute>
 </xsl:attribute-set>
 
 <!-- fix missing space after vertical simplelist
@@ -61,6 +82,38 @@
     <xsl:apply-templates mode="bibliography.mode"/>
     <xsl:value-of select="$biblioentry.item.separator"/>
   </fo:inline>
+</xsl:template>
+
+<!-- formatting for entries in tables of functions -->
+<xsl:template match="entry[@role='func_table_entry']/para">
+  <fo:block margin-left="4em" text-align="left">
+    <xsl:if test="self::para[@role='func_signature']">
+      <xsl:attribute name="text-indent">-3.5em</xsl:attribute>
+    </xsl:if>
+    <xsl:apply-templates/>
+  </fo:block>
+</xsl:template>
+
+<!-- formatting for entries in tables of catalog/view columns -->
+<xsl:template match="entry[@role='catalog_table_entry']/para">
+  <fo:block margin-left="4em" text-align="left">
+    <xsl:if test="self::para[@role='column_definition']">
+      <xsl:attribute name="text-indent">-3.5em</xsl:attribute>
+    </xsl:if>
+    <xsl:apply-templates/>
+  </fo:block>
+</xsl:template>
+
+<!-- overrides stylesheet-common.xsl -->
+<!-- FOP needs us to be explicit about the font to use for right arrow -->
+<xsl:template match="returnvalue">
+  <fo:inline font-family="{$symbol.font.family}">&#x2192; </fo:inline>
+  <xsl:call-template name="inline.monoseq"/>
+</xsl:template>
+
+<!-- FOP needs us to be explicit about use of symbol font in some cases -->
+<xsl:template match="phrase[@role='symbol_font']">
+  <fo:inline font-family="{$symbol.font.family}"><xsl:value-of select="."/></fo:inline>
 </xsl:template>
 
 <!-- bug fix from <https://sourceforge.net/p/docbook/bugs/1360/#831b> -->

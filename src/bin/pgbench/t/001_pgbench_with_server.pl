@@ -1,142 +1,135 @@
+
+# Copyright (c) 2021, PostgreSQL Global Development Group
+
 use strict;
 use warnings;
 
 use PostgresNode;
 use TestLib;
 use Test::More;
+use Config;
 
 # start a pgbench specific server
 my $node = get_new_node('main');
 $node->init;
 $node->start;
 
-# invoke pgbench, with parameters:
-#   $opts: options as a string to be split on spaces
-#   $stat: expected exit status
-#   $out: reference to a regexp list that must match stdout
-#   $err: reference to a regexp list that must match stderr
-#   $name: name of test for error messages
-#   $files: reference to filename/contents dictionnary
-#   @args: further raw options or arguments
-sub pgbench
-{
-	my ($opts, $stat, $out, $err, $name, $files, @args) = @_;
-	my @cmd = ('pgbench', split /\s+/, $opts);
-	my @filenames = ();
-	if (defined $files)
-	{
+# tablespace for testing, because partitioned tables cannot use pg_default
+# explicitly and we want to test that table creation with tablespace works
+# for partitioned tables.
+my $ts = $node->basedir . '/regress_pgbench_tap_1_ts_dir';
+mkdir $ts or die "cannot create directory $ts";
 
-		# note: files are ordered for determinism
-		for my $fn (sort keys %$files)
-		{
-			my $filename = $node->basedir . '/' . $fn;
-			push @cmd, '-f', $filename;
-
-			# cleanup file weight
-			$filename =~ s/\@\d+$//;
-
-			#push @filenames, $filename;
-			# filenames are expected to be unique on a test
-			if (-e $filename)
-			{
-				ok(0, "$filename must not already exists");
-				unlink $filename or die "cannot unlink $filename: $!";
-			}
-			append_to_file($filename, $$files{$fn});
-		}
-	}
-
-	push @cmd, @args;
-
-	$node->command_checks_all(\@cmd, $stat, $out, $err, $name);
-
-	# cleanup?
-	#unlink @filenames or die "cannot unlink files (@filenames): $!";
-
-	return;
-}
-
-# Test concurrent insertion into table with UNIQUE oid column.  DDL expects
-# GetNewOidWithIndex() to successfully avoid violating uniqueness for indexes
-# like pg_class_oid_index and pg_proc_oid_index.  This indirectly exercises
-# LWLock and spinlock concurrency.  This test makes a 5-MiB table.
-
+# the next commands will issue a syntax error if the path contains a "'"
 $node->safe_psql('postgres',
-	    'CREATE UNLOGGED TABLE oid_tbl () WITH OIDS; '
-	  . 'ALTER TABLE oid_tbl ADD UNIQUE (oid);');
+	"CREATE TABLESPACE regress_pgbench_tap_1_ts LOCATION '$ts';");
 
-pgbench(
+# Test concurrent OID generation via pg_enum_oid_index.  This indirectly
+# exercises LWLock and spinlock concurrency.
+my $labels = join ',', map { "'l$_'" } 1 .. 1000;
+$node->pgbench(
 	'--no-vacuum --client=5 --protocol=prepared --transactions=25',
 	0,
 	[qr{processed: 125/125}],
 	[qr{^$}],
-	'concurrency OID generation',
+	'concurrent OID generation',
 	{
-		'001_pgbench_concurrent_oid_generation' =>
-		  'INSERT INTO oid_tbl SELECT FROM generate_series(1,1000);'
+		'001_pgbench_concurrent_insert' =>
+		  "CREATE TYPE pg_temp.e AS ENUM ($labels); DROP TYPE pg_temp.e;"
 	});
 
-# cleanup
-$node->safe_psql('postgres', 'DROP TABLE oid_tbl;');
+# Test inplace updates from VACUUM concurrent with heap_update from GRANT.
+# The PROC_IN_VACUUM environment can't finish MVCC table scans consistently,
+# so this fails rarely.  To reproduce consistently, add a sleep after
+# GetCatalogSnapshot(non-catalog-rel).
+Test::More->builder->todo_start('PROC_IN_VACUUM scan breakage');
+$node->safe_psql('postgres', 'CREATE TABLE ddl_target ()');
+$node->pgbench(
+	'--no-vacuum --client=5 --protocol=prepared --transactions=50',
+	0,
+	[qr{processed: 250/250}],
+	[qr{^$}],
+	'concurrent GRANT/VACUUM',
+	{
+		'001_pgbench_grant@9' => q(
+			DO $$
+			BEGIN
+				PERFORM pg_advisory_xact_lock(42);
+				FOR i IN 1 .. 10 LOOP
+					GRANT SELECT ON ddl_target TO PUBLIC;
+					REVOKE SELECT ON ddl_target FROM PUBLIC;
+				END LOOP;
+			END
+			$$;
+),
+		'001_pgbench_vacuum_ddl_target@1' => "VACUUM ddl_target;",
+	});
+Test::More->builder->todo_end;
 
 # Trigger various connection errors
-pgbench(
+$node->pgbench(
 	'no-such-database',
 	1,
 	[qr{^$}],
 	[
-		qr{connection to database "no-such-database" failed},
+		qr{connection to server .* failed},
 		qr{FATAL:  database "no-such-database" does not exist}
 	],
 	'no such database');
 
-pgbench(
-	'-S -t 1', 1, [qr{^$}],
+$node->pgbench(
+	'-S -t 1', 1, [],
 	[qr{Perhaps you need to do initialization}],
 	'run without init');
 
 # Initialize pgbench tables scale 1
-pgbench(
+$node->pgbench(
 	'-i', 0,
 	[qr{^$}],
 	[
-		qr{creating tables},       qr{vacuuming},
-		qr{creating primary keys}, qr{done\.}
+		qr{creating tables},
+		qr{vacuuming},
+		qr{creating primary keys},
+		qr{done in \d+\.\d\d s }
 	],
 	'pgbench scale 1 initialization',);
 
 # Again, with all possible options
-pgbench(
-	'--initialize --init-steps=dtpvg --scale=1 --unlogged-tables --fillfactor=98 --foreign-keys --quiet --tablespace=pg_default --index-tablespace=pg_default',
+$node->pgbench(
+	'--initialize --init-steps=dtpvg --scale=1 --unlogged-tables --fillfactor=98 --foreign-keys --quiet --tablespace=regress_pgbench_tap_1_ts --index-tablespace=regress_pgbench_tap_1_ts --partitions=2 --partition-method=hash',
 	0,
 	[qr{^$}i],
 	[
 		qr{dropping old tables},
 		qr{creating tables},
+		qr{creating 2 partitions},
 		qr{vacuuming},
 		qr{creating primary keys},
 		qr{creating foreign keys},
-		qr{done\.}
+		qr{(?!vacuuming)},    # no vacuum
+		qr{done in \d+\.\d\d s }
 	],
 	'pgbench scale 1 initialization');
 
 # Test interaction of --init-steps with legacy step-selection options
-pgbench(
-	'--initialize --init-steps=dtpvgvv --no-vacuum --foreign-keys --unlogged-tables',
+$node->pgbench(
+	'--initialize --init-steps=dtpvGvv --no-vacuum --foreign-keys --unlogged-tables --partitions=3',
 	0,
 	[qr{^$}],
 	[
 		qr{dropping old tables},
 		qr{creating tables},
+		qr{creating 3 partitions},
 		qr{creating primary keys},
-		qr{.* of .* tuples \(.*\) done},
+		qr{generating data \(server-side\)},
 		qr{creating foreign keys},
-		qr{done\.}
+		qr{(?!vacuuming)},    # no vacuum
+		qr{done in \d+\.\d\d s }
 	],
 	'pgbench --init-steps');
 
 # Run all builtin scripts, for a few transactions each
-pgbench(
+$node->pgbench(
 	'--transactions=5 -Dfoo=bla --client=2 --protocol=simple --builtin=t'
 	  . ' --connect -n -v -n',
 	0,
@@ -149,7 +142,7 @@ pgbench(
 	[qr{^$}],
 	'pgbench tpcb-like');
 
-pgbench(
+$node->pgbench(
 	'--transactions=20 --client=5 -M extended --builtin=si -C --no-vacuum -s 1',
 	0,
 	[
@@ -162,7 +155,7 @@ pgbench(
 	[qr{scale option ignored}],
 	'pgbench simple update');
 
-pgbench(
+$node->pgbench(
 	'-t 100 -c 7 -M prepared -b se --debug',
 	0,
 	[
@@ -188,7 +181,7 @@ my $nthreads = 2;
 }
 
 # run custom scripts
-pgbench(
+$node->pgbench(
 	"-t 100 -c 1 -j $nthreads -M prepared -n",
 	0,
 	[
@@ -218,7 +211,7 @@ COMMIT;
 }
 	});
 
-pgbench(
+$node->pgbench(
 	'-n -t 10 -c 1 -M simple',
 	0,
 	[
@@ -239,7 +232,7 @@ COMMIT;
 }
 	});
 
-pgbench(
+$node->pgbench(
 	'-n -t 10 -c 2 -M extended',
 	0,
 	[
@@ -260,10 +253,151 @@ COMMIT;
 }
 	});
 
+# Verify server logging of query parameters.
+# (This doesn't really belong here, but pgbench is a convenient way
+# to issue commands using extended query mode with parameters.)
+
+# 1. Logging neither with errors nor with statements
+$node->append_conf('postgresql.conf',
+	    "log_min_duration_statement = 0\n"
+	  . "log_parameter_max_length = 0\n"
+	  . "log_parameter_max_length_on_error = 0");
+$node->reload;
+$node->pgbench(
+	'-n -t1 -c1 -M prepared',
+	2,
+	[],
+	[
+		qr{ERROR:  invalid input syntax for type json},
+		qr{(?!unnamed portal with parameters)}
+	],
+	'server parameter logging',
+	{
+		'001_param_1' => q[select '{ invalid ' as value \gset
+select $$'Valame Dios!' dijo Sancho; 'no le dije yo a vuestra merced que mirase bien lo que hacia?'$$ as long \gset
+select column1::jsonb from (values (:value), (:long)) as q;
+]
+	});
+my $log = TestLib::slurp_file($node->logfile);
+unlike(
+	$log,
+	qr[DETAIL:  parameters: \$1 = '\{ invalid ',],
+	"no parameters logged");
+$log = undef;
+
+# 2. Logging truncated parameters on error, full with statements
+$node->append_conf('postgresql.conf',
+	    "log_parameter_max_length = -1\n"
+	  . "log_parameter_max_length_on_error = 64");
+$node->reload;
+$node->pgbench(
+	'-n -t1 -c1 -M prepared',
+	2,
+	[],
+	[
+		qr{ERROR:  division by zero},
+		qr{CONTEXT:  unnamed portal with parameters: \$1 = '1', \$2 = NULL}
+	],
+	'server parameter logging',
+	{
+		'001_param_2' => q{select '1' as one \gset
+SELECT 1 / (random() / 2)::int, :one::int, :two::int;
+}
+	});
+$node->pgbench(
+	'-n -t1 -c1 -M prepared',
+	2,
+	[],
+	[
+		qr{ERROR:  invalid input syntax for type json},
+		qr[CONTEXT:  JSON data, line 1: \{ invalid\.\.\.[\r\n]+unnamed portal with parameters: \$1 = '\{ invalid ', \$2 = '''Valame Dios!'' dijo Sancho; ''no le dije yo a vuestra merced que \.\.\.']m
+	],
+	'server parameter logging',
+	{
+		'001_param_3' => q[select '{ invalid ' as value \gset
+select $$'Valame Dios!' dijo Sancho; 'no le dije yo a vuestra merced que mirase bien lo que hacia?'$$ as long \gset
+select column1::jsonb from (values (:value), (:long)) as q;
+]
+	});
+$log = TestLib::slurp_file($node->logfile);
+like(
+	$log,
+	qr[DETAIL:  parameters: \$1 = '\{ invalid ', \$2 = '''Valame Dios!'' dijo Sancho; ''no le dije yo a vuestra merced que mirase bien lo que hacia\?'''],
+	"parameter report does not truncate");
+$log = undef;
+
+# 3. Logging full parameters on error, truncated with statements
+$node->append_conf('postgresql.conf',
+	    "log_min_duration_statement = -1\n"
+	  . "log_parameter_max_length = 7\n"
+	  . "log_parameter_max_length_on_error = -1");
+$node->reload;
+$node->pgbench(
+	'-n -t1 -c1 -M prepared',
+	2,
+	[],
+	[
+		qr{ERROR:  division by zero},
+		qr{CONTEXT:  unnamed portal with parameters: \$1 = '1', \$2 = NULL}
+	],
+	'server parameter logging',
+	{
+		'001_param_4' => q{select '1' as one \gset
+SELECT 1 / (random() / 2)::int, :one::int, :two::int;
+}
+	});
+
+$node->append_conf('postgresql.conf', "log_min_duration_statement = 0");
+$node->reload;
+$node->pgbench(
+	'-n -t1 -c1 -M prepared',
+	2,
+	[],
+	[
+		qr{ERROR:  invalid input syntax for type json},
+		qr[CONTEXT:  JSON data, line 1: \{ invalid\.\.\.[\r\n]+unnamed portal with parameters: \$1 = '\{ invalid ', \$2 = '''Valame Dios!'' dijo Sancho; ''no le dije yo a vuestra merced que mirase bien lo que hacia\?']m
+	],
+	'server parameter logging',
+	{
+		'001_param_5' => q[select '{ invalid ' as value \gset
+select $$'Valame Dios!' dijo Sancho; 'no le dije yo a vuestra merced que mirase bien lo que hacia?'$$ as long \gset
+select column1::jsonb from (values (:value), (:long)) as q;
+]
+	});
+$log = TestLib::slurp_file($node->logfile);
+like(
+	$log,
+	qr[DETAIL:  parameters: \$1 = '\{ inval\.\.\.', \$2 = '''Valame\.\.\.'],
+	"parameter report truncates");
+$log = undef;
+
+# Check that bad parameters are reported during typinput phase of BIND
+$node->pgbench(
+	'-n -t1 -c1 -M prepared',
+	2,
+	[],
+	[
+		qr{ERROR:  invalid input syntax for type smallint: "1a"},
+		qr{CONTEXT:  unnamed portal parameter \$2 = '1a'}
+	],
+	'server parameter logging',
+	{
+		'001_param_6' => q{select 42 as value1, '1a' as value2 \gset
+select :value1::smallint, :value2::smallint;
+}
+	});
+
+# Restore default logging config
+$node->append_conf('postgresql.conf',
+	    "log_min_duration_statement = -1\n"
+	  . "log_parameter_max_length_on_error = 0\n"
+	  . "log_parameter_max_length = -1");
+$node->reload;
+
 # test expressions
 # command 1..3 and 23 depend on random seed which is used to call srandom.
-pgbench(
-	'--random-seed=5432 -t 1 -Dfoo=-10.1 -Dbla=false -Di=+3 -Dminint=-9223372036854775808 -Dn=null -Dt=t -Df=of -Dd=1.0',
+$node->pgbench(
+	'--random-seed=5432 -t 1 -Dfoo=-10.1 -Dbla=false -Di=+3 -Dn=null -Dt=t -Df=of -Dd=1.0',
 	0,
 	[ qr{type: .*/001_pgbench_expressions}, qr{processed: 1/1} ],
 	[
@@ -271,9 +405,9 @@ pgbench(
 
 		# After explicit seeding, the four random checks (1-3,20) are
 		# deterministic
-		qr{command=1.: int 18\b},      # uniform random
-		qr{command=2.: int 101\b},     # exponential random
-		qr{command=3.: int 1415\b},    # gaussian random
+		qr{command=1.: int 13\b},      # uniform random
+		qr{command=2.: int 116\b},     # exponential random
+		qr{command=3.: int 1498\b},    # gaussian random
 		qr{command=4.: int 4\b},
 		qr{command=5.: int 5\b},
 		qr{command=6.: int 6\b},
@@ -286,8 +420,7 @@ pgbench(
 		qr{command=15.: double 15\b},
 		qr{command=16.: double 16\b},
 		qr{command=17.: double 17\b},
-		qr{command=18.: int 9223372036854775807\b},
-		qr{command=20.: int 2\b},    # zipfian random
+		qr{command=20.: int 1\b},    # zipfian random
 		qr{command=21.: double -27\b},
 		qr{command=22.: double 1024\b},
 		qr{command=23.: double 1\b},
@@ -327,9 +460,20 @@ pgbench(
 		qr{command=86.: int 86\b},
 		qr{command=93.: int 93\b},
 		qr{command=95.: int 0\b},
-		qr{command=96.: int 1\b},       # :scale
-		qr{command=97.: int 0\b},       # :client_id
-		qr{command=98.: int 5432\b},    # :random_seed
+		qr{command=96.: int 1\b},                       # :scale
+		qr{command=97.: int 0\b},                       # :client_id
+		qr{command=98.: int 5432\b},                    # :random_seed
+		qr{command=99.: int -9223372036854775808\b},    # min int
+		qr{command=100.: int 9223372036854775807\b},    # max int
+		    # pseudorandom permutation tests
+		qr{command=101.: boolean true\b},
+		qr{command=102.: boolean true\b},
+		qr{command=103.: boolean true\b},
+		qr{command=104.: boolean true\b},
+		qr{command=105.: boolean true\b},
+		qr{command=109.: boolean true\b},
+		qr{command=110.: boolean true\b},
+		qr{command=111.: boolean true\b},
 	],
 	'pgbench expressions',
 	{
@@ -353,10 +497,9 @@ pgbench(
 \set pi debug(pi() * 4.9)
 \set d4 debug(greatest(4, 2, -1.17) * 4.0 * Ln(Exp(1.0)))
 \set d5 debug(least(-5.18, .0E0, 1.0/0) * -3.3)
--- forced overflow
-\set maxint debug(:minint - 1)
--- reset a variable
+-- reset variables
 \set i1 0
+\set d1 false
 -- yet another integer function
 \set id debug(random_zipfian(1, 9, 1.3))
 --- pow and power
@@ -455,7 +598,78 @@ SELECT :v0, :v1, :v2, :v3;
 \set sc debug(:scale)
 \set ci debug(:client_id)
 \set rs debug(:random_seed)
+-- minint constant parsing
+\set min debug(-9223372036854775808)
+\set max debug(-(:min + 1))
+-- parametric pseudorandom permutation function
+\set t debug(permute(0, 2) + permute(1, 2) = 1)
+\set t debug(permute(0, 3) + permute(1, 3) + permute(2, 3) = 3)
+\set t debug(permute(0, 4) + permute(1, 4) + permute(2, 4) + permute(3, 4) = 6)
+\set t debug(permute(0, 5) + permute(1, 5) + permute(2, 5) + permute(3, 5) + permute(4, 5) = 10)
+\set t debug(permute(0, 16) + permute(1, 16) + permute(2, 16) + permute(3, 16) + \
+             permute(4, 16) + permute(5, 16) + permute(6, 16) + permute(7, 16) + \
+             permute(8, 16) + permute(9, 16) + permute(10, 16) + permute(11, 16) + \
+             permute(12, 16) + permute(13, 16) + permute(14, 16) + permute(15, 16) = 120)
+-- random sanity checks
+\set size random(2, 1000)
+\set v random(0, :size - 1)
+\set p permute(:v, :size)
+\set t debug(0 <= :p and :p < :size and :p = permute(:v + :size, :size) and :p <> permute(:v + 1, :size))
+-- actual values
+\set t debug(permute(:v, 1) = 0)
+\set t debug(permute(0, 2, 5432) = 0 and permute(1, 2, 5432) = 1 and \
+             permute(0, 2, 5435) = 1 and permute(1, 2, 5435) = 0)
 }
+	});
+
+# test nested \if constructs
+$node->pgbench(
+	'--no-vacuum --client=1 --transactions=1',
+	0,
+	[qr{actually processed}],
+	[qr{^$}],
+	'nested ifs',
+	{
+		'pgbench_nested_if' => q(
+			\if false
+				SELECT 1 / 0;
+				\if true
+					SELECT 1 / 0;
+				\elif true
+					SELECT 1 / 0;
+				\else
+					SELECT 1 / 0;
+				\endif
+				SELECT 1 / 0;
+			\elif false
+				\if true
+					SELECT 1 / 0;
+				\elif true
+					SELECT 1 / 0;
+				\else
+					SELECT 1 / 0;
+				\endif
+			\else
+				\if false
+					SELECT 1 / 0;
+				\elif false
+					SELECT 1 / 0;
+				\else
+					SELECT 'correct';
+				\endif
+			\endif
+			\if true
+				SELECT 'correct';
+			\else
+				\if true
+					SELECT 1 / 0;
+				\elif true
+					SELECT 1 / 0;
+				\else
+					SELECT 1 / 0;
+				\endif
+			\endif
+		)
 	});
 
 # random determinism when seeded
@@ -467,7 +681,7 @@ $node->safe_psql('postgres',
 my $seed = int(rand(1000000000));
 for my $i (1, 2)
 {
-	pgbench(
+	$node->pgbench(
 		"--random-seed=$seed -t 1",
 		0,
 		[qr{processed: 1/1}],
@@ -507,14 +721,14 @@ ok($out =~ /\b$seed\|zipfian\|4\d\d\d\|2/,
 $node->safe_psql('postgres', 'DROP TABLE seeded_random;');
 
 # backslash commands
-pgbench(
+$node->pgbench(
 	'-t 1', 0,
 	[
 		qr{type: .*/001_pgbench_backslash_commands},
 		qr{processed: 1/1},
 		qr{shell-echo-output}
 	],
-	[qr{command=8.: int 2\b}],
+	[qr{command=8.: int 1\b}],
 	'pgbench backslash commands',
 	{
 		'001_pgbench_backslash_commands' => q{-- run set
@@ -526,12 +740,218 @@ pgbench(
 \sleep 0 s
 \sleep :zero
 -- setshell and continuation
-\setshell two\
-  expr \
-    1 + :one
-\set n debug(:two)
+\setshell another_one\
+  echo \
+    :one
+\set n debug(:another_one)
 -- shell
 \shell echo shell-echo-output
+}
+	});
+
+# working \gset
+$node->pgbench(
+	'-t 1', 0,
+	[ qr{type: .*/001_pgbench_gset}, qr{processed: 1/1} ],
+	[
+		qr{command=3.: int 0\b},
+		qr{command=5.: int 1\b},
+		qr{command=6.: int 2\b},
+		qr{command=8.: int 3\b},
+		qr{command=10.: int 4\b},
+		qr{command=12.: int 5\b}
+	],
+	'pgbench gset command',
+	{
+		'001_pgbench_gset' => q{-- test gset
+-- no columns
+SELECT \gset
+-- one value
+SELECT 0 AS i0 \gset
+\set i debug(:i0)
+-- two values
+SELECT 1 AS i1, 2 AS i2 \gset
+\set i debug(:i1)
+\set i debug(:i2)
+-- with prefix
+SELECT 3 AS i3 \gset x_
+\set i debug(:x_i3)
+-- overwrite existing variable
+SELECT 0 AS i4, 4 AS i4 \gset
+\set i debug(:i4)
+-- work on the last SQL command under \;
+\; \; SELECT 0 AS i5 \; SELECT 5 AS i5 \; \; \gset
+\set i debug(:i5)
+}
+	});
+# \gset cannot accept more than one row, causing command to fail.
+$node->pgbench(
+	'-t 1', 2,
+	[ qr{type: .*/001_pgbench_gset_two_rows}, qr{processed: 0/1} ],
+	[qr{expected one row, got 2\b}],
+	'pgbench gset command with two rows',
+	{
+		'001_pgbench_gset_two_rows' => q{
+SELECT 5432 AS fail UNION SELECT 5433 ORDER BY 1 \gset
+}
+	});
+
+# working \aset
+# Valid cases.
+$node->pgbench(
+	'-t 1', 0,
+	[ qr{type: .*/001_pgbench_aset}, qr{processed: 1/1} ],
+	[ qr{command=3.: int 8\b},       qr{command=4.: int 7\b} ],
+	'pgbench aset command',
+	{
+		'001_pgbench_aset' => q{
+-- test aset, which applies to a combined query
+\; SELECT 6 AS i6 \; SELECT 7 AS i7 \; \aset
+-- unless it returns more than one row, last is kept
+SELECT 8 AS i6 UNION SELECT 9 ORDER BY 1 DESC \aset
+\set i debug(:i6)
+\set i debug(:i7)
+}
+	});
+# Empty result set with \aset, causing command to fail.
+$node->pgbench(
+	'-t 1', 2,
+	[ qr{type: .*/001_pgbench_aset_empty}, qr{processed: 0/1} ],
+	[
+		qr{undefined variable \"i8\"},
+		qr{evaluation of meta-command failed\b}
+	],
+	'pgbench aset command with empty result',
+	{
+		'001_pgbench_aset_empty' => q{
+-- empty result
+\; SELECT 5432 AS i8 WHERE FALSE \; \aset
+\set i debug(:i8)
+}
+	});
+
+# Working \startpipeline
+$node->pgbench(
+	'-t 1 -n -M extended',
+	0,
+	[ qr{type: .*/001_pgbench_pipeline}, qr{actually processed: 1/1} ],
+	[],
+	'working \startpipeline',
+	{
+		'001_pgbench_pipeline' => q{
+-- test startpipeline
+\startpipeline
+} . "select 1;\n" x 10 . q{
+\endpipeline
+}
+	});
+
+# Working \startpipeline in prepared query mode
+$node->pgbench(
+	'-t 1 -n -M prepared',
+	0,
+	[ qr{type: .*/001_pgbench_pipeline_prep}, qr{actually processed: 1/1} ],
+	[],
+	'working \startpipeline',
+	{
+		'001_pgbench_pipeline_prep' => q{
+-- test startpipeline
+\startpipeline
+} . "select 1;\n" x 10 . q{
+\endpipeline
+}
+	});
+
+# Try \startpipeline twice
+$node->pgbench(
+	'-t 1 -n -M extended',
+	2,
+	[],
+	[qr{already in pipeline mode}],
+	'error: call \startpipeline twice',
+	{
+		'001_pgbench_pipeline_2' => q{
+-- startpipeline twice
+\startpipeline
+\startpipeline
+}
+	});
+
+# Try to end a pipeline that hasn't started
+$node->pgbench(
+	'-t 1 -n -M extended',
+	2,
+	[],
+	[qr{not in pipeline mode}],
+	'error: \endpipeline with no start',
+	{
+		'001_pgbench_pipeline_3' => q{
+-- pipeline not started
+\endpipeline
+}
+	});
+
+# Try \gset in pipeline mode
+$node->pgbench(
+	'-t 1 -n -M extended',
+	2,
+	[],
+	[qr{gset is not allowed in pipeline mode}],
+	'error: \gset not allowed in pipeline mode',
+	{
+		'001_pgbench_pipeline_4' => q{
+\startpipeline
+select 1 \gset f
+\endpipeline
+}
+	});
+
+# Try \startpipeline without \endpipeline in a single transaction
+$node->pgbench(
+	'-t 1 -n -M extended',
+	2,
+	[],
+	[qr{end of script reached with pipeline open}],
+	'error: call \startpipeline without \endpipeline in a single transaction',
+	{
+		'001_pgbench_pipeline_5' => q{
+-- startpipeline only with single transaction
+\startpipeline
+}
+	});
+
+# Try \startpipeline without \endpipeline
+$node->pgbench(
+	'-t 2 -n -M extended',
+	2,
+	[],
+	[qr{end of script reached with pipeline open}],
+	'error: call \startpipeline without \endpipeline',
+	{
+		'001_pgbench_pipeline_6' => q{
+-- startpipeline only
+\startpipeline
+}
+	});
+
+# Working \startpipeline in prepared query mode with serializable
+$node->pgbench(
+	'-c4 -t 10 -n -M prepared',
+	0,
+	[
+		qr{type: .*/001_pgbench_pipeline_serializable},
+		qr{actually processed: (\d+)/\1}
+	],
+	[],
+	'working \startpipeline with serializable',
+	{
+		'001_pgbench_pipeline_serializable' => q{
+-- test startpipeline with serializable
+\startpipeline
+BEGIN ISOLATION LEVEL SERIALIZABLE;
+} . "select 1;\n" x 10 . q{
+END;
+\endpipeline
 }
 	});
 
@@ -542,7 +962,7 @@ my @errors = (
 	# SQL
 	[
 		'sql syntax error',
-		0,
+		2,
 		[
 			qr{ERROR:  syntax error},
 			qr{prepared statement .* does not exist}
@@ -552,20 +972,20 @@ my @errors = (
 }
 	],
 	[
-		'sql too many args', 1, [qr{statement has too many arguments.*\b9\b}],
-		q{-- MAX_ARGS=10 for prepared
+		'sql too many args', 1,
+		[qr{statement has too many arguments.*\b255\b}],
+		q{-- MAX_ARGS=256 for prepared
 \set i 0
-SELECT LEAST(:i, :i, :i, :i, :i, :i, :i, :i, :i, :i, :i);
-}
+SELECT LEAST(} . join(', ', (':i') x 256) . q{)}
 	],
 
 	# SHELL
 	[
-		'shell bad command',                    0,
+		'shell bad command',                    2,
 		[qr{\(shell\) .* meta-command failed}], q{\shell no-such-command}
 	],
 	[
-		'shell undefined variable', 0,
+		'shell undefined variable', 2,
 		[qr{undefined variable ":nosuchvariable"}],
 		q{-- undefined variable in shell
 \shell echo ::foo :nosuchvariable
@@ -574,25 +994,8 @@ SELECT LEAST(:i, :i, :i, :i, :i, :i, :i, :i, :i, :i, :i);
 	[ 'shell missing command', 1, [qr{missing command }], q{\shell} ],
 	[
 		'shell too many args', 1, [qr{too many arguments in command "shell"}],
-		q{-- 257 arguments to \shell
-\shell echo \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F \
- 0 1 2 3 4 5 6 7 8 9 A B C D E F
-}
+		q{-- 256 arguments to \shell
+\shell echo } . join(' ', ('arg') x 255)
 	],
 
 	# SET
@@ -605,81 +1008,71 @@ SELECT LEAST(:i, :i, :i, :i, :i, :i, :i, :i, :i, :i, :i);
 		[qr{unexpected function name}], q{\set i noSuchFunction()}
 	],
 	[
-		'set invalid variable name', 0,
+		'set invalid variable name', 2,
 		[qr{invalid variable name}], q{\set . 1}
 	],
-	[
-		'set int overflow',                   0,
-		[qr{double to int overflow for 100}], q{\set i int(1E32)}
-	],
-	[ 'set division by zero', 0, [qr{division by zero}], q{\set i 1/0} ],
-	[
-		'set bigint out of range', 0,
-		[qr{bigint out of range}], q{\set i 9223372036854775808 / -1}
-	],
+	[ 'set division by zero', 2, [qr{division by zero}], q{\set i 1/0} ],
 	[
 		'set undefined variable',
-		0,
+		2,
 		[qr{undefined variable "nosuchvariable"}],
 		q{\set i :nosuchvariable}
 	],
 	[ 'set unexpected char', 1, [qr{unexpected character .;.}], q{\set i ;} ],
 	[
 		'set too many args',
-		0,
+		2,
 		[qr{too many function arguments}],
 		q{\set i least(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16)}
 	],
 	[
-		'set empty random range',          0,
+		'set empty random range',          2,
 		[qr{empty range given to random}], q{\set i random(5,3)}
 	],
 	[
-		'set random range too large',
-		0,
-		[qr{random range is too large}],
-		q{\set i random(-9223372036854775808, 9223372036854775807)}
+		'set random range too large',    2,
+		[qr{random range is too large}], q{\set i random(:minint, :maxint)}
 	],
 	[
 		'set gaussian param too small',
-		0,
+		2,
 		[qr{gaussian param.* at least 2}],
 		q{\set i random_gaussian(0, 10, 1.0)}
 	],
 	[
 		'set exponential param greater 0',
-		0,
+		2,
 		[qr{exponential parameter must be greater }],
 		q{\set i random_exponential(0, 10, 0.0)}
 	],
 	[
 		'set zipfian param to 1',
-		0,
-		[qr{zipfian parameter must be in range \(0, 1\) U \(1, \d+\]}],
+		2,
+		[qr{zipfian parameter must be in range \[1\.001, 1000\]}],
 		q{\set i random_zipfian(0, 10, 1)}
 	],
 	[
 		'set zipfian param too large',
-		0,
-		[qr{zipfian parameter must be in range \(0, 1\) U \(1, \d+\]}],
+		2,
+		[qr{zipfian parameter must be in range \[1\.001, 1000\]}],
 		q{\set i random_zipfian(0, 10, 1000000)}
 	],
 	[
-		'set non numeric value',                     0,
+		'set non numeric value',                     2,
 		[qr{malformed variable "foo" value: "bla"}], q{\set i :foo + 1}
 	],
 	[ 'set no expression',    1, [qr{syntax error}],      q{\set i} ],
 	[ 'set missing argument', 1, [qr{missing argument}i], q{\set} ],
 	[
-		'set not a bool',                      0,
+		'set not a bool',                      2,
 		[qr{cannot coerce double to boolean}], q{\set b NOT 0.0}
 	],
 	[
-		'set not an int',                   0,
+		'set not an int',                   2,
 		[qr{cannot coerce boolean to int}], q{\set i TRUE + 2}
 	],
 	[
-		'set not a double',                    0,
+		'set not a double',                    2,
 		[qr{cannot coerce boolean to double}], q{\set d ln(TRUE)}
 	],
 	[
@@ -689,7 +1082,7 @@ SELECT LEAST(:i, :i, :i, :i, :i, :i, :i, :i, :i, :i, :i);
 		q{\set i CASE TRUE THEN 1 ELSE 0 END}
 	],
 	[
-		'set random error',                 0,
+		'set random error',                 2,
 		[qr{cannot coerce boolean to int}], q{\set b random(FALSE, TRUE)}
 	],
 	[
@@ -701,20 +1094,42 @@ SELECT LEAST(:i, :i, :i, :i, :i, :i, :i, :i, :i, :i, :i);
 		[qr{at least one argument expected}], q{\set i greatest())}
 	],
 
+	# SET: ARITHMETIC OVERFLOW DETECTION
+	[
+		'set double to int overflow',         2,
+		[qr{double to int overflow for 100}], q{\set i int(1E32)}
+	],
+	[
+		'set bigint add overflow', 2,
+		[qr{int add out}],         q{\set i (1<<62) + (1<<62)}
+	],
+	[
+		'set bigint sub overflow',
+		2, [qr{int sub out}], q{\set i 0 - (1<<62) - (1<<62) - (1<<62)}
+	],
+	[
+		'set bigint mul overflow', 2,
+		[qr{int mul out}], q{\set i 2 * (1<<62)}
+	],
+	[
+		'set bigint div out of range', 2,
+		[qr{bigint div out of range}], q{\set i :minint / -1}
+	],
+
 	# SETSHELL
 	[
-		'setshell not an int',                0,
+		'setshell not an int',                2,
 		[qr{command must return an integer}], q{\setshell i echo -n one}
 	],
 	[ 'setshell missing arg', 1, [qr{missing argument }], q{\setshell var} ],
 	[
-		'setshell no such command',   0,
+		'setshell no such command',   2,
 		[qr{could not read result }], q{\setshell var no-such-command}
 	],
 
 	# SLEEP
 	[
-		'sleep undefined variable',      0,
+		'sleep undefined variable',      2,
 		[qr{sleep: undefined variable}], q{\sleep :nosuchvariable}
 	],
 	[
@@ -737,61 +1152,79 @@ SELECT LEAST(:i, :i, :i, :i, :i, :i, :i, :i, :i, :i, :i);
 	],
 	[ 'misc empty script', 1, [qr{empty command list for script}], q{} ],
 	[
-		'bad boolean',                     0,
+		'bad boolean',                     2,
 		[qr{malformed variable.*trueXXX}], q{\set b :badtrue or true}
-	],);
+	],
+	[
+		'invalid permute size',
+		2,
+		[qr{permute size parameter must be greater than zero}],
+		q{\set i permute(0, 0)}
+	],
 
+	# GSET
+	[
+		'gset no row',                   2,
+		[qr{expected one row, got 0\b}], q{SELECT WHERE FALSE \gset}
+	],
+	[ 'gset alone', 1, [qr{gset must follow an SQL command}], q{\gset} ],
+	[
+		'gset no SQL',                         1,
+		[qr{gset must follow an SQL command}], q{\set i +1
+\gset}
+	],
+	[
+		'gset too many arguments', 1,
+		[qr{too many arguments}],  q{SELECT 1 \gset a b}
+	],
+	[
+		'gset after gset',                     1,
+		[qr{gset must follow an SQL command}], q{SELECT 1 AS i \gset
+\gset}
+	],
+	[
+		'gset non SELECT',
+		2,
+		[qr{expected one row, got 0}],
+		q{DROP TABLE IF EXISTS no_such_table \gset}
+	],
+	[
+		'gset bad default name',                      2,
+		[qr{error storing into variable \?column\?}], q{SELECT 1 \gset}
+	],
+	[
+		'gset bad name',
+		2,
+		[qr{error storing into variable bad name!}],
+		q{SELECT 1 AS "bad name!" \gset}
+	],);
 
 for my $e (@errors)
 {
-	my ($name, $status, $re, $script) = @$e;
+	my ($name, $status, $re, $script, $no_prepare) = @$e;
+	$status != 0 or die "invalid expected status for test \"$name\"";
 	my $n = '001_pgbench_error_' . $name;
 	$n =~ s/ /_/g;
-	pgbench(
-		'-n -t 1 -Dfoo=bla -Dnull=null -Dtrue=true -Done=1 -Dzero=0.0 -Dbadtrue=trueXXX -M prepared',
+	$node->pgbench(
+		'-n -t 1 -Dfoo=bla -Dnull=null -Dtrue=true -Done=1 -Dzero=0.0 -Dbadtrue=trueXXX'
+		  . ' -Dmaxint=9223372036854775807 -Dminint=-9223372036854775808'
+		  . ($no_prepare ? '' : ' -M prepared'),
 		$status,
-		[ $status ? qr{^$} : qr{processed: 0/1} ],
+		[ $status == 1 ? qr{^$} : qr{processed: 0/1} ],
 		$re,
 		'pgbench script error: ' . $name,
 		{ $n => $script });
 }
 
-# zipfian cache array overflow
-pgbench(
-	'-t 1', 0,
-	[ qr{processed: 1/1}, qr{zipfian cache array overflowed 1 time\(s\)} ],
-	[qr{^}],
-	'pgbench zipfian array overflow on random_zipfian',
-	{
-		'001_pgbench_random_zipfian' => q{
-\set i random_zipfian(1, 100, 0.5)
-\set i random_zipfian(2, 100, 0.5)
-\set i random_zipfian(3, 100, 0.5)
-\set i random_zipfian(4, 100, 0.5)
-\set i random_zipfian(5, 100, 0.5)
-\set i random_zipfian(6, 100, 0.5)
-\set i random_zipfian(7, 100, 0.5)
-\set i random_zipfian(8, 100, 0.5)
-\set i random_zipfian(9, 100, 0.5)
-\set i random_zipfian(10, 100, 0.5)
-\set i random_zipfian(11, 100, 0.5)
-\set i random_zipfian(12, 100, 0.5)
-\set i random_zipfian(13, 100, 0.5)
-\set i random_zipfian(14, 100, 0.5)
-\set i random_zipfian(15, 100, 0.5)
-\set i random_zipfian(16, 100, 0.5)
-}
-	});
-
 # throttling
-pgbench(
+$node->pgbench(
 	'-t 100 -S --rate=100000 --latency-limit=1000000 -c 2 -n -r',
 	0,
 	[ qr{processed: 200/200}, qr{builtin: select only} ],
 	[qr{^$}],
 	'pgbench throttling');
 
-pgbench(
+$node->pgbench(
 
 	# given the expected rate and the 2 ms tx duration, at most one is executed
 	'-t 10 --rate=100000 --latency-limit=1 -n -r',
@@ -816,9 +1249,16 @@ sub list_files
 	return map { $dir . '/' . $_ } @files;
 }
 
-# check log contents and cleanup
+# Check log contents and clean them up:
+#   $dir: directory holding logs
+#   $prefix: file prefix for per-thread logs
+#   $nb: number of expected files
+#   $min/$max: minimum and maximum number of lines in log files
+#   $re: regular expression each log line has to match
 sub check_pgbench_logs
 {
+	local $Test::Builder::Level = $Test::Builder::Level + 1;
+
 	my ($dir, $prefix, $nb, $min, $max, $re) = @_;
 
 	# $prefix is simple enough, thus does not need escaping
@@ -829,46 +1269,53 @@ sub check_pgbench_logs
 	my $log_number = 0;
 	for my $log (sort @logs)
 	{
-		eval {
-			open my $fh, '<', $log or die "$@";
-			my @contents = <$fh>;
-			my $clen     = @contents;
-			ok( $min <= $clen && $clen <= $max,
-				"transaction count for $log ($clen)");
-			ok( grep($re, @contents) == $clen,
-				"transaction format for $prefix");
-			close $fh or die "$@";
-		};
+		# Check the contents of each log file.
+		my $contents_raw = slurp_file($log);
+
+		my @contents = split(/\n/, $contents_raw);
+		my $clen = @contents;
+		ok( $min <= $clen && $clen <= $max,
+			"transaction count for $log ($clen)");
+		my $clen_match = grep(/$re/, @contents);
+		ok($clen_match == $clen, "transaction format for $prefix");
+
+		# Show more information if some logs don't match
+		# to help with debugging.
+		if ($clen_match != $clen)
+		{
+			foreach my $log (@contents)
+			{
+				print "# Log entry not matching: $log\n"
+				  unless $log =~ /$re/;
+			}
+		}
 	}
-	ok(unlink(@logs), "remove log files");
 	return;
 }
 
 my $bdir = $node->basedir;
 
-# with sampling rate
-pgbench(
-	"-n -S -t 50 -c 2 --log --sampling-rate=0.5",
-	0,
-	[ qr{select only}, qr{processed: 100/100} ],
-	[ qr{^$} ],
-	'pgbench logs',
-	undef,
+# Run with sampling rate, 2 clients with 50 transactions each.
+$node->pgbench(
+	"-n -S -t 50 -c 2 --log --sampling-rate=0.5", 0,
+	[ qr{select only}, qr{processed: 100/100} ], [qr{^$}],
+	'pgbench logs', undef,
 	"--log-prefix=$bdir/001_pgbench_log_2");
-
+# The IDs of the clients (1st field) in the logs should be either 0 or 1.
 check_pgbench_logs($bdir, '001_pgbench_log_2', 1, 8, 92,
-	qr{^0 \d{1,2} \d+ \d \d+ \d+$});
+	qr{^[01] \d{1,2} \d+ \d \d+ \d+$});
 
-# check log file in some detail
-pgbench(
-	"-n -b se -t 10 -l",
-	0, [ qr{select only}, qr{processed: 10/10} ], [ qr{^$} ],
+# Run with different read-only option pattern, 1 client with 10 transactions.
+$node->pgbench(
+	"-n -b select-only -t 10 -l", 0,
+	[ qr{select only}, qr{processed: 10/10} ], [qr{^$}],
 	'pgbench logs contents', undef,
 	"--log-prefix=$bdir/001_pgbench_log_3");
-
+# The ID of a single client (1st field) should match 0.
 check_pgbench_logs($bdir, '001_pgbench_log_3', 1, 10, 10,
-	qr{^\d \d{1,2} \d+ \d \d+ \d+$});
+	qr{^0 \d{1,2} \d+ \d \d+ \d+$});
 
 # done
+$node->safe_psql('postgres', 'DROP TABLESPACE regress_pgbench_tap_1_ts');
 $node->stop;
 done_testing();

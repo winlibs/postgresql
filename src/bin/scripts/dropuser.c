@@ -2,7 +2,7 @@
  *
  * dropuser
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/bin/scripts/dropuser.c
@@ -12,6 +12,9 @@
 
 #include "postgres_fe.h"
 #include "common.h"
+#include "common/logging.h"
+#include "common/string.h"
+#include "fe_utils/option_utils.h"
 #include "fe_utils/string_utils.h"
 
 
@@ -44,15 +47,16 @@ main(int argc, char *argv[])
 	char	   *port = NULL;
 	char	   *username = NULL;
 	enum trivalue prompt_password = TRI_DEFAULT;
+	ConnParams	cparams;
 	bool		echo = false;
 	bool		interactive = false;
-	char		dropuser_buf[128];
 
 	PQExpBufferData sql;
 
 	PGconn	   *conn;
 	PGresult   *result;
 
+	pg_logging_init(argv[0]);
 	progname = get_progname(argv[0]);
 	set_pglocale_pgservice(argv[0], PG_TEXTDOMAIN("pgscripts"));
 
@@ -100,8 +104,8 @@ main(int argc, char *argv[])
 			dropuser = argv[optind];
 			break;
 		default:
-			fprintf(stderr, _("%s: too many command-line arguments (first is \"%s\")\n"),
-					progname, argv[optind + 1]);
+			pg_log_error("too many command-line arguments (first is \"%s\")",
+						 argv[optind + 1]);
 			fprintf(stderr, _("Try \"%s --help\" for more information.\n"), progname);
 			exit(1);
 	}
@@ -110,13 +114,11 @@ main(int argc, char *argv[])
 	{
 		if (interactive)
 		{
-			simple_prompt("Enter name of role to drop: ",
-						  dropuser_buf, sizeof(dropuser_buf), true);
-			dropuser = dropuser_buf;
+			dropuser = simple_prompt("Enter name of role to drop: ", true);
 		}
 		else
 		{
-			fprintf(stderr, _("%s: missing required argument role name\n"), progname);
+			pg_log_error("missing required argument role name");
 			fprintf(stderr, _("Try \"%s --help\" for more information.\n"), progname);
 			exit(1);
 		}
@@ -129,12 +131,19 @@ main(int argc, char *argv[])
 			exit(0);
 	}
 
+	cparams.dbname = NULL;		/* this program lacks any dbname option... */
+	cparams.pghost = host;
+	cparams.pgport = port;
+	cparams.pguser = username;
+	cparams.prompt_password = prompt_password;
+	cparams.override_dbname = NULL;
+
+	conn = connectMaintenanceDatabase(&cparams, progname, echo);
+
 	initPQExpBuffer(&sql);
 	appendPQExpBuffer(&sql, "DROP ROLE %s%s;",
-					  (if_exists ? "IF EXISTS " : ""), fmtId(dropuser));
-
-	conn = connectDatabase("postgres", host, port, username, prompt_password,
-						   progname, echo, false, false);
+					  (if_exists ? "IF EXISTS " : ""),
+					  fmtIdEnc(dropuser, PQclientEncoding(conn)));
 
 	if (echo)
 		printf("%s\n", sql.data);
@@ -142,8 +151,8 @@ main(int argc, char *argv[])
 
 	if (PQresultStatus(result) != PGRES_COMMAND_OK)
 	{
-		fprintf(stderr, _("%s: removal of role \"%s\" failed: %s"),
-				progname, dropuser, PQerrorMessage(conn));
+		pg_log_error("removal of role \"%s\" failed: %s",
+					 dropuser, PQerrorMessage(conn));
 		PQfinish(conn);
 		exit(1);
 	}
@@ -173,5 +182,6 @@ help(const char *progname)
 	printf(_("  -U, --username=USERNAME   user name to connect as (not the one to drop)\n"));
 	printf(_("  -w, --no-password         never prompt for password\n"));
 	printf(_("  -W, --password            force password prompt\n"));
-	printf(_("\nReport bugs to <pgsql-bugs@postgresql.org>.\n"));
+	printf(_("\nReport bugs to <%s>.\n"), PACKAGE_BUGREPORT);
+	printf(_("%s home page: <%s>\n"), PACKAGE_NAME, PACKAGE_URL);
 }

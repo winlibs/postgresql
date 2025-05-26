@@ -82,7 +82,7 @@ CREATE FUNCTION invalid_type_caught(a text) RETURNS text
 	q = "SELECT fname FROM users WHERE lname = $1"
 	try:
 		SD["plan"] = plpy.prepare(q, [ "test" ])
-	except plpy.SPIError, ex:
+	except plpy.SPIError as ex:
 		plpy.notice(str(ex))
 		return None
 rv = plpy.execute(SD["plan"], [ a ])
@@ -104,7 +104,7 @@ CREATE FUNCTION invalid_type_reraised(a text) RETURNS text
 	q = "SELECT fname FROM users WHERE lname = $1"
 	try:
 		SD["plan"] = plpy.prepare(q, [ "test" ])
-	except plpy.SPIError, ex:
+	except plpy.SPIError as ex:
 		plpy.error(str(ex))
 rv = plpy.execute(SD["plan"], [ a ])
 if len(rv):
@@ -247,9 +247,9 @@ $$
 from plpy import spiexceptions
 try:
     plpy.execute("insert into specific values (%s)" % (i or "NULL"));
-except spiexceptions.NotNullViolation, e:
+except spiexceptions.NotNullViolation as e:
     plpy.notice("Violated the NOT NULL constraint, sqlstate %s" % e.sqlstate)
-except spiexceptions.UniqueViolation, e:
+except spiexceptions.UniqueViolation as e:
     plpy.notice("Violated the UNIQUE constraint, sqlstate %s" % e.sqlstate)
 $$ LANGUAGE plpythonu;
 
@@ -344,3 +344,14 @@ $$ LANGUAGE plpythonu;
 \set SHOW_CONTEXT always
 
 SELECT notice_outerfunc();
+
+/* test error logged with an underlying exception that includes a detail
+ * string (bug #18070).
+ */
+CREATE FUNCTION python_error_detail() RETURNS SETOF text AS $$
+  plan = plpy.prepare("SELECT to_date('xy', 'DD') d")
+  for row in plpy.cursor(plan):
+    yield row['d']
+$$ LANGUAGE plpythonu;
+
+SELECT python_error_detail();

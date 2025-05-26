@@ -1,37 +1,79 @@
+
+# Copyright (c) 2021, PostgreSQL Global Development Group
+
 use strict;
 use warnings;
 use TestLib;
 use PostgresNode;
 use Test::More;
 
-if ($ENV{with_ldap} eq 'yes')
-{
-	plan tests => 22;
-}
-else
-{
-	plan skip_all => 'LDAP not supported by this build';
-}
-
 my ($slapd, $ldap_bin_dir, $ldap_schema_dir);
 
 $ldap_bin_dir = undef;    # usually in PATH
 
-if ($^O eq 'darwin')
+if ($ENV{with_ldap} ne 'yes')
 {
-	$slapd           = '/usr/local/opt/openldap/libexec/slapd';
-	$ldap_schema_dir = '/usr/local/etc/openldap/schema';
+	plan skip_all => 'LDAP not supported by this build';
+}
+# Find the OpenLDAP server binary and directory containing schema
+# definition files.
+elsif ($^O eq 'darwin')
+{
+	if (-d '/opt/homebrew/opt/openldap')
+	{
+		# typical paths for Homebrew on ARM
+		$slapd = '/opt/homebrew/opt/openldap/libexec/slapd';
+		$ldap_schema_dir = '/opt/homebrew/etc/openldap/schema';
+	}
+	elsif (-d '/usr/local/opt/openldap')
+	{
+		# typical paths for Homebrew on Intel
+		$slapd = '/usr/local/opt/openldap/libexec/slapd';
+		$ldap_schema_dir = '/usr/local/etc/openldap/schema';
+	}
+	elsif (-d '/opt/local/etc/openldap')
+	{
+		# typical paths for MacPorts
+		$slapd = '/opt/local/libexec/slapd';
+		$ldap_schema_dir = '/opt/local/etc/openldap/schema';
+	}
+	else
+	{
+		plan skip_all => "OpenLDAP server installation not found";
+	}
 }
 elsif ($^O eq 'linux')
 {
-	$slapd           = '/usr/sbin/slapd';
-	$ldap_schema_dir = '/etc/ldap/schema' if -d '/etc/ldap/schema';
-	$ldap_schema_dir = '/etc/openldap/schema' if -d '/etc/openldap/schema';
+	if (-d '/etc/ldap/schema')
+	{
+		$slapd = '/usr/sbin/slapd';
+		$ldap_schema_dir = '/etc/ldap/schema';
+	}
+	elsif (-d '/etc/openldap/schema')
+	{
+		$slapd = '/usr/sbin/slapd';
+		$ldap_schema_dir = '/etc/openldap/schema';
+	}
+	else
+	{
+		plan skip_all => "OpenLDAP server installation not found";
+	}
 }
 elsif ($^O eq 'freebsd')
 {
-	$slapd           = '/usr/local/libexec/slapd';
-	$ldap_schema_dir = '/usr/local/etc/openldap/schema';
+	if (-d '/usr/local/etc/openldap/schema')
+	{
+		$slapd = '/usr/local/libexec/slapd';
+		$ldap_schema_dir = '/usr/local/etc/openldap/schema';
+	}
+	else
+	{
+		plan skip_all => "OpenLDAP server installation not found";
+	}
+}
+else
+{
+	plan skip_all => "ldap tests not supported on $^O";
 }
 
 # make your own edits here
@@ -45,11 +87,11 @@ my $ldap_datadir  = "${TestLib::tmp_check}/openldap-data";
 my $slapd_certs   = "${TestLib::tmp_check}/slapd-certs";
 my $slapd_conf    = "${TestLib::tmp_check}/slapd.conf";
 my $slapd_pidfile = "${TestLib::tmp_check}/slapd.pid";
-my $slapd_logfile = "${TestLib::tmp_check}/slapd.log";
+my $slapd_logfile = "${TestLib::log_path}/slapd.log";
 my $ldap_conf     = "${TestLib::tmp_check}/ldap.conf";
 my $ldap_server   = 'localhost';
-my $ldap_port     = int(rand() * 16384) + 49152;
-my $ldaps_port    = $ldap_port + 1;
+my $ldap_port     = get_free_port();
+my $ldaps_port    = get_free_port();
 my $ldap_url      = "ldap://$ldap_server:$ldap_port";
 my $ldaps_url     = "ldaps://$ldap_server:$ldaps_port";
 my $ldap_basedn   = 'dc=example,dc=net';
@@ -95,23 +137,47 @@ mkdir $slapd_certs  or die;
 
 system_or_bail "openssl", "req", "-new", "-nodes", "-keyout",
   "$slapd_certs/ca.key", "-x509", "-out", "$slapd_certs/ca.crt", "-subj",
-  "/cn=CA";
+  "/CN=CA";
 system_or_bail "openssl", "req", "-new", "-nodes", "-keyout",
   "$slapd_certs/server.key", "-out", "$slapd_certs/server.csr", "-subj",
-  "/cn=server";
+  "/CN=server";
 system_or_bail "openssl", "x509", "-req", "-in", "$slapd_certs/server.csr",
   "-CA", "$slapd_certs/ca.crt", "-CAkey", "$slapd_certs/ca.key",
   "-CAcreateserial", "-out", "$slapd_certs/server.crt";
 
-system_or_bail $slapd, '-f', $slapd_conf, '-h', "$ldap_url $ldaps_url";
+# -s0 prevents log messages ending up in syslog
+system_or_bail $slapd, '-f', $slapd_conf,'-s0', '-h', "$ldap_url $ldaps_url";
 
 END
 {
+	# take care not to change the script's exit value
+	my $exit_code = $?;
+
 	kill 'INT', `cat $slapd_pidfile` if -f $slapd_pidfile;
+
+	$? = $exit_code;
 }
 
 append_to_file($ldap_pwfile, $ldap_rootpw);
 chmod 0600, $ldap_pwfile or die;
+
+# wait until slapd accepts requests
+my $retries = 0;
+while (1)
+{
+	last
+	  if (
+		system_log(
+			"ldapsearch", "-sbase",
+			"-H",         $ldap_url,
+			"-b",         $ldap_basedn,
+			"-D",         $ldap_rootdn,
+			"-y",         $ldap_pwfile,
+			"-n",         "'objectclass=*'") == 0);
+	die "cannot connect to slapd" if ++$retries >= 300;
+	note "waiting for slapd to accept requests...";
+	Time::HiRes::usleep(1000000);
+}
 
 $ENV{'LDAPURI'}    = $ldap_url;
 $ENV{'LDAPBINDDN'} = $ldap_rootdn;
@@ -129,6 +195,7 @@ note "setting up PostgreSQL instance";
 
 my $node = get_new_node('node');
 $node->init;
+$node->append_conf('postgresql.conf', "log_connections = on\n");
 $node->start;
 
 $node->safe_psql('postgres', 'CREATE USER test0;');
@@ -139,12 +206,20 @@ note "running tests";
 
 sub test_access
 {
-	my ($node, $role, $expected_res, $test_name) = @_;
+	local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-	my $res =
-	  $node->psql('postgres', 'SELECT 1', extra_params => [ '-U', $role ]);
-	is($res, $expected_res, $test_name);
-	return;
+	my ($node, $role, $expected_res, $test_name, %params) = @_;
+	my $connstr = "user=$role";
+
+	if ($expected_res eq 0)
+	{
+		$node->connect_ok($connstr, $test_name, %params);
+	}
+	else
+	{
+		# No checks of the error message, only the status code.
+		$node->connect_fails($connstr, $test_name, %params);
+	}
 }
 
 note "simple bind";
@@ -156,12 +231,22 @@ $node->append_conf('pg_hba.conf',
 $node->restart;
 
 $ENV{"PGPASSWORD"} = 'wrong';
-test_access($node, 'test0', 2,
-	'simple bind authentication fails if user not found in LDAP');
-test_access($node, 'test1', 2,
-	'simple bind authentication fails with wrong password');
+test_access(
+	$node, 'test0', 2,
+	'simple bind authentication fails if user not found in LDAP',
+	log_unlike => [qr/connection authenticated:/]);
+test_access(
+	$node, 'test1', 2,
+	'simple bind authentication fails with wrong password',
+	log_unlike => [qr/connection authenticated:/]);
+
 $ENV{"PGPASSWORD"} = 'secret1';
-test_access($node, 'test1', 0, 'simple bind authentication succeeds');
+test_access(
+	$node, 'test1', 0,
+	'simple bind authentication succeeds',
+	log_like => [
+		qr/connection authenticated: identity="uid=test1,dc=example,dc=net" method=ldap/
+	],);
 
 note "search+bind";
 
@@ -177,7 +262,12 @@ test_access($node, 'test0', 2,
 test_access($node, 'test1', 2,
 	'search+bind authentication fails with wrong password');
 $ENV{"PGPASSWORD"} = 'secret1';
-test_access($node, 'test1', 0, 'search+bind authentication succeeds');
+test_access(
+	$node, 'test1', 0,
+	'search+bind authentication succeeds',
+	log_like => [
+		qr/connection authenticated: identity="uid=test1,dc=example,dc=net" method=ldap/
+	],);
 
 note "multiple servers";
 
@@ -221,9 +311,21 @@ $node->append_conf('pg_hba.conf',
 $node->restart;
 
 $ENV{"PGPASSWORD"} = 'secret1';
-test_access($node, 'test1', 0, 'search filter finds by uid');
+test_access(
+	$node, 'test1', 0,
+	'search filter finds by uid',
+	log_like => [
+		qr/connection authenticated: identity="uid=test1,dc=example,dc=net" method=ldap/
+	],);
 $ENV{"PGPASSWORD"} = 'secret2';
-test_access($node, 'test2@example.net', 0, 'search filter finds by mail');
+test_access(
+	$node,
+	'test2@example.net',
+	0,
+	'search filter finds by mail',
+	log_like => [
+		qr/connection authenticated: identity="uid=test2,dc=example,dc=net" method=ldap/
+	],);
 
 note "search filters in LDAP URLs";
 
@@ -303,3 +405,5 @@ $node->restart;
 
 $ENV{"PGPASSWORD"} = 'secret1';
 test_access($node, 'test1', 2, 'bad combination of LDAPS and StartTLS');
+
+done_testing();

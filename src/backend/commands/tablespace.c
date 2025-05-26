@@ -35,7 +35,7 @@
  * and munge the system catalogs of the new database.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -51,9 +51,10 @@
 #include <sys/stat.h>
 
 #include "access/heapam.h"
-#include "access/reloptions.h"
 #include "access/htup_details.h"
+#include "access/reloptions.h"
 #include "access/sysattr.h"
+#include "access/tableam.h"
 #include "access/xact.h"
 #include "access/xlog.h"
 #include "access/xloginsert.h"
@@ -81,17 +82,16 @@
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
 #include "utils/rel.h"
-#include "utils/tqual.h"
 #include "utils/varlena.h"
-
 
 /* GUC variables */
 char	   *default_tablespace = NULL;
 char	   *temp_tablespaces = NULL;
+bool		allow_in_place_tablespaces = false;
 
 
 static void create_tablespace_directories(const char *location,
-							  const Oid tablespaceoid);
+										  const Oid tablespaceoid);
 static bool destroy_tablespace_directories(Oid tablespaceoid, bool redo);
 
 
@@ -154,8 +154,6 @@ TablespaceCreateDbspace(Oid spcNode, Oid dbNode, bool isRedo)
 				/* Directory creation failed? */
 				if (MakePGDirectory(dir) < 0)
 				{
-					char	   *parentdir;
-
 					/* Failure other than not exists or not in WAL replay? */
 					if (errno != ENOENT || !isRedo)
 						ereport(ERROR,
@@ -164,36 +162,16 @@ TablespaceCreateDbspace(Oid spcNode, Oid dbNode, bool isRedo)
 										dir)));
 
 					/*
-					 * Parent directories are missing during WAL replay, so
-					 * continue by creating simple parent directories rather
-					 * than a symlink.
+					 * During WAL replay, it's conceivable that several levels
+					 * of directories are missing if tablespaces are dropped
+					 * further ahead of the WAL stream than we're currently
+					 * replaying.  An easy way forward is to create them as
+					 * plain directories and hope they are removed by further
+					 * WAL replay if necessary.  If this also fails, there is
+					 * trouble we cannot get out of, so just report that and
+					 * bail out.
 					 */
-
-					/* create two parents up if not exist */
-					parentdir = pstrdup(dir);
-					get_parent_directory(parentdir);
-					get_parent_directory(parentdir);
-					/* Can't create parent and it doesn't already exist? */
-					if (MakePGDirectory(parentdir) < 0 && errno != EEXIST)
-						ereport(ERROR,
-								(errcode_for_file_access(),
-								 errmsg("could not create directory \"%s\": %m",
-										parentdir)));
-					pfree(parentdir);
-
-					/* create one parent up if not exist */
-					parentdir = pstrdup(dir);
-					get_parent_directory(parentdir);
-					/* Can't create parent and it doesn't already exist? */
-					if (MakePGDirectory(parentdir) < 0 && errno != EEXIST)
-						ereport(ERROR,
-								(errcode_for_file_access(),
-								 errmsg("could not create directory \"%s\": %m",
-										parentdir)));
-					pfree(parentdir);
-
-					/* Create database directory */
-					if (MakePGDirectory(dir) < 0)
+					if (pg_mkdir_p(dir, pg_dir_create_mode) < 0)
 						ereport(ERROR,
 								(errcode_for_file_access(),
 								 errmsg("could not create directory \"%s\": %m",
@@ -242,6 +220,7 @@ CreateTableSpace(CreateTableSpaceStmt *stmt)
 	char	   *location;
 	Oid			ownerId;
 	Datum		newOptions;
+	bool		in_place;
 
 	/* Must be super user */
 	if (!superuser())
@@ -267,12 +246,15 @@ CreateTableSpace(CreateTableSpaceStmt *stmt)
 				(errcode(ERRCODE_INVALID_NAME),
 				 errmsg("tablespace location cannot contain single quotes")));
 
+	in_place = allow_in_place_tablespaces && strlen(location) == 0;
+
 	/*
 	 * Allowing relative paths seems risky
 	 *
-	 * this also helps us ensure that location is not empty or whitespace
+	 * This also helps us ensure that location is not empty or whitespace,
+	 * unless specifying a developer-only in-place tablespace.
 	 */
-	if (!is_absolute_path(location))
+	if (!in_place && !is_absolute_path(location))
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
 				 errmsg("tablespace location must be an absolute path")));
@@ -308,6 +290,15 @@ CreateTableSpace(CreateTableSpaceStmt *stmt)
 				 errdetail("The prefix \"pg_\" is reserved for system tablespaces.")));
 
 	/*
+	 * If built with appropriate switch, whine when regression-testing
+	 * conventions for tablespace names are violated.
+	 */
+#ifdef ENFORCE_REGRESSION_TEST_NAME_RESTRICTIONS
+	if (strncmp(stmt->tablespacename, "regress_", 8) != 0)
+		elog(WARNING, "tablespaces created by regression test cases should have names starting with \"regress_\"");
+#endif
+
+	/*
 	 * Check that there is no other tablespace by this name.  (The unique
 	 * index would catch this anyway, but might as well give a friendlier
 	 * message.)
@@ -323,10 +314,13 @@ CreateTableSpace(CreateTableSpaceStmt *stmt)
 	 * lock the proposed tablename against other would-be creators. The
 	 * insertion will roll back if we find problems below.
 	 */
-	rel = heap_open(TableSpaceRelationId, RowExclusiveLock);
+	rel = table_open(TableSpaceRelationId, RowExclusiveLock);
 
 	MemSet(nulls, false, sizeof(nulls));
 
+	tablespaceoid = GetNewOidWithIndex(rel, TablespaceOidIndexId,
+									   Anum_pg_tablespace_oid);
+	values[Anum_pg_tablespace_oid - 1] = ObjectIdGetDatum(tablespaceoid);
 	values[Anum_pg_tablespace_spcname - 1] =
 		DirectFunctionCall1(namein, CStringGetDatum(stmt->tablespacename));
 	values[Anum_pg_tablespace_spcowner - 1] =
@@ -345,7 +339,7 @@ CreateTableSpace(CreateTableSpaceStmt *stmt)
 
 	tuple = heap_form_tuple(rel->rd_att, values, nulls);
 
-	tablespaceoid = CatalogTupleInsert(rel, tuple);
+	CatalogTupleInsert(rel, tuple);
 
 	heap_freetuple(tuple);
 
@@ -382,7 +376,7 @@ CreateTableSpace(CreateTableSpaceStmt *stmt)
 	pfree(location);
 
 	/* We keep the lock on pg_tablespace until commit */
-	heap_close(rel, NoLock);
+	table_close(rel, NoLock);
 
 	return tablespaceoid;
 #else							/* !HAVE_SYMLINK */
@@ -403,22 +397,25 @@ DropTableSpace(DropTableSpaceStmt *stmt)
 {
 #ifdef HAVE_SYMLINK
 	char	   *tablespacename = stmt->tablespacename;
-	HeapScanDesc scandesc;
+	TableScanDesc scandesc;
 	Relation	rel;
 	HeapTuple	tuple;
+	Form_pg_tablespace spcform;
 	ScanKeyData entry[1];
 	Oid			tablespaceoid;
+	char	   *detail;
+	char	   *detail_log;
 
 	/*
 	 * Find the target tuple
 	 */
-	rel = heap_open(TableSpaceRelationId, RowExclusiveLock);
+	rel = table_open(TableSpaceRelationId, RowExclusiveLock);
 
 	ScanKeyInit(&entry[0],
 				Anum_pg_tablespace_spcname,
 				BTEqualStrategyNumber, F_NAMEEQ,
 				CStringGetDatum(tablespacename));
-	scandesc = heap_beginscan_catalog(rel, 1, entry);
+	scandesc = table_beginscan_catalog(rel, 1, entry);
 	tuple = heap_getnext(scandesc, ForwardScanDirection);
 
 	if (!HeapTupleIsValid(tuple))
@@ -436,13 +433,14 @@ DropTableSpace(DropTableSpaceStmt *stmt)
 					(errmsg("tablespace \"%s\" does not exist, skipping",
 							tablespacename)));
 			/* XXX I assume I need one or both of these next two calls */
-			heap_endscan(scandesc);
-			heap_close(rel, NoLock);
+			table_endscan(scandesc);
+			table_close(rel, NoLock);
 		}
 		return;
 	}
 
-	tablespaceoid = HeapTupleGetOid(tuple);
+	spcform = (Form_pg_tablespace) GETSTRUCT(tuple);
+	tablespaceoid = spcform->oid;
 
 	/* Must be tablespace owner */
 	if (!pg_tablespace_ownercheck(tablespaceoid, GetUserId()))
@@ -455,6 +453,16 @@ DropTableSpace(DropTableSpaceStmt *stmt)
 		aclcheck_error(ACLCHECK_NO_PRIV, OBJECT_TABLESPACE,
 					   tablespacename);
 
+	/* Check for pg_shdepend entries depending on this tablespace */
+	if (checkSharedDependencies(TableSpaceRelationId, tablespaceoid,
+								&detail, &detail_log))
+		ereport(ERROR,
+				(errcode(ERRCODE_DEPENDENT_OBJECTS_STILL_EXIST),
+				 errmsg("tablespace \"%s\" cannot be dropped because some objects depend on it",
+						tablespacename),
+				 errdetail_internal("%s", detail),
+				 errdetail_log("%s", detail_log)));
+
 	/* DROP hook for the tablespace being removed */
 	InvokeObjectDropHook(TableSpaceRelationId, tablespaceoid, 0);
 
@@ -463,7 +471,7 @@ DropTableSpace(DropTableSpaceStmt *stmt)
 	 */
 	CatalogTupleDelete(rel, &tuple->t_self);
 
-	heap_endscan(scandesc);
+	table_endscan(scandesc);
 
 	/*
 	 * Remove any comments or security labels on this tablespace.
@@ -546,7 +554,7 @@ DropTableSpace(DropTableSpaceStmt *stmt)
 	LWLockRelease(TablespaceCreateLock);
 
 	/* We keep the lock on pg_tablespace until commit */
-	heap_close(rel, NoLock);
+	table_close(rel, NoLock);
 #else							/* !HAVE_SYMLINK */
 	ereport(ERROR,
 			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
@@ -567,16 +575,36 @@ create_tablespace_directories(const char *location, const Oid tablespaceoid)
 	char	   *linkloc;
 	char	   *location_with_version_dir;
 	struct stat st;
+	bool		in_place;
 
 	linkloc = psprintf("pg_tblspc/%u", tablespaceoid);
-	location_with_version_dir = psprintf("%s/%s", location,
+
+	/*
+	 * If we're asked to make an 'in place' tablespace, create the directory
+	 * directly where the symlink would normally go.  This is a developer-only
+	 * option for now, to facilitate regression testing.
+	 */
+	in_place = strlen(location) == 0;
+
+	if (in_place)
+	{
+		if (MakePGDirectory(linkloc) < 0 && errno != EEXIST)
+			ereport(ERROR,
+					(errcode_for_file_access(),
+					 errmsg("could not create directory \"%s\": %m",
+							linkloc)));
+	}
+
+	location_with_version_dir = psprintf("%s/%s", in_place ? linkloc : location,
 										 TABLESPACE_VERSION_DIRECTORY);
 
 	/*
 	 * Attempt to coerce target directory to safe permissions.  If this fails,
-	 * it doesn't exist or has the wrong owner.
+	 * it doesn't exist or has the wrong owner.  Not needed for in-place mode,
+	 * because in that case we created the directory with the desired
+	 * permissions.
 	 */
-	if (chmod(location, pg_dir_create_mode) != 0)
+	if (!in_place && chmod(location, pg_dir_create_mode) != 0)
 	{
 		if (errno == ENOENT)
 			ereport(ERROR,
@@ -591,51 +619,47 @@ create_tablespace_directories(const char *location, const Oid tablespaceoid)
 							location)));
 	}
 
-	if (InRecovery)
-	{
-		/*
-		 * Our theory for replaying a CREATE is to forcibly drop the target
-		 * subdirectory if present, and then recreate it. This may be more
-		 * work than needed, but it is simple to implement.
-		 */
-		if (stat(location_with_version_dir, &st) == 0 && S_ISDIR(st.st_mode))
-		{
-			if (!rmtree(location_with_version_dir, true))
-				/* If this failed, MakePGDirectory() below is going to error. */
-				ereport(WARNING,
-						(errmsg("some useless files may be left behind in old database directory \"%s\"",
-								location_with_version_dir)));
-		}
-	}
-
 	/*
 	 * The creation of the version directory prevents more than one tablespace
-	 * in a single location.
+	 * in a single location.  This imitates TablespaceCreateDbspace(), but it
+	 * ignores concurrency and missing parent directories.  The chmod() would
+	 * have failed in the absence of a parent.  pg_tablespace_spcname_index
+	 * prevents concurrency.
 	 */
-	if (MakePGDirectory(location_with_version_dir) < 0)
+	if (stat(location_with_version_dir, &st) < 0)
 	{
-		if (errno == EEXIST)
+		if (errno != ENOENT)
 			ereport(ERROR,
-					(errcode(ERRCODE_OBJECT_IN_USE),
-					 errmsg("directory \"%s\" already in use as a tablespace",
+					(errcode_for_file_access(),
+					 errmsg("could not stat directory \"%s\": %m",
 							location_with_version_dir)));
-		else
+		else if (MakePGDirectory(location_with_version_dir) < 0)
 			ereport(ERROR,
 					(errcode_for_file_access(),
 					 errmsg("could not create directory \"%s\": %m",
 							location_with_version_dir)));
 	}
+	else if (!S_ISDIR(st.st_mode))
+		ereport(ERROR,
+				(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+				 errmsg("\"%s\" exists but is not a directory",
+						location_with_version_dir)));
+	else if (!InRecovery)
+		ereport(ERROR,
+				(errcode(ERRCODE_OBJECT_IN_USE),
+				 errmsg("directory \"%s\" already in use as a tablespace",
+						location_with_version_dir)));
 
 	/*
 	 * In recovery, remove old symlink, in case it points to the wrong place.
 	 */
-	if (InRecovery)
+	if (!in_place && InRecovery)
 		remove_tablespace_symlink(linkloc);
 
 	/*
 	 * Create the symlink under PGDATA
 	 */
-	if (symlink(location, linkloc) < 0)
+	if (!in_place && symlink(location, linkloc) < 0)
 		ereport(ERROR,
 				(errcode_for_file_access(),
 				 errmsg("could not create symbolic link \"%s\": %m",
@@ -763,8 +787,7 @@ destroy_tablespace_directories(Oid tablespaceoid, bool redo)
 	/*
 	 * Try to remove the symlink.  We must however deal with the possibility
 	 * that it's a directory instead of a symlink --- this could happen during
-	 * WAL replay (see TablespaceCreateDbspace), and it is also the case on
-	 * Windows where junction points lstat() as directories.
+	 * WAL replay (see TablespaceCreateDbspace).
 	 *
 	 * Note: in the redo case, we'll return true if this final step fails;
 	 * there's no point in retrying it.  Also, ENOENT should provoke no more
@@ -794,7 +817,6 @@ remove_symlink:
 							linkloc)));
 		}
 	}
-#ifdef S_ISLNK
 	else if (S_ISLNK(st.st_mode))
 	{
 		if (unlink(linkloc) < 0)
@@ -807,7 +829,6 @@ remove_symlink:
 							linkloc)));
 		}
 	}
-#endif
 	else
 	{
 		/* Refuse to remove anything that's not a directory or symlink */
@@ -885,7 +906,6 @@ remove_tablespace_symlink(const char *linkloc)
 					 errmsg("could not remove directory \"%s\": %m",
 							linkloc)));
 	}
-#ifdef S_ISLNK
 	else if (S_ISLNK(st.st_mode))
 	{
 		if (unlink(linkloc) < 0 && errno != ENOENT)
@@ -894,7 +914,6 @@ remove_tablespace_symlink(const char *linkloc)
 					 errmsg("could not remove symbolic link \"%s\": %m",
 							linkloc)));
 	}
-#endif
 	else
 	{
 		/* Refuse to remove anything that's not a directory or symlink */
@@ -914,20 +933,20 @@ RenameTableSpace(const char *oldname, const char *newname)
 	Oid			tspId;
 	Relation	rel;
 	ScanKeyData entry[1];
-	HeapScanDesc scan;
+	TableScanDesc scan;
 	HeapTuple	tup;
 	HeapTuple	newtuple;
 	Form_pg_tablespace newform;
 	ObjectAddress address;
 
 	/* Search pg_tablespace */
-	rel = heap_open(TableSpaceRelationId, RowExclusiveLock);
+	rel = table_open(TableSpaceRelationId, RowExclusiveLock);
 
 	ScanKeyInit(&entry[0],
 				Anum_pg_tablespace_spcname,
 				BTEqualStrategyNumber, F_NAMEEQ,
 				CStringGetDatum(oldname));
-	scan = heap_beginscan_catalog(rel, 1, entry);
+	scan = table_beginscan_catalog(rel, 1, entry);
 	tup = heap_getnext(scan, ForwardScanDirection);
 	if (!HeapTupleIsValid(tup))
 		ereport(ERROR,
@@ -935,14 +954,14 @@ RenameTableSpace(const char *oldname, const char *newname)
 				 errmsg("tablespace \"%s\" does not exist",
 						oldname)));
 
-	tspId = HeapTupleGetOid(tup);
 	newtuple = heap_copytuple(tup);
 	newform = (Form_pg_tablespace) GETSTRUCT(newtuple);
+	tspId = newform->oid;
 
-	heap_endscan(scan);
+	table_endscan(scan);
 
 	/* Must be owner */
-	if (!pg_tablespace_ownercheck(HeapTupleGetOid(newtuple), GetUserId()))
+	if (!pg_tablespace_ownercheck(tspId, GetUserId()))
 		aclcheck_error(ACLCHECK_NO_PRIV, OBJECT_TABLESPACE, oldname);
 
 	/* Validate new name */
@@ -952,12 +971,21 @@ RenameTableSpace(const char *oldname, const char *newname)
 				 errmsg("unacceptable tablespace name \"%s\"", newname),
 				 errdetail("The prefix \"pg_\" is reserved for system tablespaces.")));
 
+	/*
+	 * If built with appropriate switch, whine when regression-testing
+	 * conventions for tablespace names are violated.
+	 */
+#ifdef ENFORCE_REGRESSION_TEST_NAME_RESTRICTIONS
+	if (strncmp(newname, "regress_", 8) != 0)
+		elog(WARNING, "tablespaces created by regression test cases should have names starting with \"regress_\"");
+#endif
+
 	/* Make sure the new name doesn't exist */
 	ScanKeyInit(&entry[0],
 				Anum_pg_tablespace_spcname,
 				BTEqualStrategyNumber, F_NAMEEQ,
 				CStringGetDatum(newname));
-	scan = heap_beginscan_catalog(rel, 1, entry);
+	scan = table_beginscan_catalog(rel, 1, entry);
 	tup = heap_getnext(scan, ForwardScanDirection);
 	if (HeapTupleIsValid(tup))
 		ereport(ERROR,
@@ -965,7 +993,7 @@ RenameTableSpace(const char *oldname, const char *newname)
 				 errmsg("tablespace \"%s\" already exists",
 						newname)));
 
-	heap_endscan(scan);
+	table_endscan(scan);
 
 	/* OK, update the entry */
 	namestrcpy(&(newform->spcname), newname);
@@ -976,7 +1004,7 @@ RenameTableSpace(const char *oldname, const char *newname)
 
 	ObjectAddressSet(address, TableSpaceRelationId, tspId);
 
-	heap_close(rel, NoLock);
+	table_close(rel, NoLock);
 
 	return address;
 }
@@ -989,7 +1017,7 @@ AlterTableSpaceOptions(AlterTableSpaceOptionsStmt *stmt)
 {
 	Relation	rel;
 	ScanKeyData entry[1];
-	HeapScanDesc scandesc;
+	TableScanDesc scandesc;
 	HeapTuple	tup;
 	Oid			tablespaceoid;
 	Datum		datum;
@@ -1001,13 +1029,13 @@ AlterTableSpaceOptions(AlterTableSpaceOptionsStmt *stmt)
 	HeapTuple	newtuple;
 
 	/* Search pg_tablespace */
-	rel = heap_open(TableSpaceRelationId, RowExclusiveLock);
+	rel = table_open(TableSpaceRelationId, RowExclusiveLock);
 
 	ScanKeyInit(&entry[0],
 				Anum_pg_tablespace_spcname,
 				BTEqualStrategyNumber, F_NAMEEQ,
 				CStringGetDatum(stmt->tablespacename));
-	scandesc = heap_beginscan_catalog(rel, 1, entry);
+	scandesc = table_beginscan_catalog(rel, 1, entry);
 	tup = heap_getnext(scandesc, ForwardScanDirection);
 	if (!HeapTupleIsValid(tup))
 		ereport(ERROR,
@@ -1015,10 +1043,10 @@ AlterTableSpaceOptions(AlterTableSpaceOptionsStmt *stmt)
 				 errmsg("tablespace \"%s\" does not exist",
 						stmt->tablespacename)));
 
-	tablespaceoid = HeapTupleGetOid(tup);
+	tablespaceoid = ((Form_pg_tablespace) GETSTRUCT(tup))->oid;
 
 	/* Must be owner of the existing object */
-	if (!pg_tablespace_ownercheck(HeapTupleGetOid(tup), GetUserId()))
+	if (!pg_tablespace_ownercheck(tablespaceoid, GetUserId()))
 		aclcheck_error(ACLCHECK_NOT_OWNER, OBJECT_TABLESPACE,
 					   stmt->tablespacename);
 
@@ -1044,13 +1072,13 @@ AlterTableSpaceOptions(AlterTableSpaceOptionsStmt *stmt)
 	/* Update system catalog. */
 	CatalogTupleUpdate(rel, &newtuple->t_self, newtuple);
 
-	InvokeObjectPostAlterHook(TableSpaceRelationId, HeapTupleGetOid(tup), 0);
+	InvokeObjectPostAlterHook(TableSpaceRelationId, tablespaceoid, 0);
 
 	heap_freetuple(newtuple);
 
 	/* Conclude heap scan. */
-	heap_endscan(scandesc);
-	heap_close(rel, NoLock);
+	table_endscan(scandesc);
+	table_close(rel, NoLock);
 
 	return tablespaceoid;
 }
@@ -1100,7 +1128,9 @@ check_default_tablespace(char **newval, void **extra, GucSource source)
  * GetDefaultTablespace -- get the OID of the current default tablespace
  *
  * Temporary objects have different default tablespaces, hence the
- * relpersistence parameter must be specified.
+ * relpersistence parameter must be specified.  Also, for partitioned tables,
+ * we disallow specifying the database default, so that needs to be specified
+ * too.
  *
  * May return InvalidOid to indicate "use the database's default tablespace".
  *
@@ -1111,7 +1141,7 @@ check_default_tablespace(char **newval, void **extra, GucSource source)
  * default_tablespace GUC variable.
  */
 Oid
-GetDefaultTablespace(char relpersistence)
+GetDefaultTablespace(char relpersistence, bool partitioned)
 {
 	Oid			result;
 
@@ -1137,10 +1167,18 @@ GetDefaultTablespace(char relpersistence)
 
 	/*
 	 * Allow explicit specification of database's default tablespace in
-	 * default_tablespace without triggering permissions checks.
+	 * default_tablespace without triggering permissions checks.  Don't allow
+	 * specifying that when creating a partitioned table, however, since the
+	 * result is confusing.
 	 */
 	if (result == MyDatabaseTableSpace)
+	{
+		if (partitioned)
+			ereport(ERROR,
+					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+					 errmsg("cannot specify default tablespace for partitioned relations")));
 		result = InvalidOid;
+	}
 	return result;
 }
 
@@ -1151,6 +1189,7 @@ GetDefaultTablespace(char relpersistence)
 
 typedef struct
 {
+	/* Array of OIDs to be passed to SetTempTablespaces() */
 	int			numSpcs;
 	Oid			tblSpcs[FLEXIBLE_ARRAY_MEMBER];
 } temp_tablespaces_extra;
@@ -1178,8 +1217,8 @@ check_temp_tablespaces(char **newval, void **extra, GucSource source)
 	/*
 	 * If we aren't inside a transaction, or connected to a database, we
 	 * cannot do the catalog accesses necessary to verify the name.  Must
-	 * accept the value on faith.
-	 * Fortunately, there's then also no need to pass the data to fd.c.
+	 * accept the value on faith. Fortunately, there's then also no need to
+	 * pass the data to fd.c.
 	 */
 	if (IsTransactionState() && MyDatabaseId != InvalidOid)
 	{
@@ -1200,6 +1239,7 @@ check_temp_tablespaces(char **newval, void **extra, GucSource source)
 			/* Allow an empty string (signifying database default) */
 			if (curname[0] == '\0')
 			{
+				/* InvalidOid signifies database's default tablespace */
 				tblSpcs[numSpcs++] = InvalidOid;
 				continue;
 			}
@@ -1226,6 +1266,7 @@ check_temp_tablespaces(char **newval, void **extra, GucSource source)
 			 */
 			if (curoid == MyDatabaseTableSpace)
 			{
+				/* InvalidOid signifies database's default tablespace */
 				tblSpcs[numSpcs++] = InvalidOid;
 				continue;
 			}
@@ -1336,6 +1377,7 @@ PrepareTempTablespaces(void)
 		/* Allow an empty string (signifying database default) */
 		if (curname[0] == '\0')
 		{
+			/* InvalidOid signifies database's default tablespace */
 			tblSpcs[numSpcs++] = InvalidOid;
 			continue;
 		}
@@ -1354,6 +1396,7 @@ PrepareTempTablespaces(void)
 		 */
 		if (curoid == MyDatabaseTableSpace)
 		{
+			/* InvalidOid signifies database's default tablespace */
 			tblSpcs[numSpcs++] = InvalidOid;
 			continue;
 		}
@@ -1385,7 +1428,7 @@ get_tablespace_oid(const char *tablespacename, bool missing_ok)
 {
 	Oid			result;
 	Relation	rel;
-	HeapScanDesc scandesc;
+	TableScanDesc scandesc;
 	HeapTuple	tuple;
 	ScanKeyData entry[1];
 
@@ -1394,23 +1437,23 @@ get_tablespace_oid(const char *tablespacename, bool missing_ok)
 	 * index on name, on the theory that pg_tablespace will usually have just
 	 * a few entries and so an indexed lookup is a waste of effort.
 	 */
-	rel = heap_open(TableSpaceRelationId, AccessShareLock);
+	rel = table_open(TableSpaceRelationId, AccessShareLock);
 
 	ScanKeyInit(&entry[0],
 				Anum_pg_tablespace_spcname,
 				BTEqualStrategyNumber, F_NAMEEQ,
 				CStringGetDatum(tablespacename));
-	scandesc = heap_beginscan_catalog(rel, 1, entry);
+	scandesc = table_beginscan_catalog(rel, 1, entry);
 	tuple = heap_getnext(scandesc, ForwardScanDirection);
 
 	/* We assume that there can be at most one matching tuple */
 	if (HeapTupleIsValid(tuple))
-		result = HeapTupleGetOid(tuple);
+		result = ((Form_pg_tablespace) GETSTRUCT(tuple))->oid;
 	else
 		result = InvalidOid;
 
-	heap_endscan(scandesc);
-	heap_close(rel, AccessShareLock);
+	table_endscan(scandesc);
+	table_close(rel, AccessShareLock);
 
 	if (!OidIsValid(result) && !missing_ok)
 		ereport(ERROR,
@@ -1431,7 +1474,7 @@ get_tablespace_name(Oid spc_oid)
 {
 	char	   *result;
 	Relation	rel;
-	HeapScanDesc scandesc;
+	TableScanDesc scandesc;
 	HeapTuple	tuple;
 	ScanKeyData entry[1];
 
@@ -1440,13 +1483,13 @@ get_tablespace_name(Oid spc_oid)
 	 * index on oid, on the theory that pg_tablespace will usually have just a
 	 * few entries and so an indexed lookup is a waste of effort.
 	 */
-	rel = heap_open(TableSpaceRelationId, AccessShareLock);
+	rel = table_open(TableSpaceRelationId, AccessShareLock);
 
 	ScanKeyInit(&entry[0],
-				ObjectIdAttributeNumber,
+				Anum_pg_tablespace_oid,
 				BTEqualStrategyNumber, F_OIDEQ,
 				ObjectIdGetDatum(spc_oid));
-	scandesc = heap_beginscan_catalog(rel, 1, entry);
+	scandesc = table_beginscan_catalog(rel, 1, entry);
 	tuple = heap_getnext(scandesc, ForwardScanDirection);
 
 	/* We assume that there can be at most one matching tuple */
@@ -1455,8 +1498,8 @@ get_tablespace_name(Oid spc_oid)
 	else
 		result = NULL;
 
-	heap_endscan(scandesc);
-	heap_close(rel, AccessShareLock);
+	table_endscan(scandesc);
+	table_close(rel, AccessShareLock);
 
 	return result;
 }

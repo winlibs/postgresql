@@ -36,7 +36,7 @@
  * to look like NO SCROLL cursors.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/portal.h
@@ -48,6 +48,7 @@
 
 #include "datatype/timestamp.h"
 #include "executor/execdesc.h"
+#include "tcop/cmdtag.h"
 #include "utils/plancache.h"
 #include "utils/resowner.h"
 
@@ -132,7 +133,8 @@ typedef struct PortalData
 
 	/* The query or queries the portal will execute */
 	const char *sourceText;		/* text of query (as of 8.4, never NULL) */
-	const char *commandTag;		/* command tag for original query */
+	CommandTag	commandTag;		/* command tag for original query */
+	QueryCompletion qc;			/* command completion data for executed query */
 	List	   *stmts;			/* list of PlannedStmts */
 	CachedPlan *cplan;			/* CachedPlan, if stmts are from one */
 
@@ -142,7 +144,7 @@ typedef struct PortalData
 	/* Features/options */
 	PortalStrategy strategy;	/* see above */
 	int			cursorOptions;	/* DECLARE CURSOR option bits */
-	bool		run_once;		/* portal will only be run once */
+	bool		run_once;		/* unused */
 
 	/* Status data */
 	PortalStatus status;		/* see above */
@@ -159,9 +161,17 @@ typedef struct PortalData
 	int16	   *formats;		/* a format code for each column */
 
 	/*
-	 * Where we store tuples for a held cursor or a PORTAL_ONE_RETURNING or
-	 * PORTAL_UTIL_SELECT query.  (A cursor held past the end of its
-	 * transaction no longer has any active executor state.)
+	 * Outermost ActiveSnapshot for execution of the portal's queries.  For
+	 * all but a few utility commands, we require such a snapshot to exist.
+	 * This ensures that TOAST references in query results can be detoasted,
+	 * and helps to reduce thrashing of the process's exposed xmin.
+	 */
+	Snapshot	portalSnapshot; /* active snapshot, or NULL if none */
+
+	/*
+	 * Where we store tuples for a held cursor or a PORTAL_ONE_RETURNING,
+	 * PORTAL_ONE_MOD_WITH, or PORTAL_UTIL_SELECT query.  (A cursor held past
+	 * the end of its transaction no longer has any active executor state.)
 	 */
 	Tuplestorestate *holdStore; /* store for holdable cursors */
 	MemoryContext holdContext;	/* memory containing holdStore */
@@ -192,6 +202,9 @@ typedef struct PortalData
 	/* Presentation data, primarily used by the pg_cursors system view */
 	TimestampTz creation_time;	/* time at which this portal was defined */
 	bool		visible;		/* include this portal in pg_cursors? */
+
+	/* Stuff added at the end to avoid ABI break in stable branches: */
+	int			createLevel;	/* creating subxact's nesting level */
 }			PortalData;
 
 /*
@@ -208,12 +221,13 @@ extern void AtAbort_Portals(void);
 extern void AtCleanup_Portals(void);
 extern void PortalErrorCleanup(void);
 extern void AtSubCommit_Portals(SubTransactionId mySubid,
-					SubTransactionId parentSubid,
-					ResourceOwner parentXactOwner);
+								SubTransactionId parentSubid,
+								int parentLevel,
+								ResourceOwner parentXactOwner);
 extern void AtSubAbort_Portals(SubTransactionId mySubid,
-				   SubTransactionId parentSubid,
-				   ResourceOwner myXactOwner,
-				   ResourceOwner parentXactOwner);
+							   SubTransactionId parentSubid,
+							   ResourceOwner myXactOwner,
+							   ResourceOwner parentXactOwner);
 extern void AtSubCleanup_Portals(SubTransactionId mySubid);
 extern Portal CreatePortal(const char *name, bool allowDup, bool dupSilent);
 extern Portal CreateNewPortal(void);
@@ -225,15 +239,16 @@ extern void MarkPortalFailed(Portal portal);
 extern void PortalDrop(Portal portal, bool isTopCommit);
 extern Portal GetPortalByName(const char *name);
 extern void PortalDefineQuery(Portal portal,
-				  const char *prepStmtName,
-				  const char *sourceText,
-				  const char *commandTag,
-				  List *stmts,
-				  CachedPlan *cplan);
+							  const char *prepStmtName,
+							  const char *sourceText,
+							  CommandTag commandTag,
+							  List *stmts,
+							  CachedPlan *cplan);
 extern PlannedStmt *PortalGetPrimaryStmt(Portal portal);
 extern void PortalCreateHoldStore(Portal portal);
 extern void PortalHashTableDeleteAll(void);
 extern bool ThereAreNoReadyPortals(void);
 extern void HoldPinnedPortals(void);
+extern void ForgetPortalSnapshots(void);
 
 #endif							/* PORTAL_H */

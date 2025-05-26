@@ -16,7 +16,7 @@
  * writing is the INET type, where IPv6 values cannot be merged with IPv4
  * values.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -82,9 +82,9 @@ typedef struct InclusionOpaque
 } InclusionOpaque;
 
 static FmgrInfo *inclusion_get_procinfo(BrinDesc *bdesc, uint16 attno,
-					   uint16 procnum);
+										uint16 procnum, bool missing_ok);
 static FmgrInfo *inclusion_get_strategy_procinfo(BrinDesc *bdesc, uint16 attno,
-								Oid subtype, uint16 strategynum);
+												 Oid subtype, uint16 strategynum);
 
 
 /*
@@ -108,6 +108,7 @@ brin_inclusion_opcinfo(PG_FUNCTION_ARGS)
 	 */
 	result = palloc0(MAXALIGN(SizeofBrinOpcInfo(3)) + sizeof(InclusionOpaque));
 	result->oi_nstored = 3;
+	result->oi_regular_nulls = true;
 	result->oi_opaque = (InclusionOpaque *)
 		MAXALIGN((char *) result + SizeofBrinOpcInfo(3));
 
@@ -139,7 +140,7 @@ brin_inclusion_add_value(PG_FUNCTION_ARGS)
 	BrinDesc   *bdesc = (BrinDesc *) PG_GETARG_POINTER(0);
 	BrinValues *column = (BrinValues *) PG_GETARG_POINTER(1);
 	Datum		newval = PG_GETARG_DATUM(2);
-	bool		isnull = PG_GETARG_BOOL(3);
+	bool		isnull PG_USED_FOR_ASSERTS_ONLY = PG_GETARG_BOOL(3);
 	Oid			colloid = PG_GET_COLLATION();
 	FmgrInfo   *finfo;
 	Datum		result;
@@ -147,18 +148,7 @@ brin_inclusion_add_value(PG_FUNCTION_ARGS)
 	AttrNumber	attno;
 	Form_pg_attribute attr;
 
-	/*
-	 * If the new value is null, we record that we saw it if it's the first
-	 * one; otherwise, there's nothing to do.
-	 */
-	if (isnull)
-	{
-		if (column->bv_hasnulls)
-			PG_RETURN_BOOL(false);
-
-		column->bv_hasnulls = true;
-		PG_RETURN_BOOL(true);
-	}
+	Assert(!isnull);
 
 	attno = column->bv_attno;
 	attr = TupleDescAttr(bdesc->bd_tupdesc, attno - 1);
@@ -189,7 +179,7 @@ brin_inclusion_add_value(PG_FUNCTION_ARGS)
 	 * new value for emptiness; if it returns true, we need to set the
 	 * "contains empty" flag in the element (unless already set).
 	 */
-	finfo = inclusion_get_procinfo(bdesc, attno, PROCNUM_EMPTY);
+	finfo = inclusion_get_procinfo(bdesc, attno, PROCNUM_EMPTY, true);
 	if (finfo != NULL && DatumGetBool(FunctionCall1Coll(finfo, colloid, newval)))
 	{
 		if (!DatumGetBool(column->bv_values[INCLUSION_CONTAINS_EMPTY]))
@@ -205,7 +195,7 @@ brin_inclusion_add_value(PG_FUNCTION_ARGS)
 		PG_RETURN_BOOL(true);
 
 	/* Check if the new value is already contained. */
-	finfo = inclusion_get_procinfo(bdesc, attno, PROCNUM_CONTAINS);
+	finfo = inclusion_get_procinfo(bdesc, attno, PROCNUM_CONTAINS, true);
 	if (finfo != NULL &&
 		DatumGetBool(FunctionCall2Coll(finfo, colloid,
 									   column->bv_values[INCLUSION_UNION],
@@ -220,7 +210,7 @@ brin_inclusion_add_value(PG_FUNCTION_ARGS)
 	 * it's not going to be used any longer.  However, the BRIN framework
 	 * doesn't allow for the value not being present.  Improve someday.
 	 */
-	finfo = inclusion_get_procinfo(bdesc, attno, PROCNUM_MERGEABLE);
+	finfo = inclusion_get_procinfo(bdesc, attno, PROCNUM_MERGEABLE, true);
 	if (finfo != NULL &&
 		!DatumGetBool(FunctionCall2Coll(finfo, colloid,
 										column->bv_values[INCLUSION_UNION],
@@ -231,12 +221,17 @@ brin_inclusion_add_value(PG_FUNCTION_ARGS)
 	}
 
 	/* Finally, merge the new value to the existing union. */
-	finfo = inclusion_get_procinfo(bdesc, attno, PROCNUM_MERGE);
-	Assert(finfo != NULL);
+	finfo = inclusion_get_procinfo(bdesc, attno, PROCNUM_MERGE, false);
 	result = FunctionCall2Coll(finfo, colloid,
 							   column->bv_values[INCLUSION_UNION], newval);
-	if (!attr->attbyval)
+	if (!attr->attbyval &&
+		DatumGetPointer(result) != DatumGetPointer(column->bv_values[INCLUSION_UNION]))
+	{
 		pfree(DatumGetPointer(column->bv_values[INCLUSION_UNION]));
+
+		if (result == newval)
+			result = datumCopy(result, attr->attbyval, attr->attlen);
+	}
 	column->bv_values[INCLUSION_UNION] = result;
 
 	PG_RETURN_BOOL(true);
@@ -244,6 +239,10 @@ brin_inclusion_add_value(PG_FUNCTION_ARGS)
 
 /*
  * BRIN inclusion consistent function
+ *
+ * We're no longer dealing with NULL keys in the consistent function, that is
+ * now handled by the AM code. That means we should not get any all-NULL ranges
+ * either, because those can't be consistent with regular (not [IS] NULL) keys.
  *
  * All of the strategies are optional.
  */
@@ -261,35 +260,11 @@ brin_inclusion_consistent(PG_FUNCTION_ARGS)
 	FmgrInfo   *finfo;
 	Datum		result;
 
-	Assert(key->sk_attno == column->bv_attno);
+	/* This opclass uses the old signature with only three arguments. */
+	Assert(PG_NARGS() == 3);
 
-	/* Handle IS NULL/IS NOT NULL tests. */
-	if (key->sk_flags & SK_ISNULL)
-	{
-		if (key->sk_flags & SK_SEARCHNULL)
-		{
-			if (column->bv_allnulls || column->bv_hasnulls)
-				PG_RETURN_BOOL(true);
-			PG_RETURN_BOOL(false);
-		}
-
-		/*
-		 * For IS NOT NULL, we can only skip ranges that are known to have
-		 * only nulls.
-		 */
-		if (key->sk_flags & SK_SEARCHNOTNULL)
-			PG_RETURN_BOOL(!column->bv_allnulls);
-
-		/*
-		 * Neither IS NULL nor IS NOT NULL was used; assume all indexable
-		 * operators are strict and return false.
-		 */
-		PG_RETURN_BOOL(false);
-	}
-
-	/* If it is all nulls, it cannot possibly be consistent. */
-	if (column->bv_allnulls)
-		PG_RETURN_BOOL(false);
+	/* Should not be dealing with all-NULL ranges. */
+	Assert(!column->bv_allnulls);
 
 	/* It has to be checked, if it contains elements that are not mergeable. */
 	if (DatumGetBool(column->bv_values[INCLUSION_UNMERGEABLE]))
@@ -372,7 +347,6 @@ brin_inclusion_consistent(PG_FUNCTION_ARGS)
 
 		case RTOverlapStrategyNumber:
 		case RTContainsStrategyNumber:
-		case RTOldContainsStrategyNumber:
 		case RTContainsElemStrategyNumber:
 		case RTSubStrategyNumber:
 		case RTSubEqualStrategyNumber:
@@ -393,7 +367,6 @@ brin_inclusion_consistent(PG_FUNCTION_ARGS)
 			 */
 
 		case RTContainedByStrategyNumber:
-		case RTOldContainedByStrategyNumber:
 		case RTSuperStrategyNumber:
 		case RTSuperEqualStrategyNumber:
 			finfo = inclusion_get_strategy_procinfo(bdesc, attno, subtype,
@@ -432,7 +405,7 @@ brin_inclusion_consistent(PG_FUNCTION_ARGS)
 			 * It is straightforward to support the equality strategies with
 			 * the contains operator.  Generally, inequality strategies do not
 			 * make much sense for the types which will be used with the
-			 * inclusion BRIN family of opclasses, but is possible to
+			 * inclusion BRIN family of opclasses, but it is possible to
 			 * implement them with logical negation of the left-of and
 			 * right-of operators.
 			 *
@@ -510,36 +483,10 @@ brin_inclusion_union(PG_FUNCTION_ARGS)
 	Datum		result;
 
 	Assert(col_a->bv_attno == col_b->bv_attno);
-
-	/* Adjust "hasnulls". */
-	if (!col_a->bv_hasnulls && col_b->bv_hasnulls)
-		col_a->bv_hasnulls = true;
-
-	/* If there are no values in B, there's nothing left to do. */
-	if (col_b->bv_allnulls)
-		PG_RETURN_VOID();
+	Assert(!col_a->bv_allnulls && !col_b->bv_allnulls);
 
 	attno = col_a->bv_attno;
 	attr = TupleDescAttr(bdesc->bd_tupdesc, attno - 1);
-
-	/*
-	 * Adjust "allnulls".  If A doesn't have values, just copy the values from
-	 * B into A, and we're done.  We cannot run the operators in this case,
-	 * because values in A might contain garbage.  Note we already established
-	 * that B contains values.
-	 */
-	if (col_a->bv_allnulls)
-	{
-		col_a->bv_allnulls = false;
-		col_a->bv_values[INCLUSION_UNION] =
-			datumCopy(col_b->bv_values[INCLUSION_UNION],
-					  attr->attbyval, attr->attlen);
-		col_a->bv_values[INCLUSION_UNMERGEABLE] =
-			col_b->bv_values[INCLUSION_UNMERGEABLE];
-		col_a->bv_values[INCLUSION_CONTAINS_EMPTY] =
-			col_b->bv_values[INCLUSION_CONTAINS_EMPTY];
-		PG_RETURN_VOID();
-	}
 
 	/* If B includes empty elements, mark A similarly, if needed. */
 	if (!DatumGetBool(col_a->bv_values[INCLUSION_CONTAINS_EMPTY]) &&
@@ -558,7 +505,7 @@ brin_inclusion_union(PG_FUNCTION_ARGS)
 	}
 
 	/* Check if A and B are mergeable; if not, mark A unmergeable. */
-	finfo = inclusion_get_procinfo(bdesc, attno, PROCNUM_MERGEABLE);
+	finfo = inclusion_get_procinfo(bdesc, attno, PROCNUM_MERGEABLE, true);
 	if (finfo != NULL &&
 		!DatumGetBool(FunctionCall2Coll(finfo, colloid,
 										col_a->bv_values[INCLUSION_UNION],
@@ -569,13 +516,18 @@ brin_inclusion_union(PG_FUNCTION_ARGS)
 	}
 
 	/* Finally, merge B to A. */
-	finfo = inclusion_get_procinfo(bdesc, attno, PROCNUM_MERGE);
-	Assert(finfo != NULL);
+	finfo = inclusion_get_procinfo(bdesc, attno, PROCNUM_MERGE, false);
 	result = FunctionCall2Coll(finfo, colloid,
 							   col_a->bv_values[INCLUSION_UNION],
 							   col_b->bv_values[INCLUSION_UNION]);
-	if (!attr->attbyval)
+	if (!attr->attbyval &&
+		DatumGetPointer(result) != DatumGetPointer(col_a->bv_values[INCLUSION_UNION]))
+	{
 		pfree(DatumGetPointer(col_a->bv_values[INCLUSION_UNION]));
+
+		if (result == col_b->bv_values[INCLUSION_UNION])
+			result = datumCopy(result, attr->attbyval, attr->attlen);
+	}
 	col_a->bv_values[INCLUSION_UNION] = result;
 
 	PG_RETURN_VOID();
@@ -585,10 +537,12 @@ brin_inclusion_union(PG_FUNCTION_ARGS)
  * Cache and return inclusion opclass support procedure
  *
  * Return the procedure corresponding to the given function support number
- * or null if it is not exists.
+ * or null if it is not exists.  If missing_ok is true and the procedure
+ * isn't set up for this opclass, return NULL instead of raising an error.
  */
 static FmgrInfo *
-inclusion_get_procinfo(BrinDesc *bdesc, uint16 attno, uint16 procnum)
+inclusion_get_procinfo(BrinDesc *bdesc, uint16 attno, uint16 procnum,
+					   bool missing_ok)
 {
 	InclusionOpaque *opaque;
 	uint16		basenum = procnum - PROCNUM_BASE;
@@ -610,13 +564,18 @@ inclusion_get_procinfo(BrinDesc *bdesc, uint16 attno, uint16 procnum)
 	{
 		if (RegProcedureIsValid(index_getprocid(bdesc->bd_index, attno,
 												procnum)))
-		{
 			fmgr_info_copy(&opaque->extra_procinfos[basenum],
 						   index_getprocinfo(bdesc->bd_index, attno, procnum),
 						   bdesc->bd_context);
-		}
 		else
 		{
+			if (!missing_ok)
+				ereport(ERROR,
+						errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
+						errmsg_internal("invalid opclass definition"),
+						errdetail_internal("The operator class is missing support function %d for column %d.",
+										   procnum, attno));
+
 			opaque->extra_proc_missing[basenum] = true;
 			return NULL;
 		}

@@ -85,9 +85,16 @@ SELECT count(*) from test__int WHERE a @@ '23|50';
 SELECT count(*) from test__int WHERE a @> '{23,50}';
 SELECT count(*) from test__int WHERE a @@ '23&50';
 SELECT count(*) from test__int WHERE a @> '{20,23}';
+SELECT count(*) from test__int WHERE a <@ '{73,23,20}';
+SELECT count(*) from test__int WHERE a = '{73,23,20}';
 SELECT count(*) from test__int WHERE a @@ '50&68';
 SELECT count(*) from test__int WHERE a @> '{20,23}' or a @> '{50,68}';
 SELECT count(*) from test__int WHERE a @@ '(20&23)|(50&68)';
+SELECT count(*) from test__int WHERE a @@ '20 | !21';
+SELECT count(*) from test__int WHERE a @@ '!20 & !21';
+SELECT count(*) from test__int WHERE a @@ '!2733 & (2738 | 254)';
+
+SET enable_seqscan = off;  -- not all of these would use index by default
 
 CREATE INDEX text_idx on test__int using gist ( a gist__int_ops );
 
@@ -96,9 +103,54 @@ SELECT count(*) from test__int WHERE a @@ '23|50';
 SELECT count(*) from test__int WHERE a @> '{23,50}';
 SELECT count(*) from test__int WHERE a @@ '23&50';
 SELECT count(*) from test__int WHERE a @> '{20,23}';
+SELECT count(*) from test__int WHERE a <@ '{73,23,20}';
+SELECT count(*) from test__int WHERE a = '{73,23,20}';
 SELECT count(*) from test__int WHERE a @@ '50&68';
 SELECT count(*) from test__int WHERE a @> '{20,23}' or a @> '{50,68}';
 SELECT count(*) from test__int WHERE a @@ '(20&23)|(50&68)';
+SELECT count(*) from test__int WHERE a @@ '20 | !21';
+SELECT count(*) from test__int WHERE a @@ '!20 & !21';
+SELECT count(*) from test__int WHERE a @@ '!2733 & (2738 | 254)';
+
+INSERT INTO test__int SELECT array(SELECT x FROM generate_series(1, 1001) x); -- should fail
+
+DROP INDEX text_idx;
+CREATE INDEX text_idx on test__int using gist (a gist__int_ops(numranges = 0));
+CREATE INDEX text_idx on test__int using gist (a gist__int_ops(numranges = 253));
+CREATE INDEX text_idx on test__int using gist (a gist__int_ops(numranges = 252));
+
+SELECT count(*) from test__int WHERE a && '{23,50}';
+SELECT count(*) from test__int WHERE a @@ '23|50';
+SELECT count(*) from test__int WHERE a @> '{23,50}';
+SELECT count(*) from test__int WHERE a @@ '23&50';
+SELECT count(*) from test__int WHERE a @> '{20,23}';
+SELECT count(*) from test__int WHERE a <@ '{73,23,20}';
+SELECT count(*) from test__int WHERE a = '{73,23,20}';
+SELECT count(*) from test__int WHERE a @@ '50&68';
+SELECT count(*) from test__int WHERE a @> '{20,23}' or a @> '{50,68}';
+SELECT count(*) from test__int WHERE a @@ '(20&23)|(50&68)';
+SELECT count(*) from test__int WHERE a @@ '20 | !21';
+SELECT count(*) from test__int WHERE a @@ '!20 & !21';
+SELECT count(*) from test__int WHERE a @@ '!2733 & (2738 | 254)';
+
+DROP INDEX text_idx;
+CREATE INDEX text_idx on test__int using gist (a gist__intbig_ops(siglen = 0));
+CREATE INDEX text_idx on test__int using gist (a gist__intbig_ops(siglen = 2025));
+CREATE INDEX text_idx on test__int using gist (a gist__intbig_ops(siglen = 2024));
+
+SELECT count(*) from test__int WHERE a && '{23,50}';
+SELECT count(*) from test__int WHERE a @@ '23|50';
+SELECT count(*) from test__int WHERE a @> '{23,50}';
+SELECT count(*) from test__int WHERE a @@ '23&50';
+SELECT count(*) from test__int WHERE a @> '{20,23}';
+SELECT count(*) from test__int WHERE a <@ '{73,23,20}';
+SELECT count(*) from test__int WHERE a = '{73,23,20}';
+SELECT count(*) from test__int WHERE a @@ '50&68';
+SELECT count(*) from test__int WHERE a @> '{20,23}' or a @> '{50,68}';
+SELECT count(*) from test__int WHERE a @@ '(20&23)|(50&68)';
+SELECT count(*) from test__int WHERE a @@ '20 | !21';
+SELECT count(*) from test__int WHERE a @@ '!20 & !21';
+SELECT count(*) from test__int WHERE a @@ '!2733 & (2738 | 254)';
 
 DROP INDEX text_idx;
 CREATE INDEX text_idx on test__int using gist ( a gist__intbig_ops );
@@ -108,9 +160,14 @@ SELECT count(*) from test__int WHERE a @@ '23|50';
 SELECT count(*) from test__int WHERE a @> '{23,50}';
 SELECT count(*) from test__int WHERE a @@ '23&50';
 SELECT count(*) from test__int WHERE a @> '{20,23}';
+SELECT count(*) from test__int WHERE a <@ '{73,23,20}';
+SELECT count(*) from test__int WHERE a = '{73,23,20}';
 SELECT count(*) from test__int WHERE a @@ '50&68';
 SELECT count(*) from test__int WHERE a @> '{20,23}' or a @> '{50,68}';
 SELECT count(*) from test__int WHERE a @@ '(20&23)|(50&68)';
+SELECT count(*) from test__int WHERE a @@ '20 | !21';
+SELECT count(*) from test__int WHERE a @@ '!20 & !21';
+SELECT count(*) from test__int WHERE a @@ '!2733 & (2738 | 254)';
 
 DROP INDEX text_idx;
 CREATE INDEX text_idx on test__int using gin ( a gin__int_ops );
@@ -120,6 +177,50 @@ SELECT count(*) from test__int WHERE a @@ '23|50';
 SELECT count(*) from test__int WHERE a @> '{23,50}';
 SELECT count(*) from test__int WHERE a @@ '23&50';
 SELECT count(*) from test__int WHERE a @> '{20,23}';
+SELECT count(*) from test__int WHERE a <@ '{73,23,20}';
+SELECT count(*) from test__int WHERE a = '{73,23,20}';
 SELECT count(*) from test__int WHERE a @@ '50&68';
 SELECT count(*) from test__int WHERE a @> '{20,23}' or a @> '{50,68}';
 SELECT count(*) from test__int WHERE a @@ '(20&23)|(50&68)';
+SELECT count(*) from test__int WHERE a @@ '20 | !21';
+SELECT count(*) from test__int WHERE a @@ '!20 & !21';
+SELECT count(*) from test__int WHERE a @@ '!2733 & (2738 | 254)';
+
+DROP INDEX text_idx;
+
+-- Repeat the same queries with an extended data set. The data set is the
+-- same that we used before, except that each element in the array is
+-- repeated three times, offset by 1000 and 2000. For example, {1, 5}
+-- becomes {1, 1001, 2001, 5, 1005, 2005}.
+--
+-- That has proven to be unreasonably effective at exercising codepaths in
+-- core GiST code related to splitting parent pages, which is not covered by
+-- other tests. This is a bit out-of-place as the point is to test core GiST
+-- code rather than this extension, but there is no suitable GiST opclass in
+-- core that would reach the same codepaths.
+CREATE TABLE more__int AS SELECT
+   -- Leave alone NULLs, empty arrays and the one row that we use to test
+   -- equality; also skip INT_MAX
+   CASE WHEN a IS NULL OR a = '{}' OR a = '{73,23,20}' THEN a ELSE
+     (select array_agg(u) || array_agg(u + 1000) || array_agg(u + 2000)
+      from unnest(a) u where u < 2000000000)
+   END AS a, a as b
+   FROM test__int;
+CREATE INDEX ON more__int using gist (a gist__int_ops(numranges = 252));
+
+SELECT count(*) from more__int WHERE a && '{23,50}';
+SELECT count(*) from more__int WHERE a @@ '23|50';
+SELECT count(*) from more__int WHERE a @> '{23,50}';
+SELECT count(*) from more__int WHERE a @@ '23&50';
+SELECT count(*) from more__int WHERE a @> '{20,23}';
+SELECT count(*) from more__int WHERE a <@ '{73,23,20}';
+SELECT count(*) from more__int WHERE a = '{73,23,20}';
+SELECT count(*) from more__int WHERE a @@ '50&68';
+SELECT count(*) from more__int WHERE a @> '{20,23}' or a @> '{50,68}';
+SELECT count(*) from more__int WHERE a @@ '(20&23)|(50&68)';
+SELECT count(*) from more__int WHERE a @@ '20 | !21';
+SELECT count(*) from more__int WHERE a @@ '!20 & !21';
+SELECT count(*) from test__int WHERE a @@ '!2733 & (2738 | 254)';
+
+
+RESET enable_seqscan;

@@ -3,7 +3,7 @@
  * syscache.c
  *	  System cache management routines
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -22,7 +22,6 @@
 
 #include "access/htup_details.h"
 #include "access/sysattr.h"
-#include "catalog/indexing.h"
 #include "catalog/pg_aggregate.h"
 #include "catalog/pg_am.h"
 #include "catalog/pg_amop.h"
@@ -53,15 +52,16 @@
 #include "catalog/pg_publication.h"
 #include "catalog/pg_publication_rel.h"
 #include "catalog/pg_range.h"
+#include "catalog/pg_replication_origin.h"
 #include "catalog/pg_rewrite.h"
 #include "catalog/pg_seclabel.h"
 #include "catalog/pg_sequence.h"
 #include "catalog/pg_shdepend.h"
 #include "catalog/pg_shdescription.h"
 #include "catalog/pg_shseclabel.h"
-#include "catalog/pg_replication_origin.h"
 #include "catalog/pg_statistic.h"
 #include "catalog/pg_statistic_ext.h"
+#include "catalog/pg_statistic_ext_data.h"
 #include "catalog/pg_subscription.h"
 #include "catalog/pg_subscription_rel.h"
 #include "catalog/pg_tablespace.h"
@@ -73,10 +73,13 @@
 #include "catalog/pg_ts_template.h"
 #include "catalog/pg_type.h"
 #include "catalog/pg_user_mapping.h"
-#include "utils/rel.h"
+#include "lib/qunique.h"
+#include "miscadmin.h"
+#include "storage/lmgr.h"
 #include "utils/catcache.h"
+#include "utils/inval.h"
+#include "utils/rel.h"
 #include "utils/syscache.h"
-
 
 /*---------------------------------------------------------------------------
 
@@ -96,7 +99,7 @@
 
 	There must be a unique index underlying each syscache (ie, an index
 	whose key is the same as that of the cache).  If there is not one
-	already, add definitions for it to include/catalog/indexing.h: you need
+	already, add definitions for it to include/catalog/pg_*.h: you need
 	to add a DECLARE_UNIQUE_INDEX macro and a #define for the index OID.
 	(Adding an index requires a catversion.h update, while simply
 	adding/deleting caches only requires a recompile.)
@@ -147,7 +150,7 @@ static const struct cachedesc cacheinfo[] = {
 		AmOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_am_oid,
 			0,
 			0,
 			0
@@ -246,7 +249,7 @@ static const struct cachedesc cacheinfo[] = {
 		AuthIdOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_authid_oid,
 			0,
 			0,
 			0
@@ -280,7 +283,7 @@ static const struct cachedesc cacheinfo[] = {
 		OpclassOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_opclass_oid,
 			0,
 			0,
 			0
@@ -302,7 +305,7 @@ static const struct cachedesc cacheinfo[] = {
 		CollationOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_collation_oid,
 			0,
 			0,
 			0
@@ -316,7 +319,7 @@ static const struct cachedesc cacheinfo[] = {
 			Anum_pg_conversion_connamespace,
 			Anum_pg_conversion_conforencoding,
 			Anum_pg_conversion_contoencoding,
-			ObjectIdAttributeNumber,
+			Anum_pg_conversion_oid
 		},
 		8
 	},
@@ -335,7 +338,7 @@ static const struct cachedesc cacheinfo[] = {
 		ConstraintOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_constraint_oid,
 			0,
 			0,
 			0
@@ -346,7 +349,7 @@ static const struct cachedesc cacheinfo[] = {
 		ConversionOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_conversion_oid,
 			0,
 			0,
 			0
@@ -357,7 +360,7 @@ static const struct cachedesc cacheinfo[] = {
 		DatabaseOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_database_oid,
 			0,
 			0,
 			0
@@ -379,7 +382,7 @@ static const struct cachedesc cacheinfo[] = {
 		EnumOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_enum_oid,
 			0,
 			0,
 			0
@@ -412,7 +415,7 @@ static const struct cachedesc cacheinfo[] = {
 		EventTriggerOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_event_trigger_oid,
 			0,
 			0,
 			0
@@ -434,7 +437,7 @@ static const struct cachedesc cacheinfo[] = {
 		ForeignDataWrapperOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_foreign_data_wrapper_oid,
 			0,
 			0,
 			0
@@ -456,7 +459,7 @@ static const struct cachedesc cacheinfo[] = {
 		ForeignServerOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_foreign_server_oid,
 			0,
 			0,
 			0
@@ -500,7 +503,7 @@ static const struct cachedesc cacheinfo[] = {
 		LanguageOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_language_oid,
 			0,
 			0,
 			0
@@ -522,7 +525,7 @@ static const struct cachedesc cacheinfo[] = {
 		NamespaceOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_namespace_oid,
 			0,
 			0,
 			0
@@ -544,7 +547,7 @@ static const struct cachedesc cacheinfo[] = {
 		OperatorOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_operator_oid,
 			0,
 			0,
 			0
@@ -566,7 +569,7 @@ static const struct cachedesc cacheinfo[] = {
 		OpfamilyOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_opfamily_oid,
 			0,
 			0,
 			0
@@ -599,7 +602,7 @@ static const struct cachedesc cacheinfo[] = {
 		ProcedureOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_proc_oid,
 			0,
 			0,
 			0
@@ -621,7 +624,7 @@ static const struct cachedesc cacheinfo[] = {
 		PublicationObjectIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_publication_oid,
 			0,
 			0,
 			0
@@ -632,7 +635,7 @@ static const struct cachedesc cacheinfo[] = {
 		PublicationRelObjectIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_publication_rel_oid,
 			0,
 			0,
 			0
@@ -650,6 +653,18 @@ static const struct cachedesc cacheinfo[] = {
 		},
 		64
 	},
+	{RangeRelationId,			/* RANGEMULTIRANGE */
+		RangeMultirangeTypidIndexId,
+		1,
+		{
+			Anum_pg_range_rngmultitypid,
+			0,
+			0,
+			0
+		},
+		4
+	},
+
 	{RangeRelationId,			/* RANGETYPE */
 		RangeTypidIndexId,
 		1,
@@ -676,7 +691,7 @@ static const struct cachedesc cacheinfo[] = {
 		ClassOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_class_oid,
 			0,
 			0,
 			0
@@ -727,6 +742,17 @@ static const struct cachedesc cacheinfo[] = {
 		},
 		32
 	},
+	{StatisticExtDataRelationId,	/* STATEXTDATASTXOID */
+		StatisticExtDataStxoidIndexId,
+		1,
+		{
+			Anum_pg_statistic_ext_data_stxoid,
+			0,
+			0,
+			0
+		},
+		4
+	},
 	{StatisticExtRelationId,	/* STATEXTNAMENSP */
 		StatisticExtNameIndexId,
 		2,
@@ -742,7 +768,7 @@ static const struct cachedesc cacheinfo[] = {
 		StatisticExtOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_statistic_ext_oid,
 			0,
 			0,
 			0
@@ -775,7 +801,7 @@ static const struct cachedesc cacheinfo[] = {
 		SubscriptionObjectIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_subscription_oid,
 			0,
 			0,
 			0
@@ -797,7 +823,7 @@ static const struct cachedesc cacheinfo[] = {
 		TablespaceOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_tablespace_oid,
 			0,
 			0,
 			0,
@@ -808,7 +834,7 @@ static const struct cachedesc cacheinfo[] = {
 		TransformOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_transform_oid,
 			0,
 			0,
 			0,
@@ -852,7 +878,7 @@ static const struct cachedesc cacheinfo[] = {
 		TSConfigOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_ts_config_oid,
 			0,
 			0,
 			0
@@ -874,7 +900,7 @@ static const struct cachedesc cacheinfo[] = {
 		TSDictionaryOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_ts_dict_oid,
 			0,
 			0,
 			0
@@ -896,7 +922,7 @@ static const struct cachedesc cacheinfo[] = {
 		TSParserOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_ts_parser_oid,
 			0,
 			0,
 			0
@@ -918,7 +944,7 @@ static const struct cachedesc cacheinfo[] = {
 		TSTemplateOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_ts_template_oid,
 			0,
 			0,
 			0
@@ -940,7 +966,7 @@ static const struct cachedesc cacheinfo[] = {
 		TypeOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_type_oid,
 			0,
 			0,
 			0
@@ -951,7 +977,7 @@ static const struct cachedesc cacheinfo[] = {
 		UserMappingOidIndexId,
 		1,
 		{
-			ObjectIdAttributeNumber,
+			Anum_pg_user_mapping_oid,
 			0,
 			0,
 			0
@@ -998,8 +1024,6 @@ void
 InitCatalogCache(void)
 {
 	int			cacheId;
-	int			i,
-				j;
 
 	StaticAssertStmt(SysCacheSize == (int) lengthof(cacheinfo),
 					 "SysCacheSize does not match syscache.c's array");
@@ -1036,21 +1060,15 @@ InitCatalogCache(void)
 	/* Sort and de-dup OID arrays, so we can use binary search. */
 	pg_qsort(SysCacheRelationOid, SysCacheRelationOidSize,
 			 sizeof(Oid), oid_compare);
-	for (i = 1, j = 0; i < SysCacheRelationOidSize; i++)
-	{
-		if (SysCacheRelationOid[i] != SysCacheRelationOid[j])
-			SysCacheRelationOid[++j] = SysCacheRelationOid[i];
-	}
-	SysCacheRelationOidSize = j + 1;
+	SysCacheRelationOidSize =
+		qunique(SysCacheRelationOid, SysCacheRelationOidSize, sizeof(Oid),
+				oid_compare);
 
 	pg_qsort(SysCacheSupportingRelOid, SysCacheSupportingRelOidSize,
 			 sizeof(Oid), oid_compare);
-	for (i = 1, j = 0; i < SysCacheSupportingRelOidSize; i++)
-	{
-		if (SysCacheSupportingRelOid[i] != SysCacheSupportingRelOid[j])
-			SysCacheSupportingRelOid[++j] = SysCacheSupportingRelOid[i];
-	}
-	SysCacheSupportingRelOidSize = j + 1;
+	SysCacheSupportingRelOidSize =
+		qunique(SysCacheSupportingRelOid, SysCacheSupportingRelOidSize,
+				sizeof(Oid), oid_compare);
 
 	CacheInitialized = true;
 }
@@ -1163,6 +1181,103 @@ ReleaseSysCache(HeapTuple tuple)
 }
 
 /*
+ * SearchSysCacheLocked1
+ *
+ * Combine SearchSysCache1() with acquiring a LOCKTAG_TUPLE at mode
+ * InplaceUpdateTupleLock.  This is a tool for complying with the
+ * README.tuplock section "Locking to write inplace-updated tables".  After
+ * the caller's heap_update(), it should UnlockTuple(InplaceUpdateTupleLock)
+ * and ReleaseSysCache().
+ *
+ * The returned tuple may be the subject of an uncommitted update, so this
+ * doesn't prevent the "tuple concurrently updated" error.
+ */
+HeapTuple
+SearchSysCacheLocked1(int cacheId,
+					  Datum key1)
+{
+	CatCache   *cache = SysCache[cacheId];
+	ItemPointerData tid;
+	LOCKTAG		tag;
+
+	/*----------
+	 * Since inplace updates may happen just before our LockTuple(), we must
+	 * return content acquired after LockTuple() of the TID we return.  If we
+	 * just fetched twice instead of looping, the following sequence would
+	 * defeat our locking:
+	 *
+	 * GRANT:   SearchSysCache1() = TID (1,5)
+	 * GRANT:   LockTuple(pg_class, (1,5))
+	 * [no more inplace update of (1,5) until we release the lock]
+	 * CLUSTER: SearchSysCache1() = TID (1,5)
+	 * CLUSTER: heap_update() = TID (1,8)
+	 * CLUSTER: COMMIT
+	 * GRANT:   SearchSysCache1() = TID (1,8)
+	 * GRANT:   return (1,8) from SearchSysCacheLocked1()
+	 * VACUUM:  SearchSysCache1() = TID (1,8)
+	 * VACUUM:  LockTuple(pg_class, (1,8))  # two TIDs now locked for one rel
+	 * VACUUM:  inplace update
+	 * GRANT:   heap_update() = (1,9)  # lose inplace update
+	 *
+	 * In the happy case, this takes two fetches, one to determine the TID to
+	 * lock and another to get the content and confirm the TID didn't change.
+	 *
+	 * This is valid even if the row gets updated to a new TID, the old TID
+	 * becomes LP_UNUSED, and the row gets updated back to its old TID.  We'd
+	 * still hold the right LOCKTAG_TUPLE and a copy of the row captured after
+	 * the LOCKTAG_TUPLE.
+	 */
+	ItemPointerSetInvalid(&tid);
+	for (;;)
+	{
+		HeapTuple	tuple;
+		LOCKMODE	lockmode = InplaceUpdateTupleLock;
+
+		tuple = SearchSysCache1(cacheId, key1);
+		if (ItemPointerIsValid(&tid))
+		{
+			if (!HeapTupleIsValid(tuple))
+			{
+				LockRelease(&tag, lockmode, false);
+				return tuple;
+			}
+			if (ItemPointerEquals(&tid, &tuple->t_self))
+				return tuple;
+			LockRelease(&tag, lockmode, false);
+		}
+		else if (!HeapTupleIsValid(tuple))
+			return tuple;
+
+		tid = tuple->t_self;
+		ReleaseSysCache(tuple);
+
+		/*
+		 * Do like LockTuple(rel, &tid, lockmode).  While cc_relisshared won't
+		 * change from one iteration to another, it may have been a temporary
+		 * "false" until our first SearchSysCache1().
+		 */
+		SET_LOCKTAG_TUPLE(tag,
+						  cache->cc_relisshared ? InvalidOid : MyDatabaseId,
+						  cache->cc_reloid,
+						  ItemPointerGetBlockNumber(&tid),
+						  ItemPointerGetOffsetNumber(&tid));
+		(void) LockAcquire(&tag, lockmode, false, false);
+
+		/*
+		 * If an inplace update just finished, ensure we process the syscache
+		 * inval.  XXX this is insufficient: the inplace updater may not yet
+		 * have reached AtEOXact_Inval().  See test at inplace-inval.spec.
+		 *
+		 * If a heap_update() call just released its LOCKTAG_TUPLE, we'll
+		 * probably find the old tuple and reach "tuple concurrently updated".
+		 * If that heap_update() aborts, our LOCKTAG_TUPLE blocks inplace
+		 * updates while our caller works.
+		 */
+		AcceptInvalidationMessages();
+	}
+}
+
+/*
  * SearchSysCacheCopy
  *
  * A convenience routine that does SearchSysCache and (if successful)
@@ -1181,6 +1296,28 @@ SearchSysCacheCopy(int cacheId,
 				newtuple;
 
 	tuple = SearchSysCache(cacheId, key1, key2, key3, key4);
+	if (!HeapTupleIsValid(tuple))
+		return tuple;
+	newtuple = heap_copytuple(tuple);
+	ReleaseSysCache(tuple);
+	return newtuple;
+}
+
+/*
+ * SearchSysCacheLockedCopy1
+ *
+ * Meld SearchSysCacheLockedCopy1 with SearchSysCacheCopy().  After the
+ * caller's heap_update(), it should UnlockTuple(InplaceUpdateTupleLock) and
+ * heap_freetuple().
+ */
+HeapTuple
+SearchSysCacheLockedCopy1(int cacheId,
+						  Datum key1)
+{
+	HeapTuple	tuple,
+				newtuple;
+
+	tuple = SearchSysCacheLocked1(cacheId, key1);
 	if (!HeapTupleIsValid(tuple))
 		return tuple;
 	newtuple = heap_copytuple(tuple);
@@ -1213,24 +1350,29 @@ SearchSysCacheExists(int cacheId,
 /*
  * GetSysCacheOid
  *
- * A convenience routine that does SearchSysCache and returns the OID
- * of the found tuple, or InvalidOid if no tuple could be found.
+ * A convenience routine that does SearchSysCache and returns the OID in the
+ * oidcol column of the found tuple, or InvalidOid if no tuple could be found.
  * No lock is retained on the syscache entry.
  */
 Oid
 GetSysCacheOid(int cacheId,
+			   AttrNumber oidcol,
 			   Datum key1,
 			   Datum key2,
 			   Datum key3,
 			   Datum key4)
 {
 	HeapTuple	tuple;
+	bool		isNull;
 	Oid			result;
 
 	tuple = SearchSysCache(cacheId, key1, key2, key3, key4);
 	if (!HeapTupleIsValid(tuple))
 		return InvalidOid;
-	result = HeapTupleGetOid(tuple);
+	result = heap_getattr(tuple, oidcol,
+						  SysCache[cacheId]->cc_tupdesc,
+						  &isNull);
+	Assert(!isNull);			/* columns used as oids should never be NULL */
 	ReleaseSysCache(tuple);
 	return result;
 }

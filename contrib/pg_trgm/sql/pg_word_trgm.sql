@@ -2,6 +2,9 @@ CREATE TABLE test_trgm2(t text COLLATE "C");
 
 \copy test_trgm2 from 'data/trgm2.data'
 
+-- reduce noise
+set extra_float_digits = 0;
+
 select t,word_similarity('Baykal',t) as sml from test_trgm2 where 'Baykal' <% t order by sml desc, t;
 select t,word_similarity('Kabankala',t) as sml from test_trgm2 where 'Kabankala' <% t order by sml desc, t;
 select t,word_similarity('Baykal',t) as sml from test_trgm2 where t %> 'Baykal' order by sml desc, t;
@@ -40,3 +43,6 @@ select t,word_similarity('Baykal',t) as sml from test_trgm2 where 'Baykal' <% t 
 select t,word_similarity('Kabankala',t) as sml from test_trgm2 where 'Kabankala' <% t order by sml desc, t;
 select t,word_similarity('Baykal',t) as sml from test_trgm2 where t %> 'Baykal' order by sml desc, t;
 select t,word_similarity('Kabankala',t) as sml from test_trgm2 where t %> 'Kabankala' order by sml desc, t;
+
+-- test unsatisfiable pattern
+select * from test_trgm2 where t ~ '.*$x';

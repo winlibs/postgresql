@@ -12,19 +12,16 @@
 #include "commands/trigger.h"
 #include "executor/spi.h"
 #include "funcapi.h"
-#include "utils/builtins.h"
-#include "utils/rel.h"
-#include "utils/typcache.h"
-
-#include "plpython.h"
-
-#include "plpy_exec.h"
-
 #include "plpy_elog.h"
+#include "plpy_exec.h"
 #include "plpy_main.h"
 #include "plpy_procedure.h"
 #include "plpy_subxactobject.h"
-
+#include "plpython.h"
+#include "utils/builtins.h"
+#include "utils/lsyscache.h"
+#include "utils/rel.h"
+#include "utils/typcache.h"
 
 /* saved state for a set-returning function */
 typedef struct PLySRFState
@@ -44,9 +41,9 @@ static void plpython_srf_cleanup_callback(void *arg);
 static void plpython_return_error_callback(void *arg);
 
 static PyObject *PLy_trigger_build_args(FunctionCallInfo fcinfo, PLyProcedure *proc,
-					   HeapTuple *rv);
+										HeapTuple *rv);
 static HeapTuple PLy_modify_tuple(PLyProcedure *proc, PyObject *pltd,
-				 TriggerData *tdata, HeapTuple otup);
+								  TriggerData *tdata, HeapTuple otup);
 static void plpython_trigger_error_callback(void *arg);
 
 static PyObject *PLy_procedure_call(PLyProcedure *proc, const char *kargs, PyObject *vargs);
@@ -234,7 +231,23 @@ PLy_exec_function(FunctionCallInfo fcinfo, PLyProcedure *proc)
 		}
 		else
 		{
-			/* Normal conversion of result */
+			/*
+			 * Normal conversion of result.  However, if the result is of type
+			 * RECORD, we have to set up for that each time through, since it
+			 * might be different from last time.
+			 */
+			if (proc->result.typoid == RECORDOID)
+			{
+				TupleDesc	desc;
+
+				if (get_call_result_type(fcinfo, NULL, &desc) != TYPEFUNC_COMPOSITE)
+					ereport(ERROR,
+							(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+							 errmsg("function returning record called in context "
+									"that cannot accept type record")));
+				PLy_output_setup_record(&proc->result, desc, proc);
+			}
+
 			rv = PLy_output_convert(&proc->result, plrv,
 									&fcinfo->isnull);
 		}
@@ -338,6 +351,13 @@ PLy_exec_trigger(FunctionCallInfo fcinfo, PLyProcedure *proc)
 	PLy_output_setup_tuple(&proc->result, rel_descr, proc);
 	PLy_input_setup_tuple(&proc->result_in, rel_descr, proc);
 
+	/*
+	 * If the trigger is called recursively, we must push outer-level
+	 * arguments into the stack.  This must be immediately before the PG_TRY
+	 * to ensure that the corresponding pop happens.
+	 */
+	PLy_global_args_push(proc);
+
 	PG_TRY();
 	{
 		int			rc PG_USED_FOR_ASSERTS_ONLY;
@@ -402,17 +422,13 @@ PLy_exec_trigger(FunctionCallInfo fcinfo, PLyProcedure *proc)
 			}
 		}
 	}
-	PG_CATCH();
+	PG_FINALLY();
 	{
+		PLy_global_args_pop(proc);
 		Py_XDECREF(plargs);
 		Py_XDECREF(plrv);
-
-		PG_RE_THROW();
 	}
 	PG_END_TRY();
-
-	Py_DECREF(plargs);
-	Py_DECREF(plrv);
 
 	return rv;
 }
@@ -423,23 +439,28 @@ static PyObject *
 PLy_function_build_args(FunctionCallInfo fcinfo, PLyProcedure *proc)
 {
 	PyObject   *volatile arg = NULL;
-	PyObject   *volatile args = NULL;
+	PyObject   *args;
 	int			i;
+
+	/*
+	 * Make any Py*_New() calls before the PG_TRY block so that we can quickly
+	 * return NULL on failure.  We can't return within the PG_TRY block, else
+	 * we'd miss unwinding the exception stack.
+	 */
+	args = PyList_New(proc->nargs);
+	if (!args)
+		return NULL;
 
 	PG_TRY();
 	{
-		args = PyList_New(proc->nargs);
-		if (!args)
-			return NULL;
-
 		for (i = 0; i < proc->nargs; i++)
 		{
 			PLyDatumToOb *arginfo = &proc->args[i];
 
-			if (fcinfo->argnull[i])
+			if (fcinfo->args[i].isnull)
 				arg = NULL;
 			else
-				arg = PLy_input_convert(arginfo, fcinfo->arg[i]);
+				arg = PLy_input_convert(arginfo, fcinfo->args[i].value);
 
 			if (arg == NULL)
 			{
@@ -454,21 +475,6 @@ PLy_function_build_args(FunctionCallInfo fcinfo, PLyProcedure *proc)
 				PyDict_SetItemString(proc->globals, proc->argnames[i], arg) == -1)
 				PLy_elog(ERROR, "PyDict_SetItemString() failed, while setting up arguments");
 			arg = NULL;
-		}
-
-		/* Set up output conversion for functions returning RECORD */
-		if (proc->result.typoid == RECORDOID)
-		{
-			TupleDesc	desc;
-
-			if (get_call_result_type(fcinfo, NULL, &desc) != TYPEFUNC_COMPOSITE)
-				ereport(ERROR,
-						(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-						 errmsg("function returning record called in context "
-								"that cannot accept type record")));
-
-			/* cache the output conversion functions */
-			PLy_output_setup_record(&proc->result, desc, proc);
 		}
 	}
 	PG_CATCH();
@@ -507,6 +513,13 @@ PLy_function_save_args(PLyProcedure *proc)
 	/* Fetch the "args" list */
 	result->args = PyDict_GetItemString(proc->globals, "args");
 	Py_XINCREF(result->args);
+
+	/* If it's a trigger, also save "TD" */
+	if (proc->is_trigger)
+	{
+		result->td = PyDict_GetItemString(proc->globals, "TD");
+		Py_XINCREF(result->td);
+	}
 
 	/* Fetch all the named arguments */
 	if (proc->argnames)
@@ -557,6 +570,13 @@ PLy_function_restore_args(PLyProcedure *proc, PLySavedArgs *savedargs)
 		Py_DECREF(savedargs->args);
 	}
 
+	/* Restore the "TD" object, too */
+	if (savedargs->td)
+	{
+		PyDict_SetItemString(proc->globals, "TD", savedargs->td);
+		Py_DECREF(savedargs->td);
+	}
+
 	/* And free the PLySavedArgs struct */
 	pfree(savedargs);
 }
@@ -575,8 +595,9 @@ PLy_function_drop_args(PLySavedArgs *savedargs)
 		Py_XDECREF(savedargs->namedargs[i]);
 	}
 
-	/* Drop ref to the "args" object, too */
+	/* Drop refs to the "args" and "TD" objects, too */
 	Py_XDECREF(savedargs->args);
+	Py_XDECREF(savedargs->td);
 
 	/* And free the PLySavedArgs struct */
 	pfree(savedargs);
@@ -585,9 +606,9 @@ PLy_function_drop_args(PLySavedArgs *savedargs)
 /*
  * Save away any existing arguments for the given procedure, so that we can
  * install new values for a recursive call.  This should be invoked before
- * doing PLy_function_build_args().
+ * doing PLy_function_build_args() or PLy_trigger_build_args().
  *
- * NB: caller must ensure that PLy_global_args_pop gets invoked once, and
+ * NB: callers must ensure that PLy_global_args_pop gets invoked once, and
  * only once, per successful completion of PLy_global_args_push.  Otherwise
  * we'll end up out-of-sync between the actual call stack and the contents
  * of proc->argstack.
@@ -695,19 +716,39 @@ PLy_trigger_build_args(FunctionCallInfo fcinfo, PLyProcedure *proc, HeapTuple *r
 			   *pltlevel,
 			   *pltrelid,
 			   *plttablename,
-			   *plttableschema;
-	PyObject   *pltargs,
+			   *plttableschema,
+			   *pltargs,
 			   *pytnew,
-			   *pytold;
-	PyObject   *volatile pltdata = NULL;
+			   *pytold,
+			   *pltdata;
 	char	   *stroid;
+
+	/*
+	 * Make any Py*_New() calls before the PG_TRY block so that we can quickly
+	 * return NULL on failure.  We can't return within the PG_TRY block, else
+	 * we'd miss unwinding the exception stack.
+	 */
+	pltdata = PyDict_New();
+	if (!pltdata)
+		return NULL;
+
+	if (tdata->tg_trigger->tgnargs)
+	{
+		pltargs = PyList_New(tdata->tg_trigger->tgnargs);
+		if (!pltargs)
+		{
+			Py_DECREF(pltdata);
+			return NULL;
+		}
+	}
+	else
+	{
+		Py_INCREF(Py_None);
+		pltargs = Py_None;
+	}
 
 	PG_TRY();
 	{
-		pltdata = PyDict_New();
-		if (!pltdata)
-			return NULL;
-
 		pltname = PyString_FromString(tdata->tg_trigger->tgname);
 		PyDict_SetItemString(pltdata, "name", pltname);
 		Py_DECREF(pltname);
@@ -751,6 +792,11 @@ PLy_trigger_build_args(FunctionCallInfo fcinfo, PLyProcedure *proc, HeapTuple *r
 			PyDict_SetItemString(pltdata, "level", pltlevel);
 			Py_DECREF(pltlevel);
 
+			/*
+			 * Note: In BEFORE trigger, stored generated columns are not
+			 * computed yet, so don't make them accessible in NEW row.
+			 */
+
 			if (TRIGGER_FIRED_BY_INSERT(tdata->tg_event))
 			{
 				pltevent = PyString_FromString("INSERT");
@@ -758,7 +804,8 @@ PLy_trigger_build_args(FunctionCallInfo fcinfo, PLyProcedure *proc, HeapTuple *r
 				PyDict_SetItemString(pltdata, "old", Py_None);
 				pytnew = PLy_input_from_tuple(&proc->result_in,
 											  tdata->tg_trigtuple,
-											  rel_descr);
+											  rel_descr,
+											  !TRIGGER_FIRED_BEFORE(tdata->tg_event));
 				PyDict_SetItemString(pltdata, "new", pytnew);
 				Py_DECREF(pytnew);
 				*rv = tdata->tg_trigtuple;
@@ -770,7 +817,8 @@ PLy_trigger_build_args(FunctionCallInfo fcinfo, PLyProcedure *proc, HeapTuple *r
 				PyDict_SetItemString(pltdata, "new", Py_None);
 				pytold = PLy_input_from_tuple(&proc->result_in,
 											  tdata->tg_trigtuple,
-											  rel_descr);
+											  rel_descr,
+											  true);
 				PyDict_SetItemString(pltdata, "old", pytold);
 				Py_DECREF(pytold);
 				*rv = tdata->tg_trigtuple;
@@ -781,12 +829,14 @@ PLy_trigger_build_args(FunctionCallInfo fcinfo, PLyProcedure *proc, HeapTuple *r
 
 				pytnew = PLy_input_from_tuple(&proc->result_in,
 											  tdata->tg_newtuple,
-											  rel_descr);
+											  rel_descr,
+											  !TRIGGER_FIRED_BEFORE(tdata->tg_event));
 				PyDict_SetItemString(pltdata, "new", pytnew);
 				Py_DECREF(pytnew);
 				pytold = PLy_input_from_tuple(&proc->result_in,
 											  tdata->tg_trigtuple,
-											  rel_descr);
+											  rel_descr,
+											  true);
 				PyDict_SetItemString(pltdata, "old", pytold);
 				Py_DECREF(pytold);
 				*rv = tdata->tg_newtuple;
@@ -838,12 +888,9 @@ PLy_trigger_build_args(FunctionCallInfo fcinfo, PLyProcedure *proc, HeapTuple *r
 			int			i;
 			PyObject   *pltarg;
 
-			pltargs = PyList_New(tdata->tg_trigger->tgnargs);
-			if (!pltargs)
-			{
-				Py_DECREF(pltdata);
-				return NULL;
-			}
+			/* pltargs should have been allocated before the PG_TRY block. */
+			Assert(pltargs && pltargs != Py_None);
+
 			for (i = 0; i < tdata->tg_trigger->tgnargs; i++)
 			{
 				pltarg = PyString_FromString(tdata->tg_trigger->tgargs[i]);
@@ -856,14 +903,14 @@ PLy_trigger_build_args(FunctionCallInfo fcinfo, PLyProcedure *proc, HeapTuple *r
 		}
 		else
 		{
-			Py_INCREF(Py_None);
-			pltargs = Py_None;
+			Assert(pltargs == Py_None);
 		}
 		PyDict_SetItemString(pltdata, "args", pltargs);
 		Py_DECREF(pltargs);
 	}
 	PG_CATCH();
 	{
+		Py_XDECREF(pltargs);
 		Py_XDECREF(pltdata);
 		PG_RE_THROW();
 	}
@@ -952,6 +999,11 @@ PLy_modify_tuple(PLyProcedure *proc, PyObject *pltd, TriggerData *tdata,
 						(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 						 errmsg("cannot set system attribute \"%s\"",
 								plattstr)));
+			if (TupleDescAttr(tupdesc, attn - 1)->attgenerated)
+				ereport(ERROR,
+						(errcode(ERRCODE_E_R_I_E_TRIGGER_PROTOCOL_VIOLATED),
+						 errmsg("cannot set generated column \"%s\"",
+								plattstr)));
 
 			plval = PyDict_GetItem(plntup, platt);
 			if (plval == NULL)
@@ -1015,7 +1067,7 @@ plpython_trigger_error_callback(void *arg)
 static PyObject *
 PLy_procedure_call(PLyProcedure *proc, const char *kargs, PyObject *vargs)
 {
-	PyObject   *rv;
+	PyObject   *rv = NULL;
 	int volatile save_subxact_level = list_length(explicit_subtransactions);
 
 	PyDict_SetItemString(proc->globals, kargs, vargs);
@@ -1037,14 +1089,11 @@ PLy_procedure_call(PLyProcedure *proc, const char *kargs, PyObject *vargs)
 		 */
 		Assert(list_length(explicit_subtransactions) >= save_subxact_level);
 	}
-	PG_CATCH();
+	PG_FINALLY();
 	{
 		PLy_abort_open_subtransactions(save_subxact_level);
-		PG_RE_THROW();
 	}
 	PG_END_TRY();
-
-	PLy_abort_open_subtransactions(save_subxact_level);
 
 	/* If the Python code returned an error, propagate it */
 	if (rv == NULL)

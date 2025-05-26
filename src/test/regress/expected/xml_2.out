@@ -219,13 +219,11 @@ ERROR:  invalid XML content
 DETAIL:  line 1: xmlParseEntityRef: no name
 <invalidentity>&</invalidentity>
                 ^
-line 1: chunk is not well balanced
 SELECT xmlparse(content '<undefinedentity>&idontexist;</undefinedentity>');
 ERROR:  invalid XML content
 DETAIL:  line 1: Entity 'idontexist' not defined
 <undefinedentity>&idontexist;</undefinedentity>
                              ^
-line 1: chunk is not well balanced
 SELECT xmlparse(content '<invalidns xmlns=''&lt;''/>');
          xmlparse          
 ---------------------------
@@ -244,7 +242,6 @@ DETAIL:  line 1: Entity 'idontexist' not defined
 <twoerrors>&idontexist;</unbalanced>
                        ^
 line 1: Opening and ending tag mismatch: twoerrors line 1 and unbalanced
-line 1: chunk is not well balanced
 SELECT xmlparse(content '<nosuchprefix:tag/>');
       xmlparse       
 ---------------------
@@ -634,12 +631,9 @@ SELECT xpath('//loc:piece', '<local:data xmlns:local="http://127.0.0.1"><local:p
 (1 row)
 
 SELECT xpath('//loc:piece', '<local:data xmlns:local="http://127.0.0.1" xmlns="http://127.0.0.2"><local:piece id="1"><internal>number one</internal><internal2/></local:piece><local:piece id="2" /></local:data>', ARRAY[ARRAY['loc', 'http://127.0.0.1']]);
-                                        xpath                                         
---------------------------------------------------------------------------------------
- {"<local:piece xmlns:local=\"http://127.0.0.1\" xmlns=\"http://127.0.0.2\" id=\"1\">+
-   <internal>number one</internal>                                                   +
-   <internal2/>                                                                      +
- </local:piece>","<local:piece xmlns:local=\"http://127.0.0.1\" id=\"2\"/>"}
+                                                                                                   xpath                                                                                                    
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"<local:piece xmlns:local=\"http://127.0.0.1\" xmlns=\"http://127.0.0.2\" id=\"1\"><internal>number one</internal><internal2/></local:piece>","<local:piece xmlns:local=\"http://127.0.0.1\" id=\"2\"/>"}
 (1 row)
 
 SELECT xpath('//b', '<a>one <b>two</b> three <b>etc</b></a>');
@@ -1128,6 +1122,9 @@ EXPLAIN (COSTS OFF, VERBOSE) SELECT * FROM xmltableview1;
          Table Function Call: XMLTABLE(('/ROWS/ROW'::text) PASSING (xmldata.data) COLUMNS id integer PATH ('@id'::text), _id FOR ORDINALITY, country_name text PATH ('COUNTRY_NAME/text()'::text) NOT NULL, country_id text PATH ('COUNTRY_ID'::text), region_id integer PATH ('REGION_ID'::text), size double precision PATH ('SIZE'::text), unit text PATH ('SIZE/@unit'::text), premier_name text DEFAULT ('not specified'::text) PATH ('PREMIER_NAME'::text))
 (7 rows)
 
+-- errors
+SELECT * FROM XMLTABLE (ROW () PASSING null COLUMNS v1 timestamp) AS f (v1, v2);
+ERROR:  XMLTABLE function has 1 columns available but 2 columns specified
 -- XMLNAMESPACES tests
 SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' AS zz),
                       '/zz:rows/zz:row'
@@ -1138,21 +1135,33 @@ SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' AS zz),
  10
 (1 row)
 
-CREATE VIEW xmltableview2 AS SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' AS zz),
-                      '/zz:rows/zz:row'
+CREATE VIEW xmltableview2 AS SELECT * FROM XMLTABLE(XMLNAMESPACES('http://x.y' AS "Zz"),
+                      '/Zz:rows/Zz:row'
                       PASSING '<rows xmlns="http://x.y"><row><a>10</a></row></rows>'
-                      COLUMNS a int PATH 'zz:a');
+                      COLUMNS a int PATH 'Zz:a');
 SELECT * FROM xmltableview2;
  a  
 ----
  10
 (1 row)
 
+\sv xmltableview2
+CREATE OR REPLACE VIEW public.xmltableview2 AS
+ SELECT "xmltable".a
+   FROM XMLTABLE(XMLNAMESPACES ('http://x.y'::text AS "Zz"), ('/Zz:rows/Zz:row'::text) PASSING ('<rows xmlns="http://x.y"><row><a>10</a></row></rows>'::xml) COLUMNS a integer PATH ('Zz:a'::text))
 SELECT * FROM XMLTABLE(XMLNAMESPACES(DEFAULT 'http://x.y'),
                       '/rows/row'
                       PASSING '<rows xmlns="http://x.y"><row><a>10</a></row></rows>'
                       COLUMNS a int PATH 'a');
 ERROR:  DEFAULT namespace is not supported
+SELECT * FROM XMLTABLE('.'
+                       PASSING '<foo/>'
+                       COLUMNS a text PATH 'foo/namespace::node()');
+                  a                   
+--------------------------------------
+ http://www.w3.org/XML/1998/namespace
+(1 row)
+
 -- used in prepare statements
 PREPARE pp AS
 SELECT  xmltable.*
@@ -1236,9 +1245,9 @@ SELECT xmltable.* FROM xmldata, LATERAL xmltable('/ROWS/ROW[COUNTRY_NAME="Japan"
 (2 rows)
 
 SELECT * FROM xmltable('/root' passing '<root><element>a1a<!-- aaaa -->a2a<?aaaaa?> <!--z-->  bbbb<x>xxx</x>cccc</element></root>' COLUMNS element text);
-      element      
--------------------
- a1aa2a   bbbbcccc
+       element        
+----------------------
+ a1aa2a   bbbbxxxcccc
 (1 row)
 
 SELECT * FROM xmltable('/root' passing '<root><element>a1a<!-- aaaa -->a2a<?aaaaa?> <!--z-->  bbbb<x>xxx</x>cccc</element></root>' COLUMNS element text PATH 'element/text()'); -- should fail
@@ -1518,4 +1527,25 @@ SELECT xmltable.* FROM xmltest2, LATERAL xmltable(('/d/r/' || lower(_path) || 'c
  13
  14
 (4 rows)
+
+-- XPath result can be boolean or number too
+SELECT * FROM XMLTABLE('*' PASSING '<a>a</a>' COLUMNS a xml PATH '.', b text PATH '.', c text PATH '"hi"', d boolean PATH '. = "a"', e integer PATH 'string-length(.)');
+    a     | b | c  | d | e 
+----------+---+----+---+---
+ <a>a</a> | a | hi | t | 1
+(1 row)
+
+\x
+SELECT * FROM XMLTABLE('*' PASSING '<e>pre<!--c1--><?pi arg?><![CDATA[&ent1]]><n2>&amp;deep</n2>post</e>' COLUMNS x xml PATH 'node()', y xml PATH '/');
+-[ RECORD 1 ]-----------------------------------------------------------
+x | pre<!--c1--><?pi arg?><![CDATA[&ent1]]><n2>&amp;deep</n2>post
+y | <e>pre<!--c1--><?pi arg?><![CDATA[&ent1]]><n2>&amp;deep</n2>post</e>+
+  | 
+
+\x
+SELECT * FROM XMLTABLE('.' PASSING XMLELEMENT(NAME a) columns a varchar(20) PATH '"<foo/>"', b xml PATH '"<foo/>"');
+   a    |      b       
+--------+--------------
+ <foo/> | &lt;foo/&gt;
+(1 row)
 

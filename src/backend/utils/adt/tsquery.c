@@ -3,7 +3,7 @@
  * tsquery.c
  *	  I/O functions for tsquery
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  *
  *
  * IDENTIFICATION
@@ -16,8 +16,8 @@
 
 #include "libpq/pqformat.h"
 #include "miscadmin.h"
-#include "tsearch/ts_type.h"
 #include "tsearch/ts_locale.h"
+#include "tsearch/ts_type.h"
 #include "tsearch/ts_utils.h"
 #include "utils/builtins.h"
 #include "utils/memutils.h"
@@ -77,7 +77,6 @@ struct TSQueryParserStateData
 	char	   *buf;			/* current scan point */
 	int			count;			/* nesting count, incremented by (,
 								 * decremented by ) */
-	bool		in_quotes;		/* phrase in quotes "" */
 	ts_parserstate state;
 
 	/* polish (prefix) notation in list, filled in by push* functions */
@@ -197,7 +196,7 @@ parse_phrase_operator(TSQueryParserState pstate, int16 *distance)
 				else if (errno == ERANGE || l < 0 || l > MAXENTRYPOS)
 					ereport(ERROR,
 							(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-							 errmsg("distance in phrase operator should not be greater than %d",
+							 errmsg("distance in phrase operator must be an integer value between zero and %d inclusive",
 									MAXENTRYPOS)));
 				else
 				{
@@ -234,9 +233,6 @@ static bool
 parse_or_operator(TSQueryParserState pstate)
 {
 	char	   *ptr = pstate->buf;
-
-	if (pstate->in_quotes)
-		return false;
 
 	/* it should begin with "OR" literal */
 	if (pg_strncasecmp(ptr, "or", 2) != 0)
@@ -398,42 +394,33 @@ gettoken_query_websearch(TSQueryParserState state, int8 *operator,
 					state->buf++;
 					state->state = WAITOPERAND;
 
-					if (state->in_quotes)
-						continue;
-
 					*operator = OP_NOT;
 					return PT_OPR;
 				}
 				else if (t_iseq(state->buf, '"'))
 				{
+					/* Everything in quotes is processed as a single token */
+
+					/* skip opening quote */
 					state->buf++;
+					*strval = state->buf;
 
-					if (!state->in_quotes)
-					{
-						state->state = WAITOPERAND;
+					/* iterate to the closing quote or end of the string */
+					while (*state->buf != '\0' && !t_iseq(state->buf, '"'))
+						state->buf++;
+					*lenval = state->buf - *strval;
 
-						if (strchr(state->buf, '"'))
-						{
-							/* quoted text should be ordered <-> */
-							state->in_quotes = true;
-							return PT_OPEN;
-						}
+					/* skip closing quote if not end of the string */
+					if (*state->buf != '\0')
+						state->buf++;
 
-						/* web search tolerates missing quotes */
-						continue;
-					}
-					else
-					{
-						/* we have to provide an operand */
-						state->in_quotes = false;
-						state->state = WAITOPERATOR;
-						pushStop(state);
-						return PT_CLOSE;
-					}
+					state->state = WAITOPERATOR;
+					state->count++;
+					return PT_VAL;
 				}
 				else if (ISOPERATOR(state->buf))
 				{
-					/* or else gettoken_tsvector() will raise an error */
+					/* ignore, else gettoken_tsvector() will raise an error */
 					state->buf++;
 					state->state = WAITOPERAND;
 					continue;
@@ -465,26 +452,9 @@ gettoken_query_websearch(TSQueryParserState state, int8 *operator,
 				break;
 
 			case WAITOPERATOR:
-				if (t_iseq(state->buf, '"'))
+				if (*state->buf == '\0')
 				{
-					if (!state->in_quotes)
-					{
-						/*
-						 * put implicit AND after an operand and handle this
-						 * quote in WAITOPERAND
-						 */
-						state->state = WAITOPERAND;
-						*operator = OP_AND;
-						return PT_OPR;
-					}
-					else
-					{
-						state->buf++;
-
-						/* just close quotes */
-						state->in_quotes = false;
-						return PT_CLOSE;
-					}
+					return PT_END;
 				}
 				else if (parse_or_operator(state))
 				{
@@ -492,25 +462,17 @@ gettoken_query_websearch(TSQueryParserState state, int8 *operator,
 					*operator = OP_OR;
 					return PT_OPR;
 				}
-				else if (*state->buf == '\0')
+				else if (ISOPERATOR(state->buf))
 				{
-					return PT_END;
+					/* ignore other operators in this state too */
+					state->buf++;
+					continue;
 				}
 				else if (!t_isspace(state->buf))
 				{
-					if (state->in_quotes)
-					{
-						/* put implicit <-> after an operand */
-						*operator = OP_PHRASE;
-						*weight = 1;
-					}
-					else
-					{
-						/* put implicit AND after an operand */
-						*operator = OP_AND;
-					}
-
+					/* insert implicit AND between operands */
 					state->state = WAITOPERAND;
+					*operator = OP_AND;
 					return PT_OPR;
 				}
 				break;
@@ -846,7 +808,6 @@ parse_tsquery(char *buf,
 	state.buffer = buf;
 	state.buf = buf;
 	state.count = 0;
-	state.in_quotes = false;
 	state.state = WAITFIRSTOPERAND;
 	state.polstr = NIL;
 

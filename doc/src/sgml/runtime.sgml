@@ -1445,11 +1445,10 @@ export PG_OOM_ADJUST_VALUE=0
     with <varname>CONFIG_HUGETLBFS=y</varname> and
     <varname>CONFIG_HUGETLB_PAGE=y</varname>. You will also have to configure
     the operating system to provide enough huge pages of the desired size.
-    To determine the number of huge pages needed, use the
-    <command>postgres</command> command to see the value of
-    <xref linkend="guc-shared-memory-size-in-huge-pages"/>.  Note that the
-    server must be shut down to view this runtime-computed parameter.
-    This might look like:
+    The runtime-computed parameter
+    <xref linkend="guc-shared-memory-size-in-huge-pages"/> reports the number
+    of huge pages required.  This parameter can be viewed before starting the
+    server with a <command>postgres</command> command like:
 <programlisting>
 $ <userinput>postgres -D $PGDATA -C shared_memory_size_in_huge_pages</userinput>
 3170
@@ -2010,7 +2009,8 @@ pg_dumpall -p 5432 | psql -d postgres -p 5433
    <literal>sslmode=verify-ca</literal> or
    <literal>verify-full</literal> and have the appropriate root certificate
    file installed (<xref linkend="libq-ssl-certificates"/>). Alternatively the
-   system CA pool can be used using <literal>sslrootcert=system</literal>; in
+   <link linkend="libpq-connect-sslrootcert">system CA pool</link>, as defined
+   by the SSL implementation, can be used using <literal>sslrootcert=system</literal>; in
    this case, <literal>sslmode=verify-full</literal> is forced for safety, since
    it is generally trivial to obtain certificates which are signed by a public
    CA.

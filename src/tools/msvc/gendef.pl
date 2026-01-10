@@ -122,7 +122,7 @@ sub writedef
 
 		# Strip the leading underscore for win32, but not x64
 		$f =~ s/^_//
-		  unless ($arch eq "x86_64");
+		  unless ($arch eq "x86_64" || $arch eq "arm64");
 
 		# Emit just the name if it's a function symbol, or emit the name
 		# decorated with the DATA option for variables.
@@ -143,7 +143,7 @@ sub writedef
 sub usage
 {
 	die("Usage: gendef.pl --arch <arch> --deffile <deffile> --tempdir <tempdir> files-or-directories\n"
-		  . "    arch: x86 | x86_64\n"
+		  . "    arch: x86 | x86_64 | arm64\n"
 		  . "    deffile: path of the generated file\n"
 		  . "    tempdir: directory for temporary files\n"
 		  . "    files or directories: object files or directory containing object files\n"
@@ -160,7 +160,7 @@ GetOptions(
 	'tempdir:s' => \$tempdir,) or usage();
 
 usage("arch: $arch")
-  unless ($arch eq 'x86' || $arch eq 'x86_64');
+  unless ($arch eq 'x86' || $arch eq 'x86_64' || $arch eq 'arm64');
 
 my @files;
 

@@ -238,6 +238,7 @@ sub GenerateFiles
 		HAVE_DECL_LLVMGETHOSTCPUNAME => 0,
 		HAVE_DECL_LLVMGETHOSTCPUFEATURES => 0,
 		HAVE_DECL_LLVMORCGETSYMBOLADDRESSIN => 0,
+		HAVE_DECL_MEMSET_S => 0,
 		HAVE_DECL_POSIX_FADVISE => 0,
 		HAVE_DECL_PREADV => 0,
 		HAVE_DECL_PWRITEV => 0,
@@ -302,7 +303,6 @@ sub GenerateFiles
 		HAVE_MBARRIER_H => undef,
 		HAVE_MBSTOWCS_L => 1,
 		HAVE_MEMORY_H => 1,
-		HAVE_MEMSET_S => undef,
 		HAVE_MKDTEMP => undef,
 		HAVE_OPENSSL_INIT_SSL => undef,
 		HAVE_OSSP_UUID_H => undef,
@@ -410,7 +410,7 @@ sub GenerateFiles
 		PG_VERSION => qq{"$package_version$extraver"},
 		PG_VERSION_NUM => sprintf("%d%04d", $majorver, $minorver),
 		PG_VERSION_STR =>
-		  qq{"PostgreSQL $package_version$extraver, compiled by Visual C++, $bits-bit"},
+		  qq{"PostgreSQL $package_version$extraver, compiled by Visual C++ build " CppAsString2(_MSC_VER) ", $bits-bit"},
 		PROFILE_PID_DIR => undef,
 		PTHREAD_CREATE_JOINABLE => undef,
 		RELSEG_SIZE => (1024 / $self->{options}->{blocksize}) *

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>4.1. Lexical Structure</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-syntax.html" title="Chapter 4. SQL Syntax" /><link rel="next" href="sql-expressions.html" title="4.2. Value Expressions" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">4.1. Lexical Structure</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-syntax.html" title="Chapter 4. SQL Syntax">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-syntax.html" title="Chapter 4. SQL Syntax">Up</a></td><th width="60%" align="center">Chapter 4. SQL Syntax</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-expressions.html" title="4.2. Value Expressions">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="SQL-SYNTAX-LEXICAL"><div class="titlepage"><div><div><h2 class="title" style="clear: both">4.1. Lexical Structure</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS">4.1.1. Identifiers and Key Words</a></span></dt><dt><span class="sect2"><a href="sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS">4.1.2. Constants</a></span></dt><dt><span class="sect2"><a href="sql-syntax-lexical.html#SQL-SYNTAX-OPERATORS">4.1.3. Operators</a></span></dt><dt><span class="sect2"><a href="sql-syntax-lexical.html#SQL-SYNTAX-SPECIAL-CHARS">4.1.4. Special Characters</a></span></dt><dt><span class="sect2"><a href="sql-syntax-lexical.html#SQL-SYNTAX-COMMENTS">4.1.5. Comments</a></span></dt><dt><span class="sect2"><a href="sql-syntax-lexical.html#SQL-PRECEDENCE">4.1.6. Operator Precedence</a></span></dt></dl></div><a id="id-1.5.3.5.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>4.1. Lexical Structure</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-syntax.html" title="Chapter 4. SQL Syntax" /><link rel="next" href="sql-expressions.html" title="4.2. Value Expressions" /></head><body id="docContent" class="container-fluid col-10"><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">4.1. Lexical Structure</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-syntax.html" title="Chapter 4. SQL Syntax">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-syntax.html" title="Chapter 4. SQL Syntax">Up</a></td><th width="60%" align="center">Chapter 4. SQL Syntax</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-expressions.html" title="4.2. Value Expressions">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="SQL-SYNTAX-LEXICAL"><div class="titlepage"><div><div><h2 class="title" style="clear: both">4.1. Lexical Structure</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS">4.1.1. Identifiers and Key Words</a></span></dt><dt><span class="sect2"><a href="sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS">4.1.2. Constants</a></span></dt><dt><span class="sect2"><a href="sql-syntax-lexical.html#SQL-SYNTAX-OPERATORS">4.1.3. Operators</a></span></dt><dt><span class="sect2"><a href="sql-syntax-lexical.html#SQL-SYNTAX-SPECIAL-CHARS">4.1.4. Special Characters</a></span></dt><dt><span class="sect2"><a href="sql-syntax-lexical.html#SQL-SYNTAX-COMMENTS">4.1.5. Comments</a></span></dt><dt><span class="sect2"><a href="sql-syntax-lexical.html#SQL-PRECEDENCE">4.1.6. Operator Precedence</a></span></dt></dl></div><a id="id-1.5.3.5.2" class="indexterm"></a><p>
    SQL input consists of a sequence of
    <em class="firstterm">commands</em>.  A command is composed of a
    sequence of <em class="firstterm">tokens</em>, terminated by a
@@ -113,7 +113,22 @@ UPDATE "my_table" SET "a" = 5;
     This allows constructing table or column names that would
     otherwise not be possible, such as ones containing spaces or
     ampersands.  The length limitation still applies.
-   </p><a id="id-1.5.3.5.8.11" class="indexterm"></a><p>
+   </p><p>
+    Quoting an identifier also makes it case-sensitive, whereas
+    unquoted names are always folded to lower case.  For example, the
+    identifiers <code class="literal">FOO</code>, <code class="literal">foo</code>, and
+    <code class="literal">"foo"</code> are considered the same by
+    <span class="productname">PostgreSQL</span>, but
+    <code class="literal">"Foo"</code> and <code class="literal">"FOO"</code> are
+    different from these three and each other.  (The folding of
+    unquoted names to lower case in <span class="productname">PostgreSQL</span> is
+    incompatible with the SQL standard, which says that unquoted names
+    should be folded to upper case.  Thus, <code class="literal">foo</code>
+    should be equivalent to <code class="literal">"FOO"</code> not
+    <code class="literal">"foo"</code> according to the standard.  If you want
+    to write portable applications you are advised to always quote a
+    particular name or never quote it.)
+   </p><a id="id-1.5.3.5.8.12" class="indexterm"></a><p>
     A variant of quoted
     identifiers allows including escaped Unicode characters identified
     by their code points.  This variant starts
@@ -139,7 +154,7 @@ U&amp;"\0441\043B\043E\043D"
    </p><p>
     If a different escape character than backslash is desired, it can
     be specified using
-    the <code class="literal">UESCAPE</code><a id="id-1.5.3.5.8.13.2" class="indexterm"></a>
+    the <code class="literal">UESCAPE</code><a id="id-1.5.3.5.8.14.2" class="indexterm"></a>
     clause after the string, for example:
 </p><pre class="programlisting">
 U&amp;"d!0061t!+000061" UESCAPE '!'
@@ -147,35 +162,22 @@ U&amp;"d!0061t!+000061" UESCAPE '!'
     The escape character can be any single character other than a
     hexadecimal digit, the plus sign, a single quote, a double quote,
     or a whitespace character.  Note that the escape character is
-    written in single quotes, not double quotes.
+    written in single quotes, not double quotes,
+    after <code class="literal">UESCAPE</code>.
    </p><p>
     To include the escape character in the identifier literally, write
     it twice.
    </p><p>
-    The Unicode escape syntax works only when the server encoding is
-    <code class="literal">UTF8</code>.  When other server encodings are used, only code
-    points in the ASCII range (up to <code class="literal">\007F</code>) can be
-    specified.  Both the 4-digit and the 6-digit form can be used to
+    Either the 4-digit or the 6-digit escape form can be used to
     specify UTF-16 surrogate pairs to compose characters with code
     points larger than U+FFFF, although the availability of the
     6-digit form technically makes this unnecessary.  (Surrogate
-    pairs are not stored directly, but combined into a single
-    code point that is then encoded in UTF-8.)
+    pairs are not stored directly, but are combined into a single
+    code point.)
    </p><p>
-    Quoting an identifier also makes it case-sensitive, whereas
-    unquoted names are always folded to lower case.  For example, the
-    identifiers <code class="literal">FOO</code>, <code class="literal">foo</code>, and
-    <code class="literal">"foo"</code> are considered the same by
-    <span class="productname">PostgreSQL</span>, but
-    <code class="literal">"Foo"</code> and <code class="literal">"FOO"</code> are
-    different from these three and each other.  (The folding of
-    unquoted names to lower case in <span class="productname">PostgreSQL</span> is
-    incompatible with the SQL standard, which says that unquoted names
-    should be folded to upper case.  Thus, <code class="literal">foo</code>
-    should be equivalent to <code class="literal">"FOO"</code> not
-    <code class="literal">"foo"</code> according to the standard.  If you want
-    to write portable applications you are advised to always quote a
-    particular name or never quote it.)
+    If the server encoding is not UTF-8, the Unicode code point identified
+    by one of these escape sequences is converted to the actual server
+    encoding; an error is reported if that's not possible.
    </p></div><div class="sect2" id="SQL-SYNTAX-CONSTANTS"><div class="titlepage"><div><div><h3 class="title">4.1.2. Constants</h3></div></div></div><a id="id-1.5.3.5.9.2" class="indexterm"></a><p>
     There are three kinds of <em class="firstterm">implicitly-typed
     constants</em> in <span class="productname">PostgreSQL</span>:
@@ -214,7 +216,7 @@ SELECT 'foo'      'bar';
      is not valid syntax.  (This slightly bizarre behavior is specified
      by <acronym class="acronym">SQL</acronym>; <span class="productname">PostgreSQL</span> is
      following the standard.)
-    </p></div><div class="sect3" id="SQL-SYNTAX-STRINGS-ESCAPE"><div class="titlepage"><div><div><h4 class="title">4.1.2.2. String Constants with C-style Escapes</h4></div></div></div><a id="id-1.5.3.5.9.5.2" class="indexterm"></a><a id="id-1.5.3.5.9.5.3" class="indexterm"></a><p>
+    </p></div><div class="sect3" id="SQL-SYNTAX-STRINGS-ESCAPE"><div class="titlepage"><div><div><h4 class="title">4.1.2.2. String Constants with C-Style Escapes</h4></div></div></div><a id="id-1.5.3.5.9.5.2" class="indexterm"></a><a id="id-1.5.3.5.9.5.3" class="indexterm"></a><p>
      <span class="productname">PostgreSQL</span> also accepts <span class="quote">“<span class="quote">escape</span>”</span>
      string constants, which are an extension to the SQL standard.
      An escape string constant is specified by writing the letter
@@ -230,15 +232,15 @@ SELECT 'foo'      'bar';
          <code class="literal">\<em class="replaceable"><code>o</code></em></code>,
          <code class="literal">\<em class="replaceable"><code>oo</code></em></code>,
          <code class="literal">\<em class="replaceable"><code>ooo</code></em></code>
-         (<em class="replaceable"><code>o</code></em> = 0 - 7)
+         (<em class="replaceable"><code>o</code></em> = 0–7)
         </td><td>octal byte value</td></tr><tr><td>
          <code class="literal">\x<em class="replaceable"><code>h</code></em></code>,
          <code class="literal">\x<em class="replaceable"><code>hh</code></em></code>
-         (<em class="replaceable"><code>h</code></em> = 0 - 9, A - F)
+         (<em class="replaceable"><code>h</code></em> = 0–9, A–F)
         </td><td>hexadecimal byte value</td></tr><tr><td>
          <code class="literal">\u<em class="replaceable"><code>xxxx</code></em></code>,
          <code class="literal">\U<em class="replaceable"><code>xxxxxxxx</code></em></code>
-         (<em class="replaceable"><code>x</code></em> = 0 - 9, A - F)
+         (<em class="replaceable"><code>x</code></em> = 0–9, A–F)
         </td><td>16 or 32-bit hexadecimal Unicode character value</td></tr></tbody></table></div></div><br class="table-break" /><p>
      Any other
      character following a backslash is taken literally. Thus, to
@@ -248,23 +250,11 @@ SELECT 'foo'      'bar';
     </p><p>
      It is your responsibility that the byte sequences you create,
      especially when using the octal or hexadecimal escapes, compose
-     valid characters in the server character set encoding.  When the
-     server encoding is UTF-8, then the Unicode escapes or the
+     valid characters in the server character set encoding.
+     A useful alternative is to use Unicode escapes or the
      alternative Unicode escape syntax, explained
-     in <a class="xref" href="sql-syntax-lexical.html#SQL-SYNTAX-STRINGS-UESCAPE" title="4.1.2.3. String Constants with Unicode Escapes">Section 4.1.2.3</a>, should be used
-     instead.  (The alternative would be doing the UTF-8 encoding by
-     hand and writing out the bytes, which would be very cumbersome.)
-    </p><p>
-     The Unicode escape syntax works fully only when the server
-     encoding is <code class="literal">UTF8</code>.  When other server encodings are
-     used, only code points in the ASCII range (up
-     to <code class="literal">\u007F</code>) can be specified.  Both the 4-digit and
-     the 8-digit form can be used to specify UTF-16 surrogate pairs to
-     compose characters with code points larger than U+FFFF, although
-     the availability of the 8-digit form technically makes this
-     unnecessary.  (When surrogate pairs are used when the server
-     encoding is <code class="literal">UTF8</code>, they are first combined into a
-     single code point that is then encoded in UTF-8.)
+     in <a class="xref" href="sql-syntax-lexical.html#SQL-SYNTAX-STRINGS-UESCAPE" title="4.1.2.3. String Constants with Unicode Escapes">Section 4.1.2.3</a>; then the server
+     will check that the character conversion is possible.
     </p><div class="caution"><h3 class="title">Caution</h3><p>
      If the configuration parameter
      <a class="xref" href="runtime-config-compatible.html#GUC-STANDARD-CONFORMING-STRINGS">standard_conforming_strings</a> is <code class="literal">off</code>,
@@ -320,16 +310,19 @@ U&amp;'d!0061t!+000061' UESCAPE '!'
      hexadecimal digit, the plus sign, a single quote, a double quote,
      or a whitespace character.
     </p><p>
-     The Unicode escape syntax works only when the server encoding is
-     <code class="literal">UTF8</code>.  When other server encodings are used, only
-     code points in the ASCII range (up to <code class="literal">\007F</code>)
-     can be specified.  Both the 4-digit and the 6-digit form can be
-     used to specify UTF-16 surrogate pairs to compose characters with
-     code points larger than U+FFFF, although the availability of the
-     6-digit form technically makes this unnecessary.  (When surrogate
-     pairs are used when the server encoding is <code class="literal">UTF8</code>, they
-     are first combined into a single code point that is then encoded
-     in UTF-8.)
+     To include the escape character in the string literally, write
+     it twice.
+    </p><p>
+     Either the 4-digit or the 6-digit escape form can be used to
+     specify UTF-16 surrogate pairs to compose characters with code
+     points larger than U+FFFF, although the availability of the
+     6-digit form technically makes this unnecessary.  (Surrogate
+     pairs are not stored directly, but are combined into a single
+     code point.)
+    </p><p>
+     If the server encoding is not UTF-8, the Unicode code point identified
+     by one of these escape sequences is converted to the actual server
+     encoding; an error is reported if that's not possible.
     </p><p>
      Also, the Unicode escape syntax for string constants only works
      when the configuration
@@ -339,13 +332,10 @@ U&amp;'d!0061t!+000061' UESCAPE '!'
      lead to SQL injections and similar security issues.  If the
      parameter is set to off, this syntax will be rejected with an
      error message.
-    </p><p>
-     To include the escape character in the string literally, write it
-     twice.
-    </p></div><div class="sect3" id="SQL-SYNTAX-DOLLAR-QUOTING"><div class="titlepage"><div><div><h4 class="title">4.1.2.4. Dollar-quoted String Constants</h4></div></div></div><a id="id-1.5.3.5.9.7.2" class="indexterm"></a><p>
+    </p></div><div class="sect3" id="SQL-SYNTAX-DOLLAR-QUOTING"><div class="titlepage"><div><div><h4 class="title">4.1.2.4. Dollar-Quoted String Constants</h4></div></div></div><a id="id-1.5.3.5.9.7.2" class="indexterm"></a><p>
      While the standard syntax for specifying string constants is usually
      convenient, it can be difficult to understand when the desired string
-     contains many single quotes or backslashes, since each of those must
+     contains many single quotes, since each of those must
      be doubled. To allow more readable queries in such situations,
      <span class="productname">PostgreSQL</span> provides another way, called
      <span class="quote">“<span class="quote">dollar quoting</span>”</span>, to write string constants.
@@ -404,7 +394,7 @@ $function$
      backslashes, which would be reduced to two backslashes in parsing the
      original string constant, and then to one when the inner string constant
      is re-parsed during function execution.
-    </p></div><div class="sect3" id="SQL-SYNTAX-BIT-STRINGS"><div class="titlepage"><div><div><h4 class="title">4.1.2.5. Bit-string Constants</h4></div></div></div><a id="id-1.5.3.5.9.8.2" class="indexterm"></a><p>
+    </p></div><div class="sect3" id="SQL-SYNTAX-BIT-STRINGS"><div class="titlepage"><div><div><h4 class="title">4.1.2.5. Bit-String Constants</h4></div></div></div><a id="id-1.5.3.5.9.8.2" class="indexterm"></a><p>
      Bit-string constants look like regular string constants with a
      <code class="literal">B</code> (upper or lower case) immediately before the
      opening quote (no intervening whitespace), e.g.,
@@ -543,7 +533,7 @@ CAST ( '<em class="replaceable"><code>string</code></em>' AS <em class="replacea
    </p><p>
     When working with non-SQL-standard operator names, you will usually
     need to separate adjacent operators with spaces to avoid ambiguity.
-    For example, if you have defined a left unary operator named <code class="literal">@</code>,
+    For example, if you have defined a prefix operator named <code class="literal">@</code>,
     you cannot write <code class="literal">X*@Y</code>; you must write
     <code class="literal">X* @Y</code> to ensure that
     <span class="productname">PostgreSQL</span> reads it as two operator names
@@ -619,26 +609,9 @@ CAST ( '<em class="replaceable"><code>string</code></em>' AS <em class="replacea
     Most operators have the same precedence and are left-associative.
     The precedence and associativity of the operators is hard-wired
     into the parser.
-   </p><p>
-    You will
-    sometimes need to add parentheses when using combinations of
-    binary and unary operators.  For instance:
-</p><pre class="programlisting">
-SELECT 5 ! - 6;
-</pre><p>
-   will be parsed as:
-</p><pre class="programlisting">
-SELECT 5 ! (- 6);
-</pre><p>
-    because the parser has no idea — until it is too late
-    — that <code class="token">!</code> is defined as a postfix operator,
-    not an infix one.  To get the desired behavior in this case, you
-    must write:
-</p><pre class="programlisting">
-SELECT (5 !) - 6;
-</pre><p>
-    This is the price one pays for extensibility.
-   </p><div class="table" id="SQL-PRECEDENCE-TABLE"><p class="title"><strong>Table 4.2. Operator Precedence (highest to lowest)</strong></p><div class="table-contents"><table class="table" summary="Operator Precedence (highest to lowest)" border="1"><colgroup><col /><col /><col /></colgroup><thead><tr><th>Operator/Element</th><th>Associativity</th><th>Description</th></tr></thead><tbody><tr><td><code class="token">.</code></td><td>left</td><td>table/column name separator</td></tr><tr><td><code class="token">::</code></td><td>left</td><td><span class="productname">PostgreSQL</span>-style typecast</td></tr><tr><td><code class="token">[</code> <code class="token">]</code></td><td>left</td><td>array element selection</td></tr><tr><td><code class="token">+</code> <code class="token">-</code></td><td>right</td><td>unary plus, unary minus</td></tr><tr><td><code class="token">^</code></td><td>left</td><td>exponentiation</td></tr><tr><td><code class="token">*</code> <code class="token">/</code> <code class="token">%</code></td><td>left</td><td>multiplication, division, modulo</td></tr><tr><td><code class="token">+</code> <code class="token">-</code></td><td>left</td><td>addition, subtraction</td></tr><tr><td>(any other operator)</td><td>left</td><td>all other native and user-defined operators</td></tr><tr><td><code class="token">BETWEEN</code> <code class="token">IN</code> <code class="token">LIKE</code> <code class="token">ILIKE</code> <code class="token">SIMILAR</code></td><td> </td><td>range containment, set membership, string matching</td></tr><tr><td><code class="token">&lt;</code> <code class="token">&gt;</code> <code class="token">=</code> <code class="token">&lt;=</code> <code class="token">&gt;=</code> <code class="token">&lt;&gt;</code>
+    Add parentheses if you want an expression with multiple operators
+    to be parsed in some other way than what the precedence rules imply.
+   </p><div class="table" id="SQL-PRECEDENCE-TABLE"><p class="title"><strong>Table 4.2. Operator Precedence (highest to lowest)</strong></p><div class="table-contents"><table class="table" summary="Operator Precedence (highest to lowest)" border="1"><colgroup><col class="col1" /><col class="col2" /><col class="col3" /></colgroup><thead><tr><th>Operator/Element</th><th>Associativity</th><th>Description</th></tr></thead><tbody><tr><td><code class="token">.</code></td><td>left</td><td>table/column name separator</td></tr><tr><td><code class="token">::</code></td><td>left</td><td><span class="productname">PostgreSQL</span>-style typecast</td></tr><tr><td><code class="token">[</code> <code class="token">]</code></td><td>left</td><td>array element selection</td></tr><tr><td><code class="token">+</code> <code class="token">-</code></td><td>right</td><td>unary plus, unary minus</td></tr><tr><td><code class="token">COLLATE</code></td><td>left</td><td>collation selection</td></tr><tr><td><code class="token">AT</code></td><td>left</td><td><code class="literal">AT TIME ZONE</code></td></tr><tr><td><code class="token">^</code></td><td>left</td><td>exponentiation</td></tr><tr><td><code class="token">*</code> <code class="token">/</code> <code class="token">%</code></td><td>left</td><td>multiplication, division, modulo</td></tr><tr><td><code class="token">+</code> <code class="token">-</code></td><td>left</td><td>addition, subtraction</td></tr><tr><td>(any other operator)</td><td>left</td><td>all other native and user-defined operators</td></tr><tr><td><code class="token">BETWEEN</code> <code class="token">IN</code> <code class="token">LIKE</code> <code class="token">ILIKE</code> <code class="token">SIMILAR</code></td><td> </td><td>range containment, set membership, string matching</td></tr><tr><td><code class="token">&lt;</code> <code class="token">&gt;</code> <code class="token">=</code> <code class="token">&lt;=</code> <code class="token">&gt;=</code> <code class="token">&lt;&gt;</code>
 </td><td> </td><td>comparison operators</td></tr><tr><td><code class="token">IS</code> <code class="token">ISNULL</code> <code class="token">NOTNULL</code></td><td> </td><td><code class="literal">IS TRUE</code>, <code class="literal">IS FALSE</code>, <code class="literal">IS
        NULL</code>, <code class="literal">IS DISTINCT FROM</code>, etc</td></tr><tr><td><code class="token">NOT</code></td><td>right</td><td>logical negation</td></tr><tr><td><code class="token">AND</code></td><td>left</td><td>logical conjunction</td></tr><tr><td><code class="token">OR</code></td><td>left</td><td>logical disjunction</td></tr></tbody></table></div></div><br class="table-break" /><p>
     Note that the operator precedence rules also apply to user-defined
@@ -670,9 +643,5 @@ SELECT 3 OPERATOR(pg_catalog.+) 4;
      cases, these changes will result in no behavioral change, or perhaps
      in <span class="quote">“<span class="quote">no such operator</span>”</span> failures which can be resolved by adding
      parentheses.  However there are corner cases in which a query might
-     change behavior without any parsing error being reported.  If you are
-     concerned about whether these changes have silently broken something,
-     you can test your application with the configuration
-     parameter <a class="xref" href="runtime-config-compatible.html#GUC-OPERATOR-PRECEDENCE-WARNING">operator_precedence_warning</a> turned on
-     to see if any warnings are logged.
-    </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-syntax.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-syntax.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-expressions.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 4. SQL Syntax </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 4.2. Value Expressions</td></tr></table></div></body></html>
+     change behavior without any parsing error being reported.
+    </p></div></div></div><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navfooter"><hr></hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-syntax.html" title="Chapter 4. SQL Syntax">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-syntax.html" title="Chapter 4. SQL Syntax">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-expressions.html" title="4.2. Value Expressions">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 4. SQL Syntax </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 4.2. Value Expressions</td></tr></table></div></body></html>

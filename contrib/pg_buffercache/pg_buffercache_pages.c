@@ -11,6 +11,7 @@
 #include "access/htup_details.h"
 #include "catalog/pg_type.h"
 #include "funcapi.h"
+#include "miscadmin.h"
 #include "storage/buf_internals.h"
 #include "storage/bufmgr.h"
 
@@ -99,7 +100,7 @@ pg_buffercache_pages(PG_FUNCTION_ARGS)
 			elog(ERROR, "incorrect number of output arguments");
 
 		/* Construct a tuple descriptor for the result rows. */
-		tupledesc = CreateTemplateTupleDesc(expected_tupledesc->natts, false);
+		tupledesc = CreateTemplateTupleDesc(expected_tupledesc->natts);
 		TupleDescInitEntry(tupledesc, (AttrNumber) 1, "bufferid",
 						   INT4OID, -1, 0);
 		TupleDescInitEntry(tupledesc, (AttrNumber) 2, "relfilenode",
@@ -147,6 +148,8 @@ pg_buffercache_pages(PG_FUNCTION_ARGS)
 		{
 			BufferDesc *bufHdr;
 			uint32		buf_state;
+
+			CHECK_FOR_INTERRUPTS();
 
 			bufHdr = GetBufferDescriptor(i);
 			/* Lock each buffer header before inspecting. */

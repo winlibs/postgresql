@@ -4,7 +4,7 @@
  *	  Implement PGSemaphores using SysV semaphore facilities
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -17,6 +17,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/file.h>
+#include <sys/stat.h>
 #ifdef HAVE_SYS_IPC_H
 #include <sys/ipc.h>
 #endif
@@ -72,9 +73,9 @@ static int	nextSemaNumber;		/* next free sem num in last sema set */
 
 
 static IpcSemaphoreId InternalIpcSemaphoreCreate(IpcSemaphoreKey semKey,
-						   int numSems);
+												 int numSems, bool retry_ok);
 static void IpcSemaphoreInitialize(IpcSemaphoreId semId, int semNum,
-					   int value);
+								   int value);
 static void IpcSemaphoreKill(IpcSemaphoreId semId);
 static int	IpcSemaphoreGetValue(IpcSemaphoreId semId, int semNum);
 static pid_t IpcSemaphoreGetLastPID(IpcSemaphoreId semId, int semNum);
@@ -91,9 +92,13 @@ static void ReleaseSemaphores(int status, Datum arg);
  * If we fail with a failure code other than collision-with-existing-set,
  * print out an error and abort.  Other types of errors suggest nonrecoverable
  * problems.
+ *
+ * Unfortunately, it's sometimes hard to tell whether errors are
+ * nonrecoverable.  Our caller keeps track of whether continuing to retry
+ * is sane or not; if not, we abort on failure regardless of the errno.
  */
 static IpcSemaphoreId
-InternalIpcSemaphoreCreate(IpcSemaphoreKey semKey, int numSems)
+InternalIpcSemaphoreCreate(IpcSemaphoreKey semKey, int numSems, bool retry_ok)
 {
 	int			semId;
 
@@ -104,16 +109,27 @@ InternalIpcSemaphoreCreate(IpcSemaphoreKey semKey, int numSems)
 		int			saved_errno = errno;
 
 		/*
-		 * Fail quietly if error indicates a collision with existing set. One
-		 * would expect EEXIST, given that we said IPC_EXCL, but perhaps we
-		 * could get a permission violation instead?  Also, EIDRM might occur
-		 * if an old set is slated for destruction but not gone yet.
+		 * Fail quietly if error suggests a collision with an existing set and
+		 * our caller has not lost patience.
+		 *
+		 * One would expect EEXIST, given that we said IPC_EXCL, but perhaps
+		 * we could get a permission violation instead.  On some platforms
+		 * EINVAL will be reported if the existing set has too few semaphores.
+		 * Also, EIDRM might occur if an old set is slated for destruction but
+		 * not gone yet.
+		 *
+		 * EINVAL is the key reason why we need the caller-level loop limit,
+		 * as it can also mean that the platform's SEMMSL is less than
+		 * numSems, and that condition can't be fixed by trying another key.
 		 */
-		if (saved_errno == EEXIST || saved_errno == EACCES
+		if (retry_ok &&
+			(saved_errno == EEXIST
+			 || saved_errno == EACCES
+			 || saved_errno == EINVAL
 #ifdef EIDRM
-			|| saved_errno == EIDRM
+			 || saved_errno == EIDRM
 #endif
-			)
+			 ))
 			return -1;
 
 		/*
@@ -210,17 +226,22 @@ IpcSemaphoreGetLastPID(IpcSemaphoreId semId, int semNum)
 static IpcSemaphoreId
 IpcSemaphoreCreate(int numSems)
 {
+	int			num_tries = 0;
 	IpcSemaphoreId semId;
 	union semun semun;
 	PGSemaphoreData mysema;
 
 	/* Loop till we find a free IPC key */
-	for (nextSemaKey++;; nextSemaKey++)
+	for (nextSemaKey++;; nextSemaKey++, num_tries++)
 	{
 		pid_t		creatorPID;
 
-		/* Try to create new semaphore set */
-		semId = InternalIpcSemaphoreCreate(nextSemaKey, numSems + 1);
+		/*
+		 * Try to create new semaphore set.  Give up after trying 1000
+		 * distinct IPC keys.
+		 */
+		semId = InternalIpcSemaphoreCreate(nextSemaKey, numSems + 1,
+										   num_tries < 1000);
 		if (semId >= 0)
 			break;				/* successful create */
 
@@ -257,7 +278,7 @@ IpcSemaphoreCreate(int numSems)
 		/*
 		 * Now try again to create the sema set.
 		 */
-		semId = InternalIpcSemaphoreCreate(nextSemaKey, numSems + 1);
+		semId = InternalIpcSemaphoreCreate(nextSemaKey, numSems + 1, true);
 		if (semId >= 0)
 			break;				/* successful create */
 
@@ -301,10 +322,6 @@ PGSemaphoreShmemSize(int maxSemas)
  * are acquired here or in PGSemaphoreCreate, register an on_shmem_exit
  * callback to release them.
  *
- * The port number is passed for possible use as a key (for SysV, we use
- * it to generate the starting semaphore key).  In a standalone backend,
- * zero will be passed.
- *
  * In the SysV implementation, we acquire semaphore sets on-demand; the
  * maxSemas parameter is just used to size the arrays.  There is an array
  * of PGSemaphoreData structs in shared memory, and a postmaster-local array
@@ -314,8 +331,22 @@ PGSemaphoreShmemSize(int maxSemas)
  * have clobbered.)
  */
 void
-PGReserveSemaphores(int maxSemas, int port)
+PGReserveSemaphores(int maxSemas)
 {
+	struct stat statbuf;
+
+	/*
+	 * We use the data directory's inode number to seed the search for free
+	 * semaphore keys.  This minimizes the odds of collision with other
+	 * postmasters, while maximizing the odds that we will detect and clean up
+	 * semaphores left over from a crashed postmaster in our own directory.
+	 */
+	if (stat(DataDir, &statbuf) < 0)
+		ereport(FATAL,
+				(errcode_for_file_access(),
+				 errmsg("could not stat data directory \"%s\": %m",
+						DataDir)));
+
 	/*
 	 * We must use ShmemAllocUnlocked(), since the spinlock protecting
 	 * ShmemAlloc() won't be ready yet.  (This ordering is necessary when we
@@ -332,7 +363,7 @@ PGReserveSemaphores(int maxSemas, int port)
 	if (mySemaSets == NULL)
 		elog(PANIC, "out of memory");
 	numSemaSets = 0;
-	nextSemaKey = port * 1000;
+	nextSemaKey = statbuf.st_ino;
 	nextSemaNumber = SEMAS_PER_SET; /* force sema set alloc on 1st call */
 
 	on_shmem_exit(ReleaseSemaphores, 0);

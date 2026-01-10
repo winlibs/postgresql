@@ -1,3 +1,6 @@
+
+# Copyright (c) 2021, PostgreSQL Global Development Group
+
 use strict;
 use warnings;
 
@@ -9,12 +12,13 @@ program_help_ok('pg_isready');
 program_version_ok('pg_isready');
 program_options_handling_ok('pg_isready');
 
-command_fails(['pg_isready'], 'fails with no server running');
-
 my $node = get_new_node('main');
 $node->init;
+
+$node->command_fails(['pg_isready'], 'fails with no server running');
+
 $node->start;
 
-# use a long timeout for the benefit of very slow buildfarm machines
-$node->command_ok([qw(pg_isready --timeout=60)],
+$node->command_ok(
+	[ 'pg_isready', "--timeout=$TestLib::timeout_default" ],
 	'succeeds with server running');

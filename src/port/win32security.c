@@ -3,7 +3,7 @@
  * win32security.c
  *	  Microsoft Windows Win32 Security Support Functions
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/port/win32security.c
@@ -31,9 +31,9 @@ log_error(const char *fmt,...)
 
 	va_start(ap, fmt);
 #ifndef FRONTEND
-	write_stderr(fmt, ap);
+	vwrite_stderr(fmt, ap);
 #else
-	fprintf(stderr, fmt, ap);
+	vfprintf(stderr, fmt, ap);
 #endif
 	va_end(ap);
 }

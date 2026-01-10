@@ -2,10 +2,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <pgtypes_date.h>
+#include <pgtypes_error.h>
 #include <pgtypes_timestamp.h>
 #include <pgtypes_interval.h>
 
 exec sql include ../regression;
+
+static void check_errno(void);
 
 int
 main(void)
@@ -189,8 +192,17 @@ main(void)
 	PGTYPESchar_free(text);
 
 	ts1 = PGTYPEStimestamp_from_asc("1994-02-11 26:10:35", NULL);
+	/* failure, check error code */
+	check_errno();
 	text = PGTYPEStimestamp_to_asc(ts1);
 	printf("timestamp_to_asc3: %s\n", text);
+	PGTYPESchar_free(text);
+
+	ts1 = PGTYPEStimestamp_from_asc("AM95000062", NULL);
+	/* failure, check error code */
+	check_errno();
+	text = PGTYPEStimestamp_to_asc(ts1);
+	printf("timestamp_to_asc4: %s\n", text);
 	PGTYPESchar_free(text);
 
 /*	abc-03:10:35-def-02/11/94-gh  */
@@ -362,8 +374,42 @@ main(void)
 	printf("timestamp_defmt_asc(%s, %s) = %s, error: %d\n", in, fmt, text, i);
 	PGTYPESchar_free(text);
 
+	out = (char*) malloc(64);
+	fmt = "%a %b %d %H:%M:%S %Y";
+	in =  "Mon Dec 30 17:28:44 2019";
+	i = PGTYPEStimestamp_defmt_asc(in, fmt, &ts1);
+	i = PGTYPEStimestamp_fmt_asc(&ts1, out, 63, fmt);
+	printf("timestamp_defmt_asc(%s, %s) = %s, error: %d\n", in, fmt, out, i);
+	free(out);
+
+	out = (char*) malloc(64);
+	fmt = "%a %b %d %H:%M:%S %Y";
+	in =  "Mon December 30 17:28:44 2019";
+	i = PGTYPEStimestamp_defmt_asc(in, fmt, &ts1);
+	i = PGTYPEStimestamp_fmt_asc(&ts1, out, 63, fmt);
+	printf("timestamp_defmt_asc(%s, %s) = %s, error: %d\n", in, fmt, out, i);
+	free(out);
+
 	exec sql rollback;
         exec sql disconnect;
 
 	return 0;
+}
+
+static void
+check_errno(void)
+{
+	switch(errno)
+	{
+		case 0:
+			printf("(no errno set) - ");
+			break;
+		case PGTYPES_TS_BAD_TIMESTAMP:
+			printf("(errno == PGTYPES_TS_BAD_TIMESTAMP) - ");
+			break;
+		default:
+			printf("(unknown errno (%d))\n", errno);
+			printf("(libc: (%s)) ", strerror(errno));
+			break;
+	}
 }

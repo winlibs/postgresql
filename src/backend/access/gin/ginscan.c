@@ -4,7 +4,7 @@
  *	  routines to manage scans of inverted index relations
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -68,8 +68,13 @@ ginFillScanEntry(GinScanOpaque so, OffsetNumber attnum,
 	 *
 	 * Entries with non-null extra_data are never considered identical, since
 	 * we can't know exactly what the opclass might be doing with that.
+	 *
+	 * Also, give up de-duplication once we have 100 entries.  That avoids
+	 * spending O(N^2) time on probably-fruitless de-duplication of large
+	 * search-key sets.  The threshold of 100 is arbitrary but matches
+	 * predtest.c's threshold for what's a large array.
 	 */
-	if (extra_data == NULL)
+	if (extra_data == NULL && so->totalentries < 100)
 	{
 		for (i = 0; i < so->totalentries; i++)
 		{
@@ -126,6 +131,27 @@ ginFillScanEntry(GinScanOpaque so, OffsetNumber attnum,
 }
 
 /*
+ * Append hidden scan entry of given category to the scan key.
+ *
+ * NB: this had better be called at most once per scan key, since
+ * ginFillScanKey leaves room for only one hidden entry.  Currently,
+ * it seems sufficiently clear that this is true that we don't bother
+ * with any cross-check logic.
+ */
+static void
+ginScanKeyAddHiddenEntry(GinScanOpaque so, GinScanKey key,
+						 GinNullCategory queryCategory)
+{
+	int			i = key->nentries++;
+
+	/* strategy is of no interest because this is not a partial-match item */
+	key->scanEntry[i] = ginFillScanEntry(so, key->attnum,
+										 InvalidStrategy, key->searchMode,
+										 (Datum) 0, queryCategory,
+										 false, NULL);
+}
+
+/*
  * Initialize the next GinScanKey using the output from the extractQueryFn
  */
 static void
@@ -137,17 +163,16 @@ ginFillScanKey(GinScanOpaque so, OffsetNumber attnum,
 {
 	GinScanKey	key = &(so->keys[so->nkeys++]);
 	GinState   *ginstate = &so->ginstate;
-	uint32		nUserQueryValues = nQueryValues;
 	uint32		i;
 
-	/* Non-default search modes add one "hidden" entry to each key */
-	if (searchMode != GIN_SEARCH_MODE_DEFAULT)
-		nQueryValues++;
 	key->nentries = nQueryValues;
-	key->nuserentries = nUserQueryValues;
+	key->nuserentries = nQueryValues;
 
-	key->scanEntry = (GinScanEntry *) palloc(sizeof(GinScanEntry) * nQueryValues);
-	key->entryRes = (GinTernaryValue *) palloc0(sizeof(GinTernaryValue) * nQueryValues);
+	/* Allocate one extra array slot for possible "hidden" entry */
+	key->scanEntry = (GinScanEntry *) palloc(sizeof(GinScanEntry) *
+											 (nQueryValues + 1));
+	key->entryRes = (GinTernaryValue *) palloc0(sizeof(GinTernaryValue) *
+												(nQueryValues + 1));
 
 	key->query = query;
 	key->queryValues = queryValues;
@@ -156,6 +181,12 @@ ginFillScanKey(GinScanOpaque so, OffsetNumber attnum,
 	key->strategy = strategy;
 	key->searchMode = searchMode;
 	key->attnum = attnum;
+
+	/*
+	 * Initially, scan keys of GIN_SEARCH_MODE_ALL mode are marked
+	 * excludeOnly.  This might get changed later.
+	 */
+	key->excludeOnly = (searchMode == GIN_SEARCH_MODE_ALL);
 
 	ItemPointerSetMin(&key->curItem);
 	key->curItemMatches = false;
@@ -168,6 +199,7 @@ ginFillScanKey(GinScanOpaque so, OffsetNumber attnum,
 
 	ginInitConsistentFunction(ginstate, key);
 
+	/* Set up normal scan entries using extractQueryFn's outputs */
 	for (i = 0; i < nQueryValues; i++)
 	{
 		Datum		queryKey;
@@ -175,54 +207,28 @@ ginFillScanKey(GinScanOpaque so, OffsetNumber attnum,
 		bool		isPartialMatch;
 		Pointer		this_extra;
 
-		if (i < nUserQueryValues)
-		{
-			/* set up normal entry using extractQueryFn's outputs */
-			queryKey = queryValues[i];
-			queryCategory = queryCategories[i];
-			isPartialMatch =
-				(ginstate->canPartialMatch[attnum - 1] && partial_matches)
-				? partial_matches[i] : false;
-			this_extra = (extra_data) ? extra_data[i] : NULL;
-		}
-		else
-		{
-			/* set up hidden entry */
-			queryKey = (Datum) 0;
-			switch (searchMode)
-			{
-				case GIN_SEARCH_MODE_INCLUDE_EMPTY:
-					queryCategory = GIN_CAT_EMPTY_ITEM;
-					break;
-				case GIN_SEARCH_MODE_ALL:
-					queryCategory = GIN_CAT_EMPTY_QUERY;
-					break;
-				case GIN_SEARCH_MODE_EVERYTHING:
-					queryCategory = GIN_CAT_EMPTY_QUERY;
-					break;
-				default:
-					elog(ERROR, "unexpected searchMode: %d", searchMode);
-					queryCategory = 0;	/* keep compiler quiet */
-					break;
-			}
-			isPartialMatch = false;
-			this_extra = NULL;
-
-			/*
-			 * We set the strategy to a fixed value so that ginFillScanEntry
-			 * can combine these entries for different scan keys.  This is
-			 * safe because the strategy value in the entry struct is only
-			 * used for partial-match cases.  It's OK to overwrite our local
-			 * variable here because this is the last loop iteration.
-			 */
-			strategy = InvalidStrategy;
-		}
+		queryKey = queryValues[i];
+		queryCategory = queryCategories[i];
+		isPartialMatch =
+			(ginstate->canPartialMatch[attnum - 1] && partial_matches)
+			? partial_matches[i] : false;
+		this_extra = (extra_data) ? extra_data[i] : NULL;
 
 		key->scanEntry[i] = ginFillScanEntry(so, attnum,
 											 strategy, searchMode,
 											 queryKey, queryCategory,
 											 isPartialMatch, this_extra);
 	}
+
+	/*
+	 * For GIN_SEARCH_MODE_INCLUDE_EMPTY and GIN_SEARCH_MODE_EVERYTHING search
+	 * modes, we add the "hidden" entry immediately.  GIN_SEARCH_MODE_ALL is
+	 * handled later, since we might be able to omit the hidden entry for it.
+	 */
+	if (searchMode == GIN_SEARCH_MODE_INCLUDE_EMPTY)
+		ginScanKeyAddHiddenEntry(so, key, GIN_CAT_EMPTY_ITEM);
+	else if (searchMode == GIN_SEARCH_MODE_EVERYTHING)
+		ginScanKeyAddHiddenEntry(so, key, GIN_CAT_EMPTY_QUERY);
 }
 
 /*
@@ -264,7 +270,9 @@ ginNewScanKey(IndexScanDesc scan)
 	ScanKey		scankey = scan->keyData;
 	GinScanOpaque so = (GinScanOpaque) scan->opaque;
 	int			i;
+	int			numExcludeOnly;
 	bool		hasNullQuery = false;
+	bool		attrHasNormalScan[INDEX_MAX_KEYS] = {false};
 	MemoryContext oldCtx;
 
 	/*
@@ -371,6 +379,75 @@ ginNewScanKey(IndexScanDesc scan)
 					   skey->sk_argument, nQueryValues,
 					   queryValues, categories,
 					   partial_matches, extra_data);
+
+		/* Remember if we had any non-excludeOnly keys */
+		if (searchMode != GIN_SEARCH_MODE_ALL)
+			attrHasNormalScan[skey->sk_attno - 1] = true;
+	}
+
+	/*
+	 * Processing GIN_SEARCH_MODE_ALL scan keys requires us to make a second
+	 * pass over the scan keys.  Above we marked each such scan key as
+	 * excludeOnly.  If the involved column has any normal (not excludeOnly)
+	 * scan key as well, then we can leave it like that.  Otherwise, one
+	 * excludeOnly scan key must receive a GIN_CAT_EMPTY_QUERY hidden entry
+	 * and be set to normal (excludeOnly = false).
+	 */
+	numExcludeOnly = 0;
+	for (i = 0; i < so->nkeys; i++)
+	{
+		GinScanKey	key = &so->keys[i];
+
+		if (key->searchMode != GIN_SEARCH_MODE_ALL)
+			continue;
+
+		if (!attrHasNormalScan[key->attnum - 1])
+		{
+			key->excludeOnly = false;
+			ginScanKeyAddHiddenEntry(so, key, GIN_CAT_EMPTY_QUERY);
+			attrHasNormalScan[key->attnum - 1] = true;
+		}
+		else
+			numExcludeOnly++;
+	}
+
+	/*
+	 * If we left any excludeOnly scan keys as-is, move them to the end of the
+	 * scan key array: they must appear after normal key(s).
+	 */
+	if (numExcludeOnly > 0)
+	{
+		GinScanKey	tmpkeys;
+		int			iNormalKey;
+		int			iExcludeOnly;
+
+		/* We'd better have made at least one normal key */
+		Assert(numExcludeOnly < so->nkeys);
+		/* Make a temporary array to hold the re-ordered scan keys */
+		tmpkeys = (GinScanKey) palloc(so->nkeys * sizeof(GinScanKeyData));
+		/* Re-order the keys ... */
+		iNormalKey = 0;
+		iExcludeOnly = so->nkeys - numExcludeOnly;
+		for (i = 0; i < so->nkeys; i++)
+		{
+			GinScanKey	key = &so->keys[i];
+
+			if (key->excludeOnly)
+			{
+				memcpy(tmpkeys + iExcludeOnly, key, sizeof(GinScanKeyData));
+				iExcludeOnly++;
+			}
+			else
+			{
+				memcpy(tmpkeys + iNormalKey, key, sizeof(GinScanKeyData));
+				iNormalKey++;
+			}
+		}
+		Assert(iNormalKey == so->nkeys - numExcludeOnly);
+		Assert(iExcludeOnly == so->nkeys);
+		/* ... and copy them back to so->keys[] */
+		memcpy(so->keys, tmpkeys, so->nkeys * sizeof(GinScanKeyData));
+		pfree(tmpkeys);
 	}
 
 	/*

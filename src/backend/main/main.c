@@ -9,7 +9,7 @@
  * proper FooMain() routine for the incarnation.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -33,9 +33,9 @@
 
 #include "bootstrap/bootstrap.h"
 #include "common/username.h"
+#include "miscadmin.h"
 #include "port/atomics.h"
 #include "postmaster/postmaster.h"
-#include "storage/s_lock.h"
 #include "storage/spin.h"
 #include "tcop/tcopprot.h"
 #include "utils/help_config.h"
@@ -96,45 +96,28 @@ main(int argc, char *argv[])
 	 * localization of messages may not work right away, and messages won't go
 	 * anywhere but stderr until GUC settings get loaded.
 	 */
+	MyProcPid = getpid();
 	MemoryContextInit();
 
 	/*
-	 * Set up locale information from environment.  Note that LC_CTYPE and
-	 * LC_COLLATE will be overridden later from pg_control if we are in an
-	 * already-initialized database.  We set them here so that they will be
-	 * available to fill pg_control during initdb.  LC_MESSAGES will get set
-	 * later during GUC option processing, but we set it here to allow startup
-	 * error messages to be localized.
+	 * Set up locale information
 	 */
-
 	set_pglocale_pgservice(argv[0], PG_TEXTDOMAIN("postgres"));
 
-#ifdef WIN32
-
 	/*
-	 * Windows uses codepages rather than the environment, so we work around
-	 * that by querying the environment explicitly first for LC_COLLATE and
-	 * LC_CTYPE. We have to do this because initdb passes those values in the
-	 * environment. If there is nothing there we fall back on the codepage.
+	 * In the postmaster, absorb the environment values for LC_COLLATE and
+	 * LC_CTYPE.  Individual backends will change these later to settings
+	 * taken from pg_database, but the postmaster cannot do that.  If we leave
+	 * these set to "C" then message localization might not work well in the
+	 * postmaster.
 	 */
-	{
-		char	   *env_locale;
-
-		if ((env_locale = getenv("LC_COLLATE")) != NULL)
-			init_locale("LC_COLLATE", LC_COLLATE, env_locale);
-		else
-			init_locale("LC_COLLATE", LC_COLLATE, "");
-
-		if ((env_locale = getenv("LC_CTYPE")) != NULL)
-			init_locale("LC_CTYPE", LC_CTYPE, env_locale);
-		else
-			init_locale("LC_CTYPE", LC_CTYPE, "");
-	}
-#else
 	init_locale("LC_COLLATE", LC_COLLATE, "");
 	init_locale("LC_CTYPE", LC_CTYPE, "");
-#endif
 
+	/*
+	 * LC_MESSAGES will get set later during GUC option processing, but we set
+	 * it here to allow startup error messages to be localized.
+	 */
 #ifdef LC_MESSAGES
 	init_locale("LC_MESSAGES", LC_MESSAGES, "");
 #endif
@@ -342,7 +325,6 @@ help(const char *progname)
 	printf(_("  -l                 enable SSL connections\n"));
 #endif
 	printf(_("  -N MAX-CONNECT     maximum number of allowed connections\n"));
-	printf(_("  -o OPTIONS         pass \"OPTIONS\" to each server process (obsolete)\n"));
 	printf(_("  -p PORT            port number to listen on\n"));
 	printf(_("  -s                 show statistics after each query\n"));
 	printf(_("  -S WORK-MEM        set amount of memory for sorts (in kB)\n"));
@@ -352,7 +334,7 @@ help(const char *progname)
 	printf(_("  -?, --help         show this help, then exit\n"));
 
 	printf(_("\nDeveloper options:\n"));
-	printf(_("  -f s|i|n|m|h       forbid use of some plan types\n"));
+	printf(_("  -f s|i|o|b|t|n|m|h forbid use of some plan types\n"));
 	printf(_("  -n                 do not reinitialize shared memory after abnormal exit\n"));
 	printf(_("  -O                 allow system table structure changes\n"));
 	printf(_("  -P                 disable system indexes\n"));
@@ -377,7 +359,8 @@ help(const char *progname)
 	printf(_("\nPlease read the documentation for the complete list of run-time\n"
 			 "configuration settings and how to set them on the command line or in\n"
 			 "the configuration file.\n\n"
-			 "Report bugs to <pgsql-bugs@postgresql.org>.\n"));
+			 "Report bugs to <%s>.\n"), PACKAGE_BUGREPORT);
+	printf(_("%s home page: <%s>\n"), PACKAGE_NAME, PACKAGE_URL);
 }
 
 

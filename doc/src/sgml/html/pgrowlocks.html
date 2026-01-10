@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.28. pgrowlocks</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="pgprewarm.html" title="F.27. pg_prewarm" /><link rel="next" href="pgstatstatements.html" title="F.29. pg_stat_statements" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.28. pgrowlocks</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="pgprewarm.html" title="F.27. pg_prewarm">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="pgstatstatements.html" title="F.29. pg_stat_statements">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PGROWLOCKS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.28. pgrowlocks</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="pgrowlocks.html#id-1.11.7.37.5">F.28.1. Overview</a></span></dt><dt><span class="sect2"><a href="pgrowlocks.html#id-1.11.7.37.6">F.28.2. Sample Output</a></span></dt><dt><span class="sect2"><a href="pgrowlocks.html#id-1.11.7.37.7">F.28.3. Author</a></span></dt></dl></div><a id="id-1.11.7.37.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.29. pgrowlocks</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="pgprewarm.html" title="F.28. pg_prewarm" /><link rel="next" href="pgstatstatements.html" title="F.30. pg_stat_statements" /></head><body id="docContent" class="container-fluid col-10"><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.29. pgrowlocks</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="pgprewarm.html" title="F.28. pg_prewarm">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="pgstatstatements.html" title="F.30. pg_stat_statements">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PGROWLOCKS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.29. pgrowlocks</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="pgrowlocks.html#id-1.11.7.38.5">F.29.1. Overview</a></span></dt><dt><span class="sect2"><a href="pgrowlocks.html#id-1.11.7.38.6">F.29.2. Sample Output</a></span></dt><dt><span class="sect2"><a href="pgrowlocks.html#id-1.11.7.38.7">F.29.3. Author</a></span></dt></dl></div><a id="id-1.11.7.38.2" class="indexterm"></a><p>
   The <code class="filename">pgrowlocks</code> module provides a function to show row
   locking information for a specified table.
  </p><p>
   By default use is restricted to superusers, members of the
   <code class="literal">pg_stat_scan_tables</code> role, and users with
   <code class="literal">SELECT</code> permissions on the table.
- </p><div class="sect2" id="id-1.11.7.37.5"><div class="titlepage"><div><div><h3 class="title">F.28.1. Overview</h3></div></div></div><a id="id-1.11.7.37.5.2" class="indexterm"></a><pre class="synopsis">
+ </p><div class="sect2" id="id-1.11.7.38.5"><div class="titlepage"><div><div><h3 class="title">F.29.1. Overview</h3></div></div></div><a id="id-1.11.7.38.5.2" class="indexterm"></a><pre class="synopsis">
 pgrowlocks(text) returns setof record
 </pre><p>
    The parameter is the name of a table.  The result is a set of records,
@@ -20,8 +20,8 @@ pgrowlocks(text) returns setof record
    target table and reads each row one by one to collect the row locking
    information.  This is not very speedy for a large table.  Note that:
   </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
-    If the table as a whole is exclusive-locked by someone else,
-    <code class="function">pgrowlocks</code> will be blocked.
+     If an <code class="literal">ACCESS EXCLUSIVE</code> lock is taken on the table,
+     <code class="function">pgrowlocks</code> will be blocked.
     </p></li><li class="listitem"><p>
      <code class="function">pgrowlocks</code> is not guaranteed to produce a
      self-consistent snapshot.  It is possible that a new row lock is taken,
@@ -37,7 +37,7 @@ SELECT * FROM accounts AS a, pgrowlocks('accounts') AS p
 </pre><p>
 
    Be aware however that such a query will be very inefficient.
-  </p></div><div class="sect2" id="id-1.11.7.37.6"><div class="titlepage"><div><div><h3 class="title">F.28.2. Sample Output</h3></div></div></div><pre class="screen">
+  </p></div><div class="sect2" id="id-1.11.7.38.6"><div class="titlepage"><div><div><h3 class="title">F.29.2. Sample Output</h3></div></div></div><pre class="screen">
 =# SELECT * FROM pgrowlocks('t1');
  locked_row | locker | multi | xids  |     modes      |  pids
 ------------+--------+-------+-------+----------------+--------
@@ -46,6 +46,6 @@ SELECT * FROM accounts AS a, pgrowlocks('accounts') AS p
  (0,3)      |    607 | f     | {607} | {"For Update"} | {3107}
  (0,4)      |    607 | f     | {607} | {"For Update"} | {3107}
 (4 rows)
-</pre></div><div class="sect2" id="id-1.11.7.37.7"><div class="titlepage"><div><div><h3 class="title">F.28.3. Author</h3></div></div></div><p>
+</pre></div><div class="sect2" id="id-1.11.7.38.7"><div class="titlepage"><div><div><h3 class="title">F.29.3. Author</h3></div></div></div><p>
    Tatsuo Ishii
-  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="pgprewarm.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="pgstatstatements.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.27. pg_prewarm </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> F.29. pg_stat_statements</td></tr></table></div></body></html>
+  </p></div></div><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navfooter"><hr></hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="pgprewarm.html" title="F.28. pg_prewarm">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="pgstatstatements.html" title="F.30. pg_stat_statements">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.28. pg_prewarm </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="40%" align="right" valign="top"> F.30. pg_stat_statements</td></tr></table></div></body></html>

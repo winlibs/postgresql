@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: initdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2025
+.\"    Manual: PostgreSQL 14.20 Documentation
+.\"    Source: PostgreSQL 14.20
 .\"  Language: English
 .\"
-.TH "INITDB" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "INITDB" "1" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -74,7 +74,7 @@ will only be accessible by the cluster owner by default\&. The
 option allows any user in the same group as the cluster owner to read files in the cluster\&. This is useful for performing backups as a non\-privileged user\&.
 .PP
 \fBinitdb\fR
-initializes the database cluster\*(Aqs default locale and character set encoding\&. The character set encoding, collation order (LC_COLLATE) and character set classes (LC_CTYPE, e\&.g\&. upper, lower, digit) can be set separately for a database when it is created\&.
+initializes the database cluster\*(Aqs default locale and character set encoding\&. The character set encoding, collation order (LC_COLLATE) and character set classes (LC_CTYPE, e\&.g\&., upper, lower, digit) can be set separately for a database when it is created\&.
 \fBinitdb\fR
 determines those settings for the
 template1
@@ -95,11 +95,11 @@ The remaining locale categories can be changed later when the server is started\
 \fB\-\-locale\fR
 to set the default for all locale categories, including collation order and character set classes\&. All server locale values (lc_*) can be displayed via
 \fBSHOW ALL\fR\&. More details can be found in
-Section\ \&23.1\&.
+Section\ \&24.1\&.
 .PP
 To alter the default encoding, use the
 \fB\-\-encoding\fR\&. More details can be found in
-Section\ \&23.3\&.
+Section\ \&24.3\&.
 .SH "OPTIONS"
 .PP
 .PP
@@ -160,7 +160,7 @@ SQL_ASCII
 if that does not work\&. The character sets supported by the
 PostgreSQL
 server are described in
-Section\ \&23.3.1\&.
+Section\ \&24.3.1\&.
 .RE
 .PP
 \fB\-g\fR
@@ -178,7 +178,11 @@ POSIX\-style group permissions\&.
 .br
 \fB\-\-data\-checksums\fR
 .RS 4
-Use checksums on data pages to help detect corruption by the I/O system that would otherwise be silent\&. Enabling checksums may incur a noticeable performance penalty\&. This option can only be set during initialization, and cannot be changed later\&. If set, checksums are calculated for all objects, in all databases\&.
+Use checksums on data pages to help detect corruption by the I/O system that would otherwise be silent\&. Enabling checksums may incur a noticeable performance penalty\&. If set, checksums are calculated for all objects, in all databases\&. All checksum failures will be reported in the
+pg_stat_database
+view\&. See
+Section\ \&30.2
+for details\&.
 .RE
 .PP
 \fB\-\-locale=\fR\fB\fIlocale\fR\fR
@@ -186,7 +190,7 @@ Use checksums on data pages to help detect corruption by the I/O system that wou
 Sets the default locale for the database cluster\&. If this option is not specified, the locale is inherited from the environment that
 \fBinitdb\fR
 runs in\&. Locale support is described in
-Section\ \&23.1\&.
+Section\ \&24.1\&.
 .RE
 .PP
 \fB\-\-lc\-collate=\fR\fB\fIlocale\fR\fR
@@ -220,6 +224,15 @@ By default,
 will wait for all files to be written safely to disk\&. This option causes
 \fBinitdb\fR
 to return without waiting, which is faster, but means that a subsequent operating system crash can leave the data directory corrupt\&. Generally, this option is useful for testing, but should not be used when creating a production installation\&.
+.RE
+.PP
+\fB\-\-no\-instructions\fR
+.RS 4
+By default,
+\fBinitdb\fR
+will write instructions for how to start the cluster at the end of its output\&. This option causes those instructions to be left out\&. This is primarily intended for use by tools that wrap
+\fBinitdb\fR
+in platform\-specific behavior, where those instructions are likely to be incorrect\&.
 .RE
 .PP
 \fB\-\-pwfile=\fR\fB\fIfilename\fR\fR
@@ -291,6 +304,13 @@ Print debugging output from the bootstrap backend and a few other messages of le
 uses to create the catalog tables\&. This option generates a tremendous amount of extremely boring output\&.
 .RE
 .PP
+\fB\-\-discard\-caches\fR
+.RS 4
+Run the bootstrap backend with the
+debug_discard_caches=1
+option\&. This takes a very long time and is only of use for deep debugging\&.
+.RE
+.PP
 \fB\-L \fR\fB\fIdirectory\fR\fR
 .RS 4
 Specifies where
@@ -335,18 +355,20 @@ Specifies the directory where the database cluster is to be stored; can be overr
 option\&.
 .RE
 .PP
+\fBPG_COLOR\fR
+.RS 4
+Specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.RE
+.PP
 \fBTZ\fR
 .RS 4
 Specifies the default time zone of the created database cluster\&. The value should be a full time zone name (see
 Section\ \&8.5.3)\&.
 .RE
-.PP
-This utility, like most other
-PostgreSQL
-utilities, also uses the environment variables supported by
-libpq
-(see
-Section\ \&34.14)\&.
 .SH "NOTES"
 .PP
 \fBinitdb\fR

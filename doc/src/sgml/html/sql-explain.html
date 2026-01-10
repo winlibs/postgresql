@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>EXPLAIN</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-execute.html" title="EXECUTE" /><link rel="next" href="sql-fetch.html" title="FETCH" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">EXPLAIN</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-execute.html" title="EXECUTE">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-fetch.html" title="FETCH">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-EXPLAIN"><div class="titlepage"></div><a id="id-1.9.3.148.1" class="indexterm"></a><a id="id-1.9.3.148.2" class="indexterm"></a><a id="id-1.9.3.148.3" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">EXPLAIN</span></h2><p>EXPLAIN — show the execution plan of a statement</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>EXPLAIN</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-execute.html" title="EXECUTE" /><link rel="next" href="sql-fetch.html" title="FETCH" /></head><body id="docContent" class="container-fluid col-10"><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">EXPLAIN</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-execute.html" title="EXECUTE">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-fetch.html" title="FETCH">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-EXPLAIN"><div class="titlepage"></div><a id="id-1.9.3.148.1" class="indexterm"></a><a id="id-1.9.3.148.2" class="indexterm"></a><a id="id-1.9.3.148.3" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">EXPLAIN</span></h2><p>EXPLAIN — show the execution plan of a statement</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 EXPLAIN [ ( <em class="replaceable"><code>option</code></em> [, ...] ) ] <em class="replaceable"><code>statement</code></em>
 EXPLAIN [ ANALYZE ] [ VERBOSE ] <em class="replaceable"><code>statement</code></em>
 
@@ -8,7 +8,9 @@ EXPLAIN [ ANALYZE ] [ VERBOSE ] <em class="replaceable"><code>statement</code></
     ANALYZE [ <em class="replaceable"><code>boolean</code></em> ]
     VERBOSE [ <em class="replaceable"><code>boolean</code></em> ]
     COSTS [ <em class="replaceable"><code>boolean</code></em> ]
+    SETTINGS [ <em class="replaceable"><code>boolean</code></em> ]
     BUFFERS [ <em class="replaceable"><code>boolean</code></em> ]
+    WAL [ <em class="replaceable"><code>boolean</code></em> ]
     TIMING [ <em class="replaceable"><code>boolean</code></em> ]
     SUMMARY [ <em class="replaceable"><code>boolean</code></em> ]
     FORMAT { TEXT | XML | JSON | YAML }
@@ -70,18 +72,24 @@ ROLLBACK;
       the output column list for each node in the plan tree, schema-qualify
       table and function names, always label variables in expressions with
       their range table alias, and always print the name of each trigger for
-      which statistics are displayed.  This parameter defaults to
-      <code class="literal">FALSE</code>.
+      which statistics are displayed.  The query identifier will also be
+      displayed if one has been computed, see <a class="xref" href="runtime-config-statistics.html#GUC-COMPUTE-QUERY-ID">compute_query_id</a> for more details.  This parameter
+      defaults to <code class="literal">FALSE</code>.
      </p></dd><dt><span class="term"><code class="literal">COSTS</code></span></dt><dd><p>
       Include information on the estimated startup and total cost of each
       plan node, as well as the estimated number of rows and the estimated
       width of each row.
       This parameter defaults to <code class="literal">TRUE</code>.
+     </p></dd><dt><span class="term"><code class="literal">SETTINGS</code></span></dt><dd><p>
+      Include information on configuration parameters.  Specifically, include
+      options affecting query planning with value different from the built-in
+      default value.  This parameter defaults to <code class="literal">FALSE</code>.
      </p></dd><dt><span class="term"><code class="literal">BUFFERS</code></span></dt><dd><p>
       Include information on buffer usage. Specifically, include the number of
       shared blocks hit, read, dirtied, and written, the number of local blocks
-      hit, read, dirtied, and written, and the number of temp blocks read and
-      written.
+      hit, read, dirtied, and written, the number of temp blocks read and
+      written, and the time spent reading and writing data file blocks
+      (in milliseconds) if <a class="xref" href="runtime-config-statistics.html#GUC-TRACK-IO-TIMING">track_io_timing</a> is enabled.
       A <span class="emphasis"><em>hit</em></span> means that a read was avoided because the block was
       found already in cache when needed.
       Shared blocks contain data from regular tables and indexes;
@@ -95,9 +103,14 @@ ROLLBACK;
       query processing.
       The number of blocks shown for an
       upper-level node includes those used by all its child nodes.  In text
-      format, only non-zero values are printed.  This parameter may only be
-      used when <code class="literal">ANALYZE</code> is also enabled.  It defaults to
+      format, only non-zero values are printed.  It defaults to
       <code class="literal">FALSE</code>.
+     </p></dd><dt><span class="term"><code class="literal">WAL</code></span></dt><dd><p>
+      Include information on WAL record generation. Specifically, include the
+      number of records, number of full page images (fpi) and the amount of WAL
+      generated in bytes. In text format, only non-zero values are printed.
+      This parameter may only be used when <code class="literal">ANALYZE</code> is also
+      enabled.  It defaults to <code class="literal">FALSE</code>.
      </p></dd><dt><span class="term"><code class="literal">TIMING</code></span></dt><dd><p>
       Include actual startup time and time spent in each node in the output.
       The overhead of repeatedly reading the system clock can slow down the
@@ -142,12 +155,12 @@ ROLLBACK;
    </p></div><div class="refsect1" id="id-1.9.3.148.10"><h2>Notes</h2><p>
    In order to allow the <span class="productname">PostgreSQL</span> query
    planner to make reasonably informed decisions when optimizing
-   queries, the <a class="link" href="catalog-pg-statistic.html" title="52.50. pg_statistic"><code class="structname">pg_statistic</code></a>
+   queries, the <a class="link" href="catalog-pg-statistic.html" title="52.49. pg_statistic"><code class="structname">pg_statistic</code></a>
    data should be up-to-date for all tables used in the query.  Normally
-   the <a class="link" href="routine-vacuuming.html#AUTOVACUUM" title="24.1.6. The Autovacuum Daemon">autovacuum daemon</a> will take care
+   the <a class="link" href="routine-vacuuming.html#AUTOVACUUM" title="25.1.6. The Autovacuum Daemon">autovacuum daemon</a> will take care
    of that automatically.  But if a table has recently had substantial
    changes in its contents, you might need to do a manual
-   <a class="xref" href="sql-analyze.html" title="ANALYZE"><span class="refentrytitle">ANALYZE</span></a> rather than wait for autovacuum to catch up
+   <a class="link" href="sql-analyze.html" title="ANALYZE"><code class="command">ANALYZE</code></a> rather than wait for autovacuum to catch up
    with the changes.
   </p><p>
    In order to measure the run-time cost of each node in the execution
@@ -248,7 +261,7 @@ EXPLAIN (COSTS FALSE) SELECT * FROM foo WHERE i = 4;
 EXPLAIN SELECT sum(i) FROM foo WHERE i &lt; 10;
 
                              QUERY PLAN
----------------------------------------------------------------------
+-------------------------------------------------------------------​--
  Aggregate  (cost=23.93..23.93 rows=1 width=4)
    -&gt;  Index Scan using fi on foo  (cost=0.00..23.92 rows=6 width=4)
          Index Cond: (i &lt; 10)
@@ -266,7 +279,7 @@ PREPARE query(int, int) AS SELECT sum(bar) FROM test
 EXPLAIN ANALYZE EXECUTE query(100, 200);
 
                                                        QUERY PLAN                                                       
-------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------​-----------------------------------------------------
  HashAggregate  (cost=9.54..9.54 rows=1 width=8) (actual time=0.156..0.161 rows=11 loops=1)
    Group Key: foo
    -&gt;  Index Scan using test_pkey on test  (cost=0.29..9.29 rows=50 width=8) (actual time=0.039..0.091 rows=99 loops=1)
@@ -287,4 +300,4 @@ EXPLAIN ANALYZE EXECUTE query(100, 200);
    in the table has not changed.
   </p></div><div class="refsect1" id="id-1.9.3.148.12"><h2>Compatibility</h2><p>
    There is no <code class="command">EXPLAIN</code> statement defined in the SQL standard.
-  </p></div><div class="refsect1" id="id-1.9.3.148.13"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-analyze.html" title="ANALYZE"><span class="refentrytitle">ANALYZE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-execute.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-fetch.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">EXECUTE </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> FETCH</td></tr></table></div></body></html>
+  </p></div><div class="refsect1" id="id-1.9.3.148.13"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-analyze.html" title="ANALYZE"><span class="refentrytitle">ANALYZE</span></a></span></div></div><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navfooter"><hr></hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-execute.html" title="EXECUTE">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-fetch.html" title="FETCH">Next</a></td></tr><tr><td width="40%" align="left" valign="top">EXECUTE </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="40%" align="right" valign="top"> FETCH</td></tr></table></div></body></html>

@@ -3,7 +3,7 @@
  * test_predtest.c
  *		Test correctness of optimizer's predicate proof logic.
  *
- * Copyright (c) 2018, PostgreSQL Global Development Group
+ * Copyright (c) 2018-2021, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *		src/test/modules/test_predtest/test_predtest.c
@@ -17,8 +17,8 @@
 #include "catalog/pg_type.h"
 #include "executor/spi.h"
 #include "funcapi.h"
-#include "optimizer/clauses.h"
-#include "optimizer/predtest.h"
+#include "nodes/makefuncs.h"
+#include "optimizer/optimizer.h"
 #include "utils/builtins.h"
 
 PG_MODULE_MAGIC;
@@ -74,7 +74,7 @@ test_predtest(PG_FUNCTION_ARGS)
 	if (tupdesc->natts != 2 ||
 		TupleDescAttr(tupdesc, 0)->atttypid != BOOLOID ||
 		TupleDescAttr(tupdesc, 1)->atttypid != BOOLOID)
-		elog(ERROR, "query must yield two boolean columns");
+		elog(ERROR, "test_predtest query must yield two boolean columns");
 
 	s_i_holds = w_i_holds = s_r_holds = w_r_holds = true;
 	for (i = 0; i < SPI_processed; i++)
@@ -124,11 +124,11 @@ test_predtest(PG_FUNCTION_ARGS)
 	 */
 	cplan = SPI_plan_get_cached_plan(spiplan);
 
-	if (list_length(cplan->stmt_list) != 1)
-		elog(ERROR, "failed to decipher query plan");
+	if (cplan == NULL || list_length(cplan->stmt_list) != 1)
+		elog(ERROR, "test_predtest query string must contain exactly one query");
 	stmt = linitial_node(PlannedStmt, cplan->stmt_list);
 	if (stmt->commandType != CMD_SELECT)
-		elog(ERROR, "failed to decipher query plan");
+		elog(ERROR, "test_predtest query must be a SELECT");
 	plan = stmt->planTree;
 	Assert(list_length(plan->targetlist) >= 2);
 	clause1 = castNode(TargetEntry, linitial(plan->targetlist))->expr;
@@ -185,7 +185,7 @@ test_predtest(PG_FUNCTION_ARGS)
 	if (SPI_finish() != SPI_OK_FINISH)
 		elog(ERROR, "SPI_finish failed");
 
-	tupdesc = CreateTemplateTupleDesc(8, false);
+	tupdesc = CreateTemplateTupleDesc(8);
 	TupleDescInitEntry(tupdesc, (AttrNumber) 1,
 					   "strong_implied_by", BOOLOID, -1, 0);
 	TupleDescInitEntry(tupdesc, (AttrNumber) 2,

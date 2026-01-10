@@ -27,13 +27,14 @@ SUBDIRS = \
 		lo		\
 		ltree		\
 		oid2name	\
+		old_snapshot	\
 		pageinspect	\
 		passwordcheck	\
 		pg_buffercache	\
 		pg_freespacemap \
 		pg_prewarm	\
-		pg_standby	\
 		pg_stat_statements \
+		pg_surgery	\
 		pg_trgm		\
 		pgcrypto	\
 		pgrowlocks	\
@@ -50,7 +51,7 @@ SUBDIRS = \
 		unaccent	\
 		vacuumlo
 
-ifeq ($(with_openssl),yes)
+ifeq ($(with_ssl),openssl)
 SUBDIRS += sslinfo
 else
 ALWAYS_SUBDIRS += sslinfo
@@ -75,9 +76,9 @@ ALWAYS_SUBDIRS += sepgsql
 endif
 
 ifeq ($(with_perl),yes)
-SUBDIRS += hstore_plperl jsonb_plperl
+SUBDIRS += bool_plperl hstore_plperl jsonb_plperl
 else
-ALWAYS_SUBDIRS += hstore_plperl jsonb_plperl
+ALWAYS_SUBDIRS += bool_plperl hstore_plperl jsonb_plperl
 endif
 
 ifeq ($(with_python),yes)

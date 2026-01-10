@@ -1,6 +1,8 @@
 --
 -- MONEY
 --
+-- Note that we assume lc_monetary has been set to C.
+--
 
 CREATE TABLE money_data (m money);
 
@@ -122,6 +124,19 @@ SELECT (-1234567890)::int4::money;
 SELECT (-12345678901234567)::int8::money;
 SELECT (-12345678901234567)::numeric::money;
 
--- Cast from money
+-- Cast from money to numeric
 SELECT '12345678901234567'::money::numeric;
 SELECT '-12345678901234567'::money::numeric;
+SELECT '92233720368547758.07'::money::numeric;
+SELECT '-92233720368547758.08'::money::numeric;
+
+-- overflow checks
+SELECT '92233720368547758.07'::money + '0.01'::money;
+SELECT '-92233720368547758.08'::money - '0.01'::money;
+SELECT '92233720368547758.07'::money * 2::float8;
+SELECT '-1'::money / 1.175494e-38::float4;
+SELECT '92233720368547758.07'::money * 2::int4;
+SELECT '1'::money / 0::int2;
+SELECT '42'::money * 'inf'::float8;
+SELECT '42'::money * '-inf'::float8;
+SELECT '42'::money * 'nan'::float4;

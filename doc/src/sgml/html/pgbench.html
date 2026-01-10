@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>pgbench</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="app-pgbasebackup.html" title="pg_basebackup" /><link rel="next" href="app-pgconfig.html" title="pg_config" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center"><span xmlns="http://www.w3.org/1999/xhtml" class="application">pgbench</span></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="app-pgbasebackup.html" title="pg_basebackup">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="reference-client.html" title="PostgreSQL Client Applications">Up</a></td><th width="60%" align="center">PostgreSQL Client Applications</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="app-pgconfig.html" title="pg_config">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="PGBENCH"><div class="titlepage"></div><a id="id-1.9.4.10.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle"><span class="application">pgbench</span></span></h2><p>pgbench — run a benchmark test on <span class="productname">PostgreSQL</span></p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p id="id-1.9.4.10.4.1"><code class="command">pgbench</code>  <code class="option">-i</code>  [<em class="replaceable"><code>option</code></em>...] [<em class="replaceable"><code>dbname</code></em>]</p></div><div class="cmdsynopsis"><p id="id-1.9.4.10.4.2"><code class="command">pgbench</code> [<em class="replaceable"><code>option</code></em>...] [<em class="replaceable"><code>dbname</code></em>]</p></div></div><div class="refsect1" id="id-1.9.4.10.5"><h2>Description</h2><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>pgbench</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="app-pgbasebackup.html" title="pg_basebackup" /><link rel="next" href="app-pgconfig.html" title="pg_config" /></head><body id="docContent" class="container-fluid col-10"><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center"><span xmlns="http://www.w3.org/1999/xhtml" class="application">pgbench</span></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="app-pgbasebackup.html" title="pg_basebackup">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="reference-client.html" title="PostgreSQL Client Applications">Up</a></td><th width="60%" align="center">PostgreSQL Client Applications</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="app-pgconfig.html" title="pg_config">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="PGBENCH"><div class="titlepage"></div><a id="id-1.9.4.11.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle"><span class="application">pgbench</span></span></h2><p>pgbench — run a benchmark test on <span class="productname">PostgreSQL</span></p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p id="id-1.9.4.11.4.1"><code class="command">pgbench</code>  <code class="option">-i</code>  [<em class="replaceable"><code>option</code></em>...] [<em class="replaceable"><code>dbname</code></em>]</p></div><div class="cmdsynopsis"><p id="id-1.9.4.11.4.2"><code class="command">pgbench</code> [<em class="replaceable"><code>option</code></em>...] [<em class="replaceable"><code>dbname</code></em>]</p></div></div><div class="refsect1" id="id-1.9.4.11.5"><h2>Description</h2><p>
   <span class="application">pgbench</span> is a simple program for running benchmark
   tests on <span class="productname">PostgreSQL</span>.  It runs the same sequence of SQL
   commands over and over, possibly in multiple concurrent database sessions,
@@ -20,8 +20,10 @@ number of clients: 10
 number of threads: 1
 number of transactions per client: 1000
 number of transactions actually processed: 10000/10000
-tps = 85.184871 (including connections establishing)
-tps = 85.296346 (excluding connections establishing)
+latency average = 11.013 ms
+latency stddev = 7.351 ms
+initial connection time = 45.758 ms
+tps = 896.967014 (without initial connection time)
 </pre><p>
 
   The first six lines report some of the most important parameter
@@ -30,8 +32,7 @@ tps = 85.296346 (excluding connections establishing)
   and number of transactions per client); these will be equal unless the run
   failed before completion.  (In <code class="option">-T</code> mode, only the actual
   number of transactions is printed.)
-  The last two lines report the number of transactions per second,
-  figured with and without counting the time to start database sessions.
+  The last line reports the number of transactions per second.
  </p><p>
    The default TPC-B-like transaction test requires specific tables to be
    set up beforehand.  <span class="application">pgbench</span> should be invoked with
@@ -82,7 +83,7 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
    <code class="option">-t</code> (number of transactions), <code class="option">-T</code> (time limit),
    and <code class="option">-f</code> (specify a custom script file).
    See below for a full list.
-  </p></div><div class="refsect1" id="id-1.9.4.10.6"><h2>Options</h2><p>
+  </p></div><div class="refsect1" id="id-1.9.4.11.6"><h2>Options</h2><p>
    The following is divided into three subsections.  Different options are
    used during database initialization and while running benchmarks, but some
    options are useful in both cases.
@@ -90,7 +91,12 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
     <span class="application">pgbench</span> accepts the following command-line
     initialization arguments:
 
-    </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="option">-i</code><br /></span><span class="term"><code class="option">--initialize</code></span></dt><dd><p>
+    </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>dbname</code></em></span></dt><dd><p>
+        Specifies the name of the database to test in. If this is
+        not specified, the environment variable
+        <code class="envar">PGDATABASE</code> is used. If that is not set, the
+        user name specified for the connection is used.
+       </p></dd><dt><span class="term"><code class="option">-i</code><br /></span><span class="term"><code class="option">--initialize</code></span></dt><dd><p>
         Required to invoke initialization mode.
        </p></dd><dt><span class="term"><code class="option">-I <em class="replaceable"><code>init_steps</code></em></code><br /></span><span class="term"><code class="option">--init-steps=<em class="replaceable"><code>init_steps</code></em></code></span></dt><dd><p>
         Perform just a selected set of the normal initialization steps.
@@ -109,9 +115,28 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
             <code class="structname">pgbench_branches</code>,
             <code class="structname">pgbench_history</code>, and
             <code class="structname">pgbench_tellers</code>.
-           </p></dd><dt><span class="term"><code class="literal">g</code> (Generate data)</span></dt><dd><p>
+           </p></dd><dt><span class="term"><code class="literal">g</code> or <code class="literal">G</code> (Generate data, client-side or server-side)</span></dt><dd><p>
             Generate data and load it into the standard tables,
             replacing any data already present.
+           </p><p>
+            With <code class="literal">g</code> (client-side data generation),
+            data is generated in <code class="command">pgbench</code> client and then
+            sent to the server. This uses the client/server bandwidth
+            extensively through a <code class="command">COPY</code>.
+            Using <code class="literal">g</code> causes logging to print one message
+            every 100,000 rows while generating data for the
+            <code class="structname">pgbench_accounts</code> table.
+           </p><p>
+            With <code class="literal">G</code> (server-side data generation),
+            only small queries are sent from the <code class="command">pgbench</code>
+            client and then data is actually generated in the server.
+            No significant bandwidth is required for this variant, but
+            the server will do more work.
+            Using <code class="literal">G</code> causes logging not to print any progress
+            message while generating data.
+           </p><p>
+            The default initialization behavior uses client-side data
+            generation (equivalent to <code class="literal">g</code>).
            </p></dd><dt><span class="term"><code class="literal">v</code> (Vacuum)</span></dt><dd><p>
             Invoke <code class="command">VACUUM</code> on the standard tables.
            </p></dd><dt><span class="term"><code class="literal">p</code> (create Primary keys)</span></dt><dd><p>
@@ -119,8 +144,7 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
            </p></dd><dt><span class="term"><code class="literal">f</code> (create Foreign keys)</span></dt><dd><p>
             Create foreign key constraints between the standard tables.
             (Note that this step is not performed by default.)
-           </p></dd></dl></div><p>
-       </p></dd><dt><span class="term"><code class="option">-F</code> <em class="replaceable"><code>fillfactor</code></em><br /></span><span class="term"><code class="option">--fillfactor=</code><em class="replaceable"><code>fillfactor</code></em></span></dt><dd><p>
+           </p></dd></dl></div></dd><dt><span class="term"><code class="option">-F</code> <em class="replaceable"><code>fillfactor</code></em><br /></span><span class="term"><code class="option">--fillfactor=</code><em class="replaceable"><code>fillfactor</code></em></span></dt><dd><p>
         Create the <code class="structname">pgbench_accounts</code>,
         <code class="structname">pgbench_tellers</code> and
         <code class="structname">pgbench_branches</code> tables with the given fillfactor.
@@ -131,8 +155,11 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
         even if it was specified in <code class="option">-I</code>.)
        </p></dd><dt><span class="term"><code class="option">-q</code><br /></span><span class="term"><code class="option">--quiet</code></span></dt><dd><p>
         Switch logging to quiet mode, producing only one progress message per 5
-        seconds. The default logging prints one message each 100000 rows, which
+        seconds. The default logging prints one message each 100,000 rows, which
         often outputs many lines per second (especially on good hardware).
+       </p><p>
+        This setting has no effect if <code class="literal">G</code> is specified
+        in <code class="option">-I</code>.
        </p></dd><dt><span class="term"><code class="option">-s</code> <em class="replaceable"><code>scale_factor</code></em><br /></span><span class="term"><code class="option">--scale=</code><em class="replaceable"><code>scale_factor</code></em></span></dt><dd><p>
         Multiply the number of rows generated by the scale factor.
         For example, <code class="literal">-s 100</code> will create 10,000,000 rows
@@ -149,6 +176,17 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
        </p></dd><dt><span class="term"><code class="option">--index-tablespace=<em class="replaceable"><code>index_tablespace</code></em></code></span></dt><dd><p>
         Create indexes in the specified tablespace, rather than the default
         tablespace.
+       </p></dd><dt><span class="term"><code class="option">--partition-method=<em class="replaceable"><code>NAME</code></em></code></span></dt><dd><p>
+        Create a partitioned <code class="literal">pgbench_accounts</code> table with
+        <em class="replaceable"><code>NAME</code></em> method.
+        Expected values are <code class="literal">range</code> or <code class="literal">hash</code>.
+        This option requires that <code class="option">--partitions</code> is set to non-zero.
+        If unspecified, default is <code class="literal">range</code>.
+       </p></dd><dt><span class="term"><code class="option">--partitions=<em class="replaceable"><code>NUM</code></em></code></span></dt><dd><p>
+        Create a partitioned <code class="literal">pgbench_accounts</code> table with
+        <em class="replaceable"><code>NUM</code></em> partitions of nearly equal size for
+        the scaled number of accounts.
+        Default is <code class="literal">0</code>, meaning no partitioning.
        </p></dd><dt><span class="term"><code class="option">--tablespace=<em class="replaceable"><code>tablespace</code></em></code></span></dt><dd><p>
         Create tables in the specified tablespace, rather than the default
         tablespace.
@@ -160,14 +198,17 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
     benchmarking arguments:
 
     </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="option">-b</code> <em class="replaceable"><code>scriptname[@weight]</code></em><br /></span><span class="term"><code class="option">--builtin</code>=<em class="replaceable"><code>scriptname[@weight]</code></em></span></dt><dd><p>
-        Add the specified built-in script to the list of executed scripts.
-        An optional integer weight after <code class="literal">@</code> allows to adjust the
-        probability of drawing the script.  If not specified, it is set to 1.
+        Add the specified built-in script to the list of scripts to be executed.
         Available built-in scripts are: <code class="literal">tpcb-like</code>,
         <code class="literal">simple-update</code> and <code class="literal">select-only</code>.
         Unambiguous prefixes of built-in names are accepted.
-        With special name <code class="literal">list</code>, show the list of built-in scripts
+        With the special name <code class="literal">list</code>, show the list of built-in scripts
         and exit immediately.
+       </p><p>
+        Optionally, write an integer weight after <code class="literal">@</code> to
+        adjust the probability of selecting this script versus other ones.
+        The default weight is 1.
+        See below for details.
        </p></dd><dt><span class="term"><code class="option">-c</code> <em class="replaceable"><code>clients</code></em><br /></span><span class="term"><code class="option">--client=</code><em class="replaceable"><code>clients</code></em></span></dt><dd><p>
         Number of clients simulated, that is, number of concurrent database
         sessions.  Default is 1.
@@ -181,10 +222,15 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
         Define a variable for use by a custom script (see below).
         Multiple <code class="option">-D</code> options are allowed.
        </p></dd><dt><span class="term"><code class="option">-f</code> <em class="replaceable"><code>filename[@weight]</code></em><br /></span><span class="term"><code class="option">--file=</code><em class="replaceable"><code>filename[@weight]</code></em></span></dt><dd><p>
-        Add a transaction script read from <em class="replaceable"><code>filename</code></em> to
-        the list of executed scripts.
-        An optional integer weight after <code class="literal">@</code> allows to adjust the
-        probability of drawing the test.
+        Add a transaction script read from <em class="replaceable"><code>filename</code></em>
+        to the list of scripts to be executed.
+       </p><p>
+        Optionally, write an integer weight after <code class="literal">@</code> to
+        adjust the probability of selecting this script versus other ones.
+        The default weight is 1.
+        (To use a script file name that includes an <code class="literal">@</code>
+        character, append a weight so that there is no ambiguity, for
+        example <code class="literal">filen@me@1</code>.)
         See below for details.
        </p></dd><dt><span class="term"><code class="option">-j</code> <em class="replaceable"><code>threads</code></em><br /></span><span class="term"><code class="option">--jobs=</code><em class="replaceable"><code>threads</code></em></span></dt><dd><p>
         Number of worker threads within <span class="application">pgbench</span>.
@@ -206,6 +252,12 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
        </p></dd><dt><span class="term"><code class="option">-M</code> <em class="replaceable"><code>querymode</code></em><br /></span><span class="term"><code class="option">--protocol=</code><em class="replaceable"><code>querymode</code></em></span></dt><dd><p>
         Protocol to use for submitting queries to the server:
           </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="literal">simple</code>: use simple query protocol.</p></li><li class="listitem"><p><code class="literal">extended</code>: use extended query protocol.</p></li><li class="listitem"><p><code class="literal">prepared</code>: use extended query protocol with prepared statements.</p></li></ul></div><p>
+
+        In the <code class="literal">prepared</code> mode, <span class="application">pgbench</span>
+        reuses the parse analysis result starting from the second query
+        iteration, so <span class="application">pgbench</span> runs faster
+        than in other modes.
+       </p><p>
         The default is simple query protocol.  (See <a class="xref" href="protocol.html" title="Chapter 53. Frontend/Backend Protocol">Chapter 53</a>
         for more information.)
        </p></dd><dt><span class="term"><code class="option">-n</code><br /></span><span class="term"><code class="option">--no-vacuum</code></span></dt><dd><p>
@@ -249,7 +301,7 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
         transaction to finish. The wait time is called the schedule lag time,
         and its average and maximum are also reported separately. The
         transaction latency with respect to the actual transaction start time,
-        i.e. the time spent executing the transaction in the database, can be
+        i.e., the time spent executing the transaction in the database, can be
         computed by subtracting the schedule lag time from the reported
         latency.
        </p><p>
@@ -301,11 +353,11 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
         beginning of the run.  The unit is in seconds, with millisecond
         precision after the dot.
         This helps compare logs generated by various tools.
-       </p></dd><dt><span class="term"><code class="option">--random-seed=</code><em class="replaceable"><code>SEED</code></em></span></dt><dd><p>
+       </p></dd><dt><span class="term"><code class="option">--random-seed=</code><em class="replaceable"><code>seed</code></em></span></dt><dd><p>
         Set random generator seed.  Seeds the system random number generator,
         which then produces a sequence of initial generator states, one for
         each thread.
-        Values for <em class="replaceable"><code>SEED</code></em> may be:
+        Values for <em class="replaceable"><code>seed</code></em> may be:
         <code class="literal">time</code> (the default, the seed is based on the current time),
         <code class="literal">rand</code> (use a strong random source, failing if none
         is available), or an unsigned decimal integer value.
@@ -313,7 +365,7 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
         (<code class="literal">random...</code> functions) or implicitly (for instance option
         <code class="option">--rate</code> uses it to schedule transactions).
         When explicitly set, the value used for seeding is shown on the terminal.
-        Any value allowed for <em class="replaceable"><code>SEED</code></em> may also be
+        Any value allowed for <em class="replaceable"><code>seed</code></em> may also be
         provided through the environment variable
         <code class="literal">PGBENCH_RANDOM_SEED</code>.
         To ensure that the provided seed impacts all possible uses, put this option
@@ -326,7 +378,7 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
         client per thread and there are no external or data dependencies.
         From a statistical viewpoint reproducing runs exactly is a bad idea because
         it can hide the performance variability or improve performance unduly,
-        e.g. by hitting the same pages as a previous run.
+        e.g., by hitting the same pages as a previous run.
         However, it may also be of great help for debugging, for instance
         re-running a tricky case which leads to an error.
         Use wisely.
@@ -338,12 +390,15 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
        </p><p>
         Remember to take the sampling rate into account when processing the
         log file. For example, when computing TPS values, you need to multiply
-        the numbers accordingly (e.g. with 0.01 sample rate, you'll only get
+        the numbers accordingly (e.g., with 0.01 sample rate, you'll only get
         1/100 of the actual TPS).
+       </p></dd><dt><span class="term"><code class="option">--show-script=</code><em class="replaceable"><code>scriptname</code></em></span></dt><dd><p>
+        Show the actual code of builtin script <em class="replaceable"><code>scriptname</code></em>
+        on stderr, and exit immediately.
        </p></dd></dl></div><p>
    </p></div><div class="refsect2" id="PGBENCH-COMMON-OPTIONS"><h3>Common Options</h3><p>
-    <span class="application">pgbench</span> accepts the following command-line
-    common arguments:
+    <span class="application">pgbench</span> also accepts the following common command-line
+    arguments for connection parameters:
 
     </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="option">-h</code> <em class="replaceable"><code>hostname</code></em><br /></span><span class="term"><code class="option">--host=</code><em class="replaceable"><code>hostname</code></em></span></dt><dd><p>
         The database server's host name
@@ -357,19 +412,36 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
         Show help about <span class="application">pgbench</span> command line
         arguments, and exit.
        </p></dd></dl></div><p>
-   </p></div></div><div class="refsect1" id="id-1.9.4.10.7"><h2>Notes</h2><div class="refsect2" id="id-1.9.4.10.7.2"><h3>What is the <span class="quote">“<span class="quote">Transaction</span>”</span> Actually Performed in <span class="application">pgbench</span>?</h3><p>
+   </p></div></div><div class="refsect1" id="id-1.9.4.11.7"><h2>Exit Status</h2><p>
+   A successful run will exit with status 0.  Exit status 1 indicates static
+   problems such as invalid command-line options.  Errors during the run such
+   as database errors or problems in the script will result in exit status 2.
+   In the latter case, <span class="application">pgbench</span> will print partial
+   results.
+  </p></div><div class="refsect1" id="id-1.9.4.11.8"><h2>Environment</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="envar">PGDATABASE</code><br /></span><span class="term"><code class="envar">PGHOST</code><br /></span><span class="term"><code class="envar">PGPORT</code><br /></span><span class="term"><code class="envar">PGUSER</code></span></dt><dd><p>
+      Default connection parameters.
+     </p></dd></dl></div><p>
+   This utility, like most other <span class="productname">PostgreSQL</span> utilities,
+   uses the environment variables supported by <span class="application">libpq</span>
+   (see <a class="xref" href="libpq-envars.html" title="34.15. Environment Variables">Section 34.15</a>).
+  </p><p>
+   The environment variable <code class="envar">PG_COLOR</code> specifies whether to use
+   color in diagnostic messages. Possible values are
+   <code class="literal">always</code>, <code class="literal">auto</code> and
+   <code class="literal">never</code>.
+  </p></div><div class="refsect1" id="id-1.9.4.11.9"><h2>Notes</h2><div class="refsect2" id="id-1.9.4.11.9.2"><h3>What Is the <span class="quote">“<span class="quote">Transaction</span>”</span> Actually Performed in <span class="application">pgbench</span>?</h3><p>
    <span class="application">pgbench</span> executes test scripts chosen randomly
    from a specified list.
-   They include built-in scripts with <code class="option">-b</code> and
-   user-provided custom scripts with <code class="option">-f</code>.
-   Each script may be given a relative weight specified after a
-   <code class="literal">@</code> so as to change its drawing probability.
+   The scripts may include built-in scripts specified with <code class="option">-b</code>
+   and user-provided scripts specified with <code class="option">-f</code>.
+   Each script may be given a relative weight specified after an
+   <code class="literal">@</code> so as to change its selection probability.
    The default weight is <code class="literal">1</code>.
    Scripts with a weight of <code class="literal">0</code> are ignored.
  </p><p>
    The default built-in transaction script (also invoked with <code class="option">-b tpcb-like</code>)
    issues seven commands per transaction over randomly chosen <code class="literal">aid</code>,
-   <code class="literal">tid</code>, <code class="literal">bid</code> and <code class="literal">balance</code>.
+   <code class="literal">tid</code>, <code class="literal">bid</code> and <code class="literal">delta</code>.
    The scenario is inspired by the TPC-B benchmark, but is not actually TPC-B,
    hence the name.
   </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p><code class="literal">BEGIN;</code></p></li><li class="listitem"><p><code class="literal">UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;</code></p></li><li class="listitem"><p><code class="literal">SELECT abalance FROM pgbench_accounts WHERE aid = :aid;</code></p></li><li class="listitem"><p><code class="literal">UPDATE pgbench_tellers SET tbalance = tbalance + :delta WHERE tid = :tid;</code></p></li><li class="listitem"><p><code class="literal">UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;</code></p></li><li class="listitem"><p><code class="literal">INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);</code></p></li><li class="listitem"><p><code class="literal">END;</code></p></li></ol></div><p>
@@ -380,7 +452,7 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
   </p><p>
    If you select the <code class="literal">select-only</code> built-in (also <code class="option">-S</code>),
    only the <code class="command">SELECT</code> is issued.
-  </p></div><div class="refsect2" id="id-1.9.4.10.7.3"><h3>Custom Scripts</h3><p>
+  </p></div><div class="refsect2" id="id-1.9.4.11.9.3"><h3>Custom Scripts</h3><p>
    <span class="application">pgbench</span> has support for running custom
    benchmark scenarios by replacing the default transaction script
    (described above) with a transaction script read from a file
@@ -396,31 +468,72 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
     Before <span class="productname">PostgreSQL</span> 9.6, SQL commands in script files
     were terminated by newlines, and so they could not be continued across
     lines.  Now a semicolon is <span class="emphasis"><em>required</em></span> to separate consecutive
-    SQL commands (though a SQL command does not need one if it is followed
+    SQL commands (though an SQL command does not need one if it is followed
     by a meta command).  If you need to create a script file that works with
     both old and new versions of <span class="application">pgbench</span>, be sure to write
     each SQL command on a single line ending with a semicolon.
    </p></div><p>
    There is a simple variable-substitution facility for script files.
    Variable names must consist of letters (including non-Latin letters),
-   digits, and underscores.
+   digits, and underscores, with the first character not being a digit.
    Variables can be set by the command-line <code class="option">-D</code> option,
    explained above, or by the meta commands explained below.
    In addition to any variables preset by <code class="option">-D</code> command-line options,
    there are a few variables that are preset automatically, listed in
-   <a class="xref" href="pgbench.html#PGBENCH-AUTOMATIC-VARIABLES" title="Table 241. Automatic Variables">Table 241</a>. A value specified for these
+   <a class="xref" href="pgbench.html#PGBENCH-AUTOMATIC-VARIABLES" title="Table 282. pgbench Automatic Variables">Table 282</a>. A value specified for these
    variables using <code class="option">-D</code> takes precedence over the automatic presets.
    Once set, a variable's
-   value can be inserted into a SQL command by writing
+   value can be inserted into an SQL command by writing
    <code class="literal">:</code><em class="replaceable"><code>variablename</code></em>.  When running more than
    one client session, each session has its own set of variables.
-  </p><div class="table" id="PGBENCH-AUTOMATIC-VARIABLES"><p class="title"><strong>Table 241. Automatic Variables</strong></p><div class="table-contents"><table class="table" summary="Automatic Variables" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Variable</th><th>Description</th></tr></thead><tbody><tr><td> <code class="literal">client_id</code> </td><td>unique number identifying the client session (starts from zero)</td></tr><tr><td> <code class="literal">default_seed</code> </td><td>seed used in hash functions by default</td></tr><tr><td> <code class="literal">random_seed</code> </td><td>random generator seed (unless overwritten with <code class="option">-D</code>)</td></tr><tr><td> <code class="literal">scale</code> </td><td>current scale factor</td></tr></tbody></table></div></div><br class="table-break" /><p>
+   <span class="application">pgbench</span> supports up to 255 variable uses in one
+   statement.
+  </p><div class="table" id="PGBENCH-AUTOMATIC-VARIABLES"><p class="title"><strong>Table 282. pgbench Automatic Variables</strong></p><div class="table-contents"><table class="table" summary="pgbench Automatic Variables" border="1"><colgroup><col class="col1" /><col class="col2" /></colgroup><thead><tr><th>Variable</th><th>Description</th></tr></thead><tbody><tr><td> <code class="literal">client_id</code> </td><td>unique number identifying the client session (starts from zero)</td></tr><tr><td> <code class="literal">default_seed</code> </td><td>seed used in hash and pseudorandom permutation functions by default</td></tr><tr><td> <code class="literal">random_seed</code> </td><td>random generator seed (unless overwritten with <code class="option">-D</code>)</td></tr><tr><td> <code class="literal">scale</code> </td><td>current scale factor</td></tr></tbody></table></div></div><br class="table-break" /><p>
    Script file meta commands begin with a backslash (<code class="literal">\</code>) and
    normally extend to the end of the line, although they can be continued
    to additional lines by writing backslash-return.
    Arguments to a meta command are separated by white space.
    These meta commands are supported:
-  </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">\if</code> <em class="replaceable"><code>expression</code></em><br /></span><span class="term"><code class="literal">\elif</code> <em class="replaceable"><code>expression</code></em><br /></span><span class="term"><code class="literal">\else</code><br /></span><span class="term"><code class="literal">\endif</code></span></dt><dd><p>
+  </p><div class="variablelist"><dl class="variablelist"><dt id="PGBENCH-METACOMMAND-GSET"><span class="term">
+     <code class="literal">\gset [<em class="replaceable"><code>prefix</code></em>]</code>
+     <code class="literal">\aset [<em class="replaceable"><code>prefix</code></em>]</code>
+    </span></dt><dd><p>
+      These commands may be used to end SQL queries, taking the place of the
+      terminating semicolon (<code class="literal">;</code>).
+     </p><p>
+      When the <code class="literal">\gset</code> command is used, the preceding SQL query is
+      expected to return one row, the columns of which are stored into variables
+      named after column names, and prefixed with <em class="replaceable"><code>prefix</code></em>
+      if provided.
+     </p><p>
+      When the <code class="literal">\aset</code> command is used, all combined SQL queries
+      (separated by <code class="literal">\;</code>) have their columns stored into variables
+      named after column names, and prefixed with <em class="replaceable"><code>prefix</code></em>
+      if provided. If a query returns no row, no assignment is made and the variable
+      can be tested for existence to detect this. If a query returns more than one
+      row, the last value is kept.
+     </p><p>
+      <code class="literal">\gset</code> and <code class="literal">\aset</code> cannot be used in
+      pipeline mode, since the query results are not yet available by the time
+      the commands would need them.
+     </p><p>
+      The following example puts the final account balance from the first query
+      into variable <em class="replaceable"><code>abalance</code></em>, and fills variables
+      <em class="replaceable"><code>p_two</code></em> and <em class="replaceable"><code>p_three</code></em>
+      with integers from the third query.
+      The result of the second query is discarded.
+      The result of the two last combined queries are stored in variables
+      <em class="replaceable"><code>four</code></em> and <em class="replaceable"><code>five</code></em>.
+</p><pre class="programlisting">
+UPDATE pgbench_accounts
+  SET abalance = abalance + :delta
+  WHERE aid = :aid
+  RETURNING abalance \gset
+-- compound of two queries
+SELECT 1 \;
+SELECT 2 AS two, 3 AS three \gset p_
+SELECT 4 AS four \; SELECT 5 AS five \aset
+</pre></dd><dt><span class="term"><code class="literal">\if</code> <em class="replaceable"><code>expression</code></em><br /></span><span class="term"><code class="literal">\elif</code> <em class="replaceable"><code>expression</code></em><br /></span><span class="term"><code class="literal">\else</code><br /></span><span class="term"><code class="literal">\endif</code></span></dt><dd><p>
       This group of commands implements nestable conditional blocks,
       similarly to <code class="literal">psql</code>'s <a class="xref" href="app-psql.html#PSQL-METACOMMAND-IF"><code class="literal">\if</code> <em class="replaceable"><code>expression</code></em></a>.
       Conditional expressions are identical to those with <code class="literal">\set</code>,
@@ -435,10 +548,10 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
       integer constants such as <code class="literal">5432</code>,
       double constants such as <code class="literal">3.14159</code>,
       references to variables <code class="literal">:</code><em class="replaceable"><code>variablename</code></em>,
-      <a class="link" href="pgbench.html#PGBENCH-BUILTIN-OPERATORS" title="Built-In Operators">operators</a>
+      <a class="link" href="pgbench.html#PGBENCH-BUILTIN-OPERATORS" title="Built-in Operators">operators</a>
       with their usual SQL precedence and associativity,
       <a class="link" href="pgbench.html#PGBENCH-BUILTIN-FUNCTIONS" title="Built-In Functions">function calls</a>,
-      SQL <a class="link" href="functions-conditional.html#FUNCTIONS-CASE" title="9.17.1. CASE"><code class="token">CASE</code> generic conditional
+      SQL <a class="link" href="functions-conditional.html#FUNCTIONS-CASE" title="9.18.1. CASE"><code class="token">CASE</code> generic conditional
       expressions</a> and parentheses.
      </p><p>
       Functions and most operators return <code class="literal">NULL</code> on
@@ -447,6 +560,11 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
       For conditional purposes, non zero numerical values are
       <code class="literal">TRUE</code>, zero numerical values and <code class="literal">NULL</code>
       are <code class="literal">FALSE</code>.
+     </p><p>
+      Too large or small integer and double constants, as well as
+      integer arithmetic operators (<code class="literal">+</code>,
+      <code class="literal">-</code>, <code class="literal">*</code> and <code class="literal">/</code>)
+      raise errors on overflows.
      </p><p>
       When no final <code class="token">ELSE</code> clause is provided to a
       <code class="token">CASE</code>, the default value is <code class="literal">NULL</code>.
@@ -495,20 +613,495 @@ pgbench [<span class="optional"> <em class="replaceable"><code>options</code></e
       Example:
 </p><pre class="programlisting">
 \shell command literal_argument :variable ::literal_starting_with_colon
-</pre></dd></dl></div></div><div class="refsect2" id="PGBENCH-BUILTIN-OPERATORS"><h3>Built-In Operators</h3><p>
+</pre></dd><dt id="PGBENCH-METACOMMAND-PIPELINE"><span class="term"><code class="literal">\startpipeline</code><br /></span><span class="term"><code class="literal">\endpipeline</code></span></dt><dd><p>
+        These commands delimit the start and end of a pipeline of SQL
+        statements.  In pipeline mode, statements are sent to the server
+        without waiting for the results of previous statements.  See
+        <a class="xref" href="libpq-pipeline-mode.html" title="34.5. Pipeline Mode">Section 34.5</a> for more details.
+        Pipeline mode requires the use of extended query protocol.
+     </p></dd></dl></div></div><div class="refsect2" id="PGBENCH-BUILTIN-OPERATORS"><h3>Built-in Operators</h3><p>
    The arithmetic, bitwise, comparison and logical operators listed in
-   <a class="xref" href="pgbench.html#PGBENCH-OPERATORS" title="Table 242. pgbench Operators by increasing precedence">Table 242</a> are built into <span class="application">pgbench</span>
+   <a class="xref" href="pgbench.html#PGBENCH-OPERATORS" title="Table 283. pgbench Operators">Table 283</a> are built into <span class="application">pgbench</span>
    and may be used in expressions appearing in
    <a class="link" href="pgbench.html#PGBENCH-METACOMMAND-SET"><code class="literal">\set</code></a>.
-  </p><div class="table" id="PGBENCH-OPERATORS"><p class="title"><strong>Table 242. pgbench Operators by increasing precedence</strong></p><div class="table-contents"><table class="table" summary="pgbench Operators by increasing precedence" border="1"><colgroup><col /><col /><col /><col /></colgroup><thead><tr><th>Operator</th><th>Description</th><th>Example</th><th>Result</th></tr></thead><tbody><tr><td><code class="literal">OR</code></td><td>logical or</td><td><code class="literal">5 or 0</code></td><td><code class="literal">TRUE</code></td></tr><tr><td><code class="literal">AND</code></td><td>logical and</td><td><code class="literal">3 and 0</code></td><td><code class="literal">FALSE</code></td></tr><tr><td><code class="literal">NOT</code></td><td>logical not</td><td><code class="literal">not false</code></td><td><code class="literal">TRUE</code></td></tr><tr><td><code class="literal">IS [NOT] (NULL|TRUE|FALSE)</code></td><td>value tests</td><td><code class="literal">1 is null</code></td><td><code class="literal">FALSE</code></td></tr><tr><td><code class="literal">ISNULL|NOTNULL</code></td><td>null tests</td><td><code class="literal">1 notnull</code></td><td><code class="literal">TRUE</code></td></tr><tr><td><code class="literal">=</code></td><td>is equal</td><td><code class="literal">5 = 4</code></td><td><code class="literal">FALSE</code></td></tr><tr><td><code class="literal">&lt;&gt;</code></td><td>is not equal</td><td><code class="literal">5 &lt;&gt; 4</code></td><td><code class="literal">TRUE</code></td></tr><tr><td><code class="literal">!=</code></td><td>is not equal</td><td><code class="literal">5 != 5</code></td><td><code class="literal">FALSE</code></td></tr><tr><td><code class="literal">&lt;</code></td><td>lower than</td><td><code class="literal">5 &lt; 4</code></td><td><code class="literal">FALSE</code></td></tr><tr><td><code class="literal">&lt;=</code></td><td>lower or equal</td><td><code class="literal">5 &lt;= 4</code></td><td><code class="literal">FALSE</code></td></tr><tr><td><code class="literal">&gt;</code></td><td>greater than</td><td><code class="literal">5 &gt; 4</code></td><td><code class="literal">TRUE</code></td></tr><tr><td><code class="literal">&gt;=</code></td><td>greater or equal</td><td><code class="literal">5 &gt;= 4</code></td><td><code class="literal">TRUE</code></td></tr><tr><td><code class="literal">|</code></td><td>integer bitwise OR</td><td><code class="literal">1 | 2</code></td><td><code class="literal">3</code></td></tr><tr><td><code class="literal">#</code></td><td>integer bitwise XOR</td><td><code class="literal">1 # 3</code></td><td><code class="literal">2</code></td></tr><tr><td><code class="literal">&amp;</code></td><td>integer bitwise AND</td><td><code class="literal">1 &amp; 3</code></td><td><code class="literal">1</code></td></tr><tr><td><code class="literal">~</code></td><td>integer bitwise NOT</td><td><code class="literal">~ 1</code></td><td><code class="literal">-2</code></td></tr><tr><td><code class="literal">&lt;&lt;</code></td><td>integer bitwise shift left</td><td><code class="literal">1 &lt;&lt; 2</code></td><td><code class="literal">4</code></td></tr><tr><td><code class="literal">&gt;&gt;</code></td><td>integer bitwise shift right</td><td><code class="literal">8 &gt;&gt; 2</code></td><td><code class="literal">2</code></td></tr><tr><td><code class="literal">+</code></td><td>addition</td><td><code class="literal">5 + 4</code></td><td><code class="literal">9</code></td></tr><tr><td><code class="literal">-</code></td><td>subtraction</td><td><code class="literal">3 - 2.0</code></td><td><code class="literal">1.0</code></td></tr><tr><td><code class="literal">*</code></td><td>multiplication</td><td><code class="literal">5 * 4</code></td><td><code class="literal">20</code></td></tr><tr><td><code class="literal">/</code></td><td>division (integer truncates the results)</td><td><code class="literal">5 / 3</code></td><td><code class="literal">1</code></td></tr><tr><td><code class="literal">%</code></td><td>modulo</td><td><code class="literal">3 % 2</code></td><td><code class="literal">1</code></td></tr><tr><td><code class="literal">-</code></td><td>opposite</td><td><code class="literal">- 2.0</code></td><td><code class="literal">-2.0</code></td></tr></tbody></table></div></div><br class="table-break" /></div><div class="refsect2" id="PGBENCH-BUILTIN-FUNCTIONS"><h3>Built-In Functions</h3><p>
-   The functions listed in <a class="xref" href="pgbench.html#PGBENCH-FUNCTIONS" title="Table 243. pgbench Functions">Table 243</a> are built
+   The operators are listed in increasing precedence order.
+   Except as noted, operators taking two numeric inputs will produce
+   a double value if either input is double, otherwise they produce
+   an integer result.
+  </p><div class="table" id="PGBENCH-OPERATORS"><p class="title"><strong>Table 283. pgbench Operators</strong></p><div class="table-contents"><table class="table" summary="pgbench Operators" border="1"><colgroup><col /></colgroup><thead><tr><th class="func_table_entry"><p class="func_signature">
+        Operator
+       </p>
+       <p>
+        Description
+       </p>
+       <p>
+        Example(s)
+       </p></th></tr></thead><tbody><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>boolean</code></em> <code class="literal">OR</code> <em class="replaceable"><code>boolean</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>boolean</code></em></code>
+       </p>
+       <p>
+        Logical OR
+       </p>
+       <p>
+        <code class="literal">5 or 0</code>
+        → <code class="returnvalue">TRUE</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>boolean</code></em> <code class="literal">AND</code> <em class="replaceable"><code>boolean</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>boolean</code></em></code>
+       </p>
+       <p>
+        Logical AND
+       </p>
+       <p>
+        <code class="literal">3 and 0</code>
+        → <code class="returnvalue">FALSE</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="literal">NOT</code> <em class="replaceable"><code>boolean</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>boolean</code></em></code>
+       </p>
+       <p>
+        Logical NOT
+       </p>
+       <p>
+        <code class="literal">not false</code>
+        → <code class="returnvalue">TRUE</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>boolean</code></em> <code class="literal">IS [NOT] (NULL|TRUE|FALSE)</code>
+        → <code class="returnvalue"><em class="replaceable"><code>boolean</code></em></code>
+       </p>
+       <p>
+        Boolean value tests
+       </p>
+       <p>
+        <code class="literal">1 is null</code>
+        → <code class="returnvalue">FALSE</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>value</code></em> <code class="literal">ISNULL|NOTNULL</code>
+        → <code class="returnvalue"><em class="replaceable"><code>boolean</code></em></code>
+       </p>
+       <p>
+        Nullness tests
+       </p>
+       <p>
+        <code class="literal">1 notnull</code>
+        → <code class="returnvalue">TRUE</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>number</code></em> <code class="literal">=</code> <em class="replaceable"><code>number</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>boolean</code></em></code>
+       </p>
+       <p>
+        Equal
+       </p>
+       <p>
+        <code class="literal">5 = 4</code>
+        → <code class="returnvalue">FALSE</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>number</code></em> <code class="literal">&lt;&gt;</code> <em class="replaceable"><code>number</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>boolean</code></em></code>
+       </p>
+       <p>
+        Not equal
+       </p>
+       <p>
+        <code class="literal">5 &lt;&gt; 4</code>
+        → <code class="returnvalue">TRUE</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>number</code></em> <code class="literal">!=</code> <em class="replaceable"><code>number</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>boolean</code></em></code>
+       </p>
+       <p>
+        Not equal
+       </p>
+       <p>
+        <code class="literal">5 != 5</code>
+        → <code class="returnvalue">FALSE</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>number</code></em> <code class="literal">&lt;</code> <em class="replaceable"><code>number</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>boolean</code></em></code>
+       </p>
+       <p>
+        Less than
+       </p>
+       <p>
+        <code class="literal">5 &lt; 4</code>
+        → <code class="returnvalue">FALSE</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>number</code></em> <code class="literal">&lt;=</code> <em class="replaceable"><code>number</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>boolean</code></em></code>
+       </p>
+       <p>
+        Less than or equal to
+       </p>
+       <p>
+        <code class="literal">5 &lt;= 4</code>
+        → <code class="returnvalue">FALSE</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>number</code></em> <code class="literal">&gt;</code> <em class="replaceable"><code>number</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>boolean</code></em></code>
+       </p>
+       <p>
+        Greater than
+       </p>
+       <p>
+        <code class="literal">5 &gt; 4</code>
+        → <code class="returnvalue">TRUE</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>number</code></em> <code class="literal">&gt;=</code> <em class="replaceable"><code>number</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>boolean</code></em></code>
+       </p>
+       <p>
+        Greater than or equal to
+       </p>
+       <p>
+        <code class="literal">5 &gt;= 4</code>
+        → <code class="returnvalue">TRUE</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>integer</code></em> <code class="literal">|</code> <em class="replaceable"><code>integer</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>integer</code></em></code>
+       </p>
+       <p>
+        Bitwise OR
+       </p>
+       <p>
+        <code class="literal">1 | 2</code>
+        → <code class="returnvalue">3</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>integer</code></em> <code class="literal">#</code> <em class="replaceable"><code>integer</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>integer</code></em></code>
+       </p>
+       <p>
+        Bitwise XOR
+       </p>
+       <p>
+        <code class="literal">1 # 3</code>
+        → <code class="returnvalue">2</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>integer</code></em> <code class="literal">&amp;</code> <em class="replaceable"><code>integer</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>integer</code></em></code>
+       </p>
+       <p>
+        Bitwise AND
+       </p>
+       <p>
+        <code class="literal">1 &amp; 3</code>
+        → <code class="returnvalue">1</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="literal">~</code> <em class="replaceable"><code>integer</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>integer</code></em></code>
+       </p>
+       <p>
+        Bitwise NOT
+       </p>
+       <p>
+        <code class="literal">~ 1</code>
+        → <code class="returnvalue">-2</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>integer</code></em> <code class="literal">&lt;&lt;</code> <em class="replaceable"><code>integer</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>integer</code></em></code>
+       </p>
+       <p>
+        Bitwise shift left
+       </p>
+       <p>
+        <code class="literal">1 &lt;&lt; 2</code>
+        → <code class="returnvalue">4</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>integer</code></em> <code class="literal">&gt;&gt;</code> <em class="replaceable"><code>integer</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>integer</code></em></code>
+       </p>
+       <p>
+        Bitwise shift right
+       </p>
+       <p>
+        <code class="literal">8 &gt;&gt; 2</code>
+        → <code class="returnvalue">2</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>number</code></em> <code class="literal">+</code> <em class="replaceable"><code>number</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>number</code></em></code>
+       </p>
+       <p>
+        Addition
+       </p>
+       <p>
+        <code class="literal">5 + 4</code>
+        → <code class="returnvalue">9</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>number</code></em> <code class="literal">-</code> <em class="replaceable"><code>number</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>number</code></em></code>
+       </p>
+       <p>
+        Subtraction
+       </p>
+       <p>
+        <code class="literal">3 - 2.0</code>
+        → <code class="returnvalue">1.0</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>number</code></em> <code class="literal">*</code> <em class="replaceable"><code>number</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>number</code></em></code>
+       </p>
+       <p>
+        Multiplication
+       </p>
+       <p>
+        <code class="literal">5 * 4</code>
+        → <code class="returnvalue">20</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>number</code></em> <code class="literal">/</code> <em class="replaceable"><code>number</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>number</code></em></code>
+       </p>
+       <p>
+        Division (truncates the result towards zero if both inputs are integers)
+       </p>
+       <p>
+        <code class="literal">5 / 3</code>
+        → <code class="returnvalue">1</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <em class="replaceable"><code>integer</code></em> <code class="literal">%</code> <em class="replaceable"><code>integer</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>integer</code></em></code>
+       </p>
+       <p>
+        Modulo (remainder)
+       </p>
+       <p>
+        <code class="literal">3 % 2</code>
+        → <code class="returnvalue">1</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="literal">-</code> <em class="replaceable"><code>number</code></em>
+        → <code class="returnvalue"><em class="replaceable"><code>number</code></em></code>
+       </p>
+       <p>
+        Negation
+       </p>
+       <p>
+        <code class="literal">- 2.0</code>
+        → <code class="returnvalue">-2.0</code>
+       </p></td></tr></tbody></table></div></div><br class="table-break" /></div><div class="refsect2" id="PGBENCH-BUILTIN-FUNCTIONS"><h3>Built-In Functions</h3><p>
+   The functions listed in <a class="xref" href="pgbench.html#PGBENCH-FUNCTIONS" title="Table 284. pgbench Functions">Table 284</a> are built
    into <span class="application">pgbench</span> and may be used in expressions appearing in
    <a class="link" href="pgbench.html#PGBENCH-METACOMMAND-SET"><code class="literal">\set</code></a>.
-  </p><div class="table" id="PGBENCH-FUNCTIONS"><p class="title"><strong>Table 243. pgbench Functions</strong></p><div class="table-contents"><table class="table" summary="pgbench Functions" border="1"><colgroup><col /><col /><col /><col /><col /></colgroup><thead><tr><th>Function</th><th>Return Type</th><th>Description</th><th>Example</th><th>Result</th></tr></thead><tbody><tr><td><code class="literal"><code class="function">abs(<em class="replaceable"><code>a</code></em>)</code></code></td><td>same as <em class="replaceable"><code>a</code></em></td><td>absolute value</td><td><code class="literal">abs(-17)</code></td><td><code class="literal">17</code></td></tr><tr><td><code class="literal"><code class="function">debug(<em class="replaceable"><code>a</code></em>)</code></code></td><td>same as <em class="replaceable"><code>a</code></em> </td><td>print <em class="replaceable"><code>a</code></em> to <span class="systemitem">stderr</span>,
-        and return <em class="replaceable"><code>a</code></em></td><td><code class="literal">debug(5432.1)</code></td><td><code class="literal">5432.1</code></td></tr><tr><td><code class="literal"><code class="function">double(<em class="replaceable"><code>i</code></em>)</code></code></td><td>double</td><td>cast to double</td><td><code class="literal">double(5432)</code></td><td><code class="literal">5432.0</code></td></tr><tr><td><code class="literal"><code class="function">exp(<em class="replaceable"><code>x</code></em>)</code></code></td><td>double</td><td>exponential</td><td><code class="literal">exp(1.0)</code></td><td><code class="literal">2.718281828459045</code></td></tr><tr><td><code class="literal"><code class="function">greatest(<em class="replaceable"><code>a</code></em> [, <em class="replaceable"><code>...</code></em> ] )</code></code></td><td>double if any <em class="replaceable"><code>a</code></em> is double, else integer</td><td>largest value among arguments</td><td><code class="literal">greatest(5, 4, 3, 2)</code></td><td><code class="literal">5</code></td></tr><tr><td><code class="literal"><code class="function">hash(<em class="replaceable"><code>a</code></em> [, <em class="replaceable"><code>seed</code></em> ] )</code></code></td><td>integer</td><td>alias for <code class="literal">hash_murmur2()</code></td><td><code class="literal">hash(10, 5432)</code></td><td><code class="literal">-5817877081768721676</code></td></tr><tr><td><code class="literal"><code class="function">hash_fnv1a(<em class="replaceable"><code>a</code></em> [, <em class="replaceable"><code>seed</code></em> ] )</code></code></td><td>integer</td><td><a class="ulink" href="https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function" target="_top">FNV-1a hash</a></td><td><code class="literal">hash_fnv1a(10, 5432)</code></td><td><code class="literal">-7793829335365542153</code></td></tr><tr><td><code class="literal"><code class="function">hash_murmur2(<em class="replaceable"><code>a</code></em> [, <em class="replaceable"><code>seed</code></em> ] )</code></code></td><td>integer</td><td><a class="ulink" href="https://en.wikipedia.org/wiki/MurmurHash" target="_top">MurmurHash2 hash</a></td><td><code class="literal">hash_murmur2(10, 5432)</code></td><td><code class="literal">-5817877081768721676</code></td></tr><tr><td><code class="literal"><code class="function">int(<em class="replaceable"><code>x</code></em>)</code></code></td><td>integer</td><td>cast to int</td><td><code class="literal">int(5.4 + 3.8)</code></td><td><code class="literal">9</code></td></tr><tr><td><code class="literal"><code class="function">least(<em class="replaceable"><code>a</code></em> [, <em class="replaceable"><code>...</code></em> ] )</code></code></td><td>double if any <em class="replaceable"><code>a</code></em> is double, else integer</td><td>smallest value among arguments</td><td><code class="literal">least(5, 4, 3, 2.1)</code></td><td><code class="literal">2.1</code></td></tr><tr><td><code class="literal"><code class="function">ln(<em class="replaceable"><code>x</code></em>)</code></code></td><td>double</td><td>natural logarithm</td><td><code class="literal">ln(2.718281828459045)</code></td><td><code class="literal">1.0</code></td></tr><tr><td><code class="literal"><code class="function">mod(<em class="replaceable"><code>i</code></em>, <em class="replaceable"><code>j</code></em>)</code></code></td><td>integer</td><td>modulo</td><td><code class="literal">mod(54, 32)</code></td><td><code class="literal">22</code></td></tr><tr><td><code class="literal"><code class="function">pi()</code></code></td><td>double</td><td>value of the constant PI</td><td><code class="literal">pi()</code></td><td><code class="literal">3.14159265358979323846</code></td></tr><tr><td><code class="literal"><code class="function">pow(<em class="replaceable"><code>x</code></em>, <em class="replaceable"><code>y</code></em>)</code>, <code class="function">power(<em class="replaceable"><code>x</code></em>, <em class="replaceable"><code>y</code></em>)</code></code></td><td>double</td><td>exponentiation</td><td><code class="literal">pow(2.0, 10)</code>, <code class="literal">power(2.0, 10)</code></td><td><code class="literal">1024.0</code></td></tr><tr><td><code class="literal"><code class="function">random(<em class="replaceable"><code>lb</code></em>, <em class="replaceable"><code>ub</code></em>)</code></code></td><td>integer</td><td>uniformly-distributed random integer in <code class="literal">[lb, ub]</code></td><td><code class="literal">random(1, 10)</code></td><td>an integer between <code class="literal">1</code> and <code class="literal">10</code></td></tr><tr><td><code class="literal"><code class="function">random_exponential(<em class="replaceable"><code>lb</code></em>, <em class="replaceable"><code>ub</code></em>, <em class="replaceable"><code>parameter</code></em>)</code></code></td><td>integer</td><td>exponentially-distributed random integer in <code class="literal">[lb, ub]</code>,
-              see below</td><td><code class="literal">random_exponential(1, 10, 3.0)</code></td><td>an integer between <code class="literal">1</code> and <code class="literal">10</code></td></tr><tr><td><code class="literal"><code class="function">random_gaussian(<em class="replaceable"><code>lb</code></em>, <em class="replaceable"><code>ub</code></em>, <em class="replaceable"><code>parameter</code></em>)</code></code></td><td>integer</td><td>Gaussian-distributed random integer in <code class="literal">[lb, ub]</code>,
-              see below</td><td><code class="literal">random_gaussian(1, 10, 2.5)</code></td><td>an integer between <code class="literal">1</code> and <code class="literal">10</code></td></tr><tr><td><code class="literal"><code class="function">random_zipfian(<em class="replaceable"><code>lb</code></em>, <em class="replaceable"><code>ub</code></em>, <em class="replaceable"><code>parameter</code></em>)</code></code></td><td>integer</td><td>Zipfian-distributed random integer in <code class="literal">[lb, ub]</code>,
-              see below</td><td><code class="literal">random_zipfian(1, 10, 1.5)</code></td><td>an integer between <code class="literal">1</code> and <code class="literal">10</code></td></tr><tr><td><code class="literal"><code class="function">sqrt(<em class="replaceable"><code>x</code></em>)</code></code></td><td>double</td><td>square root</td><td><code class="literal">sqrt(2.0)</code></td><td><code class="literal">1.414213562</code></td></tr></tbody></table></div></div><br class="table-break" /><p>
+  </p><div class="table" id="PGBENCH-FUNCTIONS"><p class="title"><strong>Table 284. pgbench Functions</strong></p><div class="table-contents"><table class="table" summary="pgbench Functions" border="1"><colgroup><col /></colgroup><thead><tr><th class="func_table_entry"><p class="func_signature">
+        Function
+       </p>
+       <p>
+        Description
+       </p>
+       <p>
+        Example(s)
+       </p></th></tr></thead><tbody><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">abs</code> ( <em class="replaceable"><code>number</code></em> )
+        → <code class="returnvalue"></code> same type as input
+       </p>
+       <p>
+        Absolute value
+       </p>
+       <p>
+        <code class="literal">abs(-17)</code>
+        → <code class="returnvalue">17</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">debug</code> ( <em class="replaceable"><code>number</code></em> )
+        → <code class="returnvalue"></code> same type as input
+       </p>
+       <p>
+        Prints the argument to <span class="systemitem">stderr</span>,
+        and returns the argument.
+       </p>
+       <p>
+        <code class="literal">debug(5432.1)</code>
+        → <code class="returnvalue">5432.1</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">double</code> ( <em class="replaceable"><code>number</code></em> )
+        → <code class="returnvalue">double</code>
+       </p>
+       <p>
+        Casts to double.
+       </p>
+       <p>
+        <code class="literal">double(5432)</code>
+        → <code class="returnvalue">5432.0</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">exp</code> ( <em class="replaceable"><code>number</code></em> )
+        → <code class="returnvalue">double</code>
+       </p>
+       <p>
+        Exponential (<code class="literal">e</code> raised to the given power)
+       </p>
+       <p>
+        <code class="literal">exp(1.0)</code>
+        → <code class="returnvalue">2.718281828459045</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">greatest</code> ( <em class="replaceable"><code>number</code></em> [<span class="optional">, <code class="literal">...</code> </span>] )
+        → <code class="returnvalue"></code> <code class="type">double</code> if any argument is double, else <code class="type">integer</code>
+       </p>
+       <p>
+        Selects the largest value among the arguments.
+       </p>
+       <p>
+        <code class="literal">greatest(5, 4, 3, 2)</code>
+        → <code class="returnvalue">5</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">hash</code> ( <em class="parameter"><code>value</code></em> [<span class="optional">, <em class="parameter"><code>seed</code></em> </span>] )
+        → <code class="returnvalue">integer</code>
+       </p>
+       <p>
+        This is an alias for <code class="function">hash_murmur2</code>.
+       </p>
+       <p>
+        <code class="literal">hash(10, 5432)</code>
+        → <code class="returnvalue">-5817877081768721676</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">hash_fnv1a</code> ( <em class="parameter"><code>value</code></em> [<span class="optional">, <em class="parameter"><code>seed</code></em> </span>] )
+        → <code class="returnvalue">integer</code>
+       </p>
+       <p>
+        Computes <a class="ulink" href="https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function" target="_top">FNV-1a hash</a>.
+       </p>
+       <p>
+        <code class="literal">hash_fnv1a(10, 5432)</code>
+        → <code class="returnvalue">-7793829335365542153</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">hash_murmur2</code> ( <em class="parameter"><code>value</code></em> [<span class="optional">, <em class="parameter"><code>seed</code></em> </span>] )
+        → <code class="returnvalue">integer</code>
+       </p>
+       <p>
+        Computes <a class="ulink" href="https://en.wikipedia.org/wiki/MurmurHash" target="_top">MurmurHash2 hash</a>.
+       </p>
+       <p>
+        <code class="literal">hash_murmur2(10, 5432)</code>
+        → <code class="returnvalue">-5817877081768721676</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">int</code> ( <em class="replaceable"><code>number</code></em> )
+        → <code class="returnvalue">integer</code>
+       </p>
+       <p>
+        Casts to integer.
+       </p>
+       <p>
+        <code class="literal">int(5.4 + 3.8)</code>
+        → <code class="returnvalue">9</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">least</code> ( <em class="replaceable"><code>number</code></em> [<span class="optional">, <code class="literal">...</code> </span>] )
+        → <code class="returnvalue"></code> <code class="type">double</code> if any argument is double, else <code class="type">integer</code>
+       </p>
+       <p>
+        Selects the smallest value among the arguments.
+       </p>
+       <p>
+        <code class="literal">least(5, 4, 3, 2.1)</code>
+        → <code class="returnvalue">2.1</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">ln</code> ( <em class="replaceable"><code>number</code></em> )
+        → <code class="returnvalue">double</code>
+       </p>
+       <p>
+        Natural logarithm
+       </p>
+       <p>
+        <code class="literal">ln(2.718281828459045)</code>
+        → <code class="returnvalue">1.0</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+<code class="function">mod</code> ( <em class="replaceable"><code>integer</code></em>, <em class="replaceable"><code>integer</code></em> )
+        → <code class="returnvalue">integer</code>
+       </p>
+       <p>
+        Modulo (remainder)
+       </p>
+       <p>
+        <code class="literal">mod(54, 32)</code>
+        → <code class="returnvalue">22</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">permute</code> ( <em class="parameter"><code>i</code></em>, <em class="parameter"><code>size</code></em> [, <em class="parameter"><code>seed</code></em> ] )
+        → <code class="returnvalue">integer</code>
+       </p>
+       <p>
+        Permuted value of <em class="parameter"><code>i</code></em>, in the range
+        <code class="literal">[0, size)</code>.  This is the new position of
+        <em class="parameter"><code>i</code></em> (modulo <em class="parameter"><code>size</code></em>) in a
+        pseudorandom permutation of the integers <code class="literal">0...size-1</code>,
+        parameterized by <em class="parameter"><code>seed</code></em>, see below.
+       </p>
+       <p>
+        <code class="literal">permute(0, 4)</code>
+        → <code class="returnvalue">an integer between 0 and 3</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">pi</code> ()
+        → <code class="returnvalue">double</code>
+       </p>
+       <p>
+        Approximate value of <span class="symbol_font">π</span>
+       </p>
+       <p>
+        <code class="literal">pi()</code>
+        → <code class="returnvalue">3.14159265358979323846</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">pow</code> ( <em class="parameter"><code>x</code></em>, <em class="parameter"><code>y</code></em> )
+        → <code class="returnvalue">double</code>
+       </p>
+       <p class="func_signature">
+        <code class="function">power</code> ( <em class="parameter"><code>x</code></em>, <em class="parameter"><code>y</code></em> )
+        → <code class="returnvalue">double</code>
+       </p>
+       <p>
+        <em class="parameter"><code>x</code></em> raised to the power of <em class="parameter"><code>y</code></em>
+       </p>
+       <p>
+        <code class="literal">pow(2.0, 10)</code>
+        → <code class="returnvalue">1024.0</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">random</code> ( <em class="parameter"><code>lb</code></em>, <em class="parameter"><code>ub</code></em> )
+        → <code class="returnvalue">integer</code>
+       </p>
+       <p>
+        Computes a uniformly-distributed random integer in <code class="literal">[lb,
+        ub]</code>.
+       </p>
+       <p>
+        <code class="literal">random(1, 10)</code>
+        → <code class="returnvalue">an integer between 1 and 10</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">random_exponential</code> ( <em class="parameter"><code>lb</code></em>, <em class="parameter"><code>ub</code></em>, <em class="parameter"><code>parameter</code></em> )
+        → <code class="returnvalue">integer</code>
+       </p>
+       <p>
+        Computes an exponentially-distributed random integer in <code class="literal">[lb,
+        ub]</code>, see below.
+       </p>
+       <p>
+        <code class="literal">random_exponential(1, 10, 3.0)</code>
+        → <code class="returnvalue">an integer between 1 and 10</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">random_gaussian</code> ( <em class="parameter"><code>lb</code></em>, <em class="parameter"><code>ub</code></em>, <em class="parameter"><code>parameter</code></em> )
+        → <code class="returnvalue">integer</code>
+       </p>
+       <p>
+        Computes a Gaussian-distributed random integer in <code class="literal">[lb,
+        ub]</code>, see below.
+       </p>
+       <p>
+        <code class="literal">random_gaussian(1, 10, 2.5)</code>
+        → <code class="returnvalue">an integer between 1 and 10</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">random_zipfian</code> ( <em class="parameter"><code>lb</code></em>, <em class="parameter"><code>ub</code></em>, <em class="parameter"><code>parameter</code></em> )
+        → <code class="returnvalue">integer</code>
+       </p>
+       <p>
+        Computes a Zipfian-distributed random integer in <code class="literal">[lb,
+        ub]</code>, see below.
+       </p>
+       <p>
+        <code class="literal">random_zipfian(1, 10, 1.5)</code>
+        → <code class="returnvalue">an integer between 1 and 10</code>
+       </p></td></tr><tr><td class="func_table_entry"><p class="func_signature">
+        <code class="function">sqrt</code> ( <em class="replaceable"><code>number</code></em> )
+        → <code class="returnvalue">double</code>
+       </p>
+       <p>
+        Square root
+       </p>
+       <p>
+        <code class="literal">sqrt(2.0)</code>
+        → <code class="returnvalue">1.414213562</code>
+       </p></td></tr></tbody></table></div></div><br class="table-break" /><p>
     The <code class="literal">random</code> function generates values using a uniform
     distribution, that is all the values are drawn within the specified
     range with equal probability. The <code class="literal">random_exponential</code>,
@@ -562,28 +1155,17 @@ f(x) = PHI(2.0 * parameter * (x - mu) / (max - min + 1)) /<br />
       <code class="literal">2.0 / parameter</code>, that is a relative
       <code class="literal">1.0 / parameter</code> around the mean; for instance, if
       <em class="replaceable"><code>parameter</code></em> is 4.0, 67% of values are drawn from the
-      middle quarter (1.0 / 4.0) of the interval (i.e. from
+      middle quarter (1.0 / 4.0) of the interval (i.e., from
       <code class="literal">3.0 / 8.0</code> to <code class="literal">5.0 / 8.0</code>) and 95% from
       the middle half (<code class="literal">2.0 / 4.0</code>) of the interval (second and third
-      quartiles). The minimum <em class="replaceable"><code>parameter</code></em> is 2.0 for performance
-      of the Box-Muller transform.
+      quartiles). The minimum allowed <em class="replaceable"><code>parameter</code></em>
+      value is 2.0.
      </p></li><li class="listitem"><p>
-      <code class="literal">random_zipfian</code> generates an approximated bounded Zipfian
-      distribution. For <em class="replaceable"><code>parameter</code></em> in (0, 1), an
-      approximated algorithm is taken from
-      "Quickly Generating Billion-Record Synthetic Databases",
-      Jim Gray et al, SIGMOD 1994. For <em class="replaceable"><code>parameter</code></em>
-      in (1, 1000), a rejection method is used, based on
-      "Non-Uniform Random Variate Generation", Luc Devroye, p. 550-551,
-      Springer 1986. The distribution is not defined when the parameter's
-      value is 1.0. The function's performance is poor for parameter values
-      close and above 1.0 and on a small range.
-     </p><p>
+      <code class="literal">random_zipfian</code> generates a bounded Zipfian
+      distribution.
       <em class="replaceable"><code>parameter</code></em> defines how skewed the distribution
       is. The larger the <em class="replaceable"><code>parameter</code></em>, the more
       frequently values closer to the beginning of the interval are drawn.
-      The closer to 0 <em class="replaceable"><code>parameter</code></em> is,
-      the flatter (more uniform) the output distribution.
       The distribution is such that, assuming the range starts from 1,
       the ratio of the probability of drawing <em class="replaceable"><code>k</code></em>
       versus drawing <em class="replaceable"><code>k+1</code></em> is
@@ -593,29 +1175,69 @@ f(x) = PHI(2.0 * parameter * (x - mu) / (max - min + 1)) /<br />
       5.66</code> times more frequently than <code class="literal">2</code>, which
       itself is produced <code class="literal">(3/2)**2.5 = 2.76</code> times more
       frequently than <code class="literal">3</code>, and so on.
-     </p></li></ul></div><p>
+     </p><p>
+      <span class="application">pgbench</span>'s implementation is based on
+      "Non-Uniform Random Variate Generation", Luc Devroye, p. 550-551,
+      Springer 1986.  Due to limitations of that algorithm,
+      the <em class="replaceable"><code>parameter</code></em> value is restricted to
+      the range [1.001, 1000].
+     </p></li></ul></div><div class="note"><h3 class="title">Note</h3><p>
+      When designing a benchmark which selects rows non-uniformly, be aware
+      that the rows chosen may be correlated with other data such as IDs from
+      a sequence or the physical row ordering, which may skew performance
+      measurements.
+    </p><p>
+      To avoid this, you may wish to use the <code class="function">permute</code>
+      function, or some other additional step with similar effect, to shuffle
+      the selected rows and remove such correlations.
+    </p></div><p>
     Hash functions <code class="literal">hash</code>, <code class="literal">hash_murmur2</code> and
     <code class="literal">hash_fnv1a</code> accept an input value and an optional seed parameter.
     In case the seed isn't provided the value of <code class="literal">:default_seed</code>
     is used, which is initialized randomly unless set by the command-line
-    <code class="literal">-D</code> option. Hash functions can be used to scatter the
-    distribution of random functions such as <code class="literal">random_zipfian</code> or
-    <code class="literal">random_exponential</code>. For instance, the following pgbench
-    script simulates possible real world workload typical for social media and
-    blogging platforms where few accounts generate excessive load:
+    <code class="literal">-D</code> option.
+  </p><p>
+    <code class="literal">permute</code> accepts an input value, a size, and an optional
+    seed parameter.  It generates a pseudorandom permutation of integers in
+    the range <code class="literal">[0, size)</code>, and returns the index of the input
+    value in the permuted values.  The permutation chosen is parameterized by
+    the seed, which defaults to <code class="literal">:default_seed</code>, if not
+    specified.  Unlike the hash functions, <code class="literal">permute</code> ensures
+    that there are no collisions or holes in the output values.  Input values
+    outside the interval are interpreted modulo the size.  The function raises
+    an error if the size is not positive.  <code class="function">permute</code> can be
+    used to scatter the distribution of non-uniform random functions such as
+    <code class="literal">random_zipfian</code> or <code class="literal">random_exponential</code>
+    so that values drawn more often are not trivially correlated.  For
+    instance, the following <span class="application">pgbench</span> script
+    simulates a possible real world workload typical for social media and
+    blogging platforms where a few accounts generate excessive load:
 
 </p><pre class="programlisting">
-\set r random_zipfian(0, 100000000, 1.07)
-\set k abs(hash(:r)) % 1000000
+\set size 1000000
+\set r random_zipfian(1, :size, 1.07)
+\set k 1 + permute(:r, :size)
 </pre><p>
 
     In some cases several distinct distributions are needed which don't correlate
-    with each other and this is when implicit seed parameter comes in handy:
+    with each other and this is when the optional seed parameter comes in handy:
 
 </p><pre class="programlisting">
-\set k1 abs(hash(:r, :default_seed + 123)) % 1000000
-\set k2 abs(hash(:r, :default_seed + 321)) % 1000000
+\set k1 1 + permute(:r, :size, :default_seed + 123)
+\set k2 1 + permute(:r, :size, :default_seed + 321)
 </pre><p>
+
+    A similar behavior can also be approximated with <code class="function">hash</code>:
+
+</p><pre class="programlisting">
+\set size 1000000
+\set r random_zipfian(1, 100 * :size, 1.07)
+\set k 1 + abs(hash(:r)) % :size
+</pre><p>
+
+    However, since <code class="function">hash</code> generates collisions, some values
+    will not be reachable and others will be more frequent than expected from
+    the original distribution.
   </p><p>
    As an example, the full definition of the built-in TPC-B-like
    transaction is:
@@ -638,7 +1260,7 @@ END;
    different, randomly-chosen rows.  (This example also shows why it's
    important for each client session to have its own variables —
    otherwise they'd not be independently touching different rows.)
-  </p></div><div class="refsect2" id="id-1.9.4.10.7.6"><h3>Per-Transaction Logging</h3><p>
+  </p></div><div class="refsect2" id="id-1.9.4.11.9.6"><h3>Per-Transaction Logging</h3><p>
    With the <code class="option">-l</code> option (but without
    the <code class="option">--aggregate-interval</code> option),
    <span class="application">pgbench</span> writes information about each transaction
@@ -708,12 +1330,12 @@ END;
    When running a long test on hardware that can handle a lot of transactions,
    the log files can become very large.  The <code class="option">--sampling-rate</code> option
    can be used to log only a random sample of transactions.
-  </p></div><div class="refsect2" id="id-1.9.4.10.7.7"><h3>Aggregated Logging</h3><p>
+  </p></div><div class="refsect2" id="id-1.9.4.11.9.7"><h3>Aggregated Logging</h3><p>
    With the <code class="option">--aggregate-interval</code> option, a different
    format is used for the log files:
 
 </p><pre class="synopsis">
-<em class="replaceable"><code>interval_start</code></em> <em class="replaceable"><code>num_transactions</code></em> <em class="replaceable"><code>sum_latency</code></em> <em class="replaceable"><code>sum_latency_2</code></em> <em class="replaceable"><code>min_latency</code></em> <em class="replaceable"><code>max_latency</code></em> [<span class="optional"> <em class="replaceable"><code>sum_lag</code></em> <em class="replaceable"><code>sum_lag_2</code></em> <em class="replaceable"><code>min_lag</code></em> <em class="replaceable"><code>max_lag</code></em> [<span class="optional"> <em class="replaceable"><code>skipped</code></em> </span>] </span>]
+<em class="replaceable"><code>interval_start</code></em> <em class="replaceable"><code>num_transactions</code></em>​ <em class="replaceable"><code>sum_latency</code></em> <em class="replaceable"><code>sum_latency_2</code></em> <em class="replaceable"><code>min_latency</code></em> <em class="replaceable"><code>max_latency</code></em>​ [<span class="optional"> <em class="replaceable"><code>sum_lag</code></em> <em class="replaceable"><code>sum_lag_2</code></em> <em class="replaceable"><code>min_lag</code></em> <em class="replaceable"><code>max_lag</code></em> [<span class="optional"> <em class="replaceable"><code>skipped</code></em> </span>] </span>]
 </pre><p>
 
    where
@@ -733,7 +1355,7 @@ END;
    and <em class="replaceable"><code>max_lag</code></em>, are only present if the <code class="option">--rate</code>
    option is used.
    They provide statistics about the time each transaction had to wait for the
-   previous one to finish, i.e. the difference between each transaction's
+   previous one to finish, i.e., the difference between each transaction's
    scheduled start time and the time it actually started.
    The very last field, <em class="replaceable"><code>skipped</code></em>,
    is only present if the <code class="option">--latency-limit</code> option is used, too.
@@ -752,7 +1374,7 @@ END;
    Notice that while the plain (unaggregated) log file shows which script
    was used for each transaction, the aggregated log does not. Therefore if
    you need per-script data, you need to aggregate the data on your own.
-  </p></div><div class="refsect2" id="id-1.9.4.10.7.8"><h3>Per-Statement Latencies</h3><p>
+  </p></div><div class="refsect2" id="id-1.9.4.11.9.8"><h3>Per-Statement Latencies</h3><p>
    With the <code class="option">-r</code> option, <span class="application">pgbench</span> collects
    the elapsed transaction time of each statement executed by every
    client.  It then reports an average of those values, referred to
@@ -768,22 +1390,22 @@ number of clients: 10
 number of threads: 1
 number of transactions per client: 1000
 number of transactions actually processed: 10000/10000
-latency average = 15.844 ms
-latency stddev = 2.715 ms
-tps = 618.764555 (including connections establishing)
-tps = 622.977698 (excluding connections establishing)
+latency average = 10.870 ms
+latency stddev = 7.341 ms
+initial connection time = 30.954 ms
+tps = 907.949122 (without initial connection time)
 statement latencies in milliseconds:
-        0.002  \set aid random(1, 100000 * :scale)
-        0.005  \set bid random(1, 1 * :scale)
-        0.002  \set tid random(1, 10 * :scale)
-        0.001  \set delta random(-5000, 5000)
-        0.326  BEGIN;
-        0.603  UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;
-        0.454  SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
-        5.528  UPDATE pgbench_tellers SET tbalance = tbalance + :delta WHERE tid = :tid;
-        7.335  UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
-        0.371  INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
-        1.212  END;
+    0.001  \set aid random(1, 100000 * :scale)
+    0.001  \set bid random(1, 1 * :scale)
+    0.001  \set tid random(1, 10 * :scale)
+    0.000  \set delta random(-5000, 5000)
+    0.046  BEGIN;
+    0.151  UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;
+    0.107  SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
+    4.241  UPDATE pgbench_tellers SET tbalance = tbalance + :delta WHERE tid = :tid;
+    5.245  UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
+    0.102  INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
+    0.974  END;
 </pre><p>
   </p><p>
    If multiple script files are specified, the averages are reported
@@ -795,7 +1417,7 @@ statement latencies in milliseconds:
    of slowdown varies significantly depending on platform and hardware.
    Comparing average TPS values with and without latency reporting enabled
    is a good way to measure if the timing overhead is significant.
-  </p></div><div class="refsect2" id="id-1.9.4.10.7.9"><h3>Good Practices</h3><p>
+  </p></div><div class="refsect2" id="id-1.9.4.11.9.9"><h3>Good Practices</h3><p>
    It is very easy to use <span class="application">pgbench</span> to produce completely
    meaningless numbers.  Here are some guidelines to help you get useful
    results.
@@ -830,10 +1452,10 @@ statement latencies in milliseconds:
    essential.  It might even be useful to run several <span class="application">pgbench</span>
    instances concurrently, on several client machines, against the same
    database server.
-  </p></div><div class="refsect2" id="id-1.9.4.10.7.10"><h3>Security</h3><p>
+  </p></div><div class="refsect2" id="id-1.9.4.11.9.10"><h3>Security</h3><p>
     If untrusted users have access to a database that has not adopted a
-    <a class="link" href="ddl-schemas.html#DDL-SCHEMAS-PATTERNS" title="5.8.6. Usage Patterns">secure schema usage pattern</a>,
+    <a class="link" href="ddl-schemas.html#DDL-SCHEMAS-PATTERNS" title="5.9.6. Usage Patterns">secure schema usage pattern</a>,
     do not run <span class="application">pgbench</span> in that
     database.  <span class="application">pgbench</span> uses unqualified names and
     does not manipulate the search path.
-  </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="app-pgbasebackup.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="reference-client.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="app-pgconfig.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">pg_basebackup </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> pg_config</td></tr></table></div></body></html>
+  </p></div></div></div><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navfooter"><hr></hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="app-pgbasebackup.html" title="pg_basebackup">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="reference-client.html" title="PostgreSQL Client Applications">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="app-pgconfig.html" title="pg_config">Next</a></td></tr><tr><td width="40%" align="left" valign="top"><span xmlns="http://www.w3.org/1999/xhtml" class="application">pg_basebackup</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="40%" align="right" valign="top"> <span xmlns="http://www.w3.org/1999/xhtml" class="application">pg_config</span></td></tr></table></div></body></html>

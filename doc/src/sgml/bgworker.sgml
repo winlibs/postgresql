@@ -23,7 +23,7 @@
    There are considerable robustness and security risks in using background
    worker processes because, being written in the <literal>C</literal> language,
    they have unrestricted access to data.  Administrators wishing to enable
-   modules that include background worker process should exercise extreme
+   modules that include background worker processes should exercise extreme
    caution.  Only carefully audited modules should be permitted to run
    background worker processes.
   </para>
@@ -34,14 +34,18 @@
   <productname>PostgreSQL</productname> is started by including the module name in
   <varname>shared_preload_libraries</varname>.  A module wishing to run a background
   worker can register it by calling
-  <function>RegisterBackgroundWorker(<type>BackgroundWorker *worker</type>)</function>
-  from its <function>_PG_init()</function>.  Background workers can also be started
-  after the system is up and running by calling the function
-  <function>RegisterDynamicBackgroundWorker(<type>BackgroundWorker
-  *worker, BackgroundWorkerHandle **handle</type>)</function>.  Unlike
-  <function>RegisterBackgroundWorker</function>, which can only be called from within
-  the postmaster, <function>RegisterDynamicBackgroundWorker</function> must be
-  called from a regular backend or another background worker.
+  <function>RegisterBackgroundWorker(<type>BackgroundWorker</type>
+  *<parameter>worker</parameter>)</function>
+  from its <function>_PG_init()</function> function.
+  Background workers can also be started
+  after the system is up and running by calling
+  <function>RegisterDynamicBackgroundWorker(<type>BackgroundWorker</type>
+  *<parameter>worker</parameter>, <type>BackgroundWorkerHandle</type>
+  **<parameter>handle</parameter>)</function>.  Unlike
+  <function>RegisterBackgroundWorker</function>, which can only be called from
+  within the postmaster process,
+  <function>RegisterDynamicBackgroundWorker</function> must be called
+  from a regular backend or another background worker.
  </para>
 
  <para>
@@ -98,7 +102,7 @@ typedef struct BackgroundWorker
      <term><literal>BGWORKER_BACKEND_DATABASE_CONNECTION</literal></term>
      <listitem>
       <para>
-       <indexterm><primary>BGWORKER_BACKEND_DATABASE_CONNECTION</primary></indexterm>
+       <indexterm><primary>BGWORKER_BACKEND_&zwsp;DATABASE_CONNECTION</primary></indexterm>
        Requests the ability to establish a database connection through which it
        can later run transactions and queries.  A background worker using
        <literal>BGWORKER_BACKEND_DATABASE_CONNECTION</literal> to connect to a
@@ -130,8 +134,8 @@ typedef struct BackgroundWorker
 
   <para>
    <structfield>bgw_restart_time</structfield> is the interval, in seconds, that
-   <command>postgres</command> should wait before restarting the process, in
-   case it crashes.  It can be any positive value,
+   <command>postgres</command> should wait before restarting the process in
+   the event that it crashes.  It can be any positive value,
    or <literal>BGW_NEVER_RESTART</literal>, indicating not to restart the
    process in case of a crash.
   </para>
@@ -280,15 +284,13 @@ typedef struct BackgroundWorker
   </para>
 
   <para>
-   If a background worker sends asynchronous notifications with the
-   <command>NOTIFY</command> command via the Server Programming Interface
-   (<acronym>SPI</acronym>), it should call
-   <function>ProcessCompletedNotifies</function> explicitly after committing
-   the enclosing transaction so that any notifications can be delivered.  If a
-   background worker registers to receive asynchronous notifications with
-   the <command>LISTEN</command> through <acronym>SPI</acronym>, the worker
-   will log those notifications, but there is no programmatic way for the
-   worker to intercept and respond to those notifications.
+   Background workers can send asynchronous notification messages, either by
+   using the <command>NOTIFY</command> command via <acronym>SPI</acronym>,
+   or directly via <function>Async_Notify()</function>.  Such notifications
+   will be sent at transaction commit.
+   Background workers should not register to receive asynchronous
+   notifications with the <command>LISTEN</command> command, as there is no
+   infrastructure for a worker to consume such notifications.
   </para>
 
   <para>

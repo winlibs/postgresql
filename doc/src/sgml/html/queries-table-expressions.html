@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>7.2. Table Expressions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="queries-overview.html" title="7.1. Overview" /><link rel="next" href="queries-select-lists.html" title="7.3. Select Lists" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">7.2. Table Expressions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="queries-overview.html" title="7.1. Overview">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="queries.html" title="Chapter 7. Queries">Up</a></td><th width="60%" align="center">Chapter 7. Queries</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="queries-select-lists.html" title="7.3. Select Lists">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="QUERIES-TABLE-EXPRESSIONS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">7.2. Table Expressions</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-FROM">7.2.1. The <code class="literal">FROM</code> Clause</a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-WHERE">7.2.2. The <code class="literal">WHERE</code> Clause</a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-GROUP">7.2.3. The <code class="literal">GROUP BY</code> and <code class="literal">HAVING</code> Clauses</a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-GROUPING-SETS">7.2.4. <code class="literal">GROUPING SETS</code>, <code class="literal">CUBE</code>, and <code class="literal">ROLLUP</code></a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-WINDOW">7.2.5. Window Function Processing</a></span></dt></dl></div><a id="id-1.5.6.6.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>7.2. Table Expressions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="queries-overview.html" title="7.1. Overview" /><link rel="next" href="queries-select-lists.html" title="7.3. Select Lists" /></head><body id="docContent" class="container-fluid col-10"><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">7.2. Table Expressions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="queries-overview.html" title="7.1. Overview">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="queries.html" title="Chapter 7. Queries">Up</a></td><th width="60%" align="center">Chapter 7. Queries</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="queries-select-lists.html" title="7.3. Select Lists">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="QUERIES-TABLE-EXPRESSIONS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">7.2. Table Expressions</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-FROM">7.2.1. The <code class="literal">FROM</code> Clause</a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-WHERE">7.2.2. The <code class="literal">WHERE</code> Clause</a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-GROUP">7.2.3. The <code class="literal">GROUP BY</code> and <code class="literal">HAVING</code> Clauses</a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-GROUPING-SETS">7.2.4. <code class="literal">GROUPING SETS</code>, <code class="literal">CUBE</code>, and <code class="literal">ROLLUP</code></a></span></dt><dt><span class="sect2"><a href="queries-table-expressions.html#QUERIES-WINDOW">7.2.5. Window Function Processing</a></span></dt></dl></div><a id="id-1.5.6.6.2" class="indexterm"></a><p>
    A <em class="firstterm">table expression</em> computes a table.  The
    table expression contains a <code class="literal">FROM</code> clause that is
    optionally followed by <code class="literal">WHERE</code>, <code class="literal">GROUP BY</code>, and
@@ -15,7 +15,7 @@
    produce a virtual table that provides the rows that are passed to
    the select list to compute the output rows of the query.
   </p><div class="sect2" id="QUERIES-FROM"><div class="titlepage"><div><div><h3 class="title">7.2.1. The <code class="literal">FROM</code> Clause</h3></div></div></div><p>
-    The <a class="xref" href="sql-select.html#SQL-FROM" title="FROM Clause"><code class="literal">FROM</code> Clause</a> derives a
+    The <a class="link" href="sql-select.html#SQL-FROM" title="FROM Clause"><code class="literal">FROM</code></a> clause derives a
     table from one or more other tables given in a comma-separated
     table reference list.
 </p><pre class="synopsis">
@@ -431,7 +431,7 @@ ROWS FROM( <em class="replaceable"><code>function_call</code></em> [<span class=
      The special table function <code class="literal">UNNEST</code> may be called with
      any number of array parameters, and it returns a corresponding number of
      columns, as if <code class="literal">UNNEST</code>
-     (<a class="xref" href="functions-array.html" title="9.18. Array Functions and Operators">Section 9.18</a>) had been called on each parameter
+     (<a class="xref" href="functions-array.html" title="9.19. Array Functions and Operators">Section 9.19</a>) had been called on each parameter
      separately and combined using the <code class="literal">ROWS FROM</code> construct.
     </p><pre class="synopsis">
 UNNEST( <em class="replaceable"><code>array_expression</code></em> [<span class="optional">, ... </span>] ) [<span class="optional">WITH ORDINALITY</span>] [<span class="optional">[<span class="optional">AS</span>] <em class="replaceable"><code>table_alias</code></em> [<span class="optional">(<em class="replaceable"><code>column_alias</code></em> [<span class="optional">, ... </span>])</span>]</span>]
@@ -470,7 +470,8 @@ SELECT * FROM vw_getfoo;
      In some cases it is useful to define table functions that can
      return different column sets depending on how they are invoked.
      To support this, the table function can be declared as returning
-     the pseudo-type <code class="type">record</code>.  When such a function is used in
+     the pseudo-type <code class="type">record</code> with no <code class="literal">OUT</code>
+     parameters.  When such a function is used in
      a query, the expected row structure must be specified in the
      query itself, so that the system can know how to parse and plan
      the query.  This syntax looks like:
@@ -504,6 +505,31 @@ SELECT *
      The actual column set must be specified in the calling query so
      that the parser knows, for example, what <code class="literal">*</code> should
      expand to.
+    </p><p>
+     This example uses <code class="literal">ROWS FROM</code>:
+</p><pre class="programlisting">
+SELECT *
+FROM ROWS FROM
+    (
+        json_to_recordset('[{"a":40,"b":"foo"},{"a":"100","b":"bar"}]')
+            AS (a INTEGER, b TEXT),
+        generate_series(1, 3)
+    ) AS x (p, q, s)
+ORDER BY p;
+
+  p  |  q  | s
+-----+-----+---
+  40 | foo | 1
+ 100 | bar | 2
+     |     | 3
+</pre><p>
+     It joins two functions into a single <code class="literal">FROM</code>
+     target.  <code class="function">json_to_recordset()</code> is instructed
+     to return two columns, the first <code class="type">integer</code>
+     and the second <code class="type">text</code>.  The result of
+     <code class="function">generate_series()</code> is used directly.
+     The <code class="literal">ORDER BY</code> clause sorts the column values
+     as integers.
     </p></div><div class="sect3" id="QUERIES-LATERAL"><div class="titlepage"><div><div><h4 class="title">7.2.1.5. <code class="literal">LATERAL</code> Subqueries</h4></div></div></div><a id="id-1.5.6.6.5.10.2" class="indexterm"></a><p>
      Subqueries appearing in <code class="literal">FROM</code> can be
      preceded by the key word <code class="literal">LATERAL</code>.  This allows them to
@@ -517,7 +543,7 @@ SELECT *
      key word is optional; the function's arguments can contain references
      to columns provided by preceding <code class="literal">FROM</code> items in any case.
     </p><p>
-     A <code class="literal">LATERAL</code> item can appear at top level in the
+     A <code class="literal">LATERAL</code> item can appear at the top level in the
      <code class="literal">FROM</code> list, or within a <code class="literal">JOIN</code> tree.  In the latter
      case it can also refer to any items that are on the left-hand side of a
      <code class="literal">JOIN</code> that it is on the right-hand side of.
@@ -577,7 +603,8 @@ FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true
 WHERE pname IS NULL;
 </pre><p>
     </p></div></div><div class="sect2" id="QUERIES-WHERE"><div class="titlepage"><div><div><h3 class="title">7.2.2. The <code class="literal">WHERE</code> Clause</h3></div></div></div><a id="id-1.5.6.6.6.2" class="indexterm"></a><p>
-    The syntax of the <a class="xref" href="sql-select.html#SQL-WHERE" title="WHERE Clause"><code class="literal">WHERE</code> Clause</a> is
+    The syntax of the <a class="link" href="sql-select.html#SQL-WHERE" title="WHERE Clause"><code class="literal">WHERE</code></a>
+    clause is
 </p><pre class="synopsis">
 WHERE <em class="replaceable"><code>search_condition</code></em>
 </pre><p>
@@ -656,7 +683,7 @@ SELECT <em class="replaceable"><code>select_list</code></em>
     [<span class="optional">WHERE ...</span>]
     GROUP BY <em class="replaceable"><code>grouping_column_reference</code></em> [<span class="optional">, <em class="replaceable"><code>grouping_column_reference</code></em></span>]...
 </pre><p>
-    The <a class="xref" href="sql-select.html#SQL-GROUPBY" title="GROUP BY Clause"><code class="literal">GROUP BY</code> Clause</a> is
+    The <a class="link" href="sql-select.html#SQL-GROUPBY" title="GROUP BY Clause"><code class="literal">GROUP BY</code></a> clause is
     used to group together those rows in a table that have the same
     values in all the columns listed. The order in which the columns
     are listed does not matter.  The effect is to combine each set
@@ -703,7 +730,7 @@ SELECT <em class="replaceable"><code>select_list</code></em>
 </pre><p>
     Here <code class="literal">sum</code> is an aggregate function that
     computes a single value over the entire group.  More information
-    about the available aggregate functions can be found in <a class="xref" href="functions-aggregate.html" title="9.20. Aggregate Functions">Section 9.20</a>.
+    about the available aggregate functions can be found in <a class="xref" href="functions-aggregate.html" title="9.21. Aggregate Functions">Section 9.21</a>.
    </p><div class="tip"><h3 class="title">Tip</h3><p>
      Grouping without aggregate expressions effectively calculates the
      set of distinct values in a column.  This can also be achieved
@@ -828,7 +855,7 @@ SELECT product_id, p.name, (sum(s.units) * (p.price - p.cost)) AS profit
     References to the grouping columns or expressions are replaced
     by null values in result rows for grouping sets in which those
     columns do not appear.  To distinguish which grouping a particular output
-    row resulted from, see <a class="xref" href="functions-aggregate.html#FUNCTIONS-GROUPING-TABLE" title="Table 9.56. Grouping Operations">Table 9.56</a>.
+    row resulted from, see <a class="xref" href="functions-aggregate.html#FUNCTIONS-GROUPING-TABLE" title="Table 9.61. Grouping Operations">Table 9.61</a>.
    </p><p>
     A shorthand notation is provided for specifying two common types of grouping set.
     A clause of the form
@@ -846,14 +873,14 @@ GROUPING SETS (
     ( )
 )
 </pre><p>
-    This is commonly used for analysis over hierarchical data; e.g. total
+    This is commonly used for analysis over hierarchical data; e.g., total
     salary by department, division, and company-wide total.
    </p><p>
     A clause of the form
 </p><pre class="programlisting">
 CUBE ( <em class="replaceable"><code>e1</code></em>, <em class="replaceable"><code>e2</code></em>, ... )
 </pre><p>
-    represents the given list and all of its possible subsets (i.e. the power
+    represents the given list and all of its possible subsets (i.e., the power
     set).  Thus
 </p><pre class="programlisting">
 CUBE ( a, b, c )
@@ -924,6 +951,47 @@ GROUP BY GROUPING SETS (
     (a, d),       (a, e)
 )
 </pre><p>
+   </p><p>
+    <a id="id-1.5.6.6.8.13.1" class="indexterm"></a>
+    <a id="id-1.5.6.6.8.13.2" class="indexterm"></a>
+    When specifying multiple grouping items together, the final set of grouping
+    sets might contain duplicates. For example:
+</p><pre class="programlisting">
+GROUP BY ROLLUP (a, b), ROLLUP (a, c)
+</pre><p>
+    is equivalent to
+</p><pre class="programlisting">
+GROUP BY GROUPING SETS (
+    (a, b, c),
+    (a, b),
+    (a, b),
+    (a, c),
+    (a),
+    (a),
+    (a, c),
+    (a),
+    ()
+)
+</pre><p>
+    If these duplicates are undesirable, they can be removed using the
+    <code class="literal">DISTINCT</code> clause directly on the <code class="literal">GROUP BY</code>.
+    Therefore:
+</p><pre class="programlisting">
+GROUP BY <span class="emphasis"><strong>DISTINCT</strong></span> ROLLUP (a, b), ROLLUP (a, c)
+</pre><p>
+    is equivalent to
+</p><pre class="programlisting">
+GROUP BY GROUPING SETS (
+    (a, b, c),
+    (a, b),
+    (a, c),
+    (a),
+    ()
+)
+</pre><p>
+    This is not the same as using <code class="literal">SELECT DISTINCT</code> because the output
+    rows may still contain duplicates.  If any of the ungrouped columns contains NULL,
+    it will be indistinguishable from the NULL used when that same column is grouped.
    </p><div class="note"><h3 class="title">Note</h3><p>
     The construct <code class="literal">(a, b)</code> is normally recognized in expressions as
     a <a class="link" href="sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS" title="4.2.13. Row Constructors">row constructor</a>.
@@ -934,7 +1002,7 @@ GROUP BY GROUPING SETS (
    </p></div></div><div class="sect2" id="QUERIES-WINDOW"><div class="titlepage"><div><div><h3 class="title">7.2.5. Window Function Processing</h3></div></div></div><a id="id-1.5.6.6.9.2" class="indexterm"></a><p>
     If the query contains any window functions (see
     <a class="xref" href="tutorial-window.html" title="3.5. Window Functions">Section 3.5</a>,
-    <a class="xref" href="functions-window.html" title="9.21. Window Functions">Section 9.21</a> and
+    <a class="xref" href="functions-window.html" title="9.22. Window Functions">Section 9.22</a> and
     <a class="xref" href="sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS" title="4.2.8. Window Function Calls">Section 4.2.8</a>), these functions are evaluated
     after any grouping, aggregation, and <code class="literal">HAVING</code> filtering is
     performed.  That is, if the query uses any aggregates, <code class="literal">GROUP
@@ -943,10 +1011,10 @@ GROUP BY GROUPING SETS (
     <code class="literal">FROM</code>/<code class="literal">WHERE</code>.
    </p><p>
     When multiple window functions are used, all the window functions having
-    syntactically equivalent <code class="literal">PARTITION BY</code> and <code class="literal">ORDER BY</code>
-    clauses in their window definitions are guaranteed to be evaluated in a
-    single pass over the data. Therefore they will see the same sort ordering,
-    even if the <code class="literal">ORDER BY</code> does not uniquely determine an ordering.
+    equivalent <code class="literal">PARTITION BY</code> and <code class="literal">ORDER BY</code>
+    clauses in their window definitions are guaranteed to see the same
+    ordering of the input rows, even if the <code class="literal">ORDER BY</code> does
+    not uniquely determine the ordering.
     However, no guarantees are made about the evaluation of functions having
     different <code class="literal">PARTITION BY</code> or <code class="literal">ORDER BY</code> specifications.
     (In such cases a sort step is typically required between the passes of
@@ -959,4 +1027,4 @@ GROUP BY GROUPING SETS (
     It is not recommended to rely on this, however.  Use an explicit
     top-level <code class="literal">ORDER BY</code> clause if you want to be sure the
     results are sorted in a particular way.
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="queries-overview.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="queries.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="queries-select-lists.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">7.1. Overview </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 7.3. Select Lists</td></tr></table></div></body></html>
+   </p></div></div><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navfooter"><hr></hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="queries-overview.html" title="7.1. Overview">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="queries.html" title="Chapter 7. Queries">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="queries-select-lists.html" title="7.3. Select Lists">Next</a></td></tr><tr><td width="40%" align="left" valign="top">7.1. Overview </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 7.3. Select Lists</td></tr></table></div></body></html>

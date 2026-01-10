@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: vacuumdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2025
+.\"    Manual: PostgreSQL 14.20 Documentation
+.\"    Source: PostgreSQL 14.20
 .\"  Language: English
 .\"
-.TH "VACUUMDB" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "VACUUMDB" "1" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,9 +31,9 @@
 vacuumdb \- garbage\-collect and analyze a PostgreSQL database
 .SH "SYNOPSIS"
 .HP \w'\fBvacuumdb\fR\ 'u
-\fBvacuumdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\ \fB\-\-table\fR\ |\ \fB\-t\fR\ \fItable\fR\ [(\ \fIcolumn\fR\ [,\&.\&.\&.]\ )]\ ]...  [\fIdbname\fR]
+\fBvacuumdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\ \fB\-t\fR\ |\ \fB\-\-table\fR\ \fItable\fR\ [(\ \fIcolumn\fR\ [,\&.\&.\&.]\ )]\ ]...  [\fIdbname\fR]
 .HP \w'\fBvacuumdb\fR\ 'u
-\fBvacuumdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] \fB\-\-all\fR | \fB\-a\fR 
+\fBvacuumdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] \fB\-a\fR | \fB\-\-all\fR 
 .SH "DESCRIPTION"
 .PP
 vacuumdb
@@ -47,7 +47,7 @@ query optimizer\&.
 .PP
 vacuumdb
 is a wrapper around the SQL command
-\fBVACUUM\fR(7)\&. There is no effective difference between vacuuming and analyzing databases via this utility and via other methods for accessing the server\&.
+\fBVACUUM\fR\&. There is no effective difference between vacuuming and analyzing databases via this utility and via other methods for accessing the server\&.
 .SH "OPTIONS"
 .PP
 vacuumdb
@@ -64,11 +64,35 @@ Vacuum all databases\&.
 .br
 \fB[\-\-dbname=]\fR\fB\fIdbname\fR\fR
 .RS 4
-Specifies the name of the database to be cleaned or analyzed\&. If this is not specified and
-\fB\-a\fR
-(or
-\fB\-\-all\fR) is not used, the database name is read from the environment variable
-\fBPGDATABASE\fR\&. If that is not set, the user name specified for the connection is used\&.
+Specifies the name of the database to be cleaned or analyzed, when
+\fB\-a\fR/\fB\-\-all\fR
+is not used\&. If this is not specified, the database name is read from the environment variable
+\fBPGDATABASE\fR\&. If that is not set, the user name specified for the connection is used\&. The
+\fIdbname\fR
+can be a
+connection string\&. If so, connection string parameters will override any conflicting command line options\&.
+.RE
+.PP
+\fB\-\-disable\-page\-skipping\fR
+.RS 4
+Disable skipping pages based on the contents of the visibility map\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+This option is only available for servers running
+PostgreSQL
+9\&.6 and later\&.
+.sp .5v
+.RE
 .RE
 .PP
 \fB\-e\fR
@@ -98,13 +122,35 @@ Aggressively
 tuples\&.
 .RE
 .PP
+\fB\-\-force\-index\-cleanup\fR
+.RS 4
+Always remove index entries pointing to dead tuples\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+This option is only available for servers running
+PostgreSQL
+12 and later\&.
+.sp .5v
+.RE
+.RE
+.PP
 \fB\-j \fR\fB\fInjobs\fR\fR
 .br
 \fB\-\-jobs=\fR\fB\fInjobs\fR\fR
 .RS 4
 Execute the vacuum or analyze commands in parallel by running
 \fInjobs\fR
-commands simultaneously\&. This option reduces the time of the processing but it also increases the load on the database server\&.
+commands simultaneously\&. This option may reduce the processing time but it also increases the load on the database server\&.
 .sp
 vacuumdb
 will open
@@ -118,11 +164,189 @@ Note that using this mode together with the
 (FULL) option might cause deadlock failures if certain system catalogs are processed in parallel\&.
 .RE
 .PP
+\fB\-\-min\-mxid\-age \fR\fB\fImxid_age\fR\fR
+.RS 4
+Only execute the vacuum or analyze commands on tables with a multixact ID age of at least
+\fImxid_age\fR\&. This setting is useful for prioritizing tables to process to prevent multixact ID wraparound (see
+Section\ \&25.1.5.1)\&.
+.sp
+For the purposes of this option, the multixact ID age of a relation is the greatest of the ages of the main relation and its associated
+TOAST
+table, if one exists\&. Since the commands issued by
+vacuumdb
+will also process the
+TOAST
+table for the relation if necessary, it does not need to be considered separately\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+This option is only available for servers running
+PostgreSQL
+9\&.6 and later\&.
+.sp .5v
+.RE
+.RE
+.PP
+\fB\-\-min\-xid\-age \fR\fB\fIxid_age\fR\fR
+.RS 4
+Only execute the vacuum or analyze commands on tables with a transaction ID age of at least
+\fIxid_age\fR\&. This setting is useful for prioritizing tables to process to prevent transaction ID wraparound (see
+Section\ \&25.1.5)\&.
+.sp
+For the purposes of this option, the transaction ID age of a relation is the greatest of the ages of the main relation and its associated
+TOAST
+table, if one exists\&. Since the commands issued by
+vacuumdb
+will also process the
+TOAST
+table for the relation if necessary, it does not need to be considered separately\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+This option is only available for servers running
+PostgreSQL
+9\&.6 and later\&.
+.sp .5v
+.RE
+.RE
+.PP
+\fB\-\-no\-index\-cleanup\fR
+.RS 4
+Do not remove index entries pointing to dead tuples\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+This option is only available for servers running
+PostgreSQL
+12 and later\&.
+.sp .5v
+.RE
+.RE
+.PP
+\fB\-\-no\-process\-toast\fR
+.RS 4
+Skip the TOAST table associated with the table to vacuum, if any\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+This option is only available for servers running
+PostgreSQL
+14 and later\&.
+.sp .5v
+.RE
+.RE
+.PP
+\fB\-\-no\-truncate\fR
+.RS 4
+Do not truncate empty pages at the end of the table\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+This option is only available for servers running
+PostgreSQL
+12 and later\&.
+.sp .5v
+.RE
+.RE
+.PP
+\fB\-P \fR\fB\fIparallel_workers\fR\fR
+.br
+\fB\-\-parallel=\fR\fB\fIparallel_workers\fR\fR
+.RS 4
+Specify the number of parallel workers for
+parallel vacuum\&. This allows the vacuum to leverage multiple CPUs to process indexes\&. See
+\fBVACUUM\fR(7)\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+This option is only available for servers running
+PostgreSQL
+13 and later\&.
+.sp .5v
+.RE
+.RE
+.PP
 \fB\-q\fR
 .br
 \fB\-\-quiet\fR
 .RS 4
 Do not display progress messages\&.
+.RE
+.PP
+\fB\-\-skip\-locked\fR
+.RS 4
+Skip relations that cannot be immediately locked for processing\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+This option is only available for servers running
+PostgreSQL
+12 and later\&.
+.sp .5v
+.RE
 .RE
 .PP
 \fB\-t \fR\fB\fItable\fR\fR\fB [ (\fR\fB\fIcolumn\fR\fR\fB [,\&.\&.\&.]) ]\fR
@@ -255,11 +479,14 @@ to avoid the extra connection attempt\&.
 .PP
 \fB\-\-maintenance\-db=\fR\fB\fIdbname\fR\fR
 .RS 4
-Specifies the name of the database to connect to discover what other databases should be vacuumed\&. If not specified, the
+When the
+\fB\-a\fR/\fB\-\-all\fR
+is used, connect to this database to gather the list of databases to vacuum\&. If not specified, the
 postgres
-database will be used, and if that does not exist,
+database will be used, or if that does not exist,
 template1
-will be used\&.
+will be used\&. This can be a
+connection string\&. If so, connection string parameters will override any conflicting command line options\&. Also, connection string parameters other than the database name itself will be re\-used when connecting to other databases\&.
 .RE
 .SH "ENVIRONMENT"
 .PP
@@ -274,12 +501,21 @@ will be used\&.
 Default connection parameters
 .RE
 .PP
+\fBPG_COLOR\fR
+.RS 4
+Specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.RE
+.PP
 This utility, like most other
 PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section\ \&34.14)\&.
+Section\ \&34.15)\&.
 .SH "DIAGNOSTICS"
 .PP
 In case of difficulty, see
@@ -297,7 +533,7 @@ PostgreSQL
 server, asking for a password each time\&. It is convenient to have a
 ~/\&.pgpass
 file in such cases\&. See
-Section\ \&34.15
+Section\ \&34.16
 for more information\&.
 .SH "EXAMPLES"
 .PP

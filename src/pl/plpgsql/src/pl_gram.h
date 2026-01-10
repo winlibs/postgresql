@@ -1,8 +1,9 @@
-/* A Bison parser, made by GNU Bison 3.0.4.  */
+/* A Bison parser, made by GNU Bison 3.8.2.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
+   Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -30,6 +31,10 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
+/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
+   especially those whose name start with YY_ or yy_.  They are
+   private implementation details that can be changed or removed.  */
+
 #ifndef YY_PLPGSQL_YY_PL_GRAM_H_INCLUDED
 # define YY_PLPGSQL_YY_PL_GRAM_H_INCLUDED
 /* Debug traces.  */
@@ -40,145 +45,150 @@
 extern int plpgsql_yydebug;
 #endif
 
-/* Token type.  */
+/* Token kinds.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    IDENT = 258,
-    FCONST = 259,
-    SCONST = 260,
-    BCONST = 261,
-    XCONST = 262,
-    Op = 263,
-    ICONST = 264,
-    PARAM = 265,
-    TYPECAST = 266,
-    DOT_DOT = 267,
-    COLON_EQUALS = 268,
-    EQUALS_GREATER = 269,
-    LESS_EQUALS = 270,
-    GREATER_EQUALS = 271,
-    NOT_EQUALS = 272,
-    T_WORD = 273,
-    T_CWORD = 274,
-    T_DATUM = 275,
-    LESS_LESS = 276,
-    GREATER_GREATER = 277,
-    K_ABSOLUTE = 278,
-    K_ALIAS = 279,
-    K_ALL = 280,
-    K_ARRAY = 281,
-    K_ASSERT = 282,
-    K_BACKWARD = 283,
-    K_BEGIN = 284,
-    K_BY = 285,
-    K_CALL = 286,
-    K_CASE = 287,
-    K_CLOSE = 288,
-    K_COLLATE = 289,
-    K_COLUMN = 290,
-    K_COLUMN_NAME = 291,
-    K_COMMIT = 292,
-    K_CONSTANT = 293,
-    K_CONSTRAINT = 294,
-    K_CONSTRAINT_NAME = 295,
-    K_CONTINUE = 296,
-    K_CURRENT = 297,
-    K_CURSOR = 298,
-    K_DATATYPE = 299,
-    K_DEBUG = 300,
-    K_DECLARE = 301,
-    K_DEFAULT = 302,
-    K_DETAIL = 303,
-    K_DIAGNOSTICS = 304,
-    K_DO = 305,
-    K_DUMP = 306,
-    K_ELSE = 307,
-    K_ELSIF = 308,
-    K_END = 309,
-    K_ERRCODE = 310,
-    K_ERROR = 311,
-    K_EXCEPTION = 312,
-    K_EXECUTE = 313,
-    K_EXIT = 314,
-    K_FETCH = 315,
-    K_FIRST = 316,
-    K_FOR = 317,
-    K_FOREACH = 318,
-    K_FORWARD = 319,
-    K_FROM = 320,
-    K_GET = 321,
-    K_HINT = 322,
-    K_IF = 323,
-    K_IMPORT = 324,
-    K_IN = 325,
-    K_INFO = 326,
-    K_INSERT = 327,
-    K_INTO = 328,
-    K_IS = 329,
-    K_LAST = 330,
-    K_LOG = 331,
-    K_LOOP = 332,
-    K_MESSAGE = 333,
-    K_MESSAGE_TEXT = 334,
-    K_MOVE = 335,
-    K_NEXT = 336,
-    K_NO = 337,
-    K_NOT = 338,
-    K_NOTICE = 339,
-    K_NULL = 340,
-    K_OPEN = 341,
-    K_OPTION = 342,
-    K_OR = 343,
-    K_PERFORM = 344,
-    K_PG_CONTEXT = 345,
-    K_PG_DATATYPE_NAME = 346,
-    K_PG_EXCEPTION_CONTEXT = 347,
-    K_PG_EXCEPTION_DETAIL = 348,
-    K_PG_EXCEPTION_HINT = 349,
-    K_PRINT_STRICT_PARAMS = 350,
-    K_PRIOR = 351,
-    K_QUERY = 352,
-    K_RAISE = 353,
-    K_RELATIVE = 354,
-    K_RESET = 355,
-    K_RESULT_OID = 356,
-    K_RETURN = 357,
-    K_RETURNED_SQLSTATE = 358,
-    K_REVERSE = 359,
-    K_ROLLBACK = 360,
-    K_ROW_COUNT = 361,
-    K_ROWTYPE = 362,
-    K_SCHEMA = 363,
-    K_SCHEMA_NAME = 364,
-    K_SCROLL = 365,
-    K_SET = 366,
-    K_SLICE = 367,
-    K_SQLSTATE = 368,
-    K_STACKED = 369,
-    K_STRICT = 370,
-    K_TABLE = 371,
-    K_TABLE_NAME = 372,
-    K_THEN = 373,
-    K_TO = 374,
-    K_TYPE = 375,
-    K_USE_COLUMN = 376,
-    K_USE_VARIABLE = 377,
-    K_USING = 378,
-    K_VARIABLE_CONFLICT = 379,
-    K_WARNING = 380,
-    K_WHEN = 381,
-    K_WHILE = 382
+    YYEMPTY = -2,
+    YYEOF = 0,                     /* "end of file"  */
+    YYerror = 256,                 /* error  */
+    YYUNDEF = 257,                 /* "invalid token"  */
+    IDENT = 258,                   /* IDENT  */
+    UIDENT = 259,                  /* UIDENT  */
+    FCONST = 260,                  /* FCONST  */
+    SCONST = 261,                  /* SCONST  */
+    USCONST = 262,                 /* USCONST  */
+    BCONST = 263,                  /* BCONST  */
+    XCONST = 264,                  /* XCONST  */
+    Op = 265,                      /* Op  */
+    ICONST = 266,                  /* ICONST  */
+    PARAM = 267,                   /* PARAM  */
+    TYPECAST = 268,                /* TYPECAST  */
+    DOT_DOT = 269,                 /* DOT_DOT  */
+    COLON_EQUALS = 270,            /* COLON_EQUALS  */
+    EQUALS_GREATER = 271,          /* EQUALS_GREATER  */
+    LESS_EQUALS = 272,             /* LESS_EQUALS  */
+    GREATER_EQUALS = 273,          /* GREATER_EQUALS  */
+    NOT_EQUALS = 274,              /* NOT_EQUALS  */
+    T_WORD = 275,                  /* T_WORD  */
+    T_CWORD = 276,                 /* T_CWORD  */
+    T_DATUM = 277,                 /* T_DATUM  */
+    LESS_LESS = 278,               /* LESS_LESS  */
+    GREATER_GREATER = 279,         /* GREATER_GREATER  */
+    K_ABSOLUTE = 280,              /* K_ABSOLUTE  */
+    K_ALIAS = 281,                 /* K_ALIAS  */
+    K_ALL = 282,                   /* K_ALL  */
+    K_AND = 283,                   /* K_AND  */
+    K_ARRAY = 284,                 /* K_ARRAY  */
+    K_ASSERT = 285,                /* K_ASSERT  */
+    K_BACKWARD = 286,              /* K_BACKWARD  */
+    K_BEGIN = 287,                 /* K_BEGIN  */
+    K_BY = 288,                    /* K_BY  */
+    K_CALL = 289,                  /* K_CALL  */
+    K_CASE = 290,                  /* K_CASE  */
+    K_CHAIN = 291,                 /* K_CHAIN  */
+    K_CLOSE = 292,                 /* K_CLOSE  */
+    K_COLLATE = 293,               /* K_COLLATE  */
+    K_COLUMN = 294,                /* K_COLUMN  */
+    K_COLUMN_NAME = 295,           /* K_COLUMN_NAME  */
+    K_COMMIT = 296,                /* K_COMMIT  */
+    K_CONSTANT = 297,              /* K_CONSTANT  */
+    K_CONSTRAINT = 298,            /* K_CONSTRAINT  */
+    K_CONSTRAINT_NAME = 299,       /* K_CONSTRAINT_NAME  */
+    K_CONTINUE = 300,              /* K_CONTINUE  */
+    K_CURRENT = 301,               /* K_CURRENT  */
+    K_CURSOR = 302,                /* K_CURSOR  */
+    K_DATATYPE = 303,              /* K_DATATYPE  */
+    K_DEBUG = 304,                 /* K_DEBUG  */
+    K_DECLARE = 305,               /* K_DECLARE  */
+    K_DEFAULT = 306,               /* K_DEFAULT  */
+    K_DETAIL = 307,                /* K_DETAIL  */
+    K_DIAGNOSTICS = 308,           /* K_DIAGNOSTICS  */
+    K_DO = 309,                    /* K_DO  */
+    K_DUMP = 310,                  /* K_DUMP  */
+    K_ELSE = 311,                  /* K_ELSE  */
+    K_ELSIF = 312,                 /* K_ELSIF  */
+    K_END = 313,                   /* K_END  */
+    K_ERRCODE = 314,               /* K_ERRCODE  */
+    K_ERROR = 315,                 /* K_ERROR  */
+    K_EXCEPTION = 316,             /* K_EXCEPTION  */
+    K_EXECUTE = 317,               /* K_EXECUTE  */
+    K_EXIT = 318,                  /* K_EXIT  */
+    K_FETCH = 319,                 /* K_FETCH  */
+    K_FIRST = 320,                 /* K_FIRST  */
+    K_FOR = 321,                   /* K_FOR  */
+    K_FOREACH = 322,               /* K_FOREACH  */
+    K_FORWARD = 323,               /* K_FORWARD  */
+    K_FROM = 324,                  /* K_FROM  */
+    K_GET = 325,                   /* K_GET  */
+    K_HINT = 326,                  /* K_HINT  */
+    K_IF = 327,                    /* K_IF  */
+    K_IMPORT = 328,                /* K_IMPORT  */
+    K_IN = 329,                    /* K_IN  */
+    K_INFO = 330,                  /* K_INFO  */
+    K_INSERT = 331,                /* K_INSERT  */
+    K_INTO = 332,                  /* K_INTO  */
+    K_IS = 333,                    /* K_IS  */
+    K_LAST = 334,                  /* K_LAST  */
+    K_LOG = 335,                   /* K_LOG  */
+    K_LOOP = 336,                  /* K_LOOP  */
+    K_MESSAGE = 337,               /* K_MESSAGE  */
+    K_MESSAGE_TEXT = 338,          /* K_MESSAGE_TEXT  */
+    K_MOVE = 339,                  /* K_MOVE  */
+    K_NEXT = 340,                  /* K_NEXT  */
+    K_NO = 341,                    /* K_NO  */
+    K_NOT = 342,                   /* K_NOT  */
+    K_NOTICE = 343,                /* K_NOTICE  */
+    K_NULL = 344,                  /* K_NULL  */
+    K_OPEN = 345,                  /* K_OPEN  */
+    K_OPTION = 346,                /* K_OPTION  */
+    K_OR = 347,                    /* K_OR  */
+    K_PERFORM = 348,               /* K_PERFORM  */
+    K_PG_CONTEXT = 349,            /* K_PG_CONTEXT  */
+    K_PG_DATATYPE_NAME = 350,      /* K_PG_DATATYPE_NAME  */
+    K_PG_EXCEPTION_CONTEXT = 351,  /* K_PG_EXCEPTION_CONTEXT  */
+    K_PG_EXCEPTION_DETAIL = 352,   /* K_PG_EXCEPTION_DETAIL  */
+    K_PG_EXCEPTION_HINT = 353,     /* K_PG_EXCEPTION_HINT  */
+    K_PRINT_STRICT_PARAMS = 354,   /* K_PRINT_STRICT_PARAMS  */
+    K_PRIOR = 355,                 /* K_PRIOR  */
+    K_QUERY = 356,                 /* K_QUERY  */
+    K_RAISE = 357,                 /* K_RAISE  */
+    K_RELATIVE = 358,              /* K_RELATIVE  */
+    K_RETURN = 359,                /* K_RETURN  */
+    K_RETURNED_SQLSTATE = 360,     /* K_RETURNED_SQLSTATE  */
+    K_REVERSE = 361,               /* K_REVERSE  */
+    K_ROLLBACK = 362,              /* K_ROLLBACK  */
+    K_ROW_COUNT = 363,             /* K_ROW_COUNT  */
+    K_ROWTYPE = 364,               /* K_ROWTYPE  */
+    K_SCHEMA = 365,                /* K_SCHEMA  */
+    K_SCHEMA_NAME = 366,           /* K_SCHEMA_NAME  */
+    K_SCROLL = 367,                /* K_SCROLL  */
+    K_SLICE = 368,                 /* K_SLICE  */
+    K_SQLSTATE = 369,              /* K_SQLSTATE  */
+    K_STACKED = 370,               /* K_STACKED  */
+    K_STRICT = 371,                /* K_STRICT  */
+    K_TABLE = 372,                 /* K_TABLE  */
+    K_TABLE_NAME = 373,            /* K_TABLE_NAME  */
+    K_THEN = 374,                  /* K_THEN  */
+    K_TO = 375,                    /* K_TO  */
+    K_TYPE = 376,                  /* K_TYPE  */
+    K_USE_COLUMN = 377,            /* K_USE_COLUMN  */
+    K_USE_VARIABLE = 378,          /* K_USE_VARIABLE  */
+    K_USING = 379,                 /* K_USING  */
+    K_VARIABLE_CONFLICT = 380,     /* K_VARIABLE_CONFLICT  */
+    K_WARNING = 381,               /* K_WARNING  */
+    K_WHEN = 382,                  /* K_WHEN  */
+    K_WHILE = 383                  /* K_WHILE  */
   };
+  typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-
 union YYSTYPE
 {
-#line 120 "pl_gram.y" /* yacc.c:1909  */
+#line 119 "pl_gram.y"
 
 		core_YYSTYPE			core_yystype;
 		/* these fields must match core_YYSTYPE: */
@@ -229,9 +239,9 @@ union YYSTYPE
 		PLpgSQL_stmt_fetch		*fetch;
 		PLpgSQL_case_when		*casewhen;
 
-#line 233 "pl_gram.h" /* yacc.c:1909  */
-};
+#line 243 "pl_gram.h"
 
+};
 typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
@@ -254,6 +264,8 @@ struct YYLTYPE
 
 extern YYSTYPE plpgsql_yylval;
 extern YYLTYPE plpgsql_yylloc;
+
 int plpgsql_yyparse (void);
+
 
 #endif /* !YY_PLPGSQL_YY_PL_GRAM_H_INCLUDED  */

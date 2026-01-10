@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE ROLE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-createpublication.html" title="CREATE PUBLICATION" /><link rel="next" href="sql-createrule.html" title="CREATE RULE" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE ROLE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createpublication.html" title="CREATE PUBLICATION">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createrule.html" title="CREATE RULE">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-CREATEROLE"><div class="titlepage"></div><a id="id-1.9.3.78.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE ROLE</span></h2><p>CREATE ROLE — define a new database role</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE ROLE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sql-createpublication.html" title="CREATE PUBLICATION" /><link rel="next" href="sql-createrule.html" title="CREATE RULE" /></head><body id="docContent" class="container-fluid col-10"><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE ROLE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createpublication.html" title="CREATE PUBLICATION">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createrule.html" title="CREATE RULE">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-CREATEROLE"><div class="titlepage"></div><a id="id-1.9.3.78.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE ROLE</span></h2><p>CREATE ROLE — define a new database role</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
 CREATE ROLE <em class="replaceable"><code>name</code></em> [ [ WITH ] <em class="replaceable"><code>option</code></em> [ ... ] ]
 
 <span class="phrase">where <em class="replaceable"><code>option</code></em> can be:</span>
@@ -26,7 +26,7 @@ CREATE ROLE <em class="replaceable"><code>name</code></em> [ [ WITH ] <em class=
    an entity that can own database objects and have database privileges;
    a role can be considered a <span class="quote">“<span class="quote">user</span>”</span>, a <span class="quote">“<span class="quote">group</span>”</span>, or both
    depending on how it is used.  Refer to
-   <a class="xref" href="user-manag.html" title="Chapter 21. Database Roles">Chapter 21</a> and <a class="xref" href="client-authentication.html" title="Chapter 20. Client Authentication">Chapter 20</a> for information about managing
+   <a class="xref" href="user-manag.html" title="Chapter 22. Database Roles">Chapter 22</a> and <a class="xref" href="client-authentication.html" title="Chapter 21. Client Authentication">Chapter 21</a> for information about managing
    users and authentication.  You must have <code class="literal">CREATEROLE</code>
    privilege or be a database superuser to use this command.
   </p><p>
@@ -50,11 +50,11 @@ CREATE ROLE <em class="replaceable"><code>name</code></em> [ [ WITH ] <em class=
         <code class="literal">NOCREATEDB</code> is the default.
        </p></dd><dt><span class="term"><code class="literal">CREATEROLE</code><br /></span><span class="term"><code class="literal">NOCREATEROLE</code></span></dt><dd><p>
         These clauses determine whether a role will be permitted to
-        create new roles (that is, execute <code class="command">CREATE ROLE</code>).
-        A role with <code class="literal">CREATEROLE</code> privilege can also alter
-        and drop other roles.
-        If not specified,
-        <code class="literal">NOCREATEROLE</code> is the default.
+        create, alter, drop, comment on, change the security label for,
+        and grant or revoke membership in other roles.
+        See <a class="xref" href="role-attributes.html#ROLE-CREATION">role creation</a> for more details about what
+        capabilities are conferred by this privilege.
+        If not specified, <code class="literal">NOCREATEROLE</code> is the default.
        </p></dd><dt><span class="term"><code class="literal">INHERIT</code><br /></span><span class="term"><code class="literal">NOINHERIT</code></span></dt><dd><p>
         These clauses determine whether a role <span class="quote">“<span class="quote">inherits</span>”</span> the
         privileges of roles it is a member of.
@@ -77,7 +77,7 @@ CREATE ROLE <em class="replaceable"><code>name</code></em> [ [ WITH ] <em class=
         If not specified,
         <code class="literal">NOLOGIN</code> is the default, except when
         <code class="command">CREATE ROLE</code> is invoked through its alternative spelling
-        <a class="xref" href="sql-createuser.html" title="CREATE USER"><span class="refentrytitle">CREATE USER</span></a>.
+        <a class="link" href="sql-createuser.html" title="CREATE USER"><code class="command">CREATE USER</code></a>.
        </p></dd><dt><span class="term"><code class="literal">REPLICATION</code><br /></span><span class="term"><code class="literal">NOREPLICATION</code></span></dt><dd><p>
         These clauses determine whether a role is a replication role.  A role
         must have this attribute (or be a superuser) in order to be able to
@@ -88,14 +88,19 @@ CREATE ROLE <em class="replaceable"><code>name</code></em> [ [ WITH ] <em class=
         highly privileged role, and should only be used on roles actually
         used for replication. If not specified,
         <code class="literal">NOREPLICATION</code> is the default.
+        You must be a superuser to create a new role having the
+        <code class="literal">REPLICATION</code> attribute.
        </p></dd><dt><span class="term"><code class="literal">BYPASSRLS</code><br /></span><span class="term"><code class="literal">NOBYPASSRLS</code></span></dt><dd><p>
         These clauses determine whether a role bypasses every row-level
         security (RLS) policy.  <code class="literal">NOBYPASSRLS</code> is the default.
+        You must be a superuser to create a new role having
+        the <code class="literal">BYPASSRLS</code> attribute.
+       </p><p>
         Note that pg_dump will set <code class="literal">row_security</code> to
         <code class="literal">OFF</code> by default, to ensure all contents of a table are
         dumped out.  If the user running pg_dump does not have appropriate
-        permissions, an error will be returned.  The superuser and owner of the
-        table being dumped always bypass RLS.
+        permissions, an error will be returned.  However, superusers and the
+        owner of the table being dumped always bypass RLS.
        </p></dd><dt><span class="term"><code class="literal">CONNECTION LIMIT</code> <em class="replaceable"><code>connlimit</code></em></span></dt><dd><p>
         If role can log in, this specifies how many concurrent connections
         the role can make.  -1 (the default) means no limit. Note that only
@@ -157,19 +162,19 @@ CREATE ROLE <em class="replaceable"><code>name</code></em> [ [ WITH ] <em class=
         The <code class="literal">SYSID</code> clause is ignored, but is accepted
         for backwards compatibility.
        </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.78.7"><h2>Notes</h2><p>
-   Use <a class="xref" href="sql-alterrole.html" title="ALTER ROLE"><span class="refentrytitle">ALTER ROLE</span></a> to
-   change the attributes of a role, and <a class="xref" href="sql-droprole.html" title="DROP ROLE"><span class="refentrytitle">DROP ROLE</span></a>
+   Use <a class="link" href="sql-alterrole.html" title="ALTER ROLE"><code class="command">ALTER ROLE</code></a> to
+   change the attributes of a role, and <a class="link" href="sql-droprole.html" title="DROP ROLE"><code class="command">DROP ROLE</code></a>
    to remove a role.  All the attributes
    specified by <code class="command">CREATE ROLE</code> can be modified by later
    <code class="command">ALTER ROLE</code> commands.
   </p><p>
    The preferred way to add and remove members of roles that are being
    used as groups is to use
-   <a class="xref" href="sql-grant.html" title="GRANT"><span class="refentrytitle">GRANT</span></a> and
-   <a class="xref" href="sql-revoke.html" title="REVOKE"><span class="refentrytitle">REVOKE</span></a>.
+   <a class="link" href="sql-grant.html" title="GRANT"><code class="command">GRANT</code></a> and
+   <a class="link" href="sql-revoke.html" title="REVOKE"><code class="command">REVOKE</code></a>.
   </p><p>
    The <code class="literal">VALID UNTIL</code> clause defines an expiration time for a
-   password only, not for the role <span class="foreignphrase"><em class="foreignphrase">per se</em></span>.  In
+   password only, not for the role per se.  In
    particular, the expiration time is not enforced when logging in using
    a non-password-based authentication method.
   </p><p>
@@ -180,7 +185,7 @@ CREATE ROLE <em class="replaceable"><code>name</code></em> [ [ WITH ] <em class=
    a member of a role with <code class="literal">CREATEDB</code> privilege does not immediately
    grant the ability to create databases, even if <code class="literal">INHERIT</code> is set;
    it would be necessary to become that role via
-   <a class="xref" href="sql-set-role.html" title="SET ROLE"><span class="refentrytitle">SET ROLE</span></a> before
+   <a class="link" href="sql-set-role.html" title="SET ROLE"><code class="command">SET ROLE</code></a> before
    creating a database.
   </p><p>
    The <code class="literal">INHERIT</code> attribute is the default for reasons of backwards
@@ -261,4 +266,4 @@ CREATE ROLE <em class="replaceable"><code>name</code></em> [ WITH ADMIN <em clas
    The behavior specified by the SQL standard is most closely approximated
    by giving users the <code class="literal">NOINHERIT</code> attribute, while roles are
    given the <code class="literal">INHERIT</code> attribute.
-  </p></div><div class="refsect1" id="id-1.9.3.78.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-set-role.html" title="SET ROLE"><span class="refentrytitle">SET ROLE</span></a>, <a class="xref" href="sql-alterrole.html" title="ALTER ROLE"><span class="refentrytitle">ALTER ROLE</span></a>, <a class="xref" href="sql-droprole.html" title="DROP ROLE"><span class="refentrytitle">DROP ROLE</span></a>, <a class="xref" href="sql-grant.html" title="GRANT"><span class="refentrytitle">GRANT</span></a>, <a class="xref" href="sql-revoke.html" title="REVOKE"><span class="refentrytitle">REVOKE</span></a>, <a class="xref" href="app-createuser.html" title="createuser"><span class="refentrytitle"><span class="application">createuser</span></span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createpublication.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createrule.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE PUBLICATION </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> CREATE RULE</td></tr></table></div></body></html>
+  </p></div><div class="refsect1" id="id-1.9.3.78.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-set-role.html" title="SET ROLE"><span class="refentrytitle">SET ROLE</span></a>, <a class="xref" href="sql-alterrole.html" title="ALTER ROLE"><span class="refentrytitle">ALTER ROLE</span></a>, <a class="xref" href="sql-droprole.html" title="DROP ROLE"><span class="refentrytitle">DROP ROLE</span></a>, <a class="xref" href="sql-grant.html" title="GRANT"><span class="refentrytitle">GRANT</span></a>, <a class="xref" href="sql-revoke.html" title="REVOKE"><span class="refentrytitle">REVOKE</span></a>, <a class="xref" href="app-createuser.html" title="createuser"><span class="refentrytitle"><span class="application">createuser</span></span></a></span></div></div><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navfooter"><hr></hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createpublication.html" title="CREATE PUBLICATION">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createrule.html" title="CREATE RULE">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE PUBLICATION </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="40%" align="right" valign="top"> CREATE RULE</td></tr></table></div></body></html>

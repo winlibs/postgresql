@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.12. Tips for Developing in PL/pgSQL</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plpgsql-implementation.html" title="43.11. PL/pgSQL Under the Hood" /><link rel="next" href="plpgsql-porting.html" title="43.13. Porting from Oracle PL/SQL" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.12. Tips for Developing in <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-implementation.html" title="43.11. PL/pgSQL Under the Hood">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL - SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> - <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpgsql-porting.html" title="43.13. Porting from Oracle PL/SQL">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPGSQL-DEVELOPMENT-TIPS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.12. Tips for Developing in <span class="application">PL/pgSQL</span></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-development-tips.html#PLPGSQL-QUOTE-TIPS">43.12.1. Handling of Quotation Marks</a></span></dt><dt><span class="sect2"><a href="plpgsql-development-tips.html#PLPGSQL-EXTRA-CHECKS">43.12.2. Additional Compile-time Checks</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.12. Tips for Developing in PL/pgSQL</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="plpgsql-implementation.html" title="43.11. PL/pgSQL under the Hood" /><link rel="next" href="plpgsql-porting.html" title="43.13. Porting from Oracle PL/SQL" /></head><body id="docContent" class="container-fluid col-10"><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.12. Tips for Developing in <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-implementation.html" title="43.11. PL/pgSQL under the Hood">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL — SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> — <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpgsql-porting.html" title="43.13. Porting from Oracle PL/SQL">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPGSQL-DEVELOPMENT-TIPS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.12. Tips for Developing in <span class="application">PL/pgSQL</span></h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-development-tips.html#PLPGSQL-QUOTE-TIPS">43.12.1. Handling of Quotation Marks</a></span></dt><dt><span class="sect2"><a href="plpgsql-development-tips.html#PLPGSQL-EXTRA-CHECKS">43.12.2. Additional Compile-Time and Run-Time Checks</a></span></dt></dl></div><p>
     One good way to develop in
     <span class="application">PL/pgSQL</span> is to use the text editor of your
     choice to create your functions, and in another window, use
@@ -38,7 +38,7 @@ $$ LANGUAGE plpgsql;
     the code can become downright incomprehensible, because you can
     easily find yourself needing half a dozen or more adjacent quote marks.
     It's recommended that you instead write the function body as a
-    <span class="quote">“<span class="quote">dollar-quoted</span>”</span> string literal (see <a class="xref" href="sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING" title="4.1.2.4. Dollar-quoted String Constants">Section 4.1.2.4</a>).  In the dollar-quoting
+    <span class="quote">“<span class="quote">dollar-quoted</span>”</span> string literal (see <a class="xref" href="sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING" title="4.1.2.4. Dollar-Quoted String Constants">Section 4.1.2.4</a>).  In the dollar-quoting
     approach, you never double any quote marks, but instead take care to
     choose a different dollar-quoting delimiter for each level of
     nesting you need.  For example, you might write the <code class="command">CREATE
@@ -134,7 +134,7 @@ a_output := a_output || $$ if v_$$ || referrer_keys.kind || $$ like '$$
 </pre><p>
       where we assume we only need to put single quote marks into
       <code class="literal">a_output</code>, because it will be re-quoted before use.
-     </p></dd></dl></div></div><div class="sect2" id="PLPGSQL-EXTRA-CHECKS"><div class="titlepage"><div><div><h3 class="title">43.12.2. Additional Compile-time Checks</h3></div></div></div><p>
+     </p></dd></dl></div></div><div class="sect2" id="PLPGSQL-EXTRA-CHECKS"><div class="titlepage"><div><div><h3 class="title">43.12.2. Additional Compile-Time and Run-Time Checks</h3></div></div></div><p>
     To aid the user in finding instances of simple but common problems before
     they cause harm, <span class="application">PL/pgSQL</span> provides additional
     <em class="replaceable"><code>checks</code></em>. When enabled, depending on the configuration, they
@@ -143,18 +143,40 @@ a_output := a_output || $$ if v_$$ || referrer_keys.kind || $$ like '$$
     a <code class="literal">WARNING</code> can be executed without producing further messages,
     so you are advised to test in a separate development environment.
    </p><p>
-  These additional checks are enabled through the configuration variables
-  <code class="varname">plpgsql.extra_warnings</code> for warnings and
-  <code class="varname">plpgsql.extra_errors</code> for errors. Both can be set either to
-  a comma-separated list of checks, <code class="literal">"none"</code> or <code class="literal">"all"</code>.
-  The default is <code class="literal">"none"</code>. Currently the list of available checks
-  includes only one:
-  </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="varname">shadowed_variables</code></span></dt><dd><p>
-      Checks if a declaration shadows a previously defined variable.
-     </p></dd></dl></div><p>
+    Setting <code class="varname">plpgsql.extra_warnings</code>, or
+    <code class="varname">plpgsql.extra_errors</code>, as appropriate, to <code class="literal">"all"</code>
+    is encouraged in development and/or testing environments.
+   </p><p>
+    These additional checks are enabled through the configuration variables
+    <code class="varname">plpgsql.extra_warnings</code> for warnings and
+    <code class="varname">plpgsql.extra_errors</code> for errors. Both can be set either to
+    a comma-separated list of checks, <code class="literal">"none"</code> or
+    <code class="literal">"all"</code>. The default is <code class="literal">"none"</code>. Currently
+    the list of available checks includes:
+    </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="varname">shadowed_variables</code></span></dt><dd><p>
+        Checks if a declaration shadows a previously defined variable.
+       </p></dd><dt><span class="term"><code class="varname">strict_multi_assignment</code></span></dt><dd><p>
+        Some <span class="application">PL/PgSQL</span> commands allow assigning
+        values to more than one variable at a time, such as
+        <code class="command">SELECT INTO</code>.  Typically, the number of target
+        variables and the number of source variables should match, though
+        <span class="application">PL/PgSQL</span> will use <code class="literal">NULL</code>
+        for missing values and extra variables are ignored.  Enabling this
+        check will cause <span class="application">PL/PgSQL</span> to throw a
+        <code class="literal">WARNING</code> or <code class="literal">ERROR</code> whenever the
+        number of target variables and the number of source variables are
+        different.
+       </p></dd><dt><span class="term"><code class="varname">too_many_rows</code></span></dt><dd><p>
+        Enabling this check will cause <span class="application">PL/PgSQL</span> to
+        check if a given query returns more than one row when an
+        <code class="literal">INTO</code> clause is used.  As an <code class="literal">INTO</code>
+        statement will only ever use one row, having a query return multiple
+        rows is generally either inefficient and/or nondeterministic and
+        therefore is likely an error.
+       </p></dd></dl></div><p>
 
-  The following example shows the effect of <code class="varname">plpgsql.extra_warnings</code>
-  set to <code class="varname">shadowed_variables</code>:
+    The following example shows the effect of <code class="varname">plpgsql.extra_warnings</code>
+    set to <code class="varname">shadowed_variables</code>:
 </p><pre class="programlisting">
 SET plpgsql.extra_warnings TO 'shadowed_variables';
 
@@ -163,11 +185,44 @@ DECLARE
 f1 int;
 BEGIN
 RETURN f1;
-END
+END;
 $$ LANGUAGE plpgsql;
 WARNING:  variable "f1" shadows a previously defined variable
 LINE 3: f1 int;
         ^
 CREATE FUNCTION
 </pre><p>
- </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-implementation.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpgsql-porting.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.11. <span class="application">PL/pgSQL</span> Under the Hood </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 43.13. Porting from <span class="productname">Oracle</span> PL/SQL</td></tr></table></div></body></html>
+    The below example shows the effects of setting
+    <code class="varname">plpgsql.extra_warnings</code> to
+    <code class="varname">strict_multi_assignment</code>:
+</p><pre class="programlisting">
+SET plpgsql.extra_warnings TO 'strict_multi_assignment';
+
+CREATE OR REPLACE FUNCTION public.foo()
+ RETURNS void
+ LANGUAGE plpgsql
+AS $$
+DECLARE
+  x int;
+  y int;
+BEGIN
+  SELECT 1 INTO x, y;
+  SELECT 1, 2 INTO x, y;
+  SELECT 1, 2, 3 INTO x, y;
+END;
+$$;
+
+SELECT foo();
+WARNING:  number of source and target fields in assignment does not match
+DETAIL:  strict_multi_assignment check of extra_warnings is active.
+HINT:  Make sure the query returns the exact list of columns.
+WARNING:  number of source and target fields in assignment does not match
+DETAIL:  strict_multi_assignment check of extra_warnings is active.
+HINT:  Make sure the query returns the exact list of columns.
+
+ foo 
+-----
+ 
+(1 row)
+</pre><p>
+   </p></div></div><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navfooter"><hr></hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-implementation.html" title="43.11. PL/pgSQL under the Hood">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL — SQL Procedural Language">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpgsql-porting.html" title="43.13. Porting from Oracle PL/SQL">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.11. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> under the Hood </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 43.13. Porting from <span xmlns="http://www.w3.org/1999/xhtml" class="productname">Oracle</span> PL/SQL</td></tr></table></div></body></html>

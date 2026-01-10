@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER GROUP
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2025
+.\"    Manual: PostgreSQL 14.20 Documentation
+.\"    Source: PostgreSQL 14.20
 .\"  Language: English
 .\"
-.TH "ALTER GROUP" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER GROUP" "7" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,6 +38,7 @@ ALTER GROUP \fIrole_specification\fR DROP USER \fIuser_name\fR [, \&.\&.\&. ]
 where \fIrole_specification\fR can be:
 
     \fIrole_name\fR
+  | CURRENT_ROLE
   | CURRENT_USER
   | SESSION_USER
 
@@ -54,12 +55,12 @@ or a
 \(lqgroup\(rq
 for this purpose\&.) These variants are effectively equivalent to granting or revoking membership in the role named as the
 \(lqgroup\(rq; so the preferred way to do this is to use
-\fBGRANT\fR(7)
+\fBGRANT\fR
 or
-\fBREVOKE\fR(7)\&.
+\fBREVOKE\fR\&.
 .PP
 The third variant changes the name of the group\&. This is exactly equivalent to renaming the role with
-ALTER ROLE (\fBALTER_ROLE\fR(7))\&.
+\fBALTER ROLE\fR\&.
 .SH "PARAMETERS"
 .PP
 \fIgroup_name\fR

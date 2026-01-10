@@ -3,7 +3,7 @@
  * fe-protocol3.c
  *	  functions that are specific to frontend/backend protocol version 3
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -16,12 +16,7 @@
 
 #include <ctype.h>
 #include <fcntl.h>
-
-#include "libpq-fe.h"
-#include "libpq-int.h"
-
-#include "mb/pg_wchar.h"
-#include "port/pg_bswap.h"
+#include <limits.h>
 
 #ifdef WIN32
 #include "win32.h"
@@ -32,6 +27,10 @@
 #endif
 #endif
 
+#include "libpq-fe.h"
+#include "libpq-int.h"
+#include "mb/pg_wchar.h"
+#include "port/pg_bswap.h"
 
 /*
  * This macro lists the backend message types that could be "long" (more
@@ -51,9 +50,9 @@ static int	getNotify(PGconn *conn);
 static int	getCopyStart(PGconn *conn, ExecStatusType copytype);
 static int	getReadyForQuery(PGconn *conn);
 static void reportErrorPosition(PQExpBuffer msg, const char *query,
-					int loc, int encoding);
-static int build_startup_packet(const PGconn *conn, char *packet,
-					 const PQEnvironmentOption *options);
+								int loc, int encoding);
+static size_t build_startup_packet(const PGconn *conn, char *packet,
+								   const PQEnvironmentOption *options);
 
 
 /*
@@ -181,6 +180,7 @@ pqParseInput3(PGconn *conn)
 			}
 			else
 			{
+				/* Any other case is unexpected and we summarily skip it */
 				pqInternalNotice(&conn->noticeHooks,
 								 "message type 0x%02x arrived from server while idle",
 								 id);
@@ -204,8 +204,8 @@ pqParseInput3(PGconn *conn)
 														   PGRES_COMMAND_OK);
 						if (!conn->result)
 						{
-							printfPQExpBuffer(&conn->errorMessage,
-											  libpq_gettext("out of memory"));
+							appendPQExpBufferStr(&conn->errorMessage,
+												 libpq_gettext("out of memory"));
 							pqSaveErrorResult(conn);
 						}
 					}
@@ -219,10 +219,32 @@ pqParseInput3(PGconn *conn)
 						return;
 					conn->asyncStatus = PGASYNC_READY;
 					break;
-				case 'Z':		/* backend is ready for new query */
+				case 'Z':		/* sync response, backend is ready for new
+								 * query */
 					if (getReadyForQuery(conn))
 						return;
-					conn->asyncStatus = PGASYNC_IDLE;
+					if (conn->pipelineStatus != PQ_PIPELINE_OFF)
+					{
+						conn->result = PQmakeEmptyPGresult(conn,
+														   PGRES_PIPELINE_SYNC);
+						if (!conn->result)
+						{
+							appendPQExpBufferStr(&conn->errorMessage,
+												 libpq_gettext("out of memory"));
+							pqSaveErrorResult(conn);
+						}
+						else
+						{
+							conn->pipelineStatus = PQ_PIPELINE_ON;
+							conn->asyncStatus = PGASYNC_READY;
+						}
+					}
+					else
+					{
+						/* Advance the command queue and set us idle */
+						pqCommandQueueAdvance(conn, true, false);
+						conn->asyncStatus = PGASYNC_IDLE;
+					}
 					break;
 				case 'I':		/* empty query */
 					if (conn->result == NULL)
@@ -231,8 +253,8 @@ pqParseInput3(PGconn *conn)
 														   PGRES_EMPTY_QUERY);
 						if (!conn->result)
 						{
-							printfPQExpBuffer(&conn->errorMessage,
-											  libpq_gettext("out of memory"));
+							appendPQExpBufferStr(&conn->errorMessage,
+												 libpq_gettext("out of memory"));
 							pqSaveErrorResult(conn);
 						}
 					}
@@ -240,7 +262,8 @@ pqParseInput3(PGconn *conn)
 					break;
 				case '1':		/* Parse Complete */
 					/* If we're doing PQprepare, we're done; else ignore */
-					if (conn->queryclass == PGQUERY_PREPARE)
+					if (conn->cmd_queue_head &&
+						conn->cmd_queue_head->queryclass == PGQUERY_PREPARE)
 					{
 						if (conn->result == NULL)
 						{
@@ -248,8 +271,8 @@ pqParseInput3(PGconn *conn)
 															   PGRES_COMMAND_OK);
 							if (!conn->result)
 							{
-								printfPQExpBuffer(&conn->errorMessage,
-												  libpq_gettext("out of memory"));
+								appendPQExpBufferStr(&conn->errorMessage,
+													 libpq_gettext("out of memory"));
 								pqSaveErrorResult(conn);
 							}
 						}
@@ -257,8 +280,25 @@ pqParseInput3(PGconn *conn)
 					}
 					break;
 				case '2':		/* Bind Complete */
+					/* Nothing to do for this message type */
+					break;
 				case '3':		/* Close Complete */
-					/* Nothing to do for these message types */
+
+					/*
+					 * If we get CloseComplete when waiting for it, consume
+					 * the queue element and keep going.  A result is not
+					 * expected from this message; it is just there so that we
+					 * know to wait for it when PQsendQuery is used in
+					 * pipeline mode, before going in IDLE state.  Failing to
+					 * do this makes us receive CloseComplete when IDLE, which
+					 * creates problems.
+					 */
+					if (conn->cmd_queue_head &&
+						conn->cmd_queue_head->queryclass == PGQUERY_CLOSE)
+					{
+						pqCommandQueueAdvance(conn, false, false);
+					}
+
 					break;
 				case 'S':		/* parameter status */
 					if (getParameterStatus(conn))
@@ -287,13 +327,12 @@ pqParseInput3(PGconn *conn)
 						conn->inCursor += msgLength;
 					}
 					else if (conn->result == NULL ||
-							 conn->queryclass == PGQUERY_DESCRIBE)
+							 (conn->cmd_queue_head &&
+							  conn->cmd_queue_head->queryclass == PGQUERY_DESCRIBE))
 					{
 						/* First 'T' in a query sequence */
 						if (getRowDescriptions(conn, msgLength))
 							return;
-						/* getRowDescriptions() moves inStart itself */
-						continue;
 					}
 					else
 					{
@@ -317,10 +356,11 @@ pqParseInput3(PGconn *conn)
 					 *
 					 * If we're doing a Describe, we have to pass something
 					 * back to the client, so set up a COMMAND_OK result,
-					 * instead of TUPLES_OK.  Otherwise we can just ignore
-					 * this message.
+					 * instead of PGRES_TUPLES_OK.  Otherwise we can just
+					 * ignore this message.
 					 */
-					if (conn->queryclass == PGQUERY_DESCRIBE)
+					if (conn->cmd_queue_head &&
+						conn->cmd_queue_head->queryclass == PGQUERY_DESCRIBE)
 					{
 						if (conn->result == NULL)
 						{
@@ -328,8 +368,8 @@ pqParseInput3(PGconn *conn)
 															   PGRES_COMMAND_OK);
 							if (!conn->result)
 							{
-								printfPQExpBuffer(&conn->errorMessage,
-												  libpq_gettext("out of memory"));
+								appendPQExpBufferStr(&conn->errorMessage,
+													 libpq_gettext("out of memory"));
 								pqSaveErrorResult(conn);
 							}
 						}
@@ -339,8 +379,7 @@ pqParseInput3(PGconn *conn)
 				case 't':		/* Parameter Description */
 					if (getParamDescriptions(conn, msgLength))
 						return;
-					/* getParamDescriptions() moves inStart itself */
-					continue;
+					break;
 				case 'D':		/* Data Row */
 					if (conn->result != NULL &&
 						conn->result->resultStatus == PGRES_TUPLES_OK)
@@ -348,8 +387,6 @@ pqParseInput3(PGconn *conn)
 						/* Read another tuple of a normal query response */
 						if (getAnotherTuple(conn, msgLength))
 							return;
-						/* getAnotherTuple() moves inStart itself */
-						continue;
 					}
 					else if (conn->result != NULL &&
 							 conn->result->resultStatus == PGRES_FATAL_ERROR)
@@ -363,8 +400,8 @@ pqParseInput3(PGconn *conn)
 					else
 					{
 						/* Set up to report error at end of query */
-						printfPQExpBuffer(&conn->errorMessage,
-										  libpq_gettext("server sent data (\"D\" message) without prior row description (\"T\" message)\n"));
+						appendPQExpBufferStr(&conn->errorMessage,
+											 libpq_gettext("server sent data (\"D\" message) without prior row description (\"T\" message)\n"));
 						pqSaveErrorResult(conn);
 						/* Discard the unexpected message */
 						conn->inCursor += msgLength;
@@ -406,9 +443,8 @@ pqParseInput3(PGconn *conn)
 					 */
 					break;
 				default:
-					printfPQExpBuffer(&conn->errorMessage,
-									  libpq_gettext(
-													"unexpected response from server; first received character was \"%c\"\n"),
+					appendPQExpBuffer(&conn->errorMessage,
+									  libpq_gettext("unexpected response from server; first received character was \"%c\"\n"),
 									  id);
 					/* build an error result holding the error message */
 					pqSaveErrorResult(conn);
@@ -422,13 +458,17 @@ pqParseInput3(PGconn *conn)
 		/* Successfully consumed this message */
 		if (conn->inCursor == conn->inStart + 5 + msgLength)
 		{
+			/* trace server-to-client message */
+			if (conn->Pfdebug)
+				pqTraceOutputMessage(conn, conn->inBuffer + conn->inStart, false);
+
 			/* Normal case: parsing agrees with specified length */
 			conn->inStart = conn->inCursor;
 		}
 		else
 		{
 			/* Trouble --- report it */
-			printfPQExpBuffer(&conn->errorMessage,
+			appendPQExpBuffer(&conn->errorMessage,
 							  libpq_gettext("message contents do not agree with length in message type \"%c\"\n"),
 							  id);
 			/* build an error result holding the error message */
@@ -448,13 +488,12 @@ pqParseInput3(PGconn *conn)
 static void
 handleSyncLoss(PGconn *conn, char id, int msgLength)
 {
-	printfPQExpBuffer(&conn->errorMessage,
-					  libpq_gettext(
-									"lost synchronization with server: got message type \"%c\", length %d\n"),
+	appendPQExpBuffer(&conn->errorMessage,
+					  libpq_gettext("lost synchronization with server: got message type \"%c\", length %d\n"),
 					  id, msgLength);
 	/* build an error result holding the error message */
 	pqSaveErrorResult(conn);
-	conn->asyncStatus = PGASYNC_READY;	/* drop out of GetResult wait loop */
+	conn->asyncStatus = PGASYNC_READY;	/* drop out of PQgetResult wait loop */
 	/* flush input data since we're giving up on processing it */
 	pqDropConnection(conn, true);
 	conn->status = CONNECTION_BAD;	/* No more connection to backend */
@@ -466,7 +505,6 @@ handleSyncLoss(PGconn *conn, char id, int msgLength)
  * command for a prepared statement) containing the attribute data.
  * Returns: 0 if processed message successfully, EOF to suspend parsing
  * (the latter case is not actually used currently).
- * In the former case, conn->inStart has been advanced past the message.
  */
 static int
 getRowDescriptions(PGconn *conn, int msgLength)
@@ -481,7 +519,9 @@ getRowDescriptions(PGconn *conn, int msgLength)
 	 * PGresult created by getParamDescriptions, and we should fill data into
 	 * that.  Otherwise, create a new, empty PGresult.
 	 */
-	if (conn->queryclass == PGQUERY_DESCRIBE)
+	if (!conn->cmd_queue_head ||
+		(conn->cmd_queue_head &&
+		 conn->cmd_queue_head->queryclass == PGQUERY_DESCRIBE))
 	{
 		if (conn->result)
 			result = conn->result;
@@ -571,24 +611,16 @@ getRowDescriptions(PGconn *conn, int msgLength)
 			result->binary = 0;
 	}
 
-	/* Sanity check that we absorbed all the data */
-	if (conn->inCursor != conn->inStart + 5 + msgLength)
-	{
-		errmsg = libpq_gettext("extraneous data in \"T\" message");
-		goto advance_and_error;
-	}
-
 	/* Success! */
 	conn->result = result;
-
-	/* Advance inStart to show that the "T" message has been processed. */
-	conn->inStart = conn->inCursor;
 
 	/*
 	 * If we're doing a Describe, we're done, and ready to pass the result
 	 * back to the client.
 	 */
-	if (conn->queryclass == PGQUERY_DESCRIBE)
+	if ((!conn->cmd_queue_head) ||
+		(conn->cmd_queue_head &&
+		 conn->cmd_queue_head->queryclass == PGQUERY_DESCRIBE))
 	{
 		conn->asyncStatus = PGASYNC_READY;
 		return 0;
@@ -607,9 +639,6 @@ advance_and_error:
 	if (result && result != conn->result)
 		PQclear(result);
 
-	/* Discard the failed message by pretending we read it */
-	conn->inStart += 5 + msgLength;
-
 	/*
 	 * Replace partially constructed result with an error result. First
 	 * discard the old result to try to win back some memory.
@@ -625,8 +654,14 @@ advance_and_error:
 	if (!errmsg)
 		errmsg = libpq_gettext("out of memory for query result");
 
-	printfPQExpBuffer(&conn->errorMessage, "%s\n", errmsg);
+	appendPQExpBuffer(&conn->errorMessage, "%s\n", errmsg);
 	pqSaveErrorResult(conn);
+
+	/*
+	 * Show the message as fully consumed, else pqParseInput3 will overwrite
+	 * our error with a complaint about that.
+	 */
+	conn->inCursor = conn->inStart + 5 + msgLength;
 
 	/*
 	 * Return zero to allow input parsing to continue.  Subsequent "D"
@@ -639,12 +674,8 @@ advance_and_error:
 /*
  * parseInput subroutine to read a 't' (ParameterDescription) message.
  * We'll build a new PGresult structure containing the parameter data.
- * Returns: 0 if completed message, EOF if not enough data yet.
- * In the former case, conn->inStart has been advanced past the message.
- *
- * Note that if we run out of data, we have to release the partially
- * constructed PGresult, and rebuild it again next time.  Fortunately,
- * that shouldn't happen often, since 't' messages usually fit in a packet.
+ * Returns: 0 if processed message successfully, EOF to suspend parsing
+ * (the latter case is not actually used currently).
  */
 static int
 getParamDescriptions(PGconn *conn, int msgLength)
@@ -684,32 +715,18 @@ getParamDescriptions(PGconn *conn, int msgLength)
 		result->paramDescs[i].typid = typid;
 	}
 
-	/* Sanity check that we absorbed all the data */
-	if (conn->inCursor != conn->inStart + 5 + msgLength)
-	{
-		errmsg = libpq_gettext("extraneous data in \"t\" message");
-		goto advance_and_error;
-	}
-
 	/* Success! */
 	conn->result = result;
-
-	/* Advance inStart to show that the "t" message has been processed. */
-	conn->inStart = conn->inCursor;
 
 	return 0;
 
 not_enough_data:
-	PQclear(result);
-	return EOF;
+	errmsg = libpq_gettext("insufficient data in \"t\" message");
 
 advance_and_error:
 	/* Discard unsaved result, if any */
 	if (result && result != conn->result)
 		PQclear(result);
-
-	/* Discard the failed message by pretending we read it */
-	conn->inStart += 5 + msgLength;
 
 	/*
 	 * Replace partially constructed result with an error result. First
@@ -725,8 +742,14 @@ advance_and_error:
 	 */
 	if (!errmsg)
 		errmsg = libpq_gettext("out of memory");
-	printfPQExpBuffer(&conn->errorMessage, "%s\n", errmsg);
+	appendPQExpBuffer(&conn->errorMessage, "%s\n", errmsg);
 	pqSaveErrorResult(conn);
+
+	/*
+	 * Show the message as fully consumed, else pqParseInput3 will overwrite
+	 * our error with a complaint about that.
+	 */
+	conn->inCursor = conn->inStart + 5 + msgLength;
 
 	/*
 	 * Return zero to allow input parsing to continue.  Essentially, we've
@@ -741,7 +764,6 @@ advance_and_error:
  * We fill rowbuf with column pointers and then call the row processor.
  * Returns: 0 if processed message successfully, EOF to suspend parsing
  * (the latter case is not actually used currently).
- * In the former case, conn->inStart has been advanced past the message.
  */
 static int
 getAnotherTuple(PGconn *conn, int msgLength)
@@ -814,28 +836,14 @@ getAnotherTuple(PGconn *conn, int msgLength)
 		}
 	}
 
-	/* Sanity check that we absorbed all the data */
-	if (conn->inCursor != conn->inStart + 5 + msgLength)
-	{
-		errmsg = libpq_gettext("extraneous data in \"D\" message");
-		goto advance_and_error;
-	}
-
-	/* Advance inStart to show that the "D" message has been processed. */
-	conn->inStart = conn->inCursor;
-
 	/* Process the collected row */
 	errmsg = NULL;
 	if (pqRowProcessor(conn, &errmsg))
 		return 0;				/* normal, successful exit */
 
-	goto set_error_result;		/* pqRowProcessor failed, report it */
+	/* pqRowProcessor failed, fall through to report it */
 
 advance_and_error:
-	/* Discard the failed message by pretending we read it */
-	conn->inStart += 5 + msgLength;
-
-set_error_result:
 
 	/*
 	 * Replace partially constructed result with an error result. First
@@ -852,8 +860,14 @@ set_error_result:
 	if (!errmsg)
 		errmsg = libpq_gettext("out of memory for query result");
 
-	printfPQExpBuffer(&conn->errorMessage, "%s\n", errmsg);
+	appendPQExpBuffer(&conn->errorMessage, "%s\n", errmsg);
 	pqSaveErrorResult(conn);
+
+	/*
+	 * Show the message as fully consumed, else pqParseInput3 will overwrite
+	 * our error with a complaint about that.
+	 */
+	conn->inCursor = conn->inStart + 5 + msgLength;
 
 	/*
 	 * Return zero to allow input parsing to continue.  Subsequent "D"
@@ -878,6 +892,10 @@ pqGetErrorNotice3(PGconn *conn, bool isError)
 	bool		have_position = false;
 	PQExpBufferData workBuf;
 	char		id;
+
+	/* If in pipeline mode, set error indicator for it */
+	if (isError && conn->pipelineStatus != PQ_PIPELINE_OFF)
+		conn->pipelineStatus = PQ_PIPELINE_ABORTED;
 
 	/*
 	 * If this is an error message, pre-emptively clear any incomplete query
@@ -935,8 +953,8 @@ pqGetErrorNotice3(PGconn *conn, bool isError)
 	 * might need it for an error cursor display, which is only true if there
 	 * is a PG_DIAG_STATEMENT_POSITION field.
 	 */
-	if (have_position && conn->last_query && res)
-		res->errQuery = pqResultStrdup(res, conn->last_query);
+	if (have_position && res && conn->cmd_queue_head && conn->cmd_queue_head->query)
+		res->errQuery = pqResultStrdup(res, conn->cmd_queue_head->query);
 
 	/*
 	 * Now build the "overall" error message for PQresultErrorMessage.
@@ -950,12 +968,12 @@ pqGetErrorNotice3(PGconn *conn, bool isError)
 	if (isError)
 	{
 		if (res)
-			res->errMsg = pqResultStrdup(res, workBuf.data);
+			pqSetResultError(res, &workBuf);
 		pqClearAsyncResult(conn);	/* redundant, but be safe */
 		conn->result = res;
 		if (PQExpBufferDataBroken(workBuf))
-			printfPQExpBuffer(&conn->errorMessage,
-							  libpq_gettext("out of memory"));
+			appendPQExpBufferStr(&conn->errorMessage,
+								 libpq_gettext("out of memory\n"));
 		else
 			appendPQExpBufferStr(&conn->errorMessage, workBuf.data);
 	}
@@ -964,8 +982,15 @@ pqGetErrorNotice3(PGconn *conn, bool isError)
 		/* if we couldn't allocate the result set, just discard the NOTICE */
 		if (res)
 		{
-			/* We can cheat a little here and not copy the message. */
-			res->errMsg = workBuf.data;
+			/*
+			 * We can cheat a little here and not copy the message.  But if we
+			 * were unlucky enough to run out of memory while filling workBuf,
+			 * insert "out of memory", as in pqSetResultError.
+			 */
+			if (PQExpBufferDataBroken(workBuf))
+				res->errMsg = libpq_gettext("out of memory\n");
+			else
+				res->errMsg = workBuf.data;
 			if (res->noticeHooks.noticeRec != NULL)
 				res->noticeHooks.noticeRec(res->noticeHooks.noticeRecArg, res);
 			PQclear(res);
@@ -996,7 +1021,7 @@ pqBuildErrorMessage3(PQExpBuffer msg, const PGresult *res,
 	/* If we couldn't allocate a PGresult, just say "out of memory" */
 	if (res == NULL)
 	{
-		appendPQExpBuffer(msg, libpq_gettext("out of memory\n"));
+		appendPQExpBufferStr(msg, libpq_gettext("out of memory\n"));
 		return;
 	}
 
@@ -1009,7 +1034,7 @@ pqBuildErrorMessage3(PQExpBuffer msg, const PGresult *res,
 		if (res->errMsg && res->errMsg[0])
 			appendPQExpBufferStr(msg, res->errMsg);
 		else
-			appendPQExpBuffer(msg, libpq_gettext("no error message available\n"));
+			appendPQExpBufferStr(msg, libpq_gettext("no error message available\n"));
 		return;
 	}
 
@@ -1017,6 +1042,24 @@ pqBuildErrorMessage3(PQExpBuffer msg, const PGresult *res,
 	val = PQresultErrorField(res, PG_DIAG_SEVERITY);
 	if (val)
 		appendPQExpBuffer(msg, "%s:  ", val);
+
+	if (verbosity == PQERRORS_SQLSTATE)
+	{
+		/*
+		 * If we have a SQLSTATE, print that and nothing else.  If not (which
+		 * shouldn't happen for server-generated errors, but might possibly
+		 * happen for libpq-generated ones), fall back to TERSE format, as
+		 * that seems better than printing nothing at all.
+		 */
+		val = PQresultErrorField(res, PG_DIAG_SQLSTATE);
+		if (val)
+		{
+			appendPQExpBuffer(msg, "%s\n", val);
+			return;
+		}
+		verbosity = PQERRORS_TERSE;
+	}
+
 	if (verbosity == PQERRORS_VERBOSE)
 	{
 		val = PQresultErrorField(res, PG_DIAG_SQLSTATE);
@@ -1177,8 +1220,21 @@ reportErrorPosition(PQExpBuffer msg, const char *query, int loc, int encoding)
 	 * scridx[] respectively.
 	 */
 
-	/* we need a safe allocation size... */
+	/*
+	 * We need a safe allocation size.
+	 *
+	 * The only caller of reportErrorPosition() is pqBuildErrorMessage3(); it
+	 * gets its query from either a PQresultErrorField() or a PGcmdQueueEntry,
+	 * both of which must have fit into conn->inBuffer/outBuffer. So slen fits
+	 * inside an int, but we can't assume that (slen * sizeof(int)) fits
+	 * inside a size_t.
+	 */
 	slen = strlen(wquery) + 1;
+	if (slen > SIZE_MAX / sizeof(int))
+	{
+		free(wquery);
+		return;
+	}
 
 	qidx = (int *) malloc(slen * sizeof(int));
 	if (qidx == NULL)
@@ -1261,7 +1317,7 @@ reportErrorPosition(PQExpBuffer msg, const char *query, int loc, int encoding)
 			if (w <= 0)
 				w = 1;
 			scroffset += w;
-			qoffset += pg_encoding_mblen(encoding, &wquery[qoffset]);
+			qoffset += PQmblenBounded(&wquery[qoffset], encoding);
 		}
 		else
 		{
@@ -1329,7 +1385,7 @@ reportErrorPosition(PQExpBuffer msg, const char *query, int loc, int encoding)
 		 * width.
 		 */
 		scroffset = 0;
-		for (; i < msg->len; i += pg_encoding_mblen(encoding, &msg->data[i]))
+		for (; i < msg->len; i += PQmblenBounded(&msg->data[i], encoding))
 		{
 			int			w = pg_encoding_dsplen(encoding, &msg->data[i]);
 
@@ -1629,6 +1685,10 @@ getCopyDataMessage(PGconn *conn)
 				return -1;
 		}
 
+		/* trace server-to-client message */
+		if (conn->Pfdebug)
+			pqTraceOutputMessage(conn, conn->inBuffer + conn->inStart, false);
+
 		/* Drop the processed message and loop around for another */
 		conn->inStart = conn->inCursor;
 	}
@@ -1681,8 +1741,8 @@ pqGetCopyData3(PGconn *conn, char **buffer, int async)
 			*buffer = (char *) malloc(msgLength + 1);
 			if (*buffer == NULL)
 			{
-				printfPQExpBuffer(&conn->errorMessage,
-								  libpq_gettext("out of memory\n"));
+				appendPQExpBufferStr(&conn->errorMessage,
+									 libpq_gettext("out of memory\n"));
 				return -2;
 			}
 			memcpy(*buffer, &conn->inBuffer[conn->inCursor], msgLength);
@@ -1714,8 +1774,8 @@ pqGetline3(PGconn *conn, char *s, int maxlen)
 		 conn->asyncStatus != PGASYNC_COPY_BOTH) ||
 		conn->copy_is_binary)
 	{
-		printfPQExpBuffer(&conn->errorMessage,
-						  libpq_gettext("PQgetline: not doing text COPY OUT\n"));
+		appendPQExpBufferStr(&conn->errorMessage,
+							 libpq_gettext("PQgetline: not doing text COPY OUT\n"));
 		*s = '\0';
 		return EOF;
 	}
@@ -1820,8 +1880,8 @@ pqEndcopy3(PGconn *conn)
 		conn->asyncStatus != PGASYNC_COPY_OUT &&
 		conn->asyncStatus != PGASYNC_COPY_BOTH)
 	{
-		printfPQExpBuffer(&conn->errorMessage,
-						  libpq_gettext("no COPY in progress\n"));
+		appendPQExpBufferStr(&conn->errorMessage,
+							 libpq_gettext("no COPY in progress\n"));
 		return 1;
 	}
 
@@ -1829,7 +1889,7 @@ pqEndcopy3(PGconn *conn)
 	if (conn->asyncStatus == PGASYNC_COPY_IN ||
 		conn->asyncStatus == PGASYNC_COPY_BOTH)
 	{
-		if (pqPutMsgStart('c', false, conn) < 0 ||
+		if (pqPutMsgStart('c', conn) < 0 ||
 			pqPutMsgEnd(conn) < 0)
 			return 1;
 
@@ -1837,9 +1897,10 @@ pqEndcopy3(PGconn *conn)
 		 * If we sent the COPY command in extended-query mode, we must issue a
 		 * Sync as well.
 		 */
-		if (conn->queryclass != PGQUERY_SIMPLE)
+		if (conn->cmd_queue_head &&
+			conn->cmd_queue_head->queryclass != PGQUERY_SIMPLE)
 		{
-			if (pqPutMsgStart('S', false, conn) < 0 ||
+			if (pqPutMsgStart('S', conn) < 0 ||
 				pqPutMsgEnd(conn) < 0)
 				return 1;
 		}
@@ -1854,7 +1915,6 @@ pqEndcopy3(PGconn *conn)
 
 	/* Return to active duty */
 	conn->asyncStatus = PGASYNC_BUSY;
-	resetPQExpBuffer(&conn->errorMessage);
 
 	/*
 	 * Non blocking connections may have to abort at this point.  If everyone
@@ -1918,58 +1978,46 @@ pqFunctionCall3(PGconn *conn, Oid fnid,
 	int			avail;
 	int			i;
 
+	/* already validated by PQfn */
+	Assert(conn->pipelineStatus == PQ_PIPELINE_OFF);
+
 	/* PQfn already validated connection state */
 
-	if (pqPutMsgStart('F', false, conn) < 0 ||	/* function call msg */
+	if (pqPutMsgStart('F', conn) < 0 || /* function call msg */
 		pqPutInt(fnid, 4, conn) < 0 ||	/* function id */
 		pqPutInt(1, 2, conn) < 0 || /* # of format codes */
 		pqPutInt(1, 2, conn) < 0 || /* format code: BINARY */
 		pqPutInt(nargs, 2, conn) < 0)	/* # of args */
 	{
-		pqHandleSendFailure(conn);
+		/* error message should be set up already */
 		return NULL;
 	}
 
 	for (i = 0; i < nargs; ++i)
 	{							/* len.int4 + contents	   */
 		if (pqPutInt(args[i].len, 4, conn))
-		{
-			pqHandleSendFailure(conn);
 			return NULL;
-		}
 		if (args[i].len == -1)
 			continue;			/* it's NULL */
 
 		if (args[i].isint)
 		{
 			if (pqPutInt(args[i].u.integer, args[i].len, conn))
-			{
-				pqHandleSendFailure(conn);
 				return NULL;
-			}
 		}
 		else
 		{
 			if (pqPutnchar((char *) args[i].u.ptr, args[i].len, conn))
-			{
-				pqHandleSendFailure(conn);
 				return NULL;
-			}
 		}
 	}
 
 	if (pqPutInt(1, 2, conn) < 0)	/* result format code: BINARY */
-	{
-		pqHandleSendFailure(conn);
 		return NULL;
-	}
 
 	if (pqPutMsgEnd(conn) < 0 ||
 		pqFlush(conn))
-	{
-		pqHandleSendFailure(conn);
 		return NULL;
-	}
 
 	for (;;)
 	{
@@ -2092,7 +2140,7 @@ pqFunctionCall3(PGconn *conn, Oid fnid,
 				break;
 			default:
 				/* The backend violates the protocol. */
-				printfPQExpBuffer(&conn->errorMessage,
+				appendPQExpBuffer(&conn->errorMessage,
 								  libpq_gettext("protocol error: id=0x%x\n"),
 								  id);
 				pqSaveErrorResult(conn);
@@ -2100,6 +2148,11 @@ pqFunctionCall3(PGconn *conn, Oid fnid,
 				conn->inStart += 5 + msgLength;
 				return pqPrepareAsyncResult(conn);
 		}
+
+		/* trace server-to-client message */
+		if (conn->Pfdebug)
+			pqTraceOutputMessage(conn, conn->inBuffer + conn->inStart, false);
+
 		/* Completed this message, keep going */
 		/* trust the specified message length as what to skip */
 		conn->inStart += 5 + msgLength;
@@ -2126,13 +2179,41 @@ pqBuildStartupPacket3(PGconn *conn, int *packetlen,
 					  const PQEnvironmentOption *options)
 {
 	char	   *startpacket;
+	size_t		len;
 
-	*packetlen = build_startup_packet(conn, NULL, options);
+	len = build_startup_packet(conn, NULL, options);
+	if (len == 0 || len > INT_MAX)
+		return NULL;
+
+	*packetlen = len;
 	startpacket = (char *) malloc(*packetlen);
 	if (!startpacket)
 		return NULL;
-	*packetlen = build_startup_packet(conn, startpacket, options);
+
+	len = build_startup_packet(conn, startpacket, options);
+	Assert(*packetlen == len);
+
 	return startpacket;
+}
+
+/*
+ * Frontend version of the backend's add_size(), intended to be API-compatible
+ * with the pg_add_*_overflow() helpers. Stores the result into *dst on success.
+ * Returns true instead if the addition overflows.
+ *
+ * TODO: move to common/int.h
+ */
+static bool
+add_size_overflow(size_t s1, size_t s2, size_t *dst)
+{
+	size_t		result;
+
+	result = s1 + s2;
+	if (result < s1 || result < s2)
+		return true;
+
+	*dst = result;
+	return false;
 }
 
 /*
@@ -2142,13 +2223,13 @@ pqBuildStartupPacket3(PGconn *conn, int *packetlen,
  * To avoid duplicate logic, this routine is called twice: the first time
  * (with packet == NULL) just counts the space needed, the second time
  * (with packet == allocated space) fills it in.  Return value is the number
- * of bytes used.
+ * of bytes used, or zero in the unlikely event of size_t overflow.
  */
-static int
+static size_t
 build_startup_packet(const PGconn *conn, char *packet,
 					 const PQEnvironmentOption *options)
 {
-	int			packet_len = 0;
+	size_t		packet_len = 0;
 	const PQEnvironmentOption *next_eo;
 	const char *val;
 
@@ -2167,10 +2248,12 @@ build_startup_packet(const PGconn *conn, char *packet,
 	do { \
 		if (packet) \
 			strcpy(packet + packet_len, optname); \
-		packet_len += strlen(optname) + 1; \
+		if (add_size_overflow(packet_len, strlen(optname) + 1, &packet_len)) \
+			return 0; \
 		if (packet) \
 			strcpy(packet + packet_len, optval); \
-		packet_len += strlen(optval) + 1; \
+		if (add_size_overflow(packet_len, strlen(optval) + 1, &packet_len)) \
+			return 0; \
 	} while(0)
 
 	if (conn->pguser && conn->pguser[0])
@@ -2205,7 +2288,8 @@ build_startup_packet(const PGconn *conn, char *packet,
 	/* Add trailing terminator */
 	if (packet)
 		packet[packet_len] = '\0';
-	packet_len++;
+	if (add_size_overflow(packet_len, 1, &packet_len))
+		return 0;
 
 	return packet_len;
 }

@@ -4,7 +4,7 @@
  *	  POSTGRES disk item pointer definitions.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/storage/itemptr.h
@@ -22,8 +22,8 @@
  *
  * This is a pointer to an item within a disk page of a known file
  * (for example, a cross-link from an index to its parent table).
- * blkid tells us which block, posid tells us which entry in the linp
- * (ItemIdData) array we want.
+ * ip_blkid tells us which block, ip_posid tells us which entry in
+ * the linp (ItemIdData) array we want.
  *
  * Note: because there is an item pointer in each tuple header and index
  * tuple header on disk, it's very important not to waste space with
@@ -41,8 +41,8 @@ typedef struct ItemPointerData
 
 /* If compiler understands packed and aligned pragmas, use those */
 #if defined(pg_attribute_packed) && defined(pg_attribute_aligned)
-pg_attribute_packed()
-pg_attribute_aligned(2)
+			pg_attribute_packed()
+			pg_attribute_aligned(2)
 #endif
 ItemPointerData;
 
@@ -202,5 +202,7 @@ typedef ItemPointerData *ItemPointer;
 
 extern bool ItemPointerEquals(ItemPointer pointer1, ItemPointer pointer2);
 extern int32 ItemPointerCompare(ItemPointer arg1, ItemPointer arg2);
+extern void ItemPointerInc(ItemPointer pointer);
+extern void ItemPointerDec(ItemPointer pointer);
 
 #endif							/* ITEMPTR_H */

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>36.6. pgtypes Library</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="ecpg-dynamic.html" title="36.5. Dynamic SQL" /><link rel="next" href="ecpg-descriptors.html" title="36.7. Using Descriptor Areas" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">36.6. pgtypes Library</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="ecpg-dynamic.html" title="36.5. Dynamic SQL">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="ecpg.html" title="Chapter 36. ECPG - Embedded SQL in C">Up</a></td><th width="60%" align="center">Chapter 36. <span xmlns="http://www.w3.org/1999/xhtml" class="application">ECPG</span> - Embedded <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> in C</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="ecpg-descriptors.html" title="36.7. Using Descriptor Areas">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="ECPG-PGTYPES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">36.6. pgtypes Library</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-CSTRINGS">36.6.1. Character Strings</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-NUMERIC">36.6.2. The numeric Type</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-DATE">36.6.3. The date Type</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-TIMESTAMP">36.6.4. The timestamp Type</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-INTERVAL">36.6.5. The interval Type</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-DECIMAL">36.6.6. The decimal Type</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-ERRNO">36.6.7. errno Values of pgtypeslib</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-CONSTANTS">36.6.8. Special Constants of pgtypeslib</a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>36.6. pgtypes Library</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="ecpg-dynamic.html" title="36.5. Dynamic SQL" /><link rel="next" href="ecpg-descriptors.html" title="36.7. Using Descriptor Areas" /></head><body id="docContent" class="container-fluid col-10"><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">36.6. pgtypes Library</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="ecpg-dynamic.html" title="36.5. Dynamic SQL">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="ecpg.html" title="Chapter 36. ECPG — Embedded SQL in C">Up</a></td><th width="60%" align="center">Chapter 36. <span xmlns="http://www.w3.org/1999/xhtml" class="application">ECPG</span> — Embedded <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> in C</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="ecpg-descriptors.html" title="36.7. Using Descriptor Areas">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="ECPG-PGTYPES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">36.6. pgtypes Library</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-CSTRINGS">36.6.1. Character Strings</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-NUMERIC">36.6.2. The numeric Type</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-DATE">36.6.3. The date Type</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-TIMESTAMP">36.6.4. The timestamp Type</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-INTERVAL">36.6.5. The interval Type</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-DECIMAL">36.6.6. The decimal Type</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-ERRNO">36.6.7. errno Values of pgtypeslib</a></span></dt><dt><span class="sect2"><a href="ecpg-pgtypes.html#ECPG-PGTYPES-CONSTANTS">36.6.8. Special Constants of pgtypeslib</a></span></dt></dl></div><p>
    The pgtypes library maps <span class="productname">PostgreSQL</span> database
    types to C equivalents that can be used in C programs. It also offers
    functions to do basic calculations with those types within C, i.e., without
@@ -440,7 +440,7 @@ int PGTYPEStimestamp_fmt_asc(timestamp *ts, char *output, int str_len, char *fmt
            <code class="literal">%m/%d/%y</code>.
           </p></li><li class="listitem"><p>
            <code class="literal">%d</code> - is replaced by the day of the month as a
-           decimal number (01-31).
+           decimal number (01–31).
           </p></li><li class="listitem"><p>
            <code class="literal">%E*</code> <code class="literal">%O*</code> -  POSIX locale
            extensions. The sequences
@@ -469,7 +469,7 @@ int PGTYPEStimestamp_fmt_asc(timestamp *ts, char *output, int str_len, char *fmt
            alternative months names (used standalone, without day mentioned).
           </p></li><li class="listitem"><p>
            <code class="literal">%e</code> - is replaced by the day of month as a decimal
-           number (1-31); single digits are preceded by a blank.
+           number (1–31); single digits are preceded by a blank.
           </p></li><li class="listitem"><p>
            <code class="literal">%F</code> - is equivalent to <code class="literal">%Y-%m-%d</code>.
           </p></li><li class="listitem"><p>
@@ -479,30 +479,30 @@ int PGTYPEStimestamp_fmt_asc(timestamp *ts, char *output, int str_len, char *fmt
           </p></li><li class="listitem"><p>
            <code class="literal">%g</code> - is replaced by the same year as in
            <code class="literal">%G</code>, but as a decimal number without century
-           (00-99).
+           (00–99).
           </p></li><li class="listitem"><p>
            <code class="literal">%H</code> - is replaced by the hour (24-hour clock) as a
-           decimal number (00-23).
+           decimal number (00–23).
           </p></li><li class="listitem"><p>
            <code class="literal">%h</code> - the same as <code class="literal">%b</code>.
           </p></li><li class="listitem"><p>
            <code class="literal">%I</code> - is replaced by the hour (12-hour clock) as a
-           decimal number (01-12).
+           decimal number (01–12).
           </p></li><li class="listitem"><p>
            <code class="literal">%j</code> - is replaced by the day of the year as a
-           decimal number (001-366).
+           decimal number (001–366).
           </p></li><li class="listitem"><p>
            <code class="literal">%k</code> - is replaced by the hour (24-hour clock) as a
-           decimal number (0-23); single digits are preceded by a blank.
+           decimal number (0–23); single digits are preceded by a blank.
           </p></li><li class="listitem"><p>
            <code class="literal">%l</code> - is replaced by the hour (12-hour clock) as a
-           decimal number (1-12); single digits are preceded by a blank.
+           decimal number (1–12); single digits are preceded by a blank.
           </p></li><li class="listitem"><p>
            <code class="literal">%M</code> - is replaced by the minute as a decimal
-           number (00-59).
+           number (00–59).
           </p></li><li class="listitem"><p>
            <code class="literal">%m</code> - is replaced by the month as a decimal number
-           (01-12).
+           (01–12).
           </p></li><li class="listitem"><p>
           <code class="literal">%n</code> - is replaced by a newline.
           </p></li><li class="listitem"><p>
@@ -517,7 +517,7 @@ int PGTYPEStimestamp_fmt_asc(timestamp *ts, char *output, int str_len, char *fmt
            %p</code>.
           </p></li><li class="listitem"><p>
            <code class="literal">%S</code> - is replaced by the second as a decimal
-           number (00-60).
+           number (00–60).
           </p></li><li class="listitem"><p>
            <code class="literal">%s</code> - is replaced by the number of seconds since
            the Epoch, UTC.
@@ -527,13 +527,13 @@ int PGTYPEStimestamp_fmt_asc(timestamp *ts, char *output, int str_len, char *fmt
            <code class="literal">%t</code> - is replaced by a tab.
           </p></li><li class="listitem"><p>
            <code class="literal">%U</code> - is replaced by the week number of the year
-           (Sunday as the first day of the week) as a decimal number (00-53).
+           (Sunday as the first day of the week) as a decimal number (00–53).
           </p></li><li class="listitem"><p>
            <code class="literal">%u</code> - is replaced by the weekday (Monday as the
-           first day of the week) as a decimal number (1-7).
+           first day of the week) as a decimal number (1–7).
           </p></li><li class="listitem"><p>
            <code class="literal">%V</code> - is replaced by the week number of the year
-           (Monday as the first day of the week) as a decimal number (01-53).
+           (Monday as the first day of the week) as a decimal number (01–53).
            If the week containing January 1 has four or more days in the new
            year, then it is week 1; otherwise it is the last week of the
            previous year, and the next week is week 1.
@@ -542,10 +542,10 @@ int PGTYPEStimestamp_fmt_asc(timestamp *ts, char *output, int str_len, char *fmt
            <code class="literal">%e-%b-%Y</code>.
           </p></li><li class="listitem"><p>
            <code class="literal">%W</code> - is replaced by the week number of the year
-           (Monday as the first day of the week) as a decimal number (00-53).
+           (Monday as the first day of the week) as a decimal number (00–53).
           </p></li><li class="listitem"><p>
            <code class="literal">%w</code> - is replaced by the weekday (Sunday as the
-           first day of the week) as a decimal number (0-6).
+           first day of the week) as a decimal number (0–6).
           </p></li><li class="listitem"><p>
            <code class="literal">%X</code> - is replaced by national representation of
            the time.
@@ -557,14 +557,14 @@ int PGTYPEStimestamp_fmt_asc(timestamp *ts, char *output, int str_len, char *fmt
            decimal number.
           </p></li><li class="listitem"><p>
            <code class="literal">%y</code> - is replaced by the year without century as a
-           decimal number (00-99).
+           decimal number (00–99).
           </p></li><li class="listitem"><p>
            <code class="literal">%Z</code> - is replaced by the time zone name.
           </p></li><li class="listitem"><p>
            <code class="literal">%z</code> - is replaced by the time zone offset from
            UTC; a leading plus sign stands for east of UTC, a minus sign for
            west of UTC, hours and minutes follow with two digits each and no
-           delimiter between them (common form for RFC 822 date headers).
+           delimiter between them (common form for <a class="ulink" href="https://datatracker.ietf.org/doc/html/rfc822" target="_top">RFC 822</a> date headers).
           </p></li><li class="listitem"><p>
            <code class="literal">%+</code> - is replaced by national representation of
            the date and time.
@@ -648,7 +648,7 @@ interval *PGTYPESinterval_new(void);
        </p></dd><dt id="PGTYPESINTERVALFREE"><span class="term"><code class="function">PGTYPESinterval_free</code></span></dt><dd><p>
         Release the memory of a previously allocated interval variable.
 </p><pre class="synopsis">
-void PGTYPESinterval_new(interval *intvl);
+void PGTYPESinterval_free(interval *intvl);
 </pre><p>
        </p></dd><dt id="PGTYPESINTERVALFROMASC"><span class="term"><code class="function">PGTYPESinterval_from_asc</code></span></dt><dd><p>
         Parse an interval from its textual representation.
@@ -762,4 +762,4 @@ void PGTYPESdecimal_free(decimal *var);
         <code class="literal">errno != 0</code> after each call to
         <code class="function">PGTYPEStimestamp_from_asc</code>.
        </p></dd></dl></div><p>
-   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ecpg-dynamic.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ecpg.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ecpg-descriptors.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">36.5. Dynamic SQL </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 36.7. Using Descriptor Areas</td></tr></table></div></body></html>
+   </p></div></div><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navfooter"><hr></hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ecpg-dynamic.html" title="36.5. Dynamic SQL">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ecpg.html" title="Chapter 36. ECPG — Embedded SQL in C">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ecpg-descriptors.html" title="36.7. Using Descriptor Areas">Next</a></td></tr><tr><td width="40%" align="left" valign="top">36.5. Dynamic SQL </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 36.7. Using Descriptor Areas</td></tr></table></div></body></html>

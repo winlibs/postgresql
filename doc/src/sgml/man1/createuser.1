@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: createuser
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2025
+.\"    Manual: PostgreSQL 14.20 Documentation
+.\"    Source: PostgreSQL 14.20
 .\"  Language: English
 .\"
-.TH "CREATEUSER" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATEUSER" "1" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -45,15 +45,22 @@ must be invoked by someone who can connect as a superuser or a user with
 CREATEROLE
 privilege\&.
 .PP
-If you wish to create a new superuser, you must connect as a superuser, not merely with
+If you wish to create a role with the
+SUPERUSER,
+REPLICATION, or
+BYPASSRLS
+privilege, you must connect as a superuser, not merely with
 CREATEROLE
-privilege\&. Being a superuser implies the ability to bypass all access permission checks within the database, so superuserdom should not be granted lightly\&.
+privilege\&. Being a superuser implies the ability to bypass all access permission checks within the database, so superuser access should not be granted lightly\&.
+CREATEROLE
+also conveys
+very extensive privileges\&.
 .PP
 createuser
 is a wrapper around the
 SQL
 command
-CREATE ROLE (\fBCREATE_ROLE\fR(7))\&. There is no effective difference between creating users via this utility and via other methods for accessing the server\&.
+\fBCREATE ROLE\fR\&. There is no effective difference between creating users via this utility and via other methods for accessing the server\&.
 .SH "OPTIONS"
 .PP
 createuser
@@ -164,9 +171,11 @@ will issue a prompt for the password of the new user\&. This is not necessary if
 .br
 \fB\-\-createrole\fR
 .RS 4
-The new user will be allowed to create new roles (that is, this user will have
+The new user will be allowed to create, alter, drop, comment on, change the security label for, and grant or revoke membership in other roles; that is, this user will have
 CREATEROLE
-privilege)\&.
+privilege\&. See
+role creation
+for more details about what capabilities are conferred by this privilege\&.
 .RE
 .PP
 \fB\-R\fR
@@ -284,12 +293,21 @@ to avoid the extra connection attempt\&.
 Default connection parameters
 .RE
 .PP
+\fBPG_COLOR\fR
+.RS 4
+Specifies whether to use color in diagnostic messages\&. Possible values are
+always,
+auto
+and
+never\&.
+.RE
+.PP
 This utility, like most other
 PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section\ \&34.14)\&.
+Section\ \&34.15)\&.
 .SH "DIAGNOSTICS"
 .PP
 In case of difficulty, see

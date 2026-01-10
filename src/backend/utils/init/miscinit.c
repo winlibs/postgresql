@@ -3,7 +3,7 @@
  * miscinit.c
  *	  miscellaneous initialization support stuff
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -26,27 +26,30 @@
 #include <pwd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#ifdef HAVE_UTIME_H
 #include <utime.h>
-#endif
 
 #include "access/htup_details.h"
+#include "access/parallel.h"
 #include "catalog/pg_authid.h"
 #include "common/file_perm.h"
 #include "libpq/libpq.h"
+#include "libpq/pqsignal.h"
 #include "mb/pg_wchar.h"
 #include "miscadmin.h"
 #include "pgstat.h"
 #include "postmaster/autovacuum.h"
+#include "postmaster/interrupt.h"
 #include "postmaster/postmaster.h"
 #include "storage/fd.h"
 #include "storage/ipc.h"
 #include "storage/latch.h"
 #include "storage/pg_shmem.h"
+#include "storage/pmsignal.h"
 #include "storage/proc.h"
 #include "storage/procarray.h"
 #include "utils/builtins.h"
 #include "utils/guc.h"
+#include "utils/inval.h"
 #include "utils/memutils.h"
 #include "utils/pidfile.h"
 #include "utils/syscache.h"
@@ -56,6 +59,8 @@
 #define DIRECTORY_LOCK_FILE		"postmaster.pid"
 
 ProcessingMode Mode = InitProcessing;
+
+BackendType MyBackendType;
 
 /* List of lock files to be removed at proc exit */
 static List *lock_files = NIL;
@@ -74,6 +79,208 @@ static Latch LocalLatchData;
 
 bool		IgnoreSystemIndexes = false;
 
+
+/* ----------------------------------------------------------------
+ *	common process startup code
+ * ----------------------------------------------------------------
+ */
+
+/*
+ * Initialize the basic environment for a postmaster child
+ *
+ * Should be called as early as possible after the child's startup.
+ */
+void
+InitPostmasterChild(void)
+{
+	IsUnderPostmaster = true;	/* we are a postmaster subprocess now */
+
+	/*
+	 * Set reference point for stack-depth checking.  This might seem
+	 * redundant in !EXEC_BACKEND builds; but it's not because the postmaster
+	 * launches its children from signal handlers, so we might be running on
+	 * an alternative stack.
+	 */
+	(void) set_stack_base();
+
+	InitProcessGlobals();
+
+	/*
+	 * make sure stderr is in binary mode before anything can possibly be
+	 * written to it, in case it's actually the syslogger pipe, so the pipe
+	 * chunking protocol isn't disturbed. Non-logpipe data gets translated on
+	 * redirection (e.g. via pg_ctl -l) anyway.
+	 */
+#ifdef WIN32
+	_setmode(fileno(stderr), _O_BINARY);
+#endif
+
+	/* We don't want the postmaster's proc_exit() handlers */
+	on_exit_reset();
+
+	/* In EXEC_BACKEND case we will not have inherited BlockSig etc values */
+#ifdef EXEC_BACKEND
+	pqinitmask();
+#endif
+
+	/* Initialize process-local latch support */
+	InitializeLatchSupport();
+	MyLatch = &LocalLatchData;
+	InitLatch(MyLatch);
+	InitializeLatchWaitSet();
+
+	/*
+	 * If possible, make this process a group leader, so that the postmaster
+	 * can signal any child processes too. Not all processes will have
+	 * children, but for consistency we make all postmaster child processes do
+	 * this.
+	 */
+#ifdef HAVE_SETSID
+	if (setsid() < 0)
+		elog(FATAL, "setsid() failed: %m");
+#endif
+
+	/*
+	 * Every postmaster child process is expected to respond promptly to
+	 * SIGQUIT at all times.  Therefore we centrally remove SIGQUIT from
+	 * BlockSig and install a suitable signal handler.  (Client-facing
+	 * processes may choose to replace this default choice of handler with
+	 * quickdie().)  All other blockable signals remain blocked for now.
+	 */
+	pqsignal(SIGQUIT, SignalHandlerForCrashExit);
+
+	sigdelset(&BlockSig, SIGQUIT);
+	PG_SETMASK(&BlockSig);
+
+	/* Request a signal if the postmaster dies, if possible. */
+	PostmasterDeathSignalInit();
+}
+
+/*
+ * Initialize the basic environment for a standalone process.
+ *
+ * argv0 has to be suitable to find the program's executable.
+ */
+void
+InitStandaloneProcess(const char *argv0)
+{
+	Assert(!IsPostmasterEnvironment);
+
+	InitProcessGlobals();
+
+	/* Initialize process-local latch support */
+	InitializeLatchSupport();
+	MyLatch = &LocalLatchData;
+	InitLatch(MyLatch);
+	InitializeLatchWaitSet();
+
+	/*
+	 * For consistency with InitPostmasterChild, initialize signal mask here.
+	 * But we don't unblock SIGQUIT or provide a default handler for it.
+	 */
+	pqinitmask();
+	PG_SETMASK(&BlockSig);
+
+	/* Compute paths, no postmaster to inherit from */
+	if (my_exec_path[0] == '\0')
+	{
+		if (find_my_exec(argv0, my_exec_path) < 0)
+			elog(FATAL, "%s: could not locate my own executable path",
+				 argv0);
+	}
+
+	if (pkglib_path[0] == '\0')
+		get_pkglib_path(my_exec_path, pkglib_path);
+}
+
+void
+SwitchToSharedLatch(void)
+{
+	Assert(MyLatch == &LocalLatchData);
+	Assert(MyProc != NULL);
+
+	MyLatch = &MyProc->procLatch;
+
+	if (FeBeWaitSet)
+		ModifyWaitEvent(FeBeWaitSet, FeBeWaitSetLatchPos, WL_LATCH_SET,
+						MyLatch);
+
+	/*
+	 * Set the shared latch as the local one might have been set. This
+	 * shouldn't normally be necessary as code is supposed to check the
+	 * condition before waiting for the latch, but a bit care can't hurt.
+	 */
+	SetLatch(MyLatch);
+}
+
+void
+SwitchBackToLocalLatch(void)
+{
+	Assert(MyLatch != &LocalLatchData);
+	Assert(MyProc != NULL && MyLatch == &MyProc->procLatch);
+
+	MyLatch = &LocalLatchData;
+
+	if (FeBeWaitSet)
+		ModifyWaitEvent(FeBeWaitSet, FeBeWaitSetLatchPos, WL_LATCH_SET,
+						MyLatch);
+
+	SetLatch(MyLatch);
+}
+
+const char *
+GetBackendTypeDesc(BackendType backendType)
+{
+	const char *backendDesc = "unknown process type";
+
+	switch (backendType)
+	{
+		case B_INVALID:
+			backendDesc = "not initialized";
+			break;
+		case B_AUTOVAC_LAUNCHER:
+			backendDesc = "autovacuum launcher";
+			break;
+		case B_AUTOVAC_WORKER:
+			backendDesc = "autovacuum worker";
+			break;
+		case B_BACKEND:
+			backendDesc = "client backend";
+			break;
+		case B_BG_WORKER:
+			backendDesc = "background worker";
+			break;
+		case B_BG_WRITER:
+			backendDesc = "background writer";
+			break;
+		case B_CHECKPOINTER:
+			backendDesc = "checkpointer";
+			break;
+		case B_STARTUP:
+			backendDesc = "startup";
+			break;
+		case B_WAL_RECEIVER:
+			backendDesc = "walreceiver";
+			break;
+		case B_WAL_SENDER:
+			backendDesc = "walsender";
+			break;
+		case B_WAL_WRITER:
+			backendDesc = "walwriter";
+			break;
+		case B_ARCHIVER:
+			backendDesc = "archiver";
+			break;
+		case B_STATS_COLLECTOR:
+			backendDesc = "stats collector";
+			break;
+		case B_LOGGER:
+			backendDesc = "logger";
+			break;
+	}
+
+	return backendDesc;
+}
 
 /* ----------------------------------------------------------------
  *				database path / name support stuff
@@ -263,122 +470,6 @@ static int	SecurityRestrictionContext = 0;
 static bool SetRoleIsActive = false;
 
 /*
- * Initialize the basic environment for a postmaster child
- *
- * Should be called as early as possible after the child's startup.
- */
-void
-InitPostmasterChild(void)
-{
-	IsUnderPostmaster = true;	/* we are a postmaster subprocess now */
-
-	MyProcPid = getpid();		/* reset MyProcPid */
-
-	MyStartTime = time(NULL);	/* set our start time in case we call elog */
-
-	/*
-	 * make sure stderr is in binary mode before anything can possibly be
-	 * written to it, in case it's actually the syslogger pipe, so the pipe
-	 * chunking protocol isn't disturbed. Non-logpipe data gets translated on
-	 * redirection (e.g. via pg_ctl -l) anyway.
-	 */
-#ifdef WIN32
-	_setmode(fileno(stderr), _O_BINARY);
-#endif
-
-	/* We don't want the postmaster's proc_exit() handlers */
-	on_exit_reset();
-
-	/* Initialize process-local latch support */
-	InitializeLatchSupport();
-	MyLatch = &LocalLatchData;
-	InitLatch(MyLatch);
-
-	/*
-	 * If possible, make this process a group leader, so that the postmaster
-	 * can signal any child processes too. Not all processes will have
-	 * children, but for consistency we make all postmaster child processes do
-	 * this.
-	 */
-#ifdef HAVE_SETSID
-	if (setsid() < 0)
-		elog(FATAL, "setsid() failed: %m");
-#endif
-}
-
-/*
- * Initialize the basic environment for a standalone process.
- *
- * argv0 has to be suitable to find the program's executable.
- */
-void
-InitStandaloneProcess(const char *argv0)
-{
-	Assert(!IsPostmasterEnvironment);
-
-	MyProcPid = getpid();		/* reset MyProcPid */
-
-	MyStartTime = time(NULL);	/* set our start time in case we call elog */
-
-	/*
-	 * Initialize random() for the first time, like PostmasterMain() would.
-	 * In a regular IsUnderPostmaster backend, BackendRun() computes a
-	 * high-entropy seed before any user query.  Fewer distinct initial seeds
-	 * can occur here.
-	 */
-	srandom((unsigned int) (MyProcPid ^ MyStartTime));
-
-	/* Initialize process-local latch support */
-	InitializeLatchSupport();
-	MyLatch = &LocalLatchData;
-	InitLatch(MyLatch);
-
-	/* Compute paths, no postmaster to inherit from */
-	if (my_exec_path[0] == '\0')
-	{
-		if (find_my_exec(argv0, my_exec_path) < 0)
-			elog(FATAL, "%s: could not locate my own executable path",
-				 argv0);
-	}
-
-	if (pkglib_path[0] == '\0')
-		get_pkglib_path(my_exec_path, pkglib_path);
-}
-
-void
-SwitchToSharedLatch(void)
-{
-	Assert(MyLatch == &LocalLatchData);
-	Assert(MyProc != NULL);
-
-	MyLatch = &MyProc->procLatch;
-
-	if (FeBeWaitSet)
-		ModifyWaitEvent(FeBeWaitSet, 1, WL_LATCH_SET, MyLatch);
-
-	/*
-	 * Set the shared latch as the local one might have been set. This
-	 * shouldn't normally be necessary as code is supposed to check the
-	 * condition before waiting for the latch, but a bit care can't hurt.
-	 */
-	SetLatch(MyLatch);
-}
-
-void
-SwitchBackToLocalLatch(void)
-{
-	Assert(MyLatch != &LocalLatchData);
-	Assert(MyProc != NULL && MyLatch == &MyProc->procLatch);
-
-	MyLatch = &LocalLatchData;
-
-	if (FeBeWaitSet)
-		ModifyWaitEvent(FeBeWaitSet, 1, WL_LATCH_SET, MyLatch);
-
-	SetLatch(MyLatch);
-}
-
-/*
  * GetUserId - get the current effective user ID.
  *
  * Note: there's no SetUserId() anymore; use SetUserIdAndSecContext().
@@ -403,7 +494,7 @@ GetOuterUserId(void)
 
 
 static void
-SetOuterUserId(Oid userid)
+SetOuterUserId(Oid userid, bool is_superuser)
 {
 	AssertState(SecurityRestrictionContext == 0);
 	AssertArg(OidIsValid(userid));
@@ -411,6 +502,11 @@ SetOuterUserId(Oid userid)
 
 	/* We force the effective user ID to match, too */
 	CurrentUserId = userid;
+
+	/* Also update the is_superuser GUC to match OuterUserId's property */
+	SetConfigOption("is_superuser",
+					is_superuser ? "on" : "off",
+					PGC_INTERNAL, PGC_S_OVERRIDE);
 }
 
 
@@ -424,6 +520,12 @@ GetSessionUserId(void)
 	return SessionUserId;
 }
 
+bool
+GetSessionUserIsSuperuser(void)
+{
+	Assert(OidIsValid(SessionUserId));
+	return SessionUserIsSuperuser;
+}
 
 static void
 SetSessionUserId(Oid userid, bool is_superuser)
@@ -432,21 +534,43 @@ SetSessionUserId(Oid userid, bool is_superuser)
 	AssertArg(OidIsValid(userid));
 	SessionUserId = userid;
 	SessionUserIsSuperuser = is_superuser;
-	SetRoleIsActive = false;
-
-	/* We force the effective user IDs to match, too */
-	OuterUserId = userid;
-	CurrentUserId = userid;
 }
 
 /*
- * GetAuthenticatedUserId - get the authenticated user ID
+ * GetAuthenticatedUserId/SetAuthenticatedUserId - get/set the authenticated
+ * user ID
  */
 Oid
 GetAuthenticatedUserId(void)
 {
 	AssertState(OidIsValid(AuthenticatedUserId));
 	return AuthenticatedUserId;
+}
+
+/*
+ * Return whether the authenticated user was superuser at connection start.
+ */
+bool
+GetAuthenticatedUserIsSuperuser(void)
+{
+	Assert(OidIsValid(AuthenticatedUserId));
+	return AuthenticatedUserIsSuperuser;
+}
+
+void
+SetAuthenticatedUserId(Oid userid, bool is_superuser)
+{
+	Assert(OidIsValid(userid));
+
+	/* call only once */
+	Assert(!OidIsValid(AuthenticatedUserId));
+
+	AuthenticatedUserId = userid;
+	AuthenticatedUserIsSuperuser = is_superuser;
+
+	/* Also mark our PGPROC entry with the authenticated user id */
+	/* (We assume this is an atomic store so no lock is needed) */
+	MyProc->roleId = userid;
 }
 
 
@@ -462,15 +586,21 @@ GetAuthenticatedUserId(void)
  * with guc.c's internal state, so SET ROLE has to be disallowed.
  *
  * SECURITY_RESTRICTED_OPERATION indicates that we are inside an operation
- * that does not wish to trust called user-defined functions at all.  This
- * bit prevents not only SET ROLE, but various other changes of session state
- * that normally is unprotected but might possibly be used to subvert the
- * calling session later.  An example is replacing an existing prepared
- * statement with new code, which will then be executed with the outer
- * session's permissions when the prepared statement is next used.  Since
- * these restrictions are fairly draconian, we apply them only in contexts
- * where the called functions are really supposed to be side-effect-free
- * anyway, such as VACUUM/ANALYZE/REINDEX.
+ * that does not wish to trust called user-defined functions at all.  The
+ * policy is to use this before operations, e.g. autovacuum and REINDEX, that
+ * enumerate relations of a database or schema and run functions associated
+ * with each found relation.  The relation owner is the new user ID.  Set this
+ * as soon as possible after locking the relation.  Restore the old user ID as
+ * late as possible before closing the relation; restoring it shortly after
+ * close is also tolerable.  If a command has both relation-enumerating and
+ * non-enumerating modes, e.g. ANALYZE, both modes set this bit.  This bit
+ * prevents not only SET ROLE, but various other changes of session state that
+ * normally is unprotected but might possibly be used to subvert the calling
+ * session later.  An example is replacing an existing prepared statement with
+ * new code, which will then be executed with the outer session's permissions
+ * when the prepared statement is next used.  These restrictions are fairly
+ * draconian, but the functions called in relation-enumerating operations are
+ * really supposed to be side-effect-free anyway.
  *
  * SECURITY_NOFORCE_RLS indicates that we are inside an operation which should
  * ignore the FORCE ROW LEVEL SECURITY per-table indication.  This is used to
@@ -588,6 +718,17 @@ InitializeSessionUserId(const char *rolename, Oid roleid)
 	HeapTuple	roleTup;
 	Form_pg_authid rform;
 	char	   *rname;
+	bool		is_superuser;
+
+	/*
+	 * In a parallel worker, we don't have to do anything here.
+	 * ParallelWorkerMain already set our output variables, and we aren't
+	 * going to enforce either rolcanlogin or rolconnlimit.  Furthermore, we
+	 * don't really want to perform a catalog lookup for the role: we don't
+	 * want to fail if it's been dropped.
+	 */
+	if (InitializingParallelWorker)
+		return;
 
 	/*
 	 * Don't do scans if we're bootstrapping, none of the system catalogs
@@ -595,9 +736,16 @@ InitializeSessionUserId(const char *rolename, Oid roleid)
 	 */
 	AssertState(!IsBootstrapProcessingMode());
 
-	/* call only once */
-	AssertState(!OidIsValid(AuthenticatedUserId));
+	/*
+	 * Make sure syscache entries are flushed for recent catalog changes. This
+	 * allows us to find roles that were created on-the-fly during
+	 * authentication.
+	 */
+	AcceptInvalidationMessages();
 
+	/*
+	 * Look up the role, either by name if that's given or by OID if not.
+	 */
 	if (rolename != NULL)
 	{
 		roleTup = SearchSysCache1(AUTHNAME, PointerGetDatum(rolename));
@@ -616,18 +764,33 @@ InitializeSessionUserId(const char *rolename, Oid roleid)
 	}
 
 	rform = (Form_pg_authid) GETSTRUCT(roleTup);
-	roleid = HeapTupleGetOid(roleTup);
+	roleid = rform->oid;
 	rname = NameStr(rform->rolname);
+	is_superuser = rform->rolsuper;
 
-	AuthenticatedUserId = roleid;
-	AuthenticatedUserIsSuperuser = rform->rolsuper;
+	SetAuthenticatedUserId(roleid, is_superuser);
 
-	/* This sets OuterUserId/CurrentUserId too */
-	SetSessionUserId(roleid, AuthenticatedUserIsSuperuser);
-
-	/* Also mark our PGPROC entry with the authenticated user id */
-	/* (We assume this is an atomic store so no lock is needed) */
-	MyProc->roleId = roleid;
+	/*
+	 * Set SessionUserId and related variables, including "role", via the GUC
+	 * mechanisms.
+	 *
+	 * Note: ideally we would use PGC_S_DYNAMIC_DEFAULT here, so that
+	 * session_authorization could subsequently be changed from
+	 * pg_db_role_setting entries.  Instead, session_authorization in
+	 * pg_db_role_setting has no effect.  Changing that would require solving
+	 * two problems:
+	 *
+	 * 1. If pg_db_role_setting has values for both session_authorization and
+	 * role, we could not be sure which order those would be applied in, and
+	 * it would matter.
+	 *
+	 * 2. Sites may have years-old session_authorization entries.  There's not
+	 * been any particular reason to remove them.  Ending the dormancy of
+	 * those entries could seriously change application behavior, so only a
+	 * major release should do that.
+	 */
+	SetConfigOption("session_authorization", rname,
+					PGC_BACKEND, PGC_S_OVERRIDE);
 
 	/*
 	 * These next checks are not enforced when in standalone mode, so that
@@ -646,7 +809,9 @@ InitializeSessionUserId(const char *rolename, Oid roleid)
 							rname)));
 
 		/*
-		 * Check connection limit for this role.
+		 * Check connection limit for this role.  We enforce the limit only
+		 * for regular backends, since other process types have their own
+		 * PGPROC pools.
 		 *
 		 * There is a race condition here --- we create our PGPROC before
 		 * checking for other PGPROCs.  If two backends did this at about the
@@ -656,20 +821,14 @@ InitializeSessionUserId(const char *rolename, Oid roleid)
 		 * just document that the connection limit is approximate.
 		 */
 		if (rform->rolconnlimit >= 0 &&
-			!AuthenticatedUserIsSuperuser &&
+			AmRegularBackendProcess() &&
+			!is_superuser &&
 			CountUserBackends(roleid) > rform->rolconnlimit)
 			ereport(FATAL,
 					(errcode(ERRCODE_TOO_MANY_CONNECTIONS),
 					 errmsg("too many connections for role \"%s\"",
 							rname)));
 	}
-
-	/* Record username and superuser status as GUC settings too */
-	SetConfigOption("session_authorization", rname,
-					PGC_BACKEND, PGC_S_OVERRIDE);
-	SetConfigOption("is_superuser",
-					AuthenticatedUserIsSuperuser ? "on" : "off",
-					PGC_INTERNAL, PGC_S_OVERRIDE);
 
 	ReleaseSysCache(roleTup);
 }
@@ -693,40 +852,39 @@ InitializeSessionUserIdStandalone(void)
 	AuthenticatedUserId = BOOTSTRAP_SUPERUSERID;
 	AuthenticatedUserIsSuperuser = true;
 
-	SetSessionUserId(BOOTSTRAP_SUPERUSERID, true);
+	/*
+	 * XXX Ideally we'd do this via SetConfigOption("session_authorization"),
+	 * but we lack the role name needed to do that, and we can't fetch it
+	 * because one reason for this special case is to be able to start up even
+	 * if something's happened to the BOOTSTRAP_SUPERUSERID's pg_authid row.
+	 * Since we don't set the GUC itself, C code will see the value as NULL,
+	 * and current_setting() will report an empty string within this session.
+	 */
+	SetSessionAuthorization(BOOTSTRAP_SUPERUSERID, true);
+
+	/* We could do SetConfigOption("role"), but let's be consistent */
+	SetCurrentRoleId(InvalidOid, false);
 }
 
 
 /*
  * Change session auth ID while running
  *
- * Only a superuser may set auth ID to something other than himself.  Note
- * that in case of multiple SETs in a single session, the original userid's
- * superuserness is what matters.  But we set the GUC variable is_superuser
- * to indicate whether the *current* session userid is a superuser.
- *
- * Note: this is not an especially clean place to do the permission check.
- * It's OK because the check does not require catalog access and can't
- * fail during an end-of-transaction GUC reversion, but we may someday
- * have to push it up into assign_session_authorization.
+ * The SQL standard says that SET SESSION AUTHORIZATION implies SET ROLE NONE.
+ * We mechanize that at higher levels not here, because this is the GUC
+ * assign hook for "session_authorization", and it must be commutative with
+ * SetCurrentRoleId (the hook for "role") because guc.c provides no guarantees
+ * which will run first during cases such as transaction rollback.  Therefore,
+ * we update derived state (OuterUserId/CurrentUserId/is_superuser) only if
+ * !SetRoleIsActive.
  */
 void
 SetSessionAuthorization(Oid userid, bool is_superuser)
 {
-	/* Must have authenticated already, else can't make permission check */
-	AssertState(OidIsValid(AuthenticatedUserId));
-
-	if (userid != AuthenticatedUserId &&
-		!AuthenticatedUserIsSuperuser)
-		ereport(ERROR,
-				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-				 errmsg("permission denied to set session authorization")));
-
 	SetSessionUserId(userid, is_superuser);
 
-	SetConfigOption("is_superuser",
-					is_superuser ? "on" : "off",
-					PGC_INTERNAL, PGC_S_OVERRIDE);
+	if (!SetRoleIsActive)
+		SetOuterUserId(userid, is_superuser);
 }
 
 /*
@@ -762,28 +920,25 @@ SetCurrentRoleId(Oid roleid, bool is_superuser)
 	/*
 	 * Get correct info if it's SET ROLE NONE
 	 *
-	 * If SessionUserId hasn't been set yet, just do nothing --- the eventual
-	 * SetSessionUserId call will fix everything.  This is needed since we
-	 * will get called during GUC initialization.
+	 * If SessionUserId hasn't been set yet, do nothing beyond updating
+	 * SetRoleIsActive --- the eventual SetSessionAuthorization call will
+	 * update the derived state.  This is needed since we will get called
+	 * during GUC initialization.
 	 */
 	if (!OidIsValid(roleid))
 	{
+		SetRoleIsActive = false;
+
 		if (!OidIsValid(SessionUserId))
 			return;
 
 		roleid = SessionUserId;
 		is_superuser = SessionUserIsSuperuser;
-
-		SetRoleIsActive = false;
 	}
 	else
 		SetRoleIsActive = true;
 
-	SetOuterUserId(roleid);
-
-	SetConfigOption("is_superuser",
-					is_superuser ? "on" : "off",
-					PGC_INTERNAL, PGC_S_OVERRIDE);
+	SetOuterUserId(roleid, is_superuser);
 }
 
 
@@ -822,7 +977,7 @@ GetUserNameFromId(Oid roleid, bool noerr)
  * ($DATADIR/postmaster.pid) and Unix-socket-file lockfiles ($SOCKFILE.lock).
  * Both kinds of files contain the same info initially, although we can add
  * more information to a data-directory lockfile after it's created, using
- * AddToDataDirLockFile().  See miscadmin.h for documentation of the contents
+ * AddToDataDirLockFile().  See pidfile.h for documentation of the contents
  * of these lockfiles.
  *
  * On successful lockfile creation, a proc_exit callback to remove the
@@ -1089,15 +1244,15 @@ CreateLockFile(const char *filename, bool amPostmaster,
 	}
 
 	/*
-	 * Successfully created the file, now fill it.  See comment in miscadmin.h
+	 * Successfully created the file, now fill it.  See comment in pidfile.h
 	 * about the contents.  Note that we write the same first five lines into
 	 * both datadir and socket lockfiles; although more stuff may get added to
 	 * the datadir lockfile later.
 	 */
-	snprintf(buffer, sizeof(buffer), "%d\n%s\n%ld\n%d\n%s\n",
+	snprintf(buffer, sizeof(buffer), "%d\n%s\n" INT64_FORMAT "\n%d\n%s\n",
 			 amPostmaster ? (int) my_pid : -((int) my_pid),
 			 DataDir,
-			 (long) MyStartTime,
+			 MyStartTime,
 			 PostPortNumber,
 			 socketDir);
 
@@ -1213,29 +1368,8 @@ TouchSocketLockFiles(void)
 		if (strcmp(socketLockFile, DIRECTORY_LOCK_FILE) == 0)
 			continue;
 
-		/*
-		 * utime() is POSIX standard, utimes() is a common alternative; if we
-		 * have neither, fall back to actually reading the file (which only
-		 * sets the access time not mod time, but that should be enough in
-		 * most cases).  In all paths, we ignore errors.
-		 */
-#ifdef HAVE_UTIME
-		utime(socketLockFile, NULL);
-#else							/* !HAVE_UTIME */
-#ifdef HAVE_UTIMES
-		utimes(socketLockFile, NULL);
-#else							/* !HAVE_UTIMES */
-		int			fd;
-		char		buffer[1];
-
-		fd = open(socketLockFile, O_RDONLY | PG_BINARY, 0);
-		if (fd >= 0)
-		{
-			read(fd, buffer, sizeof(buffer));
-			close(fd);
-		}
-#endif							/* HAVE_UTIMES */
-#endif							/* HAVE_UTIME */
+		/* we just ignore any error here */
+		(void) utime(socketLockFile, NULL);
 	}
 }
 
@@ -1333,8 +1467,7 @@ AddToDataDirLockFile(int target_line, const char *str)
 	len = strlen(destbuffer);
 	errno = 0;
 	pgstat_report_wait_start(WAIT_EVENT_LOCK_FILE_ADDTODATADIR_WRITE);
-	if (lseek(fd, (off_t) 0, SEEK_SET) != 0 ||
-		(int) write(fd, destbuffer, len) != len)
+	if (pg_pwrite(fd, destbuffer, len, 0) != len)
 	{
 		pgstat_report_wait_end();
 		/* if write didn't set errno, assume problem is no disk space */
@@ -1567,7 +1700,7 @@ load_libraries(const char *libraries, const char *gucname, bool restricted)
 		}
 		load_file(filename, restricted);
 		ereport(DEBUG1,
-				(errmsg("loaded library \"%s\"", filename)));
+				(errmsg_internal("loaded library \"%s\"", filename)));
 		if (expanded)
 			pfree(expanded);
 	}

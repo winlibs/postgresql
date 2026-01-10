@@ -15,7 +15,7 @@ static void
 sql_help_ABORT(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ABORT [ WORK | TRANSACTION ]");
+					  "ABORT [ WORK | TRANSACTION ] [ AND [ NO ] CHAIN ]");
 }
 
 static void
@@ -24,7 +24,7 @@ sql_help_ALTER_AGGREGATE(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "ALTER AGGREGATE %s ( %s ) RENAME TO %s\n"
 					  "ALTER AGGREGATE %s ( %s )\n"
-					  "                OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "                OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER AGGREGATE %s ( %s ) SET SCHEMA %s\n"
 					  "\n"
 					  "%s\n"
@@ -60,7 +60,7 @@ sql_help_ALTER_COLLATION(PQExpBuffer buf)
 					  "ALTER COLLATION %s REFRESH VERSION\n"
 					  "\n"
 					  "ALTER COLLATION %s RENAME TO %s\n"
-					  "ALTER COLLATION %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER COLLATION %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER COLLATION %s SET SCHEMA %s",
 					  _("name"),
 					  _("name"),
@@ -76,7 +76,7 @@ sql_help_ALTER_CONVERSION(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "ALTER CONVERSION %s RENAME TO %s\n"
-					  "ALTER CONVERSION %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER CONVERSION %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER CONVERSION %s SET SCHEMA %s",
 					  _("name"),
 					  _("new_name"),
@@ -100,7 +100,7 @@ sql_help_ALTER_DATABASE(PQExpBuffer buf)
 					  "\n"
 					  "ALTER DATABASE %s RENAME TO %s\n"
 					  "\n"
-					  "ALTER DATABASE %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER DATABASE %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "\n"
 					  "ALTER DATABASE %s SET TABLESPACE %s\n"
 					  "\n"
@@ -159,7 +159,8 @@ sql_help_ALTER_DEFAULT_PRIVILEGES(PQExpBuffer buf)
 					  "    ON TYPES\n"
 					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
-					  "GRANT { USAGE | CREATE | ALL [ PRIVILEGES ] }\n"
+					  "GRANT { { USAGE | CREATE }\n"
+					  "    [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON SCHEMAS\n"
 					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
@@ -190,7 +191,8 @@ sql_help_ALTER_DEFAULT_PRIVILEGES(PQExpBuffer buf)
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ GRANT OPTION FOR ]\n"
-					  "    { USAGE | CREATE | ALL [ PRIVILEGES ] }\n"
+					  "    { { USAGE | CREATE }\n"
+					  "    [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON SCHEMAS\n"
 					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
 					  "    [ CASCADE | RESTRICT ]",
@@ -227,11 +229,16 @@ sql_help_ALTER_DOMAIN(PQExpBuffer buf)
 					  "ALTER DOMAIN %s\n"
 					  "    VALIDATE CONSTRAINT %s\n"
 					  "ALTER DOMAIN %s\n"
-					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "    OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER DOMAIN %s\n"
 					  "    RENAME TO %s\n"
 					  "ALTER DOMAIN %s\n"
-					  "    SET SCHEMA %s",
+					  "    SET SCHEMA %s\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "[ CONSTRAINT %s ]\n"
+					  "{ NOT NULL | CHECK (%s) }",
 					  _("name"),
 					  _("expression"),
 					  _("name"),
@@ -249,7 +256,10 @@ sql_help_ALTER_DOMAIN(PQExpBuffer buf)
 					  _("name"),
 					  _("new_name"),
 					  _("name"),
-					  _("new_schema"));
+					  _("new_schema"),
+					  _("where domain_constraint is:"),
+					  _("constraint_name"),
+					  _("expression"));
 }
 
 static void
@@ -258,7 +268,7 @@ sql_help_ALTER_EVENT_TRIGGER(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "ALTER EVENT TRIGGER %s DISABLE\n"
 					  "ALTER EVENT TRIGGER %s ENABLE [ REPLICA | ALWAYS ]\n"
-					  "ALTER EVENT TRIGGER %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER EVENT TRIGGER %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER EVENT TRIGGER %s RENAME TO %s",
 					  _("name"),
 					  _("name"),
@@ -386,7 +396,7 @@ sql_help_ALTER_FOREIGN_DATA_WRAPPER(PQExpBuffer buf)
 					  "    [ HANDLER %s | NO HANDLER ]\n"
 					  "    [ VALIDATOR %s | NO VALIDATOR ]\n"
 					  "    [ OPTIONS ( [ ADD | SET | DROP ] %s ['%s'] [, ... ]) ]\n"
-					  "ALTER FOREIGN DATA WRAPPER %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER FOREIGN DATA WRAPPER %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER FOREIGN DATA WRAPPER %s RENAME TO %s",
 					  _("name"),
 					  _("handler_function"),
@@ -432,11 +442,10 @@ sql_help_ALTER_FOREIGN_TABLE(PQExpBuffer buf)
 					  "    ENABLE TRIGGER [ %s | ALL | USER ]\n"
 					  "    ENABLE REPLICA TRIGGER %s\n"
 					  "    ENABLE ALWAYS TRIGGER %s\n"
-					  "    SET WITH OIDS\n"
 					  "    SET WITHOUT OIDS\n"
 					  "    INHERIT %s\n"
 					  "    NO INHERIT %s\n"
-					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "    OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "    OPTIONS ( [ ADD | SET | DROP ] %s ['%s'] [, ... ])",
 					  _("name"),
 					  _("action"),
@@ -494,20 +503,22 @@ sql_help_ALTER_FUNCTION(PQExpBuffer buf)
 					  "ALTER FUNCTION %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ]\n"
 					  "    RENAME TO %s\n"
 					  "ALTER FUNCTION %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ]\n"
-					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "    OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER FUNCTION %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ]\n"
 					  "    SET SCHEMA %s\n"
 					  "ALTER FUNCTION %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ]\n"
-					  "    DEPENDS ON EXTENSION %s\n"
+					  "    [ NO ] DEPENDS ON EXTENSION %s\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
 					  "    CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT\n"
-					  "    IMMUTABLE | STABLE | VOLATILE | [ NOT ] LEAKPROOF\n"
+					  "    IMMUTABLE | STABLE | VOLATILE\n"
+					  "    [ NOT ] LEAKPROOF\n"
 					  "    [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER\n"
 					  "    PARALLEL { UNSAFE | RESTRICTED | SAFE }\n"
 					  "    COST %s\n"
 					  "    ROWS %s\n"
+					  "    SUPPORT %s\n"
 					  "    SET %s { TO | = } { %s | DEFAULT }\n"
 					  "    SET %s FROM CURRENT\n"
 					  "    RESET %s\n"
@@ -540,6 +551,7 @@ sql_help_ALTER_FUNCTION(PQExpBuffer buf)
 					  _("where action is one of:"),
 					  _("execution_cost"),
 					  _("result_rows"),
+					  _("support_function"),
 					  _("configuration_parameter"),
 					  _("value"),
 					  _("configuration_parameter"),
@@ -556,6 +568,7 @@ sql_help_ALTER_GROUP(PQExpBuffer buf)
 					  "%s\n"
 					  "\n"
 					  "    %s\n"
+					  "  | CURRENT_ROLE\n"
 					  "  | CURRENT_USER\n"
 					  "  | SESSION_USER\n"
 					  "\n"
@@ -577,8 +590,8 @@ sql_help_ALTER_INDEX(PQExpBuffer buf)
 					  "ALTER INDEX [ IF EXISTS ] %s RENAME TO %s\n"
 					  "ALTER INDEX [ IF EXISTS ] %s SET TABLESPACE %s\n"
 					  "ALTER INDEX %s ATTACH PARTITION %s\n"
-					  "ALTER INDEX %s DEPENDS ON EXTENSION %s\n"
-					  "ALTER INDEX [ IF EXISTS ] %s SET ( %s = %s [, ... ] )\n"
+					  "ALTER INDEX %s [ NO ] DEPENDS ON EXTENSION %s\n"
+					  "ALTER INDEX [ IF EXISTS ] %s SET ( %s [= %s] [, ... ] )\n"
 					  "ALTER INDEX [ IF EXISTS ] %s RESET ( %s [, ... ] )\n"
 					  "ALTER INDEX [ IF EXISTS ] %s ALTER [ COLUMN ] %s\n"
 					  "    SET STATISTICS %s\n"
@@ -610,7 +623,7 @@ sql_help_ALTER_LANGUAGE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "ALTER [ PROCEDURAL ] LANGUAGE %s RENAME TO %s\n"
-					  "ALTER [ PROCEDURAL ] LANGUAGE %s OWNER TO { %s | CURRENT_USER | SESSION_USER }",
+					  "ALTER [ PROCEDURAL ] LANGUAGE %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }",
 					  _("name"),
 					  _("new_name"),
 					  _("name"),
@@ -621,7 +634,7 @@ static void
 sql_help_ALTER_LARGE_OBJECT(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER LARGE OBJECT %s OWNER TO { %s | CURRENT_USER | SESSION_USER }",
+					  "ALTER LARGE OBJECT %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }",
 					  _("large_object_oid"),
 					  _("new_owner"));
 }
@@ -633,7 +646,7 @@ sql_help_ALTER_MATERIALIZED_VIEW(PQExpBuffer buf)
 					  "ALTER MATERIALIZED VIEW [ IF EXISTS ] %s\n"
 					  "    %s [, ... ]\n"
 					  "ALTER MATERIALIZED VIEW %s\n"
-					  "    DEPENDS ON EXTENSION %s\n"
+					  "    [ NO ] DEPENDS ON EXTENSION %s\n"
 					  "ALTER MATERIALIZED VIEW [ IF EXISTS ] %s\n"
 					  "    RENAME [ COLUMN ] %s TO %s\n"
 					  "ALTER MATERIALIZED VIEW [ IF EXISTS ] %s\n"
@@ -649,11 +662,13 @@ sql_help_ALTER_MATERIALIZED_VIEW(PQExpBuffer buf)
 					  "    ALTER [ COLUMN ] %s SET ( %s = %s [, ... ] )\n"
 					  "    ALTER [ COLUMN ] %s RESET ( %s [, ... ] )\n"
 					  "    ALTER [ COLUMN ] %s SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }\n"
+					  "    ALTER [ COLUMN ] %s SET COMPRESSION %s\n"
 					  "    CLUSTER ON %s\n"
 					  "    SET WITHOUT CLUSTER\n"
-					  "    SET ( %s = %s [, ... ] )\n"
+					  "    SET TABLESPACE %s\n"
+					  "    SET ( %s [= %s] [, ... ] )\n"
 					  "    RESET ( %s [, ... ] )\n"
-					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }",
+					  "    OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }",
 					  _("name"),
 					  _("action"),
 					  _("name"),
@@ -677,7 +692,10 @@ sql_help_ALTER_MATERIALIZED_VIEW(PQExpBuffer buf)
 					  _("column_name"),
 					  _("attribute_option"),
 					  _("column_name"),
+					  _("column_name"),
+					  _("compression_method"),
 					  _("index_name"),
+					  _("new_tablespace"),
 					  _("storage_parameter"),
 					  _("value"),
 					  _("storage_parameter"),
@@ -688,13 +706,13 @@ static void
 sql_help_ALTER_OPERATOR(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER OPERATOR %s ( { %s | NONE } , { %s | NONE } )\n"
-					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER OPERATOR %s ( { %s | NONE } , %s )\n"
+					  "    OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "\n"
-					  "ALTER OPERATOR %s ( { %s | NONE } , { %s | NONE } )\n"
+					  "ALTER OPERATOR %s ( { %s | NONE } , %s )\n"
 					  "    SET SCHEMA %s\n"
 					  "\n"
-					  "ALTER OPERATOR %s ( { %s | NONE } , { %s | NONE } )\n"
+					  "ALTER OPERATOR %s ( { %s | NONE } , %s )\n"
 					  "    SET ( {  RESTRICT = { %s | NONE }\n"
 					  "           | JOIN = { %s | NONE }\n"
 					  "         } [, ... ] )",
@@ -721,7 +739,7 @@ sql_help_ALTER_OPERATOR_CLASS(PQExpBuffer buf)
 					  "    RENAME TO %s\n"
 					  "\n"
 					  "ALTER OPERATOR CLASS %s USING %s\n"
-					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "    OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "\n"
 					  "ALTER OPERATOR CLASS %s USING %s\n"
 					  "    SET SCHEMA %s",
@@ -756,7 +774,7 @@ sql_help_ALTER_OPERATOR_FAMILY(PQExpBuffer buf)
 					  "    RENAME TO %s\n"
 					  "\n"
 					  "ALTER OPERATOR FAMILY %s USING %s\n"
-					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "    OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "\n"
 					  "ALTER OPERATOR FAMILY %s USING %s\n"
 					  "    SET SCHEMA %s",
@@ -798,7 +816,7 @@ sql_help_ALTER_POLICY(PQExpBuffer buf)
 					  "ALTER POLICY %s ON %s RENAME TO %s\n"
 					  "\n"
 					  "ALTER POLICY %s ON %s\n"
-					  "    [ TO { %s | PUBLIC | CURRENT_USER | SESSION_USER } [, ...] ]\n"
+					  "    [ TO { %s | PUBLIC | CURRENT_ROLE | CURRENT_USER | SESSION_USER } [, ...] ]\n"
 					  "    [ USING ( %s ) ]\n"
 					  "    [ WITH CHECK ( %s ) ]",
 					  _("name"),
@@ -820,11 +838,11 @@ sql_help_ALTER_PROCEDURE(PQExpBuffer buf)
 					  "ALTER PROCEDURE %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ]\n"
 					  "    RENAME TO %s\n"
 					  "ALTER PROCEDURE %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ]\n"
-					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "    OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER PROCEDURE %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ]\n"
 					  "    SET SCHEMA %s\n"
 					  "ALTER PROCEDURE %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ]\n"
-					  "    DEPENDS ON EXTENSION %s\n"
+					  "    [ NO ] DEPENDS ON EXTENSION %s\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -873,7 +891,7 @@ sql_help_ALTER_PUBLICATION(PQExpBuffer buf)
 					  "ALTER PUBLICATION %s SET TABLE [ ONLY ] %s [ * ] [, ...]\n"
 					  "ALTER PUBLICATION %s DROP TABLE [ ONLY ] %s [ * ] [, ...]\n"
 					  "ALTER PUBLICATION %s SET ( %s [= %s] [, ... ] )\n"
-					  "ALTER PUBLICATION %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER PUBLICATION %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER PUBLICATION %s RENAME TO %s",
 					  _("name"),
 					  _("table_name"),
@@ -919,6 +937,7 @@ sql_help_ALTER_ROLE(PQExpBuffer buf)
 					  "%s\n"
 					  "\n"
 					  "    %s\n"
+					  "  | CURRENT_ROLE\n"
 					  "  | CURRENT_USER\n"
 					  "  | SESSION_USER",
 					  _("role_specification"),
@@ -954,15 +973,16 @@ sql_help_ALTER_ROUTINE(PQExpBuffer buf)
 					  "ALTER ROUTINE %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ]\n"
 					  "    RENAME TO %s\n"
 					  "ALTER ROUTINE %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ]\n"
-					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "    OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER ROUTINE %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ]\n"
 					  "    SET SCHEMA %s\n"
 					  "ALTER ROUTINE %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ]\n"
-					  "    DEPENDS ON EXTENSION %s\n"
+					  "    [ NO ] DEPENDS ON EXTENSION %s\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "    IMMUTABLE | STABLE | VOLATILE | [ NOT ] LEAKPROOF\n"
+					  "    IMMUTABLE | STABLE | VOLATILE\n"
+					  "    [ NOT ] LEAKPROOF\n"
 					  "    [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER\n"
 					  "    PARALLEL { UNSAFE | RESTRICTED | SAFE }\n"
 					  "    COST %s\n"
@@ -1020,7 +1040,7 @@ sql_help_ALTER_SCHEMA(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "ALTER SCHEMA %s RENAME TO %s\n"
-					  "ALTER SCHEMA %s OWNER TO { %s | CURRENT_USER | SESSION_USER }",
+					  "ALTER SCHEMA %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }",
 					  _("name"),
 					  _("new_name"),
 					  _("name"),
@@ -1039,7 +1059,7 @@ sql_help_ALTER_SEQUENCE(PQExpBuffer buf)
 					  "    [ RESTART [ [ WITH ] %s ] ]\n"
 					  "    [ CACHE %s ] [ [ NO ] CYCLE ]\n"
 					  "    [ OWNED BY { %s.%s | NONE } ]\n"
-					  "ALTER SEQUENCE [ IF EXISTS ] %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER SEQUENCE [ IF EXISTS ] %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER SEQUENCE [ IF EXISTS ] %s RENAME TO %s\n"
 					  "ALTER SEQUENCE [ IF EXISTS ] %s SET SCHEMA %s",
 					  _("name"),
@@ -1066,7 +1086,7 @@ sql_help_ALTER_SERVER(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "ALTER SERVER %s [ VERSION '%s' ]\n"
 					  "    [ OPTIONS ( [ ADD | SET | DROP ] %s ['%s'] [, ... ] ) ]\n"
-					  "ALTER SERVER %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER SERVER %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER SERVER %s RENAME TO %s",
 					  _("name"),
 					  _("new_version"),
@@ -1082,15 +1102,18 @@ static void
 sql_help_ALTER_STATISTICS(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER STATISTICS %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER STATISTICS %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER STATISTICS %s RENAME TO %s\n"
-					  "ALTER STATISTICS %s SET SCHEMA %s",
+					  "ALTER STATISTICS %s SET SCHEMA %s\n"
+					  "ALTER STATISTICS %s SET STATISTICS %s",
 					  _("name"),
 					  _("new_owner"),
 					  _("name"),
 					  _("new_name"),
 					  _("name"),
-					  _("new_schema"));
+					  _("new_schema"),
+					  _("name"),
+					  _("new_target"));
 }
 
 static void
@@ -1099,17 +1122,27 @@ sql_help_ALTER_SUBSCRIPTION(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "ALTER SUBSCRIPTION %s CONNECTION '%s'\n"
 					  "ALTER SUBSCRIPTION %s SET PUBLICATION %s [, ...] [ WITH ( %s [= %s] [, ... ] ) ]\n"
+					  "ALTER SUBSCRIPTION %s ADD PUBLICATION %s [, ...] [ WITH ( %s [= %s] [, ... ] ) ]\n"
+					  "ALTER SUBSCRIPTION %s DROP PUBLICATION %s [, ...] [ WITH ( %s [= %s] [, ... ] ) ]\n"
 					  "ALTER SUBSCRIPTION %s REFRESH PUBLICATION [ WITH ( %s [= %s] [, ... ] ) ]\n"
 					  "ALTER SUBSCRIPTION %s ENABLE\n"
 					  "ALTER SUBSCRIPTION %s DISABLE\n"
 					  "ALTER SUBSCRIPTION %s SET ( %s [= %s] [, ... ] )\n"
-					  "ALTER SUBSCRIPTION %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER SUBSCRIPTION %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER SUBSCRIPTION %s RENAME TO %s",
 					  _("name"),
 					  _("conninfo"),
 					  _("name"),
 					  _("publication_name"),
-					  _("set_publication_option"),
+					  _("publication_option"),
+					  _("value"),
+					  _("name"),
+					  _("publication_name"),
+					  _("publication_option"),
+					  _("value"),
+					  _("name"),
+					  _("publication_name"),
+					  _("publication_option"),
 					  _("value"),
 					  _("name"),
 					  _("refresh_option"),
@@ -1129,12 +1162,11 @@ static void
 sql_help_ALTER_SYSTEM(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER SYSTEM SET %s { TO | = } { %s | '%s' | DEFAULT }\n"
+					  "ALTER SYSTEM SET %s { TO | = } { %s [, ...] | DEFAULT }\n"
 					  "\n"
 					  "ALTER SYSTEM RESET %s\n"
 					  "ALTER SYSTEM RESET ALL",
 					  _("configuration_parameter"),
-					  _("value"),
 					  _("value"),
 					  _("configuration_parameter"));
 }
@@ -1158,7 +1190,7 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  "ALTER TABLE [ IF EXISTS ] %s\n"
 					  "    ATTACH PARTITION %s { FOR VALUES %s | DEFAULT }\n"
 					  "ALTER TABLE [ IF EXISTS ] %s\n"
-					  "    DETACH PARTITION %s\n"
+					  "    DETACH PARTITION %s [ CONCURRENTLY | FINALIZE ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -1168,6 +1200,7 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  "    ALTER [ COLUMN ] %s SET DEFAULT %s\n"
 					  "    ALTER [ COLUMN ] %s DROP DEFAULT\n"
 					  "    ALTER [ COLUMN ] %s { SET | DROP } NOT NULL\n"
+					  "    ALTER [ COLUMN ] %s DROP EXPRESSION [ IF EXISTS ]\n"
 					  "    ALTER [ COLUMN ] %s ADD GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY [ ( %s ) ]\n"
 					  "    ALTER [ COLUMN ] %s { SET GENERATED { ALWAYS | BY DEFAULT } | SET %s | RESTART [ [ WITH ] %s ] } [...]\n"
 					  "    ALTER [ COLUMN ] %s DROP IDENTITY [ IF EXISTS ]\n"
@@ -1175,6 +1208,7 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  "    ALTER [ COLUMN ] %s SET ( %s = %s [, ... ] )\n"
 					  "    ALTER [ COLUMN ] %s RESET ( %s [, ... ] )\n"
 					  "    ALTER [ COLUMN ] %s SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }\n"
+					  "    ALTER [ COLUMN ] %s SET COMPRESSION %s\n"
 					  "    ADD %s [ NOT VALID ]\n"
 					  "    ADD %s\n"
 					  "    ALTER CONSTRAINT %s [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]\n"
@@ -1194,24 +1228,23 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  "    NO FORCE ROW LEVEL SECURITY\n"
 					  "    CLUSTER ON %s\n"
 					  "    SET WITHOUT CLUSTER\n"
-					  "    SET WITH OIDS\n"
 					  "    SET WITHOUT OIDS\n"
 					  "    SET TABLESPACE %s\n"
 					  "    SET { LOGGED | UNLOGGED }\n"
-					  "    SET ( %s = %s [, ... ] )\n"
+					  "    SET ( %s [= %s] [, ... ] )\n"
 					  "    RESET ( %s [, ... ] )\n"
 					  "    INHERIT %s\n"
 					  "    NO INHERIT %s\n"
 					  "    OF %s\n"
 					  "    NOT OF\n"
-					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "    OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "    REPLICA IDENTITY { DEFAULT | USING INDEX %s | FULL | NOTHING }\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "IN ( { %s | %s | TRUE | FALSE | NULL } [, ...] ) |\n"
-					  "FROM ( { %s | %s | TRUE | FALSE | MINVALUE | MAXVALUE } [, ...] )\n"
-					  "  TO ( { %s | %s | TRUE | FALSE | MINVALUE | MAXVALUE } [, ...] ) |\n"
+					  "IN ( %s [, ...] ) |\n"
+					  "FROM ( { %s | MINVALUE | MAXVALUE } [, ...] )\n"
+					  "  TO ( { %s | MINVALUE | MAXVALUE } [, ...] ) |\n"
 					  "WITH ( MODULUS %s, REMAINDER %s )\n"
 					  "\n"
 					  "%s\n"
@@ -1221,6 +1254,7 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  "  NULL |\n"
 					  "  CHECK ( %s ) [ NO INHERIT ] |\n"
 					  "  DEFAULT %s |\n"
+					  "  GENERATED ALWAYS AS ( %s ) STORED |\n"
 					  "  GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY [ ( %s ) ] |\n"
 					  "  UNIQUE %s |\n"
 					  "  PRIMARY KEY %s |\n"
@@ -1253,7 +1287,7 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "{ %s | ( %s ) } [ %s ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ]",
+					  "{ %s | ( %s ) } [ COLLATE %s ] [ %s [ ( %s = %s [, ... ] ) ] ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ]",
 					  _("name"),
 					  _("action"),
 					  _("name"),
@@ -1289,6 +1323,7 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  _("column_name"),
 					  _("column_name"),
 					  _("column_name"),
+					  _("column_name"),
 					  _("sequence_options"),
 					  _("column_name"),
 					  _("sequence_option"),
@@ -1302,6 +1337,8 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  _("column_name"),
 					  _("attribute_option"),
 					  _("column_name"),
+					  _("column_name"),
+					  _("compression_method"),
 					  _("table_constraint"),
 					  _("table_constraint_using_index"),
 					  _("constraint_name"),
@@ -1326,25 +1363,23 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  _("new_owner"),
 					  _("index_name"),
 					  _("and partition_bound_spec is:"),
-					  _("numeric_literal"),
-					  _("string_literal"),
-					  _("numeric_literal"),
-					  _("string_literal"),
-					  _("numeric_literal"),
-					  _("string_literal"),
+					  _("partition_bound_expr"),
+					  _("partition_bound_expr"),
+					  _("partition_bound_expr"),
 					  _("numeric_literal"),
 					  _("numeric_literal"),
 					  _("and column_constraint is:"),
 					  _("constraint_name"),
 					  _("expression"),
 					  _("default_expr"),
+					  _("generation_expr"),
 					  _("sequence_options"),
 					  _("index_parameters"),
 					  _("index_parameters"),
 					  _("reftable"),
 					  _("refcolumn"),
-					  _("action"),
-					  _("action"),
+					  _("referential_action"),
+					  _("referential_action"),
 					  _("and table_constraint is:"),
 					  _("constraint_name"),
 					  _("expression"),
@@ -1360,8 +1395,8 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  _("column_name"),
 					  _("reftable"),
 					  _("refcolumn"),
-					  _("action"),
-					  _("action"),
+					  _("referential_action"),
+					  _("referential_action"),
 					  _("and table_constraint_using_index is:"),
 					  _("constraint_name"),
 					  _("index_name"),
@@ -1373,7 +1408,10 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  _("exclude_element in an EXCLUDE constraint is:"),
 					  _("column_name"),
 					  _("expression"),
-					  _("opclass"));
+					  _("collation"),
+					  _("opclass"),
+					  _("opclass_parameter"),
+					  _("value"));
 }
 
 static void
@@ -1381,7 +1419,7 @@ sql_help_ALTER_TABLESPACE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "ALTER TABLESPACE %s RENAME TO %s\n"
-					  "ALTER TABLESPACE %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER TABLESPACE %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER TABLESPACE %s SET ( %s = %s [, ... ] )\n"
 					  "ALTER TABLESPACE %s RESET ( %s [, ... ] )",
 					  _("name"),
@@ -1410,7 +1448,7 @@ sql_help_ALTER_TEXT_SEARCH_CONFIGURATION(PQExpBuffer buf)
 					  "ALTER TEXT SEARCH CONFIGURATION %s\n"
 					  "    DROP MAPPING [ IF EXISTS ] FOR %s [, ... ]\n"
 					  "ALTER TEXT SEARCH CONFIGURATION %s RENAME TO %s\n"
-					  "ALTER TEXT SEARCH CONFIGURATION %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER TEXT SEARCH CONFIGURATION %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER TEXT SEARCH CONFIGURATION %s SET SCHEMA %s",
 					  _("name"),
 					  _("token_type"),
@@ -1443,7 +1481,7 @@ sql_help_ALTER_TEXT_SEARCH_DICTIONARY(PQExpBuffer buf)
 					  "    %s [ = %s ] [, ... ]\n"
 					  ")\n"
 					  "ALTER TEXT SEARCH DICTIONARY %s RENAME TO %s\n"
-					  "ALTER TEXT SEARCH DICTIONARY %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER TEXT SEARCH DICTIONARY %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER TEXT SEARCH DICTIONARY %s SET SCHEMA %s",
 					  _("name"),
 					  _("option"),
@@ -1485,7 +1523,7 @@ sql_help_ALTER_TRIGGER(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "ALTER TRIGGER %s ON %s RENAME TO %s\n"
-					  "ALTER TRIGGER %s ON %s DEPENDS ON EXTENSION %s",
+					  "ALTER TRIGGER %s ON %s [ NO ] DEPENDS ON EXTENSION %s",
 					  _("name"),
 					  _("table_name"),
 					  _("new_name"),
@@ -1498,13 +1536,14 @@ static void
 sql_help_ALTER_TYPE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER TYPE %s %s [, ... ]\n"
-					  "ALTER TYPE %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
-					  "ALTER TYPE %s RENAME ATTRIBUTE %s TO %s [ CASCADE | RESTRICT ]\n"
+					  "ALTER TYPE %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER TYPE %s RENAME TO %s\n"
 					  "ALTER TYPE %s SET SCHEMA %s\n"
+					  "ALTER TYPE %s RENAME ATTRIBUTE %s TO %s [ CASCADE | RESTRICT ]\n"
+					  "ALTER TYPE %s %s [, ... ]\n"
 					  "ALTER TYPE %s ADD VALUE [ IF NOT EXISTS ] %s [ { BEFORE | AFTER } %s ]\n"
 					  "ALTER TYPE %s RENAME VALUE %s TO %s\n"
+					  "ALTER TYPE %s SET ( %s = %s [, ... ] )\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -1512,22 +1551,25 @@ sql_help_ALTER_TYPE(PQExpBuffer buf)
 					  "    DROP ATTRIBUTE [ IF EXISTS ] %s [ CASCADE | RESTRICT ]\n"
 					  "    ALTER ATTRIBUTE %s [ SET DATA ] TYPE %s [ COLLATE %s ] [ CASCADE | RESTRICT ]",
 					  _("name"),
-					  _("action"),
-					  _("name"),
 					  _("new_owner"),
-					  _("name"),
-					  _("attribute_name"),
-					  _("new_attribute_name"),
 					  _("name"),
 					  _("new_name"),
 					  _("name"),
 					  _("new_schema"),
+					  _("name"),
+					  _("attribute_name"),
+					  _("new_attribute_name"),
+					  _("name"),
+					  _("action"),
 					  _("name"),
 					  _("new_enum_value"),
 					  _("neighbor_enum_value"),
 					  _("name"),
 					  _("existing_enum_value"),
 					  _("new_enum_value"),
+					  _("name"),
+					  _("property"),
+					  _("value"),
 					  _("where action is one of:"),
 					  _("attribute_name"),
 					  _("data_type"),
@@ -1567,6 +1609,7 @@ sql_help_ALTER_USER(PQExpBuffer buf)
 					  "%s\n"
 					  "\n"
 					  "    %s\n"
+					  "  | CURRENT_ROLE\n"
 					  "  | CURRENT_USER\n"
 					  "  | SESSION_USER",
 					  _("role_specification"),
@@ -1597,7 +1640,7 @@ static void
 sql_help_ALTER_USER_MAPPING(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER USER MAPPING FOR { %s | USER | CURRENT_USER | SESSION_USER | PUBLIC }\n"
+					  "ALTER USER MAPPING FOR { %s | USER | CURRENT_ROLE | CURRENT_USER | SESSION_USER | PUBLIC }\n"
 					  "    SERVER %s\n"
 					  "    OPTIONS ( [ ADD | SET | DROP ] %s ['%s'] [, ... ] )",
 					  _("user_name"),
@@ -1612,7 +1655,8 @@ sql_help_ALTER_VIEW(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "ALTER VIEW [ IF EXISTS ] %s ALTER [ COLUMN ] %s SET DEFAULT %s\n"
 					  "ALTER VIEW [ IF EXISTS ] %s ALTER [ COLUMN ] %s DROP DEFAULT\n"
-					  "ALTER VIEW [ IF EXISTS ] %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER VIEW [ IF EXISTS ] %s OWNER TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }\n"
+					  "ALTER VIEW [ IF EXISTS ] %s RENAME [ COLUMN ] %s TO %s\n"
 					  "ALTER VIEW [ IF EXISTS ] %s RENAME TO %s\n"
 					  "ALTER VIEW [ IF EXISTS ] %s SET SCHEMA %s\n"
 					  "ALTER VIEW [ IF EXISTS ] %s SET ( %s [= %s] [, ... ] )\n"
@@ -1624,6 +1668,9 @@ sql_help_ALTER_VIEW(PQExpBuffer buf)
 					  _("column_name"),
 					  _("name"),
 					  _("new_owner"),
+					  _("name"),
+					  _("column_name"),
+					  _("new_column_name"),
 					  _("name"),
 					  _("new_name"),
 					  _("name"),
@@ -1644,7 +1691,8 @@ sql_help_ANALYZE(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "    VERBOSE\n"
+					  "    VERBOSE [ %s ]\n"
+					  "    SKIP_LOCKED [ %s ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -1653,6 +1701,8 @@ sql_help_ANALYZE(PQExpBuffer buf)
 					  _("table_and_columns"),
 					  _("table_and_columns"),
 					  _("where option can be one of:"),
+					  _("boolean"),
+					  _("boolean"),
 					  _("and table_and_columns is:"),
 					  _("table_name"),
 					  _("column_name"));
@@ -1702,9 +1752,19 @@ sql_help_CLUSTER(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "CLUSTER [VERBOSE] %s [ USING %s ]\n"
-					  "CLUSTER [VERBOSE]",
+					  "CLUSTER ( %s [, ...] ) %s [ USING %s ]\n"
+					  "CLUSTER [VERBOSE]\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "    VERBOSE [ %s ]",
 					  _("table_name"),
-					  _("index_name"));
+					  _("index_name"),
+					  _("option"),
+					  _("table_name"),
+					  _("index_name"),
+					  _("where option can be one of:"),
+					  _("boolean"));
 }
 
 static void
@@ -1756,7 +1816,7 @@ sql_help_COMMENT(PQExpBuffer buf)
 					  "  TRIGGER %s ON %s |\n"
 					  "  TYPE %s |\n"
 					  "  VIEW %s\n"
-					  "} IS '%s'\n"
+					  "} IS { %s | NULL }\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -1828,7 +1888,7 @@ sql_help_COMMENT(PQExpBuffer buf)
 					  _("table_name"),
 					  _("object_name"),
 					  _("object_name"),
-					  _("text"),
+					  _("string_literal"),
 					  _("where aggregate_signature is:"),
 					  _("argmode"),
 					  _("argname"),
@@ -1845,7 +1905,7 @@ static void
 sql_help_COMMIT(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "COMMIT [ WORK | TRANSACTION ]");
+					  "COMMIT [ WORK | TRANSACTION ] [ AND [ NO ] CHAIN ]");
 }
 
 static void
@@ -1863,6 +1923,7 @@ sql_help_COPY(PQExpBuffer buf)
 					  "COPY %s [ ( %s [, ...] ) ]\n"
 					  "    FROM { '%s' | PROGRAM '%s' | STDIN }\n"
 					  "    [ [ WITH ] ( %s [, ...] ) ]\n"
+					  "    [ WHERE %s ]\n"
 					  "\n"
 					  "COPY { %s [ ( %s [, ...] ) ] | ( %s ) }\n"
 					  "    TO { '%s' | PROGRAM '%s' | STDOUT }\n"
@@ -1871,7 +1932,6 @@ sql_help_COPY(PQExpBuffer buf)
 					  "%s\n"
 					  "\n"
 					  "    FORMAT %s\n"
-					  "    OIDS [ %s ]\n"
 					  "    FREEZE [ %s ]\n"
 					  "    DELIMITER '%s'\n"
 					  "    NULL '%s'\n"
@@ -1887,6 +1947,7 @@ sql_help_COPY(PQExpBuffer buf)
 					  _("filename"),
 					  _("command"),
 					  _("option"),
+					  _("condition"),
 					  _("table_name"),
 					  _("column_name"),
 					  _("query"),
@@ -1895,7 +1956,6 @@ sql_help_COPY(PQExpBuffer buf)
 					  _("option"),
 					  _("where option can be one of:"),
 					  _("format_name"),
-					  _("boolean"),
 					  _("boolean"),
 					  _("delimiter_character"),
 					  _("null_string"),
@@ -1924,7 +1984,7 @@ static void
 sql_help_CREATE_AGGREGATE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "CREATE AGGREGATE %s ( [ %s ] [ %s ] %s [ , ... ] ) (\n"
+					  "CREATE [ OR REPLACE ] AGGREGATE %s ( [ %s ] [ %s ] %s [ , ... ] ) (\n"
 					  "    SFUNC = %s,\n"
 					  "    STYPE = %s\n"
 					  "    [ , SSPACE = %s ]\n"
@@ -1947,7 +2007,7 @@ sql_help_CREATE_AGGREGATE(PQExpBuffer buf)
 					  "    [ , PARALLEL = { SAFE | RESTRICTED | UNSAFE } ]\n"
 					  ")\n"
 					  "\n"
-					  "CREATE AGGREGATE %s ( [ [ %s ] [ %s ] %s [ , ... ] ]\n"
+					  "CREATE [ OR REPLACE ] AGGREGATE %s ( [ [ %s ] [ %s ] %s [ , ... ] ]\n"
 					  "                        ORDER BY [ %s ] [ %s ] %s [ , ... ] ) (\n"
 					  "    SFUNC = %s,\n"
 					  "    STYPE = %s\n"
@@ -1962,7 +2022,7 @@ sql_help_CREATE_AGGREGATE(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "CREATE AGGREGATE %s (\n"
+					  "CREATE [ OR REPLACE ] AGGREGATE %s (\n"
 					  "    BASETYPE = %s,\n"
 					  "    SFUNC = %s,\n"
 					  "    STYPE = %s\n"
@@ -2069,6 +2129,7 @@ sql_help_CREATE_COLLATION(PQExpBuffer buf)
 					  "    [ LC_COLLATE = %s, ]\n"
 					  "    [ LC_CTYPE = %s, ]\n"
 					  "    [ PROVIDER = %s, ]\n"
+					  "    [ DETERMINISTIC = %s, ]\n"
 					  "    [ VERSION = %s ]\n"
 					  ")\n"
 					  "CREATE COLLATION [ IF NOT EXISTS ] %s FROM %s",
@@ -2077,6 +2138,7 @@ sql_help_CREATE_COLLATION(PQExpBuffer buf)
 					  _("lc_collate"),
 					  _("lc_ctype"),
 					  _("provider"),
+					  _("boolean"),
 					  _("version"),
 					  _("name"),
 					  _("existing_collation"));
@@ -2099,19 +2161,21 @@ sql_help_CREATE_DATABASE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "CREATE DATABASE %s\n"
-					  "    [ [ WITH ] [ OWNER [=] %s ]\n"
+					  "    [ WITH ] [ OWNER [=] %s ]\n"
 					  "           [ TEMPLATE [=] %s ]\n"
 					  "           [ ENCODING [=] %s ]\n"
+					  "           [ LOCALE [=] %s ]\n"
 					  "           [ LC_COLLATE [=] %s ]\n"
 					  "           [ LC_CTYPE [=] %s ]\n"
 					  "           [ TABLESPACE [=] %s ]\n"
 					  "           [ ALLOW_CONNECTIONS [=] %s ]\n"
 					  "           [ CONNECTION LIMIT [=] %s ]\n"
-					  "           [ IS_TEMPLATE [=] %s ] ]",
+					  "           [ IS_TEMPLATE [=] %s ]",
 					  _("name"),
 					  _("user_name"),
 					  _("template"),
 					  _("encoding"),
+					  _("locale"),
 					  _("lc_collate"),
 					  _("lc_ctype"),
 					  _("tablespace_name"),
@@ -2149,11 +2213,12 @@ sql_help_CREATE_EVENT_TRIGGER(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "CREATE EVENT TRIGGER %s\n"
 					  "    ON %s\n"
-					  "    [ WHEN %s IN (filter_value [, ... ]) [ AND ... ] ]\n"
+					  "    [ WHEN %s IN (%s [, ... ]) [ AND ... ] ]\n"
 					  "    EXECUTE { FUNCTION | PROCEDURE } %s()",
 					  _("name"),
 					  _("event"),
 					  _("filter_variable"),
+					  _("filter_value"),
 					  _("function_name"));
 }
 
@@ -2164,12 +2229,10 @@ sql_help_CREATE_EXTENSION(PQExpBuffer buf)
 					  "CREATE EXTENSION [ IF NOT EXISTS ] %s\n"
 					  "    [ WITH ] [ SCHEMA %s ]\n"
 					  "             [ VERSION %s ]\n"
-					  "             [ FROM %s ]\n"
 					  "             [ CASCADE ]",
 					  _("extension_name"),
 					  _("schema_name"),
-					  _("version"),
-					  _("old_version"));
+					  _("version"));
 }
 
 static void
@@ -2205,7 +2268,8 @@ sql_help_CREATE_FOREIGN_TABLE(PQExpBuffer buf)
 					  "  { %s [ WITH OPTIONS ] [ %s [ ... ] ]\n"
 					  "    | %s }\n"
 					  "    [, ... ]\n"
-					  ") ] %s\n"
+					  ") ]\n"
+					  "{ FOR VALUES %s | DEFAULT }\n"
 					  "  SERVER %s\n"
 					  "[ OPTIONS ( %s '%s' [, ... ] ) ]\n"
 					  "\n"
@@ -2215,12 +2279,20 @@ sql_help_CREATE_FOREIGN_TABLE(PQExpBuffer buf)
 					  "{ NOT NULL |\n"
 					  "  NULL |\n"
 					  "  CHECK ( %s ) [ NO INHERIT ] |\n"
-					  "  DEFAULT %s }\n"
+					  "  DEFAULT %s |\n"
+					  "  GENERATED ALWAYS AS ( %s ) STORED }\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
 					  "[ CONSTRAINT %s ]\n"
-					  "CHECK ( %s ) [ NO INHERIT ]",
+					  "CHECK ( %s ) [ NO INHERIT ]\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "IN ( %s [, ...] ) |\n"
+					  "FROM ( { %s | MINVALUE | MAXVALUE } [, ...] )\n"
+					  "  TO ( { %s | MINVALUE | MAXVALUE } [, ...] ) |\n"
+					  "WITH ( MODULUS %s, REMAINDER %s )",
 					  _("table_name"),
 					  _("column_name"),
 					  _("data_type"),
@@ -2246,9 +2318,16 @@ sql_help_CREATE_FOREIGN_TABLE(PQExpBuffer buf)
 					  _("constraint_name"),
 					  _("expression"),
 					  _("default_expr"),
+					  _("generation_expr"),
 					  _("and table_constraint is:"),
 					  _("constraint_name"),
-					  _("expression"));
+					  _("expression"),
+					  _("and partition_bound_spec is:"),
+					  _("partition_bound_expr"),
+					  _("partition_bound_expr"),
+					  _("partition_bound_expr"),
+					  _("numeric_literal"),
+					  _("numeric_literal"));
 }
 
 static void
@@ -2262,15 +2341,18 @@ sql_help_CREATE_FUNCTION(PQExpBuffer buf)
 					  "  { LANGUAGE %s\n"
 					  "    | TRANSFORM { FOR TYPE %s } [, ... ]\n"
 					  "    | WINDOW\n"
-					  "    | IMMUTABLE | STABLE | VOLATILE | [ NOT ] LEAKPROOF\n"
-					  "    | CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT\n"
-					  "    | [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER\n"
+					  "    | { IMMUTABLE | STABLE | VOLATILE }\n"
+					  "    | [ NOT ] LEAKPROOF\n"
+					  "    | { CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT }\n"
+					  "    | { [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER }\n"
 					  "    | PARALLEL { UNSAFE | RESTRICTED | SAFE }\n"
 					  "    | COST %s\n"
 					  "    | ROWS %s\n"
+					  "    | SUPPORT %s\n"
 					  "    | SET %s { TO %s | = %s | FROM CURRENT }\n"
 					  "    | AS '%s'\n"
 					  "    | AS '%s', '%s'\n"
+					  "    | %s\n"
 					  "  } ...",
 					  _("name"),
 					  _("argmode"),
@@ -2284,12 +2366,14 @@ sql_help_CREATE_FUNCTION(PQExpBuffer buf)
 					  _("type_name"),
 					  _("execution_cost"),
 					  _("result_rows"),
+					  _("support_function"),
 					  _("configuration_parameter"),
 					  _("value"),
 					  _("value"),
 					  _("definition"),
 					  _("obj_file"),
-					  _("link_symbol"));
+					  _("link_symbol"),
+					  _("sql_body"));
 }
 
 static void
@@ -2305,7 +2389,10 @@ sql_help_CREATE_GROUP(PQExpBuffer buf)
 					  "    | CREATEROLE | NOCREATEROLE\n"
 					  "    | INHERIT | NOINHERIT\n"
 					  "    | LOGIN | NOLOGIN\n"
-					  "    | [ ENCRYPTED ] PASSWORD '%s'\n"
+					  "    | REPLICATION | NOREPLICATION\n"
+					  "    | BYPASSRLS | NOBYPASSRLS\n"
+					  "    | CONNECTION LIMIT %s\n"
+					  "    | [ ENCRYPTED ] PASSWORD '%s' | PASSWORD NULL\n"
 					  "    | VALID UNTIL '%s'\n"
 					  "    | IN ROLE %s [, ...]\n"
 					  "    | IN GROUP %s [, ...]\n"
@@ -2316,6 +2403,7 @@ sql_help_CREATE_GROUP(PQExpBuffer buf)
 					  _("name"),
 					  _("option"),
 					  _("where option can be:"),
+					  _("connlimit"),
 					  _("password"),
 					  _("timestamp"),
 					  _("role_name"),
@@ -2331,9 +2419,9 @@ sql_help_CREATE_INDEX(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ [ IF NOT EXISTS ] %s ] ON [ ONLY ] %s [ USING %s ]\n"
-					  "    ( { %s | ( %s ) } [ COLLATE %s ] [ %s ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ] [, ...] )\n"
+					  "    ( { %s | ( %s ) } [ COLLATE %s ] [ %s [ ( %s = %s [, ... ] ) ] ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ] [, ...] )\n"
 					  "    [ INCLUDE ( %s [, ...] ) ]\n"
-					  "    [ WITH ( %s = %s [, ... ] ) ]\n"
+					  "    [ WITH ( %s [= %s] [, ... ] ) ]\n"
 					  "    [ TABLESPACE %s ]\n"
 					  "    [ WHERE %s ]",
 					  _("name"),
@@ -2343,6 +2431,8 @@ sql_help_CREATE_INDEX(PQExpBuffer buf)
 					  _("expression"),
 					  _("collation"),
 					  _("opclass"),
+					  _("opclass_parameter"),
+					  _("value"),
 					  _("column_name"),
 					  _("storage_parameter"),
 					  _("value"),
@@ -2354,14 +2444,14 @@ static void
 sql_help_CREATE_LANGUAGE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "CREATE [ OR REPLACE ] [ PROCEDURAL ] LANGUAGE %s\n"
 					  "CREATE [ OR REPLACE ] [ TRUSTED ] [ PROCEDURAL ] LANGUAGE %s\n"
-					  "    HANDLER %s [ INLINE %s ] [ VALIDATOR %s ]",
-					  _("name"),
+					  "    HANDLER %s [ INLINE %s ] [ VALIDATOR %s ]\n"
+					  "CREATE [ OR REPLACE ] [ TRUSTED ] [ PROCEDURAL ] LANGUAGE %s",
 					  _("name"),
 					  _("call_handler"),
 					  _("inline_handler"),
-					  _("valfunction"));
+					  _("valfunction"),
+					  _("name"));
 }
 
 static void
@@ -2370,12 +2460,14 @@ sql_help_CREATE_MATERIALIZED_VIEW(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "CREATE MATERIALIZED VIEW [ IF NOT EXISTS ] %s\n"
 					  "    [ (%s [, ...] ) ]\n"
+					  "    [ USING %s ]\n"
 					  "    [ WITH ( %s [= %s] [, ... ] ) ]\n"
 					  "    [ TABLESPACE %s ]\n"
 					  "    AS %s\n"
 					  "    [ WITH [ NO ] DATA ]",
 					  _("table_name"),
 					  _("column_name"),
+					  _("method"),
 					  _("storage_parameter"),
 					  _("value"),
 					  _("tablespace_name"),
@@ -2446,7 +2538,7 @@ sql_help_CREATE_POLICY(PQExpBuffer buf)
 					  "CREATE POLICY %s ON %s\n"
 					  "    [ AS { PERMISSIVE | RESTRICTIVE } ]\n"
 					  "    [ FOR { ALL | SELECT | INSERT | UPDATE | DELETE } ]\n"
-					  "    [ TO { %s | PUBLIC | CURRENT_USER | SESSION_USER } [, ...] ]\n"
+					  "    [ TO { %s | PUBLIC | CURRENT_ROLE | CURRENT_USER | SESSION_USER } [, ...] ]\n"
 					  "    [ USING ( %s ) ]\n"
 					  "    [ WITH CHECK ( %s ) ]",
 					  _("name"),
@@ -2468,6 +2560,7 @@ sql_help_CREATE_PROCEDURE(PQExpBuffer buf)
 					  "    | SET %s { TO %s | = %s | FROM CURRENT }\n"
 					  "    | AS '%s'\n"
 					  "    | AS '%s', '%s'\n"
+					  "    | %s\n"
 					  "  } ...",
 					  _("name"),
 					  _("argmode"),
@@ -2481,7 +2574,8 @@ sql_help_CREATE_PROCEDURE(PQExpBuffer buf)
 					  _("value"),
 					  _("definition"),
 					  _("obj_file"),
-					  _("link_symbol"));
+					  _("link_symbol"),
+					  _("sql_body"));
 }
 
 static void
@@ -2569,6 +2663,7 @@ sql_help_CREATE_SCHEMA(PQExpBuffer buf)
 					  "%s\n"
 					  "\n"
 					  "    %s\n"
+					  "  | CURRENT_ROLE\n"
 					  "  | CURRENT_USER\n"
 					  "  | SESSION_USER",
 					  _("schema_name"),
@@ -2624,13 +2719,22 @@ sql_help_CREATE_STATISTICS(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "CREATE STATISTICS [ IF NOT EXISTS ] %s\n"
+					  "    ON ( %s )\n"
+					  "    FROM %s\n"
+					  "\n"
+					  "CREATE STATISTICS [ IF NOT EXISTS ] %s\n"
 					  "    [ ( %s [, ... ] ) ]\n"
-					  "    ON %s, %s [, ...]\n"
+					  "    ON { %s | ( %s ) }, { %s | ( %s ) } [, ...]\n"
 					  "    FROM %s",
+					  _("statistics_name"),
+					  _("expression"),
+					  _("table_name"),
 					  _("statistics_name"),
 					  _("statistics_kind"),
 					  _("column_name"),
+					  _("expression"),
 					  _("column_name"),
+					  _("expression"),
 					  _("table_name"));
 }
 
@@ -2654,14 +2758,15 @@ sql_help_CREATE_TABLE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED ] TABLE [ IF NOT EXISTS ] %s ( [\n"
-					  "  { %s %s [ COLLATE %s ] [ %s [ ... ] ]\n"
+					  "  { %s %s [ COMPRESSION %s ] [ COLLATE %s ] [ %s [ ... ] ]\n"
 					  "    | %s\n"
 					  "    | LIKE %s [ %s ... ] }\n"
 					  "    [, ... ]\n"
 					  "] )\n"
 					  "[ INHERITS ( %s [, ... ] ) ]\n"
 					  "[ PARTITION BY { RANGE | LIST | HASH } ( { %s | ( %s ) } [ COLLATE %s ] [ %s ] [, ... ] ) ]\n"
-					  "[ WITH ( %s [= %s] [, ... ] ) | WITH OIDS | WITHOUT OIDS ]\n"
+					  "[ USING %s ]\n"
+					  "[ WITH ( %s [= %s] [, ... ] ) | WITHOUT OIDS ]\n"
 					  "[ ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP } ]\n"
 					  "[ TABLESPACE %s ]\n"
 					  "\n"
@@ -2672,7 +2777,8 @@ sql_help_CREATE_TABLE(PQExpBuffer buf)
 					  "    [, ... ]\n"
 					  ") ]\n"
 					  "[ PARTITION BY { RANGE | LIST | HASH } ( { %s | ( %s ) } [ COLLATE %s ] [ %s ] [, ... ] ) ]\n"
-					  "[ WITH ( %s [= %s] [, ... ] ) | WITH OIDS | WITHOUT OIDS ]\n"
+					  "[ USING %s ]\n"
+					  "[ WITH ( %s [= %s] [, ... ] ) | WITHOUT OIDS ]\n"
 					  "[ ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP } ]\n"
 					  "[ TABLESPACE %s ]\n"
 					  "\n"
@@ -2683,7 +2789,8 @@ sql_help_CREATE_TABLE(PQExpBuffer buf)
 					  "    [, ... ]\n"
 					  ") ] { FOR VALUES %s | DEFAULT }\n"
 					  "[ PARTITION BY { RANGE | LIST | HASH } ( { %s | ( %s ) } [ COLLATE %s ] [ %s ] [, ... ] ) ]\n"
-					  "[ WITH ( %s [= %s] [, ... ] ) | WITH OIDS | WITHOUT OIDS ]\n"
+					  "[ USING %s ]\n"
+					  "[ WITH ( %s [= %s] [, ... ] ) | WITHOUT OIDS ]\n"
 					  "[ ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP } ]\n"
 					  "[ TABLESPACE %s ]\n"
 					  "\n"
@@ -2694,6 +2801,7 @@ sql_help_CREATE_TABLE(PQExpBuffer buf)
 					  "  NULL |\n"
 					  "  CHECK ( %s ) [ NO INHERIT ] |\n"
 					  "  DEFAULT %s |\n"
+					  "  GENERATED ALWAYS AS ( %s ) STORED |\n"
 					  "  GENERATED { ALWAYS | BY DEFAULT } AS IDENTITY [ ( %s ) ] |\n"
 					  "  UNIQUE %s |\n"
 					  "  PRIMARY KEY %s |\n"
@@ -2714,13 +2822,13 @@ sql_help_CREATE_TABLE(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "{ INCLUDING | EXCLUDING } { COMMENTS | CONSTRAINTS | DEFAULTS | IDENTITY | INDEXES | STATISTICS | STORAGE | ALL }\n"
+					  "{ INCLUDING | EXCLUDING } { COMMENTS | COMPRESSION | CONSTRAINTS | DEFAULTS | GENERATED | IDENTITY | INDEXES | STATISTICS | STORAGE | ALL }\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "IN ( { %s | %s | TRUE | FALSE | NULL } [, ...] ) |\n"
-					  "FROM ( { %s | %s | TRUE | FALSE | MINVALUE | MAXVALUE } [, ...] )\n"
-					  "  TO ( { %s | %s | TRUE | FALSE | MINVALUE | MAXVALUE } [, ...] ) |\n"
+					  "IN ( %s [, ...] ) |\n"
+					  "FROM ( { %s | MINVALUE | MAXVALUE } [, ...] )\n"
+					  "  TO ( { %s | MINVALUE | MAXVALUE } [, ...] ) |\n"
 					  "WITH ( MODULUS %s, REMAINDER %s )\n"
 					  "\n"
 					  "%s\n"
@@ -2731,10 +2839,11 @@ sql_help_CREATE_TABLE(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "{ %s | ( %s ) } [ %s ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ]",
+					  "{ %s | ( %s ) } [ COLLATE %s ] [ %s [ ( %s = %s [, ... ] ) ] ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ]",
 					  _("table_name"),
 					  _("column_name"),
 					  _("data_type"),
+					  _("compression_method"),
 					  _("collation"),
 					  _("column_constraint"),
 					  _("table_constraint"),
@@ -2745,6 +2854,7 @@ sql_help_CREATE_TABLE(PQExpBuffer buf)
 					  _("expression"),
 					  _("collation"),
 					  _("opclass"),
+					  _("method"),
 					  _("storage_parameter"),
 					  _("value"),
 					  _("tablespace_name"),
@@ -2757,6 +2867,7 @@ sql_help_CREATE_TABLE(PQExpBuffer buf)
 					  _("expression"),
 					  _("collation"),
 					  _("opclass"),
+					  _("method"),
 					  _("storage_parameter"),
 					  _("value"),
 					  _("tablespace_name"),
@@ -2770,6 +2881,7 @@ sql_help_CREATE_TABLE(PQExpBuffer buf)
 					  _("expression"),
 					  _("collation"),
 					  _("opclass"),
+					  _("method"),
 					  _("storage_parameter"),
 					  _("value"),
 					  _("tablespace_name"),
@@ -2777,13 +2889,14 @@ sql_help_CREATE_TABLE(PQExpBuffer buf)
 					  _("constraint_name"),
 					  _("expression"),
 					  _("default_expr"),
+					  _("generation_expr"),
 					  _("sequence_options"),
 					  _("index_parameters"),
 					  _("index_parameters"),
 					  _("reftable"),
 					  _("refcolumn"),
-					  _("action"),
-					  _("action"),
+					  _("referential_action"),
+					  _("referential_action"),
 					  _("and table_constraint is:"),
 					  _("constraint_name"),
 					  _("expression"),
@@ -2799,16 +2912,13 @@ sql_help_CREATE_TABLE(PQExpBuffer buf)
 					  _("column_name"),
 					  _("reftable"),
 					  _("refcolumn"),
-					  _("action"),
-					  _("action"),
+					  _("referential_action"),
+					  _("referential_action"),
 					  _("and like_option is:"),
 					  _("and partition_bound_spec is:"),
-					  _("numeric_literal"),
-					  _("string_literal"),
-					  _("numeric_literal"),
-					  _("string_literal"),
-					  _("numeric_literal"),
-					  _("string_literal"),
+					  _("partition_bound_expr"),
+					  _("partition_bound_expr"),
+					  _("partition_bound_expr"),
 					  _("numeric_literal"),
 					  _("numeric_literal"),
 					  _("index_parameters in UNIQUE, PRIMARY KEY, and EXCLUDE constraints are:"),
@@ -2819,7 +2929,10 @@ sql_help_CREATE_TABLE(PQExpBuffer buf)
 					  _("exclude_element in an EXCLUDE constraint is:"),
 					  _("column_name"),
 					  _("expression"),
-					  _("opclass"));
+					  _("collation"),
+					  _("opclass"),
+					  _("opclass_parameter"),
+					  _("value"));
 }
 
 static void
@@ -2828,13 +2941,15 @@ sql_help_CREATE_TABLE_AS(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED ] TABLE [ IF NOT EXISTS ] %s\n"
 					  "    [ (%s [, ...] ) ]\n"
-					  "    [ WITH ( %s [= %s] [, ... ] ) | WITH OIDS | WITHOUT OIDS ]\n"
+					  "    [ USING %s ]\n"
+					  "    [ WITH ( %s [= %s] [, ... ] ) | WITHOUT OIDS ]\n"
 					  "    [ ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP } ]\n"
 					  "    [ TABLESPACE %s ]\n"
 					  "    AS %s\n"
 					  "    [ WITH [ NO ] DATA ]",
 					  _("table_name"),
 					  _("column_name"),
+					  _("method"),
 					  _("storage_parameter"),
 					  _("value"),
 					  _("tablespace_name"),
@@ -2846,7 +2961,7 @@ sql_help_CREATE_TABLESPACE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "CREATE TABLESPACE %s\n"
-					  "    [ OWNER { %s | CURRENT_USER | SESSION_USER } ]\n"
+					  "    [ OWNER { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER } ]\n"
 					  "    LOCATION '%s'\n"
 					  "    [ WITH ( %s = %s [, ... ] ) ]",
 					  _("tablespace_name"),
@@ -2935,7 +3050,7 @@ static void
 sql_help_CREATE_TRIGGER(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "CREATE [ CONSTRAINT ] TRIGGER %s { BEFORE | AFTER | INSTEAD OF } { %s [ OR ... ] }\n"
+					  "CREATE [ OR REPLACE ] [ CONSTRAINT ] TRIGGER %s { BEFORE | AFTER | INSTEAD OF } { %s [ OR ... ] }\n"
 					  "    ON %s\n"
 					  "    [ FROM %s ]\n"
 					  "    [ NOT DEFERRABLE | [ DEFERRABLE ] [ INITIALLY IMMEDIATE | INITIALLY DEFERRED ] ]\n"
@@ -2978,6 +3093,7 @@ sql_help_CREATE_TYPE(PQExpBuffer buf)
 					  "    [ , COLLATION = %s ]\n"
 					  "    [ , CANONICAL = %s ]\n"
 					  "    [ , SUBTYPE_DIFF = %s ]\n"
+					  "    [ , MULTIRANGE_TYPE_NAME = %s ]\n"
 					  ")\n"
 					  "\n"
 					  "CREATE TYPE %s (\n"
@@ -2988,6 +3104,7 @@ sql_help_CREATE_TYPE(PQExpBuffer buf)
 					  "    [ , TYPMOD_IN = %s ]\n"
 					  "    [ , TYPMOD_OUT = %s ]\n"
 					  "    [ , ANALYZE = %s ]\n"
+					  "    [ , SUBSCRIPT = %s ]\n"
 					  "    [ , INTERNALLENGTH = { %s | VARIABLE } ]\n"
 					  "    [ , PASSEDBYVALUE ]\n"
 					  "    [ , ALIGNMENT = %s ]\n"
@@ -3014,6 +3131,7 @@ sql_help_CREATE_TYPE(PQExpBuffer buf)
 					  _("collation"),
 					  _("canonical_function"),
 					  _("subtype_diff_function"),
+					  _("multirange_type_name"),
 					  _("name"),
 					  _("input_function"),
 					  _("output_function"),
@@ -3022,6 +3140,7 @@ sql_help_CREATE_TYPE(PQExpBuffer buf)
 					  _("type_modifier_input_function"),
 					  _("type_modifier_output_function"),
 					  _("analyze_function"),
+					  _("subscript_function"),
 					  _("internallength"),
 					  _("alignment"),
 					  _("storage"),
@@ -3077,7 +3196,7 @@ static void
 sql_help_CREATE_USER_MAPPING(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "CREATE USER MAPPING [ IF NOT EXISTS ] FOR { %s | USER | CURRENT_USER | PUBLIC }\n"
+					  "CREATE USER MAPPING [ IF NOT EXISTS ] FOR { %s | USER | CURRENT_ROLE | CURRENT_USER | PUBLIC }\n"
 					  "    SERVER %s\n"
 					  "    [ OPTIONS ( %s '%s' [ , ... ] ) ]",
 					  _("user_name"),
@@ -3113,7 +3232,7 @@ static void
 sql_help_DECLARE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "DECLARE %s [ BINARY ] [ INSENSITIVE ] [ [ NO ] SCROLL ]\n"
+					  "DECLARE %s [ BINARY ] [ ASENSITIVE | INSENSITIVE ] [ [ NO ] SCROLL ]\n"
 					  "    CURSOR [ { WITH | WITHOUT } HOLD ] FOR %s",
 					  _("name"),
 					  _("query"));
@@ -3125,13 +3244,13 @@ sql_help_DELETE(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "[ WITH [ RECURSIVE ] %s [, ...] ]\n"
 					  "DELETE FROM [ ONLY ] %s [ * ] [ [ AS ] %s ]\n"
-					  "    [ USING %s ]\n"
+					  "    [ USING %s [, ...] ]\n"
 					  "    [ WHERE %s | WHERE CURRENT OF %s ]\n"
-					  "    [ RETURNING * | %s [ [ AS ] %s ] [, ...] ]",
+					  "    [ RETURNING { * | %s [ [ AS ] %s ] } [, ...] ]",
 					  _("with_query"),
 					  _("table_name"),
 					  _("alias"),
-					  _("using_list"),
+					  _("from_item"),
 					  _("condition"),
 					  _("cursor_name"),
 					  _("output_expression"),
@@ -3216,8 +3335,14 @@ static void
 sql_help_DROP_DATABASE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "DROP DATABASE [ IF EXISTS ] %s",
-					  _("name"));
+					  "DROP DATABASE [ IF EXISTS ] %s [ [ WITH ] ( %s [, ...] ) ]\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "    FORCE",
+					  _("name"),
+					  _("option"),
+					  _("where option can be:"));
 }
 
 static void
@@ -3308,7 +3433,7 @@ static void
 sql_help_DROP_OPERATOR(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "DROP OPERATOR [ IF EXISTS ] %s ( { %s | NONE } , { %s | NONE } ) [, ...] [ CASCADE | RESTRICT ]",
+					  "DROP OPERATOR [ IF EXISTS ] %s ( { %s | NONE } , %s ) [, ...] [ CASCADE | RESTRICT ]",
 					  _("name"),
 					  _("left_type"),
 					  _("right_type"));
@@ -3336,7 +3461,7 @@ static void
 sql_help_DROP_OWNED(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "DROP OWNED BY { %s | CURRENT_USER | SESSION_USER } [, ...] [ CASCADE | RESTRICT ]",
+					  "DROP OWNED BY { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER } [, ...] [ CASCADE | RESTRICT ]",
 					  _("name"));
 }
 
@@ -3426,7 +3551,7 @@ static void
 sql_help_DROP_STATISTICS(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "DROP STATISTICS [ IF EXISTS ] %s [, ...]",
+					  "DROP STATISTICS [ IF EXISTS ] %s [, ...] [ CASCADE | RESTRICT ]",
 					  _("name"));
 }
 
@@ -3524,7 +3649,7 @@ static void
 sql_help_DROP_USER_MAPPING(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "DROP USER MAPPING [ IF EXISTS ] FOR { %s | USER | CURRENT_USER | PUBLIC } SERVER %s",
+					  "DROP USER MAPPING [ IF EXISTS ] FOR { %s | USER | CURRENT_ROLE | CURRENT_USER | PUBLIC } SERVER %s",
 					  _("user_name"),
 					  _("server_name"));
 }
@@ -3541,7 +3666,7 @@ static void
 sql_help_END(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "END [ WORK | TRANSACTION ]");
+					  "END [ WORK | TRANSACTION ] [ AND [ NO ] CHAIN ]");
 }
 
 static void
@@ -3565,7 +3690,9 @@ sql_help_EXPLAIN(PQExpBuffer buf)
 					  "    ANALYZE [ %s ]\n"
 					  "    VERBOSE [ %s ]\n"
 					  "    COSTS [ %s ]\n"
+					  "    SETTINGS [ %s ]\n"
 					  "    BUFFERS [ %s ]\n"
+					  "    WAL [ %s ]\n"
 					  "    TIMING [ %s ]\n"
 					  "    SUMMARY [ %s ]\n"
 					  "    FORMAT { TEXT | XML | JSON | YAML }",
@@ -3578,6 +3705,8 @@ sql_help_EXPLAIN(PQExpBuffer buf)
 					  _("boolean"),
 					  _("boolean"),
 					  _("boolean"),
+					  _("boolean"),
+					  _("boolean"),
 					  _("boolean"));
 }
 
@@ -3585,7 +3714,7 @@ static void
 sql_help_FETCH(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "FETCH [ %s [ FROM | IN ] ] %s\n"
+					  "FETCH [ %s ] [ FROM | IN ] %s\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -3605,7 +3734,7 @@ sql_help_FETCH(PQExpBuffer buf)
 					  "    BACKWARD ALL",
 					  _("direction"),
 					  _("cursor_name"),
-					  _("where direction can be empty or one of:"),
+					  _("where direction can be one of:"),
 					  _("count"),
 					  _("count"),
 					  _("count"),
@@ -3622,84 +3751,107 @@ sql_help_GRANT(PQExpBuffer buf)
 					  "    ON { [ TABLE ] %s [, ...]\n"
 					  "         | ALL TABLES IN SCHEMA %s [, ...] }\n"
 					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "\n"
 					  "GRANT { { SELECT | INSERT | UPDATE | REFERENCES } ( %s [, ...] )\n"
 					  "    [, ...] | ALL [ PRIVILEGES ] ( %s [, ...] ) }\n"
 					  "    ON [ TABLE ] %s [, ...]\n"
 					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "\n"
 					  "GRANT { { USAGE | SELECT | UPDATE }\n"
 					  "    [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON { SEQUENCE %s [, ...]\n"
 					  "         | ALL SEQUENCES IN SCHEMA %s [, ...] }\n"
 					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "\n"
 					  "GRANT { { CREATE | CONNECT | TEMPORARY | TEMP } [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON DATABASE %s [, ...]\n"
 					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "\n"
 					  "GRANT { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON DOMAIN %s [, ...]\n"
 					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "\n"
 					  "GRANT { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON FOREIGN DATA WRAPPER %s [, ...]\n"
 					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "\n"
 					  "GRANT { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON FOREIGN SERVER %s [, ...]\n"
 					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "\n"
 					  "GRANT { EXECUTE | ALL [ PRIVILEGES ] }\n"
 					  "    ON { { FUNCTION | PROCEDURE | ROUTINE } %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ] [, ...]\n"
 					  "         | ALL { FUNCTIONS | PROCEDURES | ROUTINES } IN SCHEMA %s [, ...] }\n"
 					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "\n"
 					  "GRANT { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON LANGUAGE %s [, ...]\n"
 					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "\n"
 					  "GRANT { { SELECT | UPDATE } [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON LARGE OBJECT %s [, ...]\n"
 					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "\n"
 					  "GRANT { { CREATE | USAGE } [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON SCHEMA %s [, ...]\n"
 					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "\n"
 					  "GRANT { CREATE | ALL [ PRIVILEGES ] }\n"
 					  "    ON TABLESPACE %s [, ...]\n"
 					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "\n"
 					  "GRANT { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON TYPE %s [, ...]\n"
 					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
+					  "\n"
+					  "GRANT %s [, ...] TO %s [, ...]\n"
+					  "    [ WITH ADMIN OPTION ]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
 					  "    [ GROUP ] %s\n"
 					  "  | PUBLIC\n"
+					  "  | CURRENT_ROLE\n"
 					  "  | CURRENT_USER\n"
-					  "  | SESSION_USER\n"
-					  "\n"
-					  "GRANT %s [, ...] TO %s [, ...] [ WITH ADMIN OPTION ]",
+					  "  | SESSION_USER",
 					  _("table_name"),
 					  _("schema_name"),
+					  _("role_specification"),
 					  _("role_specification"),
 					  _("column_name"),
 					  _("column_name"),
 					  _("table_name"),
+					  _("role_specification"),
 					  _("role_specification"),
 					  _("sequence_name"),
 					  _("schema_name"),
 					  _("role_specification"),
+					  _("role_specification"),
 					  _("database_name"),
+					  _("role_specification"),
 					  _("role_specification"),
 					  _("domain_name"),
 					  _("role_specification"),
+					  _("role_specification"),
 					  _("fdw_name"),
 					  _("role_specification"),
+					  _("role_specification"),
 					  _("server_name"),
+					  _("role_specification"),
 					  _("role_specification"),
 					  _("routine_name"),
 					  _("argmode"),
@@ -3707,19 +3859,26 @@ sql_help_GRANT(PQExpBuffer buf)
 					  _("arg_type"),
 					  _("schema_name"),
 					  _("role_specification"),
+					  _("role_specification"),
 					  _("lang_name"),
+					  _("role_specification"),
 					  _("role_specification"),
 					  _("loid"),
 					  _("role_specification"),
+					  _("role_specification"),
 					  _("schema_name"),
+					  _("role_specification"),
 					  _("role_specification"),
 					  _("tablespace_name"),
 					  _("role_specification"),
+					  _("role_specification"),
 					  _("type_name"),
 					  _("role_specification"),
+					  _("role_specification"),
+					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("where role_specification can be:"),
-					  _("role_name"),
-					  _("role_name"),
 					  _("role_name"));
 }
 
@@ -3746,10 +3905,10 @@ sql_help_INSERT(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "[ WITH [ RECURSIVE ] %s [, ...] ]\n"
 					  "INSERT INTO %s [ AS %s ] [ ( %s [, ...] ) ]\n"
-					  "    [ OVERRIDING { SYSTEM | USER} VALUE ]\n"
+					  "    [ OVERRIDING { SYSTEM | USER } VALUE ]\n"
 					  "    { DEFAULT VALUES | VALUES ( { %s | DEFAULT } [, ...] ) [, ...] | %s }\n"
 					  "    [ ON CONFLICT [ %s ] %s ]\n"
-					  "    [ RETURNING * | %s [ [ AS ] %s ] [, ...] ]\n"
+					  "    [ RETURNING { * | %s [ [ AS ] %s ] } [, ...] ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -3826,7 +3985,7 @@ static void
 sql_help_MOVE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "MOVE [ %s [ FROM | IN ] ] %s\n"
+					  "MOVE [ %s ] [ FROM | IN ] %s\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -3846,7 +4005,7 @@ sql_help_MOVE(PQExpBuffer buf)
 					  "    BACKWARD ALL",
 					  _("direction"),
 					  _("cursor_name"),
-					  _("where direction can be empty or one of:"),
+					  _("where direction can be one of:"),
 					  _("count"),
 					  _("count"),
 					  _("count"),
@@ -3885,8 +4044,8 @@ static void
 sql_help_REASSIGN_OWNED(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "REASSIGN OWNED BY { %s | CURRENT_USER | SESSION_USER } [, ...]\n"
-					  "               TO { %s | CURRENT_USER | SESSION_USER }",
+					  "REASSIGN OWNED BY { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER } [, ...]\n"
+					  "               TO { %s | CURRENT_ROLE | CURRENT_USER | SESSION_USER }",
 					  _("old_role"),
 					  _("new_role"));
 }
@@ -3904,8 +4063,19 @@ static void
 sql_help_REINDEX(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "REINDEX [ ( VERBOSE ) ] { INDEX | TABLE | SCHEMA | DATABASE | SYSTEM } %s",
-					  _("name"));
+					  "REINDEX [ ( %s [, ...] ) ] { INDEX | TABLE | SCHEMA | DATABASE | SYSTEM } [ CONCURRENTLY ] %s\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "    CONCURRENTLY [ %s ]\n"
+					  "    TABLESPACE %s\n"
+					  "    VERBOSE [ %s ]",
+					  _("option"),
+					  _("name"),
+					  _("where option can be one of:"),
+					  _("boolean"),
+					  _("new_tablespace"),
+					  _("boolean"));
 }
 
 static void
@@ -3934,14 +4104,16 @@ sql_help_REVOKE(PQExpBuffer buf)
 					  "    [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON { [ TABLE ] %s [, ...]\n"
 					  "         | ALL TABLES IN SCHEMA %s [, ...] }\n"
-					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
+					  "    FROM %s [, ...]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ GRANT OPTION FOR ]\n"
 					  "    { { SELECT | INSERT | UPDATE | REFERENCES } ( %s [, ...] )\n"
 					  "    [, ...] | ALL [ PRIVILEGES ] ( %s [, ...] ) }\n"
 					  "    ON [ TABLE ] %s [, ...]\n"
-					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
+					  "    FROM %s [, ...]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ GRANT OPTION FOR ]\n"
@@ -3949,108 +4121,144 @@ sql_help_REVOKE(PQExpBuffer buf)
 					  "    [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON { SEQUENCE %s [, ...]\n"
 					  "         | ALL SEQUENCES IN SCHEMA %s [, ...] }\n"
-					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
+					  "    FROM %s [, ...]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ GRANT OPTION FOR ]\n"
 					  "    { { CREATE | CONNECT | TEMPORARY | TEMP } [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON DATABASE %s [, ...]\n"
-					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
+					  "    FROM %s [, ...]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ GRANT OPTION FOR ]\n"
 					  "    { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON DOMAIN %s [, ...]\n"
-					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
+					  "    FROM %s [, ...]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ GRANT OPTION FOR ]\n"
 					  "    { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON FOREIGN DATA WRAPPER %s [, ...]\n"
-					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
+					  "    FROM %s [, ...]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ GRANT OPTION FOR ]\n"
 					  "    { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON FOREIGN SERVER %s [, ...]\n"
-					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
+					  "    FROM %s [, ...]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ GRANT OPTION FOR ]\n"
 					  "    { EXECUTE | ALL [ PRIVILEGES ] }\n"
 					  "    ON { { FUNCTION | PROCEDURE | ROUTINE } %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ] [, ...]\n"
 					  "         | ALL { FUNCTIONS | PROCEDURES | ROUTINES } IN SCHEMA %s [, ...] }\n"
-					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
+					  "    FROM %s [, ...]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ GRANT OPTION FOR ]\n"
 					  "    { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON LANGUAGE %s [, ...]\n"
-					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
+					  "    FROM %s [, ...]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ GRANT OPTION FOR ]\n"
 					  "    { { SELECT | UPDATE } [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON LARGE OBJECT %s [, ...]\n"
-					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
+					  "    FROM %s [, ...]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ GRANT OPTION FOR ]\n"
 					  "    { { CREATE | USAGE } [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON SCHEMA %s [, ...]\n"
-					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
+					  "    FROM %s [, ...]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ GRANT OPTION FOR ]\n"
 					  "    { CREATE | ALL [ PRIVILEGES ] }\n"
 					  "    ON TABLESPACE %s [, ...]\n"
-					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
+					  "    FROM %s [, ...]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ GRANT OPTION FOR ]\n"
 					  "    { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON TYPE %s [, ...]\n"
-					  "    FROM { [ GROUP ] %s | PUBLIC } [, ...]\n"
+					  "    FROM %s [, ...]\n"
+					  "    [ GRANTED BY %s ]\n"
 					  "    [ CASCADE | RESTRICT ]\n"
 					  "\n"
 					  "REVOKE [ ADMIN OPTION FOR ]\n"
 					  "    %s [, ...] FROM %s [, ...]\n"
-					  "    [ CASCADE | RESTRICT ]",
+					  "    [ GRANTED BY %s ]\n"
+					  "    [ CASCADE | RESTRICT ]\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "    [ GROUP ] %s\n"
+					  "  | PUBLIC\n"
+					  "  | CURRENT_ROLE\n"
+					  "  | CURRENT_USER\n"
+					  "  | SESSION_USER",
 					  _("table_name"),
 					  _("schema_name"),
-					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("column_name"),
 					  _("column_name"),
 					  _("table_name"),
-					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("sequence_name"),
 					  _("schema_name"),
-					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("database_name"),
-					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("domain_name"),
-					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("fdw_name"),
-					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("server_name"),
-					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("function_name"),
 					  _("argmode"),
 					  _("arg_name"),
 					  _("arg_type"),
 					  _("schema_name"),
-					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("lang_name"),
-					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("loid"),
-					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("schema_name"),
-					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("tablespace_name"),
-					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("type_name"),
+					  _("role_specification"),
+					  _("role_specification"),
 					  _("role_name"),
-					  _("role_name"),
+					  _("role_specification"),
+					  _("role_specification"),
+					  _("where role_specification can be:"),
 					  _("role_name"));
 }
 
@@ -4058,7 +4266,7 @@ static void
 sql_help_ROLLBACK(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ROLLBACK [ WORK | TRANSACTION ]");
+					  "ROLLBACK [ WORK | TRANSACTION ] [ AND [ NO ] CHAIN ]");
 }
 
 static void
@@ -4097,7 +4305,7 @@ sql_help_SECURITY_LABEL(PQExpBuffer buf)
 					  "  DATABASE %s |\n"
 					  "  DOMAIN %s |\n"
 					  "  EVENT TRIGGER %s |\n"
-					  "  FOREIGN TABLE %s\n"
+					  "  FOREIGN TABLE %s |\n"
 					  "  FUNCTION %s [ ( [ [ %s ] [ %s ] %s [, ...] ] ) ] |\n"
 					  "  LARGE OBJECT %s |\n"
 					  "  MATERIALIZED VIEW %s |\n"
@@ -4112,7 +4320,7 @@ sql_help_SECURITY_LABEL(PQExpBuffer buf)
 					  "  TABLESPACE %s |\n"
 					  "  TYPE %s |\n"
 					  "  VIEW %s\n"
-					  "} IS '%s'\n"
+					  "} IS { %s | NULL }\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -4152,7 +4360,7 @@ sql_help_SECURITY_LABEL(PQExpBuffer buf)
 					  _("object_name"),
 					  _("object_name"),
 					  _("object_name"),
-					  _("label"),
+					  _("string_literal"),
 					  _("where aggregate_signature is:"),
 					  _("argmode"),
 					  _("argname"),
@@ -4171,17 +4379,17 @@ sql_help_SELECT(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "[ WITH [ RECURSIVE ] %s [, ...] ]\n"
 					  "SELECT [ ALL | DISTINCT [ ON ( %s [, ...] ) ] ]\n"
-					  "    [ * | %s [ [ AS ] %s ] [, ...] ]\n"
+					  "    [ { * | %s [ [ AS ] %s ] } [, ...] ]\n"
 					  "    [ FROM %s [, ...] ]\n"
 					  "    [ WHERE %s ]\n"
-					  "    [ GROUP BY %s [, ...] ]\n"
-					  "    [ HAVING %s [, ...] ]\n"
+					  "    [ GROUP BY [ ALL | DISTINCT ] %s [, ...] ]\n"
+					  "    [ HAVING %s ]\n"
 					  "    [ WINDOW %s AS ( %s ) [, ...] ]\n"
 					  "    [ { UNION | INTERSECT | EXCEPT } [ ALL | DISTINCT ] %s ]\n"
 					  "    [ ORDER BY %s [ ASC | DESC | USING %s ] [ NULLS { FIRST | LAST } ] [, ...] ]\n"
 					  "    [ LIMIT { %s | ALL } ]\n"
 					  "    [ OFFSET %s [ ROW | ROWS ] ]\n"
-					  "    [ FETCH { FIRST | NEXT } [ %s ] { ROW | ROWS } ONLY ]\n"
+					  "    [ FETCH { FIRST | NEXT } [ %s ] { ROW | ROWS } { ONLY | WITH TIES } ]\n"
 					  "    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF %s [, ...] ] [ NOWAIT | SKIP LOCKED ] [...] ]\n"
 					  "\n"
 					  "%s\n"
@@ -4196,7 +4404,9 @@ sql_help_SELECT(PQExpBuffer buf)
 					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) AS ( %s [, ...] )\n"
 					  "    [ LATERAL ] ROWS FROM( %s ( [ %s [, ...] ] ) [ AS ( %s [, ...] ) ] [, ...] )\n"
 					  "                [ WITH ORDINALITY ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
-					  "    %s [ NATURAL ] %s %s [ ON %s | USING ( %s [, ...] ) ]\n"
+					  "    %s %s %s { ON %s | USING ( %s [, ...] ) [ AS %s ] }\n"
+					  "    %s NATURAL %s %s\n"
+					  "    %s CROSS JOIN %s\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -4209,7 +4419,9 @@ sql_help_SELECT(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "    %s [ ( %s [, ...] ) ] AS ( %s | %s | %s | %s | %s )\n"
+					  "    %s [ ( %s [, ...] ) ] AS [ [ NOT ] MATERIALIZED ] ( %s | %s | %s | %s | %s )\n"
+					  "        [ SEARCH { BREADTH | DEPTH } FIRST BY %s [, ...] SET %s ]\n"
+					  "        [ CYCLE %s [, ...] SET %s [ TO %s DEFAULT %s ] USING %s ]\n"
 					  "\n"
 					  "TABLE [ ONLY ] %s [ * ]",
 					  _("with_query"),
@@ -4263,6 +4475,12 @@ sql_help_SELECT(PQExpBuffer buf)
 					  _("from_item"),
 					  _("join_condition"),
 					  _("join_column"),
+					  _("join_using_alias"),
+					  _("from_item"),
+					  _("join_type"),
+					  _("from_item"),
+					  _("from_item"),
+					  _("from_item"),
 					  _("and grouping_element can be one of:"),
 					  _("expression"),
 					  _("expression"),
@@ -4279,6 +4497,13 @@ sql_help_SELECT(PQExpBuffer buf)
 					  _("insert"),
 					  _("update"),
 					  _("delete"),
+					  _("column_name"),
+					  _("search_seq_col_name"),
+					  _("column_name"),
+					  _("cycle_mark_col_name"),
+					  _("cycle_mark_value"),
+					  _("cycle_mark_default"),
+					  _("cycle_path_col_name"),
 					  _("table_name"));
 }
 
@@ -4288,12 +4513,12 @@ sql_help_SELECT_INTO(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "[ WITH [ RECURSIVE ] %s [, ...] ]\n"
 					  "SELECT [ ALL | DISTINCT [ ON ( %s [, ...] ) ] ]\n"
-					  "    * | %s [ [ AS ] %s ] [, ...]\n"
+					  "    [ { * | %s [ [ AS ] %s ] } [, ...] ]\n"
 					  "    INTO [ TEMPORARY | TEMP | UNLOGGED ] [ TABLE ] %s\n"
 					  "    [ FROM %s [, ...] ]\n"
 					  "    [ WHERE %s ]\n"
 					  "    [ GROUP BY %s [, ...] ]\n"
-					  "    [ HAVING %s [, ...] ]\n"
+					  "    [ HAVING %s ]\n"
 					  "    [ WINDOW %s AS ( %s ) [, ...] ]\n"
 					  "    [ { UNION | INTERSECT | EXCEPT } [ ALL | DISTINCT ] %s ]\n"
 					  "    [ ORDER BY %s [ ASC | DESC | USING %s ] [ NULLS { FIRST | LAST } ] [, ...] ]\n"
@@ -4326,11 +4551,12 @@ sql_help_SET(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "SET [ SESSION | LOCAL ] %s { TO | = } { %s | '%s' | DEFAULT }\n"
-					  "SET [ SESSION | LOCAL ] TIME ZONE { %s | LOCAL | DEFAULT }",
+					  "SET [ SESSION | LOCAL ] TIME ZONE { %s | '%s' | LOCAL | DEFAULT }",
 					  _("configuration_parameter"),
 					  _("value"),
 					  _("value"),
-					  _("timezone"));
+					  _("value"),
+					  _("value"));
 }
 
 static void
@@ -4410,17 +4636,17 @@ sql_help_TABLE(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "[ WITH [ RECURSIVE ] %s [, ...] ]\n"
 					  "SELECT [ ALL | DISTINCT [ ON ( %s [, ...] ) ] ]\n"
-					  "    [ * | %s [ [ AS ] %s ] [, ...] ]\n"
+					  "    [ { * | %s [ [ AS ] %s ] } [, ...] ]\n"
 					  "    [ FROM %s [, ...] ]\n"
 					  "    [ WHERE %s ]\n"
-					  "    [ GROUP BY %s [, ...] ]\n"
-					  "    [ HAVING %s [, ...] ]\n"
+					  "    [ GROUP BY [ ALL | DISTINCT ] %s [, ...] ]\n"
+					  "    [ HAVING %s ]\n"
 					  "    [ WINDOW %s AS ( %s ) [, ...] ]\n"
 					  "    [ { UNION | INTERSECT | EXCEPT } [ ALL | DISTINCT ] %s ]\n"
 					  "    [ ORDER BY %s [ ASC | DESC | USING %s ] [ NULLS { FIRST | LAST } ] [, ...] ]\n"
 					  "    [ LIMIT { %s | ALL } ]\n"
 					  "    [ OFFSET %s [ ROW | ROWS ] ]\n"
-					  "    [ FETCH { FIRST | NEXT } [ %s ] { ROW | ROWS } ONLY ]\n"
+					  "    [ FETCH { FIRST | NEXT } [ %s ] { ROW | ROWS } { ONLY | WITH TIES } ]\n"
 					  "    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF %s [, ...] ] [ NOWAIT | SKIP LOCKED ] [...] ]\n"
 					  "\n"
 					  "%s\n"
@@ -4435,7 +4661,9 @@ sql_help_TABLE(PQExpBuffer buf)
 					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) AS ( %s [, ...] )\n"
 					  "    [ LATERAL ] ROWS FROM( %s ( [ %s [, ...] ] ) [ AS ( %s [, ...] ) ] [, ...] )\n"
 					  "                [ WITH ORDINALITY ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
-					  "    %s [ NATURAL ] %s %s [ ON %s | USING ( %s [, ...] ) ]\n"
+					  "    %s %s %s { ON %s | USING ( %s [, ...] ) [ AS %s ] }\n"
+					  "    %s NATURAL %s %s\n"
+					  "    %s CROSS JOIN %s\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -4448,7 +4676,9 @@ sql_help_TABLE(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "    %s [ ( %s [, ...] ) ] AS ( %s | %s | %s | %s | %s )\n"
+					  "    %s [ ( %s [, ...] ) ] AS [ [ NOT ] MATERIALIZED ] ( %s | %s | %s | %s | %s )\n"
+					  "        [ SEARCH { BREADTH | DEPTH } FIRST BY %s [, ...] SET %s ]\n"
+					  "        [ CYCLE %s [, ...] SET %s [ TO %s DEFAULT %s ] USING %s ]\n"
 					  "\n"
 					  "TABLE [ ONLY ] %s [ * ]",
 					  _("with_query"),
@@ -4502,6 +4732,12 @@ sql_help_TABLE(PQExpBuffer buf)
 					  _("from_item"),
 					  _("join_condition"),
 					  _("join_column"),
+					  _("join_using_alias"),
+					  _("from_item"),
+					  _("join_type"),
+					  _("from_item"),
+					  _("from_item"),
+					  _("from_item"),
 					  _("and grouping_element can be one of:"),
 					  _("expression"),
 					  _("expression"),
@@ -4518,6 +4754,13 @@ sql_help_TABLE(PQExpBuffer buf)
 					  _("insert"),
 					  _("update"),
 					  _("delete"),
+					  _("column_name"),
+					  _("search_seq_col_name"),
+					  _("column_name"),
+					  _("cycle_mark_col_name"),
+					  _("cycle_mark_value"),
+					  _("cycle_mark_default"),
+					  _("cycle_path_col_name"),
 					  _("table_name"));
 }
 
@@ -4548,9 +4791,9 @@ sql_help_UPDATE(PQExpBuffer buf)
 					  "          ( %s [, ...] ) = [ ROW ] ( { %s | DEFAULT } [, ...] ) |\n"
 					  "          ( %s [, ...] ) = ( %s )\n"
 					  "        } [, ...]\n"
-					  "    [ FROM %s ]\n"
+					  "    [ FROM %s [, ...] ]\n"
 					  "    [ WHERE %s | WHERE CURRENT OF %s ]\n"
-					  "    [ RETURNING * | %s [ [ AS ] %s ] [, ...] ]",
+					  "    [ RETURNING { * | %s [ [ AS ] %s ] } [, ...] ]",
 					  _("with_query"),
 					  _("table_name"),
 					  _("alias"),
@@ -4560,7 +4803,7 @@ sql_help_UPDATE(PQExpBuffer buf)
 					  _("expression"),
 					  _("column_name"),
 					  _("sub-SELECT"),
-					  _("from_list"),
+					  _("from_item"),
 					  _("condition"),
 					  _("cursor_name"),
 					  _("output_expression"),
@@ -4576,11 +4819,16 @@ sql_help_VACUUM(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "    FULL\n"
-					  "    FREEZE\n"
-					  "    VERBOSE\n"
-					  "    ANALYZE\n"
-					  "    DISABLE_PAGE_SKIPPING\n"
+					  "    FULL [ %s ]\n"
+					  "    FREEZE [ %s ]\n"
+					  "    VERBOSE [ %s ]\n"
+					  "    ANALYZE [ %s ]\n"
+					  "    DISABLE_PAGE_SKIPPING [ %s ]\n"
+					  "    SKIP_LOCKED [ %s ]\n"
+					  "    INDEX_CLEANUP { AUTO | ON | OFF }\n"
+					  "    PROCESS_TOAST [ %s ]\n"
+					  "    TRUNCATE [ %s ]\n"
+					  "    PARALLEL %s\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -4589,6 +4837,15 @@ sql_help_VACUUM(PQExpBuffer buf)
 					  _("table_and_columns"),
 					  _("table_and_columns"),
 					  _("where option can be one of:"),
+					  _("boolean"),
+					  _("boolean"),
+					  _("boolean"),
+					  _("boolean"),
+					  _("boolean"),
+					  _("boolean"),
+					  _("boolean"),
+					  _("boolean"),
+					  _("integer"),
 					  _("and table_and_columns is:"),
 					  _("table_name"),
 					  _("column_name"));
@@ -4617,17 +4874,17 @@ sql_help_WITH(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "[ WITH [ RECURSIVE ] %s [, ...] ]\n"
 					  "SELECT [ ALL | DISTINCT [ ON ( %s [, ...] ) ] ]\n"
-					  "    [ * | %s [ [ AS ] %s ] [, ...] ]\n"
+					  "    [ { * | %s [ [ AS ] %s ] } [, ...] ]\n"
 					  "    [ FROM %s [, ...] ]\n"
 					  "    [ WHERE %s ]\n"
-					  "    [ GROUP BY %s [, ...] ]\n"
-					  "    [ HAVING %s [, ...] ]\n"
+					  "    [ GROUP BY [ ALL | DISTINCT ] %s [, ...] ]\n"
+					  "    [ HAVING %s ]\n"
 					  "    [ WINDOW %s AS ( %s ) [, ...] ]\n"
 					  "    [ { UNION | INTERSECT | EXCEPT } [ ALL | DISTINCT ] %s ]\n"
 					  "    [ ORDER BY %s [ ASC | DESC | USING %s ] [ NULLS { FIRST | LAST } ] [, ...] ]\n"
 					  "    [ LIMIT { %s | ALL } ]\n"
 					  "    [ OFFSET %s [ ROW | ROWS ] ]\n"
-					  "    [ FETCH { FIRST | NEXT } [ %s ] { ROW | ROWS } ONLY ]\n"
+					  "    [ FETCH { FIRST | NEXT } [ %s ] { ROW | ROWS } { ONLY | WITH TIES } ]\n"
 					  "    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF %s [, ...] ] [ NOWAIT | SKIP LOCKED ] [...] ]\n"
 					  "\n"
 					  "%s\n"
@@ -4642,7 +4899,9 @@ sql_help_WITH(PQExpBuffer buf)
 					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) AS ( %s [, ...] )\n"
 					  "    [ LATERAL ] ROWS FROM( %s ( [ %s [, ...] ] ) [ AS ( %s [, ...] ) ] [, ...] )\n"
 					  "                [ WITH ORDINALITY ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
-					  "    %s [ NATURAL ] %s %s [ ON %s | USING ( %s [, ...] ) ]\n"
+					  "    %s %s %s { ON %s | USING ( %s [, ...] ) [ AS %s ] }\n"
+					  "    %s NATURAL %s %s\n"
+					  "    %s CROSS JOIN %s\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -4655,7 +4914,9 @@ sql_help_WITH(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "    %s [ ( %s [, ...] ) ] AS ( %s | %s | %s | %s | %s )\n"
+					  "    %s [ ( %s [, ...] ) ] AS [ [ NOT ] MATERIALIZED ] ( %s | %s | %s | %s | %s )\n"
+					  "        [ SEARCH { BREADTH | DEPTH } FIRST BY %s [, ...] SET %s ]\n"
+					  "        [ CYCLE %s [, ...] SET %s [ TO %s DEFAULT %s ] USING %s ]\n"
 					  "\n"
 					  "TABLE [ ONLY ] %s [ * ]",
 					  _("with_query"),
@@ -4709,6 +4970,12 @@ sql_help_WITH(PQExpBuffer buf)
 					  _("from_item"),
 					  _("join_condition"),
 					  _("join_column"),
+					  _("join_using_alias"),
+					  _("from_item"),
+					  _("join_type"),
+					  _("from_item"),
+					  _("from_item"),
+					  _("from_item"),
 					  _("and grouping_element can be one of:"),
 					  _("expression"),
 					  _("expression"),
@@ -4725,931 +4992,1122 @@ sql_help_WITH(PQExpBuffer buf)
 					  _("insert"),
 					  _("update"),
 					  _("delete"),
+					  _("column_name"),
+					  _("search_seq_col_name"),
+					  _("column_name"),
+					  _("cycle_mark_col_name"),
+					  _("cycle_mark_value"),
+					  _("cycle_mark_default"),
+					  _("cycle_path_col_name"),
 					  _("table_name"));
 }
 
 
 const struct _helpStruct QL_HELP[] = {
-    { "ABORT",
-      N_("abort the current transaction"),
-      sql_help_ABORT,
-      0 },
-
-    { "ALTER AGGREGATE",
-      N_("change the definition of an aggregate function"),
-      sql_help_ALTER_AGGREGATE,
-      9 },
-
-    { "ALTER COLLATION",
-      N_("change the definition of a collation"),
-      sql_help_ALTER_COLLATION,
-      4 },
-
-    { "ALTER CONVERSION",
-      N_("change the definition of a conversion"),
-      sql_help_ALTER_CONVERSION,
-      2 },
-
-    { "ALTER DATABASE",
-      N_("change a database"),
-      sql_help_ALTER_DATABASE,
-      17 },
-
-    { "ALTER DEFAULT PRIVILEGES",
-      N_("define default access privileges"),
-      sql_help_ALTER_DEFAULT_PRIVILEGES,
-      59 },
-
-    { "ALTER DOMAIN",
-      N_("change the definition of a domain"),
-      sql_help_ALTER_DOMAIN,
-      17 },
-
-    { "ALTER EVENT TRIGGER",
-      N_("change the definition of an event trigger"),
-      sql_help_ALTER_EVENT_TRIGGER,
-      3 },
-
-    { "ALTER EXTENSION",
-      N_("change the definition of an extension"),
-      sql_help_ALTER_EXTENSION,
-      40 },
-
-    { "ALTER FOREIGN DATA WRAPPER",
-      N_("change the definition of a foreign-data wrapper"),
-      sql_help_ALTER_FOREIGN_DATA_WRAPPER,
-      5 },
-
-    { "ALTER FOREIGN TABLE",
-      N_("change the definition of a foreign table"),
-      sql_help_ALTER_FOREIGN_TABLE,
-      34 },
-
-    { "ALTER FUNCTION",
-      N_("change the definition of a function"),
-      sql_help_ALTER_FUNCTION,
-      22 },
-
-    { "ALTER GROUP",
-      N_("change role name or membership"),
-      sql_help_ALTER_GROUP,
-      9 },
-
-    { "ALTER INDEX",
-      N_("change the definition of an index"),
-      sql_help_ALTER_INDEX,
-      9 },
-
-    { "ALTER LANGUAGE",
-      N_("change the definition of a procedural language"),
-      sql_help_ALTER_LANGUAGE,
-      1 },
-
-    { "ALTER LARGE OBJECT",
-      N_("change the definition of a large object"),
-      sql_help_ALTER_LARGE_OBJECT,
-      0 },
-
-    { "ALTER MATERIALIZED VIEW",
-      N_("change the definition of a materialized view"),
-      sql_help_ALTER_MATERIALIZED_VIEW,
-      23 },
-
-    { "ALTER OPERATOR",
-      N_("change the definition of an operator"),
-      sql_help_ALTER_OPERATOR,
-      9 },
-
-    { "ALTER OPERATOR CLASS",
-      N_("change the definition of an operator class"),
-      sql_help_ALTER_OPERATOR_CLASS,
-      7 },
-
-    { "ALTER OPERATOR FAMILY",
-      N_("change the definition of an operator family"),
-      sql_help_ALTER_OPERATOR_FAMILY,
-      19 },
-
-    { "ALTER POLICY",
-      N_("change the definition of a row level security policy"),
-      sql_help_ALTER_POLICY,
-      5 },
-
-    { "ALTER PROCEDURE",
-      N_("change the definition of a procedure"),
-      sql_help_ALTER_PROCEDURE,
-      17 },
-
-    { "ALTER PUBLICATION",
-      N_("change the definition of a publication"),
-      sql_help_ALTER_PUBLICATION,
-      5 },
-
-    { "ALTER ROLE",
-      N_("change a database role"),
-      sql_help_ALTER_ROLE,
-      26 },
-
-    { "ALTER ROUTINE",
-      N_("change the definition of a routine"),
-      sql_help_ALTER_ROUTINE,
-      21 },
-
-    { "ALTER RULE",
-      N_("change the definition of a rule"),
-      sql_help_ALTER_RULE,
-      0 },
-
-    { "ALTER SCHEMA",
-      N_("change the definition of a schema"),
-      sql_help_ALTER_SCHEMA,
-      1 },
-
-    { "ALTER SEQUENCE",
-      N_("change the definition of a sequence generator"),
-      sql_help_ALTER_SEQUENCE,
-      10 },
-
-    { "ALTER SERVER",
-      N_("change the definition of a foreign server"),
-      sql_help_ALTER_SERVER,
-      3 },
-
-    { "ALTER STATISTICS",
-      N_("change the definition of an extended statistics object"),
-      sql_help_ALTER_STATISTICS,
-      2 },
-
-    { "ALTER SUBSCRIPTION",
-      N_("change the definition of a subscription"),
-      sql_help_ALTER_SUBSCRIPTION,
-      7 },
-
-    { "ALTER SYSTEM",
-      N_("change a server configuration parameter"),
-      sql_help_ALTER_SYSTEM,
-      3 },
-
-    { "ALTER TABLE",
-      N_("change the definition of a table"),
-      sql_help_ALTER_TABLE,
-      110 },
-
-    { "ALTER TABLESPACE",
-      N_("change the definition of a tablespace"),
-      sql_help_ALTER_TABLESPACE,
-      3 },
-
-    { "ALTER TEXT SEARCH CONFIGURATION",
-      N_("change the definition of a text search configuration"),
-      sql_help_ALTER_TEXT_SEARCH_CONFIGURATION,
-      12 },
-
-    { "ALTER TEXT SEARCH DICTIONARY",
-      N_("change the definition of a text search dictionary"),
-      sql_help_ALTER_TEXT_SEARCH_DICTIONARY,
-      5 },
-
-    { "ALTER TEXT SEARCH PARSER",
-      N_("change the definition of a text search parser"),
-      sql_help_ALTER_TEXT_SEARCH_PARSER,
-      1 },
-
-    { "ALTER TEXT SEARCH TEMPLATE",
-      N_("change the definition of a text search template"),
-      sql_help_ALTER_TEXT_SEARCH_TEMPLATE,
-      1 },
-
-    { "ALTER TRIGGER",
-      N_("change the definition of a trigger"),
-      sql_help_ALTER_TRIGGER,
-      1 },
-
-    { "ALTER TYPE",
-      N_("change the definition of a type"),
-      sql_help_ALTER_TYPE,
-      12 },
-
-    { "ALTER USER",
-      N_("change a database role"),
-      sql_help_ALTER_USER,
-      26 },
-
-    { "ALTER USER MAPPING",
-      N_("change the definition of a user mapping"),
-      sql_help_ALTER_USER_MAPPING,
-      2 },
-
-    { "ALTER VIEW",
-      N_("change the definition of a view"),
-      sql_help_ALTER_VIEW,
-      6 },
-
-    { "ANALYZE",
-      N_("collect statistics about a database"),
-      sql_help_ANALYZE,
-      9 },
-
-    { "BEGIN",
-      N_("start a transaction block"),
-      sql_help_BEGIN,
-      6 },
-
-    { "CALL",
-      N_("invoke a procedure"),
-      sql_help_CALL,
-      0 },
-
-    { "CHECKPOINT",
-      N_("force a write-ahead log checkpoint"),
-      sql_help_CHECKPOINT,
-      0 },
-
-    { "CLOSE",
-      N_("close a cursor"),
-      sql_help_CLOSE,
-      0 },
-
-    { "CLUSTER",
-      N_("cluster a table according to an index"),
-      sql_help_CLUSTER,
-      1 },
-
-    { "COMMENT",
-      N_("define or change the comment of an object"),
-      sql_help_COMMENT,
-      51 },
-
-    { "COMMIT",
-      N_("commit the current transaction"),
-      sql_help_COMMIT,
-      0 },
-
-    { "COMMIT PREPARED",
-      N_("commit a transaction that was earlier prepared for two-phase commit"),
-      sql_help_COMMIT_PREPARED,
-      0 },
-
-    { "COPY",
-      N_("copy data between a file and a table"),
-      sql_help_COPY,
-      21 },
-
-    { "CREATE ACCESS METHOD",
-      N_("define a new access method"),
-      sql_help_CREATE_ACCESS_METHOD,
-      2 },
-
-    { "CREATE AGGREGATE",
-      N_("define a new aggregate function"),
-      sql_help_CREATE_AGGREGATE,
-      59 },
-
-    { "CREATE CAST",
-      N_("define a new cast"),
-      sql_help_CREATE_CAST,
-      10 },
-
-    { "CREATE COLLATION",
-      N_("define a new collation"),
-      sql_help_CREATE_COLLATION,
-      7 },
-
-    { "CREATE CONVERSION",
-      N_("define a new encoding conversion"),
-      sql_help_CREATE_CONVERSION,
-      1 },
-
-    { "CREATE DATABASE",
-      N_("create a new database"),
-      sql_help_CREATE_DATABASE,
-      9 },
-
-    { "CREATE DOMAIN",
-      N_("define a new domain"),
-      sql_help_CREATE_DOMAIN,
-      8 },
-
-    { "CREATE EVENT TRIGGER",
-      N_("define a new event trigger"),
-      sql_help_CREATE_EVENT_TRIGGER,
-      3 },
-
-    { "CREATE EXTENSION",
-      N_("install an extension"),
-      sql_help_CREATE_EXTENSION,
-      4 },
-
-    { "CREATE FOREIGN DATA WRAPPER",
-      N_("define a new foreign-data wrapper"),
-      sql_help_CREATE_FOREIGN_DATA_WRAPPER,
-      3 },
-
-    { "CREATE FOREIGN TABLE",
-      N_("define a new foreign table"),
-      sql_help_CREATE_FOREIGN_TABLE,
-      29 },
-
-    { "CREATE FUNCTION",
-      N_("define a new function"),
-      sql_help_CREATE_FUNCTION,
-      16 },
-
-    { "CREATE GROUP",
-      N_("define a new database role"),
-      sql_help_CREATE_GROUP,
-      16 },
-
-    { "CREATE INDEX",
-      N_("define a new index"),
-      sql_help_CREATE_INDEX,
-      5 },
-
-    { "CREATE LANGUAGE",
-      N_("define a new procedural language"),
-      sql_help_CREATE_LANGUAGE,
-      2 },
-
-    { "CREATE MATERIALIZED VIEW",
-      N_("define a new materialized view"),
-      sql_help_CREATE_MATERIALIZED_VIEW,
-      5 },
-
-    { "CREATE OPERATOR",
-      N_("define a new operator"),
-      sql_help_CREATE_OPERATOR,
-      6 },
-
-    { "CREATE OPERATOR CLASS",
-      N_("define a new operator class"),
-      sql_help_CREATE_OPERATOR_CLASS,
-      5 },
-
-    { "CREATE OPERATOR FAMILY",
-      N_("define a new operator family"),
-      sql_help_CREATE_OPERATOR_FAMILY,
-      0 },
-
-    { "CREATE POLICY",
-      N_("define a new row level security policy for a table"),
-      sql_help_CREATE_POLICY,
-      5 },
-
-    { "CREATE PROCEDURE",
-      N_("define a new procedure"),
-      sql_help_CREATE_PROCEDURE,
-      8 },
-
-    { "CREATE PUBLICATION",
-      N_("define a new publication"),
-      sql_help_CREATE_PUBLICATION,
-      3 },
-
-    { "CREATE ROLE",
-      N_("define a new database role"),
-      sql_help_CREATE_ROLE,
-      19 },
-
-    { "CREATE RULE",
-      N_("define a new rewrite rule"),
-      sql_help_CREATE_RULE,
-      6 },
-
-    { "CREATE SCHEMA",
-      N_("define a new schema"),
-      sql_help_CREATE_SCHEMA,
-      9 },
-
-    { "CREATE SEQUENCE",
-      N_("define a new sequence generator"),
-      sql_help_CREATE_SEQUENCE,
-      5 },
-
-    { "CREATE SERVER",
-      N_("define a new foreign server"),
-      sql_help_CREATE_SERVER,
-      2 },
-
-    { "CREATE STATISTICS",
-      N_("define extended statistics"),
-      sql_help_CREATE_STATISTICS,
-      3 },
-
-    { "CREATE SUBSCRIPTION",
-      N_("define a new subscription"),
-      sql_help_CREATE_SUBSCRIPTION,
-      3 },
-
-    { "CREATE TABLE",
-      N_("define a new table"),
-      sql_help_CREATE_TABLE,
-      78 },
-
-    { "CREATE TABLE AS",
-      N_("define a new table from the results of a query"),
-      sql_help_CREATE_TABLE_AS,
-      6 },
-
-    { "CREATE TABLESPACE",
-      N_("define a new tablespace"),
-      sql_help_CREATE_TABLESPACE,
-      3 },
-
-    { "CREATE TEXT SEARCH CONFIGURATION",
-      N_("define a new text search configuration"),
-      sql_help_CREATE_TEXT_SEARCH_CONFIGURATION,
-      3 },
-
-    { "CREATE TEXT SEARCH DICTIONARY",
-      N_("define a new text search dictionary"),
-      sql_help_CREATE_TEXT_SEARCH_DICTIONARY,
-      3 },
-
-    { "CREATE TEXT SEARCH PARSER",
-      N_("define a new text search parser"),
-      sql_help_CREATE_TEXT_SEARCH_PARSER,
-      6 },
-
-    { "CREATE TEXT SEARCH TEMPLATE",
-      N_("define a new text search template"),
-      sql_help_CREATE_TEXT_SEARCH_TEMPLATE,
-      3 },
-
-    { "CREATE TRANSFORM",
-      N_("define a new transform"),
-      sql_help_CREATE_TRANSFORM,
-      3 },
-
-    { "CREATE TRIGGER",
-      N_("define a new trigger"),
-      sql_help_CREATE_TRIGGER,
-      14 },
-
-    { "CREATE TYPE",
-      N_("define a new data type"),
-      sql_help_CREATE_TYPE,
-      35 },
-
-    { "CREATE USER",
-      N_("define a new database role"),
-      sql_help_CREATE_USER,
-      19 },
-
-    { "CREATE USER MAPPING",
-      N_("define a new mapping of a user to a foreign server"),
-      sql_help_CREATE_USER_MAPPING,
-      2 },
-
-    { "CREATE VIEW",
-      N_("define a new view"),
-      sql_help_CREATE_VIEW,
-      3 },
-
-    { "DEALLOCATE",
-      N_("deallocate a prepared statement"),
-      sql_help_DEALLOCATE,
-      0 },
-
-    { "DECLARE",
-      N_("define a cursor"),
-      sql_help_DECLARE,
-      1 },
-
-    { "DELETE",
-      N_("delete rows of a table"),
-      sql_help_DELETE,
-      4 },
-
-    { "DISCARD",
-      N_("discard session state"),
-      sql_help_DISCARD,
-      0 },
-
-    { "DO",
-      N_("execute an anonymous code block"),
-      sql_help_DO,
-      0 },
-
-    { "DROP ACCESS METHOD",
-      N_("remove an access method"),
-      sql_help_DROP_ACCESS_METHOD,
-      0 },
-
-    { "DROP AGGREGATE",
-      N_("remove an aggregate function"),
-      sql_help_DROP_AGGREGATE,
-      6 },
-
-    { "DROP CAST",
-      N_("remove a cast"),
-      sql_help_DROP_CAST,
-      0 },
-
-    { "DROP COLLATION",
-      N_("remove a collation"),
-      sql_help_DROP_COLLATION,
-      0 },
-
-    { "DROP CONVERSION",
-      N_("remove a conversion"),
-      sql_help_DROP_CONVERSION,
-      0 },
-
-    { "DROP DATABASE",
-      N_("remove a database"),
-      sql_help_DROP_DATABASE,
-      0 },
-
-    { "DROP DOMAIN",
-      N_("remove a domain"),
-      sql_help_DROP_DOMAIN,
-      0 },
-
-    { "DROP EVENT TRIGGER",
-      N_("remove an event trigger"),
-      sql_help_DROP_EVENT_TRIGGER,
-      0 },
-
-    { "DROP EXTENSION",
-      N_("remove an extension"),
-      sql_help_DROP_EXTENSION,
-      0 },
-
-    { "DROP FOREIGN DATA WRAPPER",
-      N_("remove a foreign-data wrapper"),
-      sql_help_DROP_FOREIGN_DATA_WRAPPER,
-      0 },
-
-    { "DROP FOREIGN TABLE",
-      N_("remove a foreign table"),
-      sql_help_DROP_FOREIGN_TABLE,
-      0 },
-
-    { "DROP FUNCTION",
-      N_("remove a function"),
-      sql_help_DROP_FUNCTION,
-      1 },
-
-    { "DROP GROUP",
-      N_("remove a database role"),
-      sql_help_DROP_GROUP,
-      0 },
-
-    { "DROP INDEX",
-      N_("remove an index"),
-      sql_help_DROP_INDEX,
-      0 },
-
-    { "DROP LANGUAGE",
-      N_("remove a procedural language"),
-      sql_help_DROP_LANGUAGE,
-      0 },
-
-    { "DROP MATERIALIZED VIEW",
-      N_("remove a materialized view"),
-      sql_help_DROP_MATERIALIZED_VIEW,
-      0 },
-
-    { "DROP OPERATOR",
-      N_("remove an operator"),
-      sql_help_DROP_OPERATOR,
-      0 },
-
-    { "DROP OPERATOR CLASS",
-      N_("remove an operator class"),
-      sql_help_DROP_OPERATOR_CLASS,
-      0 },
-
-    { "DROP OPERATOR FAMILY",
-      N_("remove an operator family"),
-      sql_help_DROP_OPERATOR_FAMILY,
-      0 },
-
-    { "DROP OWNED",
-      N_("remove database objects owned by a database role"),
-      sql_help_DROP_OWNED,
-      0 },
-
-    { "DROP POLICY",
-      N_("remove a row level security policy from a table"),
-      sql_help_DROP_POLICY,
-      0 },
-
-    { "DROP PROCEDURE",
-      N_("remove a procedure"),
-      sql_help_DROP_PROCEDURE,
-      1 },
-
-    { "DROP PUBLICATION",
-      N_("remove a publication"),
-      sql_help_DROP_PUBLICATION,
-      0 },
-
-    { "DROP ROLE",
-      N_("remove a database role"),
-      sql_help_DROP_ROLE,
-      0 },
-
-    { "DROP ROUTINE",
-      N_("remove a routine"),
-      sql_help_DROP_ROUTINE,
-      1 },
-
-    { "DROP RULE",
-      N_("remove a rewrite rule"),
-      sql_help_DROP_RULE,
-      0 },
-
-    { "DROP SCHEMA",
-      N_("remove a schema"),
-      sql_help_DROP_SCHEMA,
-      0 },
-
-    { "DROP SEQUENCE",
-      N_("remove a sequence"),
-      sql_help_DROP_SEQUENCE,
-      0 },
-
-    { "DROP SERVER",
-      N_("remove a foreign server descriptor"),
-      sql_help_DROP_SERVER,
-      0 },
-
-    { "DROP STATISTICS",
-      N_("remove extended statistics"),
-      sql_help_DROP_STATISTICS,
-      0 },
-
-    { "DROP SUBSCRIPTION",
-      N_("remove a subscription"),
-      sql_help_DROP_SUBSCRIPTION,
-      0 },
-
-    { "DROP TABLE",
-      N_("remove a table"),
-      sql_help_DROP_TABLE,
-      0 },
-
-    { "DROP TABLESPACE",
-      N_("remove a tablespace"),
-      sql_help_DROP_TABLESPACE,
-      0 },
-
-    { "DROP TEXT SEARCH CONFIGURATION",
-      N_("remove a text search configuration"),
-      sql_help_DROP_TEXT_SEARCH_CONFIGURATION,
-      0 },
-
-    { "DROP TEXT SEARCH DICTIONARY",
-      N_("remove a text search dictionary"),
-      sql_help_DROP_TEXT_SEARCH_DICTIONARY,
-      0 },
-
-    { "DROP TEXT SEARCH PARSER",
-      N_("remove a text search parser"),
-      sql_help_DROP_TEXT_SEARCH_PARSER,
-      0 },
-
-    { "DROP TEXT SEARCH TEMPLATE",
-      N_("remove a text search template"),
-      sql_help_DROP_TEXT_SEARCH_TEMPLATE,
-      0 },
-
-    { "DROP TRANSFORM",
-      N_("remove a transform"),
-      sql_help_DROP_TRANSFORM,
-      0 },
-
-    { "DROP TRIGGER",
-      N_("remove a trigger"),
-      sql_help_DROP_TRIGGER,
-      0 },
-
-    { "DROP TYPE",
-      N_("remove a data type"),
-      sql_help_DROP_TYPE,
-      0 },
-
-    { "DROP USER",
-      N_("remove a database role"),
-      sql_help_DROP_USER,
-      0 },
-
-    { "DROP USER MAPPING",
-      N_("remove a user mapping for a foreign server"),
-      sql_help_DROP_USER_MAPPING,
-      0 },
-
-    { "DROP VIEW",
-      N_("remove a view"),
-      sql_help_DROP_VIEW,
-      0 },
-
-    { "END",
-      N_("commit the current transaction"),
-      sql_help_END,
-      0 },
-
-    { "EXECUTE",
-      N_("execute a prepared statement"),
-      sql_help_EXECUTE,
-      0 },
-
-    { "EXPLAIN",
-      N_("show the execution plan of a statement"),
-      sql_help_EXPLAIN,
-      11 },
-
-    { "FETCH",
-      N_("retrieve rows from a query using a cursor"),
-      sql_help_FETCH,
-      17 },
-
-    { "GRANT",
-      N_("define access privileges"),
-      sql_help_GRANT,
-      65 },
-
-    { "IMPORT FOREIGN SCHEMA",
-      N_("import table definitions from a foreign server"),
-      sql_help_IMPORT_FOREIGN_SCHEMA,
-      4 },
-
-    { "INSERT",
-      N_("create new rows in a table"),
-      sql_help_INSERT,
-      19 },
-
-    { "LISTEN",
-      N_("listen for a notification"),
-      sql_help_LISTEN,
-      0 },
-
-    { "LOAD",
-      N_("load a shared library file"),
-      sql_help_LOAD,
-      0 },
-
-    { "LOCK",
-      N_("lock a table"),
-      sql_help_LOCK,
-      5 },
-
-    { "MOVE",
-      N_("position a cursor"),
-      sql_help_MOVE,
-      17 },
-
-    { "NOTIFY",
-      N_("generate a notification"),
-      sql_help_NOTIFY,
-      0 },
-
-    { "PREPARE",
-      N_("prepare a statement for execution"),
-      sql_help_PREPARE,
-      0 },
-
-    { "PREPARE TRANSACTION",
-      N_("prepare the current transaction for two-phase commit"),
-      sql_help_PREPARE_TRANSACTION,
-      0 },
-
-    { "REASSIGN OWNED",
-      N_("change the ownership of database objects owned by a database role"),
-      sql_help_REASSIGN_OWNED,
-      1 },
-
-    { "REFRESH MATERIALIZED VIEW",
-      N_("replace the contents of a materialized view"),
-      sql_help_REFRESH_MATERIALIZED_VIEW,
-      1 },
-
-    { "REINDEX",
-      N_("rebuild indexes"),
-      sql_help_REINDEX,
-      0 },
-
-    { "RELEASE SAVEPOINT",
-      N_("destroy a previously defined savepoint"),
-      sql_help_RELEASE_SAVEPOINT,
-      0 },
-
-    { "RESET",
-      N_("restore the value of a run-time parameter to the default value"),
-      sql_help_RESET,
-      1 },
-
-    { "REVOKE",
-      N_("remove access privileges"),
-      sql_help_REVOKE,
-      86 },
-
-    { "ROLLBACK",
-      N_("abort the current transaction"),
-      sql_help_ROLLBACK,
-      0 },
-
-    { "ROLLBACK PREPARED",
-      N_("cancel a transaction that was earlier prepared for two-phase commit"),
-      sql_help_ROLLBACK_PREPARED,
-      0 },
-
-    { "ROLLBACK TO SAVEPOINT",
-      N_("roll back to a savepoint"),
-      sql_help_ROLLBACK_TO_SAVEPOINT,
-      0 },
-
-    { "SAVEPOINT",
-      N_("define a new savepoint within the current transaction"),
-      sql_help_SAVEPOINT,
-      0 },
-
-    { "SECURITY LABEL",
-      N_("define or change a security label applied to an object"),
-      sql_help_SECURITY_LABEL,
-      29 },
-
-    { "SELECT",
-      N_("retrieve rows from a table or view"),
-      sql_help_SELECT,
-      42 },
-
-    { "SELECT INTO",
-      N_("define a new table from the results of a query"),
-      sql_help_SELECT_INTO,
-      14 },
-
-    { "SET",
-      N_("change a run-time parameter"),
-      sql_help_SET,
-      1 },
-
-    { "SET CONSTRAINTS",
-      N_("set constraint check timing for the current transaction"),
-      sql_help_SET_CONSTRAINTS,
-      0 },
-
-    { "SET ROLE",
-      N_("set the current user identifier of the current session"),
-      sql_help_SET_ROLE,
-      2 },
-
-    { "SET SESSION AUTHORIZATION",
-      N_("set the session user identifier and the current user identifier of the current session"),
-      sql_help_SET_SESSION_AUTHORIZATION,
-      2 },
-
-    { "SET TRANSACTION",
-      N_("set the characteristics of the current transaction"),
-      sql_help_SET_TRANSACTION,
-      8 },
-
-    { "SHOW",
-      N_("show the value of a run-time parameter"),
-      sql_help_SHOW,
-      1 },
-
-    { "START TRANSACTION",
-      N_("start a transaction block"),
-      sql_help_START_TRANSACTION,
-      6 },
-
-    { "TABLE",
-      N_("retrieve rows from a table or view"),
-      sql_help_TABLE,
-      42 },
-
-    { "TRUNCATE",
-      N_("empty a table or set of tables"),
-      sql_help_TRUNCATE,
-      1 },
-
-    { "UNLISTEN",
-      N_("stop listening for a notification"),
-      sql_help_UNLISTEN,
-      0 },
-
-    { "UPDATE",
-      N_("update rows of a table"),
-      sql_help_UPDATE,
-      8 },
-
-    { "VACUUM",
-      N_("garbage-collect and optionally analyze a database"),
-      sql_help_VACUUM,
-      13 },
-
-    { "VALUES",
-      N_("compute a set of rows"),
-      sql_help_VALUES,
-      4 },
-
-    { "WITH",
-      N_("retrieve rows from a table or view"),
-      sql_help_WITH,
-      42 },
-
-
-    { NULL, NULL, NULL }    /* End of list marker */
+	{"ABORT",
+		N_("abort the current transaction"),
+		"sql-abort",
+		sql_help_ABORT,
+	0},
+
+	{"ALTER AGGREGATE",
+		N_("change the definition of an aggregate function"),
+		"sql-alteraggregate",
+		sql_help_ALTER_AGGREGATE,
+	9},
+
+	{"ALTER COLLATION",
+		N_("change the definition of a collation"),
+		"sql-altercollation",
+		sql_help_ALTER_COLLATION,
+	4},
+
+	{"ALTER CONVERSION",
+		N_("change the definition of a conversion"),
+		"sql-alterconversion",
+		sql_help_ALTER_CONVERSION,
+	2},
+
+	{"ALTER DATABASE",
+		N_("change a database"),
+		"sql-alterdatabase",
+		sql_help_ALTER_DATABASE,
+	17},
+
+	{"ALTER DEFAULT PRIVILEGES",
+		N_("define default access privileges"),
+		"sql-alterdefaultprivileges",
+		sql_help_ALTER_DEFAULT_PRIVILEGES,
+	61},
+
+	{"ALTER DOMAIN",
+		N_("change the definition of a domain"),
+		"sql-alterdomain",
+		sql_help_ALTER_DOMAIN,
+	22},
+
+	{"ALTER EVENT TRIGGER",
+		N_("change the definition of an event trigger"),
+		"sql-altereventtrigger",
+		sql_help_ALTER_EVENT_TRIGGER,
+	3},
+
+	{"ALTER EXTENSION",
+		N_("change the definition of an extension"),
+		"sql-alterextension",
+		sql_help_ALTER_EXTENSION,
+	40},
+
+	{"ALTER FOREIGN DATA WRAPPER",
+		N_("change the definition of a foreign-data wrapper"),
+		"sql-alterforeigndatawrapper",
+		sql_help_ALTER_FOREIGN_DATA_WRAPPER,
+	5},
+
+	{"ALTER FOREIGN TABLE",
+		N_("change the definition of a foreign table"),
+		"sql-alterforeigntable",
+		sql_help_ALTER_FOREIGN_TABLE,
+	33},
+
+	{"ALTER FUNCTION",
+		N_("change the definition of a function"),
+		"sql-alterfunction",
+		sql_help_ALTER_FUNCTION,
+	24},
+
+	{"ALTER GROUP",
+		N_("change role name or membership"),
+		"sql-altergroup",
+		sql_help_ALTER_GROUP,
+	10},
+
+	{"ALTER INDEX",
+		N_("change the definition of an index"),
+		"sql-alterindex",
+		sql_help_ALTER_INDEX,
+	9},
+
+	{"ALTER LANGUAGE",
+		N_("change the definition of a procedural language"),
+		"sql-alterlanguage",
+		sql_help_ALTER_LANGUAGE,
+	1},
+
+	{"ALTER LARGE OBJECT",
+		N_("change the definition of a large object"),
+		"sql-alterlargeobject",
+		sql_help_ALTER_LARGE_OBJECT,
+	0},
+
+	{"ALTER MATERIALIZED VIEW",
+		N_("change the definition of a materialized view"),
+		"sql-altermaterializedview",
+		sql_help_ALTER_MATERIALIZED_VIEW,
+	25},
+
+	{"ALTER OPERATOR",
+		N_("change the definition of an operator"),
+		"sql-alteroperator",
+		sql_help_ALTER_OPERATOR,
+	9},
+
+	{"ALTER OPERATOR CLASS",
+		N_("change the definition of an operator class"),
+		"sql-alteropclass",
+		sql_help_ALTER_OPERATOR_CLASS,
+	7},
+
+	{"ALTER OPERATOR FAMILY",
+		N_("change the definition of an operator family"),
+		"sql-alteropfamily",
+		sql_help_ALTER_OPERATOR_FAMILY,
+	19},
+
+	{"ALTER POLICY",
+		N_("change the definition of a row-level security policy"),
+		"sql-alterpolicy",
+		sql_help_ALTER_POLICY,
+	5},
+
+	{"ALTER PROCEDURE",
+		N_("change the definition of a procedure"),
+		"sql-alterprocedure",
+		sql_help_ALTER_PROCEDURE,
+	17},
+
+	{"ALTER PUBLICATION",
+		N_("change the definition of a publication"),
+		"sql-alterpublication",
+		sql_help_ALTER_PUBLICATION,
+	5},
+
+	{"ALTER ROLE",
+		N_("change a database role"),
+		"sql-alterrole",
+		sql_help_ALTER_ROLE,
+	27},
+
+	{"ALTER ROUTINE",
+		N_("change the definition of a routine"),
+		"sql-alterroutine",
+		sql_help_ALTER_ROUTINE,
+	22},
+
+	{"ALTER RULE",
+		N_("change the definition of a rule"),
+		"sql-alterrule",
+		sql_help_ALTER_RULE,
+	0},
+
+	{"ALTER SCHEMA",
+		N_("change the definition of a schema"),
+		"sql-alterschema",
+		sql_help_ALTER_SCHEMA,
+	1},
+
+	{"ALTER SEQUENCE",
+		N_("change the definition of a sequence generator"),
+		"sql-altersequence",
+		sql_help_ALTER_SEQUENCE,
+	10},
+
+	{"ALTER SERVER",
+		N_("change the definition of a foreign server"),
+		"sql-alterserver",
+		sql_help_ALTER_SERVER,
+	3},
+
+	{"ALTER STATISTICS",
+		N_("change the definition of an extended statistics object"),
+		"sql-alterstatistics",
+		sql_help_ALTER_STATISTICS,
+	3},
+
+	{"ALTER SUBSCRIPTION",
+		N_("change the definition of a subscription"),
+		"sql-altersubscription",
+		sql_help_ALTER_SUBSCRIPTION,
+	9},
+
+	{"ALTER SYSTEM",
+		N_("change a server configuration parameter"),
+		"sql-altersystem",
+		sql_help_ALTER_SYSTEM,
+	3},
+
+	{"ALTER TABLE",
+		N_("change the definition of a table"),
+		"sql-altertable",
+		sql_help_ALTER_TABLE,
+	112},
+
+	{"ALTER TABLESPACE",
+		N_("change the definition of a tablespace"),
+		"sql-altertablespace",
+		sql_help_ALTER_TABLESPACE,
+	3},
+
+	{"ALTER TEXT SEARCH CONFIGURATION",
+		N_("change the definition of a text search configuration"),
+		"sql-altertsconfig",
+		sql_help_ALTER_TEXT_SEARCH_CONFIGURATION,
+	12},
+
+	{"ALTER TEXT SEARCH DICTIONARY",
+		N_("change the definition of a text search dictionary"),
+		"sql-altertsdictionary",
+		sql_help_ALTER_TEXT_SEARCH_DICTIONARY,
+	5},
+
+	{"ALTER TEXT SEARCH PARSER",
+		N_("change the definition of a text search parser"),
+		"sql-altertsparser",
+		sql_help_ALTER_TEXT_SEARCH_PARSER,
+	1},
+
+	{"ALTER TEXT SEARCH TEMPLATE",
+		N_("change the definition of a text search template"),
+		"sql-altertstemplate",
+		sql_help_ALTER_TEXT_SEARCH_TEMPLATE,
+	1},
+
+	{"ALTER TRIGGER",
+		N_("change the definition of a trigger"),
+		"sql-altertrigger",
+		sql_help_ALTER_TRIGGER,
+	1},
+
+	{"ALTER TYPE",
+		N_("change the definition of a type"),
+		"sql-altertype",
+		sql_help_ALTER_TYPE,
+	13},
+
+	{"ALTER USER",
+		N_("change a database role"),
+		"sql-alteruser",
+		sql_help_ALTER_USER,
+	27},
+
+	{"ALTER USER MAPPING",
+		N_("change the definition of a user mapping"),
+		"sql-alterusermapping",
+		sql_help_ALTER_USER_MAPPING,
+	2},
+
+	{"ALTER VIEW",
+		N_("change the definition of a view"),
+		"sql-alterview",
+		sql_help_ALTER_VIEW,
+	7},
+
+	{"ANALYZE",
+		N_("collect statistics about a database"),
+		"sql-analyze",
+		sql_help_ANALYZE,
+	10},
+
+	{"BEGIN",
+		N_("start a transaction block"),
+		"sql-begin",
+		sql_help_BEGIN,
+	6},
+
+	{"CALL",
+		N_("invoke a procedure"),
+		"sql-call",
+		sql_help_CALL,
+	0},
+
+	{"CHECKPOINT",
+		N_("force a write-ahead log checkpoint"),
+		"sql-checkpoint",
+		sql_help_CHECKPOINT,
+	0},
+
+	{"CLOSE",
+		N_("close a cursor"),
+		"sql-close",
+		sql_help_CLOSE,
+	0},
+
+	{"CLUSTER",
+		N_("cluster a table according to an index"),
+		"sql-cluster",
+		sql_help_CLUSTER,
+	6},
+
+	{"COMMENT",
+		N_("define or change the comment of an object"),
+		"sql-comment",
+		sql_help_COMMENT,
+	51},
+
+	{"COMMIT",
+		N_("commit the current transaction"),
+		"sql-commit",
+		sql_help_COMMIT,
+	0},
+
+	{"COMMIT PREPARED",
+		N_("commit a transaction that was earlier prepared for two-phase commit"),
+		"sql-commit-prepared",
+		sql_help_COMMIT_PREPARED,
+	0},
+
+	{"COPY",
+		N_("copy data between a file and a table"),
+		"sql-copy",
+		sql_help_COPY,
+	21},
+
+	{"CREATE ACCESS METHOD",
+		N_("define a new access method"),
+		"sql-create-access-method",
+		sql_help_CREATE_ACCESS_METHOD,
+	2},
+
+	{"CREATE AGGREGATE",
+		N_("define a new aggregate function"),
+		"sql-createaggregate",
+		sql_help_CREATE_AGGREGATE,
+	59},
+
+	{"CREATE CAST",
+		N_("define a new cast"),
+		"sql-createcast",
+		sql_help_CREATE_CAST,
+	10},
+
+	{"CREATE COLLATION",
+		N_("define a new collation"),
+		"sql-createcollation",
+		sql_help_CREATE_COLLATION,
+	8},
+
+	{"CREATE CONVERSION",
+		N_("define a new encoding conversion"),
+		"sql-createconversion",
+		sql_help_CREATE_CONVERSION,
+	1},
+
+	{"CREATE DATABASE",
+		N_("create a new database"),
+		"sql-createdatabase",
+		sql_help_CREATE_DATABASE,
+	10},
+
+	{"CREATE DOMAIN",
+		N_("define a new domain"),
+		"sql-createdomain",
+		sql_help_CREATE_DOMAIN,
+	8},
+
+	{"CREATE EVENT TRIGGER",
+		N_("define a new event trigger"),
+		"sql-createeventtrigger",
+		sql_help_CREATE_EVENT_TRIGGER,
+	3},
+
+	{"CREATE EXTENSION",
+		N_("install an extension"),
+		"sql-createextension",
+		sql_help_CREATE_EXTENSION,
+	3},
+
+	{"CREATE FOREIGN DATA WRAPPER",
+		N_("define a new foreign-data wrapper"),
+		"sql-createforeigndatawrapper",
+		sql_help_CREATE_FOREIGN_DATA_WRAPPER,
+	3},
+
+	{"CREATE FOREIGN TABLE",
+		N_("define a new foreign table"),
+		"sql-createforeigntable",
+		sql_help_CREATE_FOREIGN_TABLE,
+	38},
+
+	{"CREATE FUNCTION",
+		N_("define a new function"),
+		"sql-createfunction",
+		sql_help_CREATE_FUNCTION,
+	19},
+
+	{"CREATE GROUP",
+		N_("define a new database role"),
+		"sql-creategroup",
+		sql_help_CREATE_GROUP,
+	19},
+
+	{"CREATE INDEX",
+		N_("define a new index"),
+		"sql-createindex",
+		sql_help_CREATE_INDEX,
+	5},
+
+	{"CREATE LANGUAGE",
+		N_("define a new procedural language"),
+		"sql-createlanguage",
+		sql_help_CREATE_LANGUAGE,
+	2},
+
+	{"CREATE MATERIALIZED VIEW",
+		N_("define a new materialized view"),
+		"sql-creatematerializedview",
+		sql_help_CREATE_MATERIALIZED_VIEW,
+	6},
+
+	{"CREATE OPERATOR",
+		N_("define a new operator"),
+		"sql-createoperator",
+		sql_help_CREATE_OPERATOR,
+	6},
+
+	{"CREATE OPERATOR CLASS",
+		N_("define a new operator class"),
+		"sql-createopclass",
+		sql_help_CREATE_OPERATOR_CLASS,
+	5},
+
+	{"CREATE OPERATOR FAMILY",
+		N_("define a new operator family"),
+		"sql-createopfamily",
+		sql_help_CREATE_OPERATOR_FAMILY,
+	0},
+
+	{"CREATE POLICY",
+		N_("define a new row-level security policy for a table"),
+		"sql-createpolicy",
+		sql_help_CREATE_POLICY,
+	5},
+
+	{"CREATE PROCEDURE",
+		N_("define a new procedure"),
+		"sql-createprocedure",
+		sql_help_CREATE_PROCEDURE,
+	9},
+
+	{"CREATE PUBLICATION",
+		N_("define a new publication"),
+		"sql-createpublication",
+		sql_help_CREATE_PUBLICATION,
+	3},
+
+	{"CREATE ROLE",
+		N_("define a new database role"),
+		"sql-createrole",
+		sql_help_CREATE_ROLE,
+	19},
+
+	{"CREATE RULE",
+		N_("define a new rewrite rule"),
+		"sql-createrule",
+		sql_help_CREATE_RULE,
+	6},
+
+	{"CREATE SCHEMA",
+		N_("define a new schema"),
+		"sql-createschema",
+		sql_help_CREATE_SCHEMA,
+	10},
+
+	{"CREATE SEQUENCE",
+		N_("define a new sequence generator"),
+		"sql-createsequence",
+		sql_help_CREATE_SEQUENCE,
+	5},
+
+	{"CREATE SERVER",
+		N_("define a new foreign server"),
+		"sql-createserver",
+		sql_help_CREATE_SERVER,
+	2},
+
+	{"CREATE STATISTICS",
+		N_("define extended statistics"),
+		"sql-createstatistics",
+		sql_help_CREATE_STATISTICS,
+	7},
+
+	{"CREATE SUBSCRIPTION",
+		N_("define a new subscription"),
+		"sql-createsubscription",
+		sql_help_CREATE_SUBSCRIPTION,
+	3},
+
+	{"CREATE TABLE",
+		N_("define a new table"),
+		"sql-createtable",
+		sql_help_CREATE_TABLE,
+	83},
+
+	{"CREATE TABLE AS",
+		N_("define a new table from the results of a query"),
+		"sql-createtableas",
+		sql_help_CREATE_TABLE_AS,
+	7},
+
+	{"CREATE TABLESPACE",
+		N_("define a new tablespace"),
+		"sql-createtablespace",
+		sql_help_CREATE_TABLESPACE,
+	3},
+
+	{"CREATE TEXT SEARCH CONFIGURATION",
+		N_("define a new text search configuration"),
+		"sql-createtsconfig",
+		sql_help_CREATE_TEXT_SEARCH_CONFIGURATION,
+	3},
+
+	{"CREATE TEXT SEARCH DICTIONARY",
+		N_("define a new text search dictionary"),
+		"sql-createtsdictionary",
+		sql_help_CREATE_TEXT_SEARCH_DICTIONARY,
+	3},
+
+	{"CREATE TEXT SEARCH PARSER",
+		N_("define a new text search parser"),
+		"sql-createtsparser",
+		sql_help_CREATE_TEXT_SEARCH_PARSER,
+	6},
+
+	{"CREATE TEXT SEARCH TEMPLATE",
+		N_("define a new text search template"),
+		"sql-createtstemplate",
+		sql_help_CREATE_TEXT_SEARCH_TEMPLATE,
+	3},
+
+	{"CREATE TRANSFORM",
+		N_("define a new transform"),
+		"sql-createtransform",
+		sql_help_CREATE_TRANSFORM,
+	3},
+
+	{"CREATE TRIGGER",
+		N_("define a new trigger"),
+		"sql-createtrigger",
+		sql_help_CREATE_TRIGGER,
+	14},
+
+	{"CREATE TYPE",
+		N_("define a new data type"),
+		"sql-createtype",
+		sql_help_CREATE_TYPE,
+	37},
+
+	{"CREATE USER",
+		N_("define a new database role"),
+		"sql-createuser",
+		sql_help_CREATE_USER,
+	19},
+
+	{"CREATE USER MAPPING",
+		N_("define a new mapping of a user to a foreign server"),
+		"sql-createusermapping",
+		sql_help_CREATE_USER_MAPPING,
+	2},
+
+	{"CREATE VIEW",
+		N_("define a new view"),
+		"sql-createview",
+		sql_help_CREATE_VIEW,
+	3},
+
+	{"DEALLOCATE",
+		N_("deallocate a prepared statement"),
+		"sql-deallocate",
+		sql_help_DEALLOCATE,
+	0},
+
+	{"DECLARE",
+		N_("define a cursor"),
+		"sql-declare",
+		sql_help_DECLARE,
+	1},
+
+	{"DELETE",
+		N_("delete rows of a table"),
+		"sql-delete",
+		sql_help_DELETE,
+	4},
+
+	{"DISCARD",
+		N_("discard session state"),
+		"sql-discard",
+		sql_help_DISCARD,
+	0},
+
+	{"DO",
+		N_("execute an anonymous code block"),
+		"sql-do",
+		sql_help_DO,
+	0},
+
+	{"DROP ACCESS METHOD",
+		N_("remove an access method"),
+		"sql-drop-access-method",
+		sql_help_DROP_ACCESS_METHOD,
+	0},
+
+	{"DROP AGGREGATE",
+		N_("remove an aggregate function"),
+		"sql-dropaggregate",
+		sql_help_DROP_AGGREGATE,
+	6},
+
+	{"DROP CAST",
+		N_("remove a cast"),
+		"sql-dropcast",
+		sql_help_DROP_CAST,
+	0},
+
+	{"DROP COLLATION",
+		N_("remove a collation"),
+		"sql-dropcollation",
+		sql_help_DROP_COLLATION,
+	0},
+
+	{"DROP CONVERSION",
+		N_("remove a conversion"),
+		"sql-dropconversion",
+		sql_help_DROP_CONVERSION,
+	0},
+
+	{"DROP DATABASE",
+		N_("remove a database"),
+		"sql-dropdatabase",
+		sql_help_DROP_DATABASE,
+	4},
+
+	{"DROP DOMAIN",
+		N_("remove a domain"),
+		"sql-dropdomain",
+		sql_help_DROP_DOMAIN,
+	0},
+
+	{"DROP EVENT TRIGGER",
+		N_("remove an event trigger"),
+		"sql-dropeventtrigger",
+		sql_help_DROP_EVENT_TRIGGER,
+	0},
+
+	{"DROP EXTENSION",
+		N_("remove an extension"),
+		"sql-dropextension",
+		sql_help_DROP_EXTENSION,
+	0},
+
+	{"DROP FOREIGN DATA WRAPPER",
+		N_("remove a foreign-data wrapper"),
+		"sql-dropforeigndatawrapper",
+		sql_help_DROP_FOREIGN_DATA_WRAPPER,
+	0},
+
+	{"DROP FOREIGN TABLE",
+		N_("remove a foreign table"),
+		"sql-dropforeigntable",
+		sql_help_DROP_FOREIGN_TABLE,
+	0},
+
+	{"DROP FUNCTION",
+		N_("remove a function"),
+		"sql-dropfunction",
+		sql_help_DROP_FUNCTION,
+	1},
+
+	{"DROP GROUP",
+		N_("remove a database role"),
+		"sql-dropgroup",
+		sql_help_DROP_GROUP,
+	0},
+
+	{"DROP INDEX",
+		N_("remove an index"),
+		"sql-dropindex",
+		sql_help_DROP_INDEX,
+	0},
+
+	{"DROP LANGUAGE",
+		N_("remove a procedural language"),
+		"sql-droplanguage",
+		sql_help_DROP_LANGUAGE,
+	0},
+
+	{"DROP MATERIALIZED VIEW",
+		N_("remove a materialized view"),
+		"sql-dropmaterializedview",
+		sql_help_DROP_MATERIALIZED_VIEW,
+	0},
+
+	{"DROP OPERATOR",
+		N_("remove an operator"),
+		"sql-dropoperator",
+		sql_help_DROP_OPERATOR,
+	0},
+
+	{"DROP OPERATOR CLASS",
+		N_("remove an operator class"),
+		"sql-dropopclass",
+		sql_help_DROP_OPERATOR_CLASS,
+	0},
+
+	{"DROP OPERATOR FAMILY",
+		N_("remove an operator family"),
+		"sql-dropopfamily",
+		sql_help_DROP_OPERATOR_FAMILY,
+	0},
+
+	{"DROP OWNED",
+		N_("remove database objects owned by a database role"),
+		"sql-drop-owned",
+		sql_help_DROP_OWNED,
+	0},
+
+	{"DROP POLICY",
+		N_("remove a row-level security policy from a table"),
+		"sql-droppolicy",
+		sql_help_DROP_POLICY,
+	0},
+
+	{"DROP PROCEDURE",
+		N_("remove a procedure"),
+		"sql-dropprocedure",
+		sql_help_DROP_PROCEDURE,
+	1},
+
+	{"DROP PUBLICATION",
+		N_("remove a publication"),
+		"sql-droppublication",
+		sql_help_DROP_PUBLICATION,
+	0},
+
+	{"DROP ROLE",
+		N_("remove a database role"),
+		"sql-droprole",
+		sql_help_DROP_ROLE,
+	0},
+
+	{"DROP ROUTINE",
+		N_("remove a routine"),
+		"sql-droproutine",
+		sql_help_DROP_ROUTINE,
+	1},
+
+	{"DROP RULE",
+		N_("remove a rewrite rule"),
+		"sql-droprule",
+		sql_help_DROP_RULE,
+	0},
+
+	{"DROP SCHEMA",
+		N_("remove a schema"),
+		"sql-dropschema",
+		sql_help_DROP_SCHEMA,
+	0},
+
+	{"DROP SEQUENCE",
+		N_("remove a sequence"),
+		"sql-dropsequence",
+		sql_help_DROP_SEQUENCE,
+	0},
+
+	{"DROP SERVER",
+		N_("remove a foreign server descriptor"),
+		"sql-dropserver",
+		sql_help_DROP_SERVER,
+	0},
+
+	{"DROP STATISTICS",
+		N_("remove extended statistics"),
+		"sql-dropstatistics",
+		sql_help_DROP_STATISTICS,
+	0},
+
+	{"DROP SUBSCRIPTION",
+		N_("remove a subscription"),
+		"sql-dropsubscription",
+		sql_help_DROP_SUBSCRIPTION,
+	0},
+
+	{"DROP TABLE",
+		N_("remove a table"),
+		"sql-droptable",
+		sql_help_DROP_TABLE,
+	0},
+
+	{"DROP TABLESPACE",
+		N_("remove a tablespace"),
+		"sql-droptablespace",
+		sql_help_DROP_TABLESPACE,
+	0},
+
+	{"DROP TEXT SEARCH CONFIGURATION",
+		N_("remove a text search configuration"),
+		"sql-droptsconfig",
+		sql_help_DROP_TEXT_SEARCH_CONFIGURATION,
+	0},
+
+	{"DROP TEXT SEARCH DICTIONARY",
+		N_("remove a text search dictionary"),
+		"sql-droptsdictionary",
+		sql_help_DROP_TEXT_SEARCH_DICTIONARY,
+	0},
+
+	{"DROP TEXT SEARCH PARSER",
+		N_("remove a text search parser"),
+		"sql-droptsparser",
+		sql_help_DROP_TEXT_SEARCH_PARSER,
+	0},
+
+	{"DROP TEXT SEARCH TEMPLATE",
+		N_("remove a text search template"),
+		"sql-droptstemplate",
+		sql_help_DROP_TEXT_SEARCH_TEMPLATE,
+	0},
+
+	{"DROP TRANSFORM",
+		N_("remove a transform"),
+		"sql-droptransform",
+		sql_help_DROP_TRANSFORM,
+	0},
+
+	{"DROP TRIGGER",
+		N_("remove a trigger"),
+		"sql-droptrigger",
+		sql_help_DROP_TRIGGER,
+	0},
+
+	{"DROP TYPE",
+		N_("remove a data type"),
+		"sql-droptype",
+		sql_help_DROP_TYPE,
+	0},
+
+	{"DROP USER",
+		N_("remove a database role"),
+		"sql-dropuser",
+		sql_help_DROP_USER,
+	0},
+
+	{"DROP USER MAPPING",
+		N_("remove a user mapping for a foreign server"),
+		"sql-dropusermapping",
+		sql_help_DROP_USER_MAPPING,
+	0},
+
+	{"DROP VIEW",
+		N_("remove a view"),
+		"sql-dropview",
+		sql_help_DROP_VIEW,
+	0},
+
+	{"END",
+		N_("commit the current transaction"),
+		"sql-end",
+		sql_help_END,
+	0},
+
+	{"EXECUTE",
+		N_("execute a prepared statement"),
+		"sql-execute",
+		sql_help_EXECUTE,
+	0},
+
+	{"EXPLAIN",
+		N_("show the execution plan of a statement"),
+		"sql-explain",
+		sql_help_EXPLAIN,
+	13},
+
+	{"FETCH",
+		N_("retrieve rows from a query using a cursor"),
+		"sql-fetch",
+		sql_help_FETCH,
+	17},
+
+	{"GRANT",
+		N_("define access privileges"),
+		"sql-grant",
+		sql_help_GRANT,
+	81},
+
+	{"IMPORT FOREIGN SCHEMA",
+		N_("import table definitions from a foreign server"),
+		"sql-importforeignschema",
+		sql_help_IMPORT_FOREIGN_SCHEMA,
+	4},
+
+	{"INSERT",
+		N_("create new rows in a table"),
+		"sql-insert",
+		sql_help_INSERT,
+	19},
+
+	{"LISTEN",
+		N_("listen for a notification"),
+		"sql-listen",
+		sql_help_LISTEN,
+	0},
+
+	{"LOAD",
+		N_("load a shared library file"),
+		"sql-load",
+		sql_help_LOAD,
+	0},
+
+	{"LOCK",
+		N_("lock a table"),
+		"sql-lock",
+		sql_help_LOCK,
+	5},
+
+	{"MOVE",
+		N_("position a cursor"),
+		"sql-move",
+		sql_help_MOVE,
+	17},
+
+	{"NOTIFY",
+		N_("generate a notification"),
+		"sql-notify",
+		sql_help_NOTIFY,
+	0},
+
+	{"PREPARE",
+		N_("prepare a statement for execution"),
+		"sql-prepare",
+		sql_help_PREPARE,
+	0},
+
+	{"PREPARE TRANSACTION",
+		N_("prepare the current transaction for two-phase commit"),
+		"sql-prepare-transaction",
+		sql_help_PREPARE_TRANSACTION,
+	0},
+
+	{"REASSIGN OWNED",
+		N_("change the ownership of database objects owned by a database role"),
+		"sql-reassign-owned",
+		sql_help_REASSIGN_OWNED,
+	1},
+
+	{"REFRESH MATERIALIZED VIEW",
+		N_("replace the contents of a materialized view"),
+		"sql-refreshmaterializedview",
+		sql_help_REFRESH_MATERIALIZED_VIEW,
+	1},
+
+	{"REINDEX",
+		N_("rebuild indexes"),
+		"sql-reindex",
+		sql_help_REINDEX,
+	6},
+
+	{"RELEASE SAVEPOINT",
+		N_("destroy a previously defined savepoint"),
+		"sql-release-savepoint",
+		sql_help_RELEASE_SAVEPOINT,
+	0},
+
+	{"RESET",
+		N_("restore the value of a run-time parameter to the default value"),
+		"sql-reset",
+		sql_help_RESET,
+	1},
+
+	{"REVOKE",
+		N_("remove access privileges"),
+		"sql-revoke",
+		sql_help_REVOKE,
+	108},
+
+	{"ROLLBACK",
+		N_("abort the current transaction"),
+		"sql-rollback",
+		sql_help_ROLLBACK,
+	0},
+
+	{"ROLLBACK PREPARED",
+		N_("cancel a transaction that was earlier prepared for two-phase commit"),
+		"sql-rollback-prepared",
+		sql_help_ROLLBACK_PREPARED,
+	0},
+
+	{"ROLLBACK TO SAVEPOINT",
+		N_("roll back to a savepoint"),
+		"sql-rollback-to",
+		sql_help_ROLLBACK_TO_SAVEPOINT,
+	0},
+
+	{"SAVEPOINT",
+		N_("define a new savepoint within the current transaction"),
+		"sql-savepoint",
+		sql_help_SAVEPOINT,
+	0},
+
+	{"SECURITY LABEL",
+		N_("define or change a security label applied to an object"),
+		"sql-security-label",
+		sql_help_SECURITY_LABEL,
+	29},
+
+	{"SELECT",
+		N_("retrieve rows from a table or view"),
+		"sql-select",
+		sql_help_SELECT,
+	46},
+
+	{"SELECT INTO",
+		N_("define a new table from the results of a query"),
+		"sql-selectinto",
+		sql_help_SELECT_INTO,
+	14},
+
+	{"SET",
+		N_("change a run-time parameter"),
+		"sql-set",
+		sql_help_SET,
+	1},
+
+	{"SET CONSTRAINTS",
+		N_("set constraint check timing for the current transaction"),
+		"sql-set-constraints",
+		sql_help_SET_CONSTRAINTS,
+	0},
+
+	{"SET ROLE",
+		N_("set the current user identifier of the current session"),
+		"sql-set-role",
+		sql_help_SET_ROLE,
+	2},
+
+	{"SET SESSION AUTHORIZATION",
+		N_("set the session user identifier and the current user identifier of the current session"),
+		"sql-set-session-authorization",
+		sql_help_SET_SESSION_AUTHORIZATION,
+	2},
+
+	{"SET TRANSACTION",
+		N_("set the characteristics of the current transaction"),
+		"sql-set-transaction",
+		sql_help_SET_TRANSACTION,
+	8},
+
+	{"SHOW",
+		N_("show the value of a run-time parameter"),
+		"sql-show",
+		sql_help_SHOW,
+	1},
+
+	{"START TRANSACTION",
+		N_("start a transaction block"),
+		"sql-start-transaction",
+		sql_help_START_TRANSACTION,
+	6},
+
+	{"TABLE",
+		N_("retrieve rows from a table or view"),
+		"sql-select",
+		sql_help_TABLE,
+	46},
+
+	{"TRUNCATE",
+		N_("empty a table or set of tables"),
+		"sql-truncate",
+		sql_help_TRUNCATE,
+	1},
+
+	{"UNLISTEN",
+		N_("stop listening for a notification"),
+		"sql-unlisten",
+		sql_help_UNLISTEN,
+	0},
+
+	{"UPDATE",
+		N_("update rows of a table"),
+		"sql-update",
+		sql_help_UPDATE,
+	8},
+
+	{"VACUUM",
+		N_("garbage-collect and optionally analyze a database"),
+		"sql-vacuum",
+		sql_help_VACUUM,
+	18},
+
+	{"VALUES",
+		N_("compute a set of rows"),
+		"sql-values",
+		sql_help_VALUES,
+	4},
+
+	{"WITH",
+		N_("retrieve rows from a table or view"),
+		"sql-select",
+		sql_help_WITH,
+	46},
+
+
+	{NULL, NULL, NULL}			/* End of list marker */
 };

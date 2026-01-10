@@ -3,16 +3,16 @@
  * generic-gcc.h
  *	  Atomic operations, implemented using gcc (or compatible) intrinsics.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * NOTES:
  *
  * Documentation:
  * * Legacy __sync Built-in Functions for Atomic Memory Access
- *   http://gcc.gnu.org/onlinedocs/gcc-4.8.2/gcc/_005f_005fsync-Builtins.html
+ *   https://gcc.gnu.org/onlinedocs/gcc-4.8.2/gcc/_005f_005fsync-Builtins.html
  * * Built-in functions for memory model aware atomic operations
- *   http://gcc.gnu.org/onlinedocs/gcc-4.8.2/gcc/_005f_005fatomic-Builtins.html
+ *   https://gcc.gnu.org/onlinedocs/gcc-4.8.2/gcc/_005f_005fatomic-Builtins.html
  *
  * src/include/port/atomics/generic-gcc.h
  *
@@ -44,12 +44,20 @@
 
 #if !defined(pg_read_barrier_impl) && defined(HAVE_GCC__ATOMIC_INT32_CAS)
 /* acquire semantics include read barrier semantics */
-#		define pg_read_barrier_impl()		__atomic_thread_fence(__ATOMIC_ACQUIRE)
+#		define pg_read_barrier_impl() do \
+{ \
+	pg_compiler_barrier_impl(); \
+	__atomic_thread_fence(__ATOMIC_ACQUIRE); \
+} while (0)
 #endif
 
 #if !defined(pg_write_barrier_impl) && defined(HAVE_GCC__ATOMIC_INT32_CAS)
 /* release semantics include write barrier semantics */
-#		define pg_write_barrier_impl()		__atomic_thread_fence(__ATOMIC_RELEASE)
+#		define pg_write_barrier_impl() do \
+{ \
+	pg_compiler_barrier_impl(); \
+	__atomic_thread_fence(__ATOMIC_RELEASE); \
+} while (0)
 #endif
 
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>53.4. Streaming Replication Protocol</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sasl-authentication.html" title="53.3. SASL Authentication" /><link rel="next" href="protocol-logical-replication.html" title="53.5. Logical Streaming Replication Protocol" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">53.4. Streaming Replication Protocol</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sasl-authentication.html" title="53.3. SASL Authentication">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="protocol.html" title="Chapter 53. Frontend/Backend Protocol">Up</a></td><th width="60%" align="center">Chapter 53. Frontend/Backend Protocol</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="protocol-logical-replication.html" title="53.5. Logical Streaming Replication Protocol">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PROTOCOL-REPLICATION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">53.4. Streaming Replication Protocol</h2></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>53.4. Streaming Replication Protocol</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="sasl-authentication.html" title="53.3. SASL Authentication" /><link rel="next" href="protocol-logical-replication.html" title="53.5. Logical Streaming Replication Protocol" /></head><body id="docContent" class="container-fluid col-10"><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">53.4. Streaming Replication Protocol</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sasl-authentication.html" title="53.3. SASL Authentication">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="protocol.html" title="Chapter 53. Frontend/Backend Protocol">Up</a></td><th width="60%" align="center">Chapter 53. Frontend/Backend Protocol</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="protocol-logical-replication.html" title="53.5. Logical Streaming Replication Protocol">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PROTOCOL-REPLICATION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">53.4. Streaming Replication Protocol</h2></div></div></div><p>
 To initiate streaming replication, the frontend sends the
 <code class="literal">replication</code> parameter in the startup message. A Boolean
 value of <code class="literal">true</code> (or <code class="literal">on</code>,
@@ -18,14 +18,15 @@ In either physical replication or logical replication walsender mode, only the
 simple query protocol can be used.
 </p><p>
  For the purpose of testing replication commands, you can make a replication
- connection via <span class="application">psql</span> or any other <code class="literal">libpq</code>-using
- tool with a connection string including the <code class="literal">replication</code> option,
+ connection via <span class="application">psql</span> or any other
+ <span class="application">libpq</span>-using tool with a connection string including
+ the <code class="literal">replication</code> option,
  e.g.:
 </p><pre class="programlisting">
 psql "dbname=postgres replication=database" -c "IDENTIFY_SYSTEM;"
 </pre><p>
  However, it is often more useful to use
- <a class="xref" href="app-pgreceivewal.html" title="pg_receivewal"><span class="refentrytitle">pg_receivewal</span></a> (for physical replication) or
+ <a class="xref" href="app-pgreceivewal.html" title="pg_receivewal"><span class="refentrytitle"><span class="application">pg_receivewal</span></span></a> (for physical replication) or
  <a class="xref" href="app-pgrecvlogical.html" title="pg_recvlogical"><span class="refentrytitle"><span class="application">pg_recvlogical</span></span></a> (for logical replication).
 </p><p>
 Replication commands are logged in the server log when
@@ -48,7 +49,7 @@ The commands accepted in replication mode are:
        <code class="literal">timeline</code> (<code class="type">int4</code>)
       </span></dt><dd><p>
        Current timeline ID. Also useful to check that the standby is
-       consistent with the master.
+       consistent with the primary.
       </p></dd><dt><span class="term">
        <code class="literal">xlogpos</code> (<code class="type">text</code>)
       </span></dt><dd><p>
@@ -66,20 +67,22 @@ The commands accepted in replication mode are:
       This is similar to the SQL command <a class="xref" href="sql-show.html" title="SHOW"><span class="refentrytitle">SHOW</span></a>.
      </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>name</code></em></span></dt><dd><p>
           The name of a run-time parameter. Available parameters are documented
-          in <a class="xref" href="runtime-config.html" title="Chapter 19. Server Configuration">Chapter 19</a>.
+          in <a class="xref" href="runtime-config.html" title="Chapter 20. Server Configuration">Chapter 20</a>.
          </p></dd></dl></div></dd><dt><span class="term"><code class="literal">TIMELINE_HISTORY</code> <em class="replaceable"><code>tli</code></em>
      <a id="id-1.10.5.9.7.1.3.1.3" class="indexterm"></a>
     </span></dt><dd><p>
       Requests the server to send over the timeline history file for timeline
       <em class="replaceable"><code>tli</code></em>.  Server replies with a
-      result set of a single row, containing two fields:
+      result set of a single row, containing two fields.  While the fields
+      are labeled as <code class="type">text</code>, they effectively return raw bytes,
+      with no encoding conversion:
      </p><p>
       </p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
        <code class="literal">filename</code> (<code class="type">text</code>)
       </span></dt><dd><p>
        File name of the timeline history file, e.g., <code class="filename">00000002.history</code>.
       </p></dd><dt><span class="term">
-       <code class="literal">content</code> (<code class="type">bytea</code>)
+       <code class="literal">content</code> (<code class="type">text</code>)
       </span></dt><dd><p>
        Contents of the timeline history file.
       </p></dd></dl></div><p>
@@ -87,11 +90,11 @@ The commands accepted in replication mode are:
      <a id="id-1.10.5.9.7.1.4.1.11" class="indexterm"></a>
     </span></dt><dd><p>
       Create a physical or logical replication
-      slot. See <a class="xref" href="warm-standby.html#STREAMING-REPLICATION-SLOTS" title="26.2.6. Replication Slots">Section 26.2.6</a> for more about
+      slot. See <a class="xref" href="warm-standby.html#STREAMING-REPLICATION-SLOTS" title="27.2.6. Replication Slots">Section 27.2.6</a> for more about
       replication slots.
      </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>slot_name</code></em></span></dt><dd><p>
           The name of the slot to create. Must be a valid replication slot
-          name (see <a class="xref" href="warm-standby.html#STREAMING-REPLICATION-SLOTS-MANIPULATION" title="26.2.6.1. Querying and manipulating replication slots">Section 26.2.6.1</a>).
+          name (see <a class="xref" href="warm-standby.html#STREAMING-REPLICATION-SLOTS-MANIPULATION" title="27.2.6.1. Querying and Manipulating Replication Slots">Section 27.2.6.1</a>).
          </p></dd><dt><span class="term"><em class="replaceable"><code>output_plugin</code></em></span></dt><dd><p>
           The name of the output plugin used for logical decoding
           (see <a class="xref" href="logicaldecoding-output-plugin.html" title="49.6. Logical Decoding Output Plugins">Section 49.6</a>).
@@ -142,7 +145,7 @@ The commands accepted in replication mode are:
       streaming starts on timeline <em class="replaceable"><code>tli</code></em>;
       otherwise, the server's current timeline is selected. The server can
       reply with an error, for example if the requested section of WAL has already
-      been recycled. On success, server responds with a CopyBothResponse
+      been recycled. On success, the server responds with a CopyBothResponse
       message, and then starts to stream WAL to the frontend.
      </p><p>
       If a slot's name is provided
@@ -155,8 +158,8 @@ The commands accepted in replication mode are:
       the history of the server, the server will stream all the WAL on that
       timeline starting from the requested start point up to the point where
       the server switched to another timeline. If the client requests
-      streaming at exactly the end of an old timeline, the server responds
-      immediately with CommandComplete without entering COPY mode.
+      streaming at exactly the end of an old timeline, the server skips COPY
+      mode entirely.
      </p><p>
       After streaming all the WAL on a timeline that is not the latest one,
       the server will end streaming by exiting the COPY mode. When the client
@@ -167,8 +170,9 @@ The commands accepted in replication mode are:
       the switch position is the end of the WAL that was streamed, but there
       are corner cases where the server can send some WAL from the old
       timeline that it has not itself replayed before promoting. Finally, the
-      server sends CommandComplete message, and is ready to accept a new
-      command.
+      server sends two CommandComplete messages (one that ends the CopyData
+      and the other ends the <code class="literal">START_REPLICATION</code> itself), and
+      is ready to accept a new command.
      </p><p>
       WAL data is sent as a series of CopyData messages.  (This allows
       other information to be intermixed; in particular the server can send
@@ -314,7 +318,8 @@ The commands accepted in replication mode are:
       message, and then starts to stream WAL to the frontend.
      </p><p>
       The messages inside the CopyBothResponse messages are of the same format
-      documented for <code class="literal">START_REPLICATION ... PHYSICAL</code>.
+      documented for <code class="literal">START_REPLICATION ... PHYSICAL</code>, including
+      two CommandComplete messages.
      </p><p>
       The output plugin associated with the selected slot is used
       to process the output for streaming.
@@ -326,7 +331,10 @@ The commands accepted in replication mode are:
          </p></dd><dt><span class="term"><em class="replaceable"><code>XXX/XXX</code></em></span></dt><dd><p>
          The WAL location to begin streaming at.
         </p></dd><dt><span class="term"><em class="replaceable"><code>option_name</code></em></span></dt><dd><p>
-         The name of an option passed to the slot's logical decoding plugin.
+         The name of an option passed to the slot's logical decoding output
+         plugin.  See <a class="xref" href="protocol-logical-replication.html" title="53.5. Logical Streaming Replication Protocol">Section 53.5</a> for
+         options that are accepted by the standard (<code class="literal">pgoutput</code>)
+         plugin.
         </p></dd><dt><span class="term"><em class="replaceable"><code>option_value</code></em></span></dt><dd><p>
          Optional value, in the form of a string constant, associated with the
          specified option.
@@ -335,16 +343,14 @@ The commands accepted in replication mode are:
      <a id="id-1.10.5.9.7.1.7.1.4" class="indexterm"></a>
     </span></dt><dd><p>
       Drops a replication slot, freeing any reserved server-side resources.
-      If the slot is a logical slot that was created in a database other than
-      the database the walsender is connected to, this command fails.
      </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>slot_name</code></em></span></dt><dd><p>
           The name of the slot to drop.
          </p></dd><dt><span class="term"><code class="literal">WAIT</code></span></dt><dd><p>
          This option causes the command to wait if the slot is active until
          it becomes inactive, instead of the default behavior of raising an
          error.
-        </p></dd></dl></div></dd><dt><span class="term"><code class="literal">BASE_BACKUP</code> [ <code class="literal">LABEL</code> <em class="replaceable"><code>'label'</code></em> ] [ <code class="literal">PROGRESS</code> ] [ <code class="literal">FAST</code> ] [ <code class="literal">WAL</code> ] [ <code class="literal">NOWAIT</code> ] [ <code class="literal">MAX_RATE</code> <em class="replaceable"><code>rate</code></em> ] [ <code class="literal">TABLESPACE_MAP</code> ] [ <code class="literal">NOVERIFY_CHECKSUMS</code> ]
-     <a id="id-1.10.5.9.7.1.8.1.12" class="indexterm"></a>
+        </p></dd></dl></div></dd><dt id="PROTOCOL-REPLICATION-BASE-BACKUP"><span class="term"><code class="literal">BASE_BACKUP</code> [ <code class="literal">LABEL</code> <em class="replaceable"><code>'label'</code></em> ] [ <code class="literal">PROGRESS</code> ] [ <code class="literal">FAST</code> ] [ <code class="literal">WAL</code> ] [ <code class="literal">NOWAIT</code> ] [ <code class="literal">MAX_RATE</code> <em class="replaceable"><code>rate</code></em> ] [ <code class="literal">TABLESPACE_MAP</code> ] [ <code class="literal">NOVERIFY_CHECKSUMS</code> ] [ <code class="literal">MANIFEST</code> <em class="replaceable"><code>manifest_option</code></em> ] [ <code class="literal">MANIFEST_CHECKSUMS</code> <em class="replaceable"><code>checksum_algorithm</code></em> ]
+     <a id="id-1.10.5.9.7.1.8.1.16" class="indexterm"></a>
     </span></dt><dd><p>
       Instructs the server to start streaming a base backup.
       The system will automatically be put in backup mode before the backup
@@ -395,10 +401,31 @@ The commands accepted in replication mode are:
           By default, checksums are verified during a base backup if they are
           enabled. Specifying <code class="literal">NOVERIFY_CHECKSUMS</code> disables
           this verification.
+         </p></dd><dt><span class="term"><code class="literal">MANIFEST</code> <em class="replaceable"><code>manifest_option</code></em></span></dt><dd><p>
+          When this option is specified with a value of <code class="literal">yes</code>
+          or <code class="literal">force-encode</code>, a backup manifest is created
+          and sent along with the backup.  The manifest is a list of every
+          file present in the backup with the exception of any WAL files that
+          may be included. It also stores the size, last modification time, and
+          optionally a checksum for each file.
+          A value of <code class="literal">force-encode</code> forces all filenames
+          to be hex-encoded; otherwise, this type of encoding is performed only
+          for files whose names are non-UTF8 octet sequences.
+          <code class="literal">force-encode</code> is intended primarily for testing
+          purposes, to be sure that clients which read the backup manifest
+          can handle this case. For compatibility with previous releases,
+          the default is <code class="literal">MANIFEST 'no'</code>.
+         </p></dd><dt><span class="term"><code class="literal">MANIFEST_CHECKSUMS</code> <em class="replaceable"><code>checksum_algorithm</code></em></span></dt><dd><p>
+          Specifies the checksum algorithm that should be applied to each file included
+          in the backup manifest. Currently, the available
+          algorithms are <code class="literal">NONE</code>, <code class="literal">CRC32C</code>,
+          <code class="literal">SHA224</code>, <code class="literal">SHA256</code>,
+          <code class="literal">SHA384</code>, and <code class="literal">SHA512</code>.
+          The default is <code class="literal">CRC32C</code>.
          </p></dd></dl></div><p>
      </p><p>
       When the backup is started, the server will first send two
-      ordinary result sets, followed by one or more CopyResponse
+      ordinary result sets, followed by one or more CopyOutResponse
       results.
      </p><p>
       The first ordinary result set contains the starting position of the
@@ -415,19 +442,21 @@ The commands accepted in replication mode are:
           The full path of the tablespace directory, or null
           if it's the base directory.
          </p></dd><dt><span class="term"><code class="literal">size</code> (<code class="type">int8</code>)</span></dt><dd><p>
-          The approximate size of the tablespace, if progress report has
-          been requested; otherwise it's null.
+          The approximate size of the tablespace, in kilobytes (1024 bytes),
+          if progress report has been requested; otherwise it's null.
          </p></dd></dl></div><p>
      </p><p>
-      After the second regular result set, one or more CopyResponse results
+      After the second regular result set, one or more CopyOutResponse results
       will be sent, one for the main data directory and one for each additional tablespace other
       than <code class="literal">pg_default</code> and <code class="literal">pg_global</code>. The data in
-      the CopyResponse results will be a tar format (following the
+      the CopyOutResponse results will be a tar format (following the
       <span class="quote">“<span class="quote">ustar interchange format</span>”</span> specified in the POSIX 1003.1-2008
       standard) dump of the tablespace contents, except that the two trailing
       blocks of zeroes specified in the standard are omitted.
-      After the tar data is complete, a final ordinary result set will be sent,
-      containing the WAL end position of the backup, in the same format as
+      After the tar data is complete, and if a backup manifest was requested,
+      another CopyOutResponse result is sent, containing the manifest data for the
+      current base backup. In any case, a final ordinary result set will be
+      sent, containing the WAL end position of the backup, in the same format as
       the start position.
      </p><p>
       The tar archive for the data directory and each tablespace will contain
@@ -468,4 +497,4 @@ The commands accepted in replication mode are:
       the server supports it.
      </p></dd></dl></div><p>
 
-</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sasl-authentication.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="protocol.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="protocol-logical-replication.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">53.3. SASL Authentication </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 53.5. Logical Streaming Replication Protocol</td></tr></table></div></body></html>
+</p></div><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navfooter"><hr></hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sasl-authentication.html" title="53.3. SASL Authentication">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="protocol.html" title="Chapter 53. Frontend/Backend Protocol">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="protocol-logical-replication.html" title="53.5. Logical Streaming Replication Protocol">Next</a></td></tr><tr><td width="40%" align="left" valign="top">53.3. SASL Authentication </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 53.5. Logical Streaming Replication Protocol</td></tr></table></div></body></html>

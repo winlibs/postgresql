@@ -6,7 +6,7 @@
 # runs the regression tests (to put in some data), runs pg_dumpall,
 # runs pg_upgrade, runs pg_dumpall again, compares the dumps.
 #
-# Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+# Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
 # Portions Copyright (c) 1994, Regents of the University of California
 
 set -e
@@ -22,7 +22,9 @@ unset MAKELEVEL
 standard_initdb() {
 	# To increase coverage of non-standard segment size and group access
 	# without increasing test runtime, run these tests with a custom setting.
-	"$1" -N --wal-segsize 1 -g
+	# Also, specify "-A trust" explicitly to suppress initdb's warning.
+	# --allow-group-access and --wal-segsize have been added in v11.
+	"$1" -N --wal-segsize 1 --allow-group-access -A trust
 	if [ -n "$TEMP_CONFIG" -a -r "$TEMP_CONFIG" ]
 	then
 		cat "$TEMP_CONFIG" >> "$PGDATA/postgresql.conf"
@@ -30,20 +32,22 @@ standard_initdb() {
 	../../test/regress/pg_regress --config-auth "$PGDATA"
 }
 
-# Establish how the server will listen for connections
-testhost=`uname -s`
+# What flavor of host are we on?
+# Treat MINGW* (msys1) and MSYS* (msys2) the same.
+testhost=`uname -s | sed 's/^MSYS/MINGW/'`
 
+# Establish how the server will listen for connections
 case $testhost in
-	MINGW*|MSYS*)
+	MINGW*)
 		LISTEN_ADDRESSES="localhost"
+		PG_REGRESS_SOCKET_DIR=""
 		PGHOST=localhost
 		;;
 	*)
 		LISTEN_ADDRESSES=""
 		# Select a socket directory.  The algorithm is from the "configure"
 		# script; the outcome mimics pg_regress.c:make_temp_sockdir().
-		PGHOST=$PG_REGRESS_SOCK_DIR
-		if [ "x$PGHOST" = x ]; then
+		if [ x"$PG_REGRESS_SOCKET_DIR" = x ]; then
 			set +e
 			dir=`(umask 077 &&
 				  mktemp -d /tmp/pg_upgrade_check-XXXXXX) 2>/dev/null`
@@ -56,39 +60,21 @@ case $testhost in
 				fi
 			fi
 			set -e
-			PGHOST=$dir
-			trap 'rm -rf "$PGHOST"' 0
+			PG_REGRESS_SOCKET_DIR=$dir
+			trap 'rm -rf "$PG_REGRESS_SOCKET_DIR"' 0
 			trap 'exit 3' 1 2 13 15
 		fi
+		PGHOST=$PG_REGRESS_SOCKET_DIR
 		;;
 esac
 
-POSTMASTER_OPTS="-F -c listen_addresses=\"$LISTEN_ADDRESSES\" -k \"$PGHOST\""
+POSTMASTER_OPTS="-F -c listen_addresses=\"$LISTEN_ADDRESSES\" -k \"$PG_REGRESS_SOCKET_DIR\""
 export PGHOST
 
 # don't rely on $PWD here, as old shells don't set it
 temp_root=`pwd`/tmp_check
 rm -rf "$temp_root"
 mkdir "$temp_root"
-
-if [ "$1" = '--install' ]; then
-	temp_install=$temp_root/install
-	bindir=$temp_install/$bindir
-	libdir=$temp_install/$libdir
-
-	"$MAKE" -s -C ../.. install DESTDIR="$temp_install"
-
-	# platform-specific magic to find the shared libraries; see pg_regress.c
-	LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
-	export LD_LIBRARY_PATH
-	DYLD_LIBRARY_PATH=$libdir:$DYLD_LIBRARY_PATH
-	export DYLD_LIBRARY_PATH
-	LIBPATH=$libdir:$LIBPATH
-	export LIBPATH
-	SHLIB_PATH=$libdir:$SHLIB_PATH
-	export SHLIB_PATH
-	PATH=$libdir:$PATH
-fi
 
 : ${oldbindir=$bindir}
 
@@ -104,6 +90,9 @@ newsrc=`cd ../../.. && pwd`
 EXTRA_REGRESS_OPTS="$EXTRA_REGRESS_OPTS --bindir='$oldbindir'"
 export EXTRA_REGRESS_OPTS
 
+# While in normal cases this will already be set up, adding bindir to
+# path allows test.sh to be invoked with different versions as
+# described in ./TESTING
 PATH=$bindir:$PATH
 export PATH
 
@@ -118,9 +107,14 @@ outputdir="$temp_root/regress"
 EXTRA_REGRESS_OPTS="$EXTRA_REGRESS_OPTS --outputdir=$outputdir"
 export EXTRA_REGRESS_OPTS
 mkdir "$outputdir"
-mkdir "$outputdir"/sql
-mkdir "$outputdir"/expected
-mkdir "$outputdir"/testtablespace
+
+# pg_regress --make-tablespacedir would take care of that in 14~, but this is
+# still required for older versions where this option is not supported.
+if [ "$newsrc" != "$oldsrc" ]; then
+	mkdir "$outputdir"/testtablespace
+	mkdir "$outputdir"/sql
+	mkdir "$outputdir"/expected
+fi
 
 logdir=`pwd`/log
 rm -rf "$logdir"
@@ -162,9 +156,6 @@ done
 EXTRA_REGRESS_OPTS="$EXTRA_REGRESS_OPTS --port=$PGPORT"
 export EXTRA_REGRESS_OPTS
 
-# enable echo so the user can see what is being executed
-set -x
-
 standard_initdb "$oldbindir"/initdb
 "$oldbindir"/pg_ctl start -l "$logdir/postmaster1.log" -o "$POSTMASTER_OPTS" -w
 
@@ -177,28 +168,36 @@ dbname1=`awk 'BEGIN { for (i= 1; i < 46; i++)
 dbname1='\"\'$dbname1'\\"\\\'
 dbname2=`awk 'BEGIN { for (i = 46; i <  91; i++) printf "%c", i }' </dev/null`
 dbname3=`awk 'BEGIN { for (i = 91; i < 128; i++) printf "%c", i }' </dev/null`
-createdb "$dbname1" || createdb_status=$?
-createdb "$dbname2" || createdb_status=$?
-createdb "$dbname3" || createdb_status=$?
+createdb "regression$dbname1" || createdb_status=$?
+createdb "regression$dbname2" || createdb_status=$?
+createdb "regression$dbname3" || createdb_status=$?
 
-if "$MAKE" -C "$oldsrc" installcheck; then
+# Extra options to apply to the dump.  This may be changed later.
+extra_dump_options=""
+
+if "$MAKE" -C "$oldsrc" installcheck-parallel; then
 	oldpgversion=`psql -X -A -t -d regression -c "SHOW server_version_num"`
 
-	# before dumping, get rid of objects not existing in later versions
+	# Before dumping, tweak the database of the old instance depending
+	# on its version.
 	if [ "$newsrc" != "$oldsrc" ]; then
-		fix_sql=""
-		case $oldpgversion in
-			804??)
-				fix_sql="DROP FUNCTION public.myfunc(integer); DROP FUNCTION public.oldstyle_length(integer, text);"
-				;;
-			*)
-				fix_sql="DROP FUNCTION public.oldstyle_length(integer, text);"
-				;;
-		esac
-		psql -X -d regression -c "$fix_sql;" || psql_fix_sql_status=$?
+		# This SQL script has its own idea of the cleanup that needs to be
+		# done on the cluster to-be-upgraded, and includes version checks.
+		# Note that this uses the script stored on the new branch.
+		psql -X -d regression -f "$newsrc/src/bin/pg_upgrade/upgrade_adapt.sql" \
+			|| psql_fix_sql_status=$?
+
+		# Handling of --extra-float-digits gets messy after v12.
+		# Note that this changes the dumps from the old and new
+		# instances if involving an old cluster of v11 or older.
+		if [ $oldpgversion -lt 120000 ]; then
+			extra_dump_options="--extra-float-digits=0"
+		fi
 	fi
 
-	pg_dumpall --no-sync -f "$temp_root"/dump1.sql || pg_dumpall1_status=$?
+	pg_dumpall $extra_dump_options --no-sync \
+		--restrict-key=test \
+		-f "$temp_root"/dump1.sql || pg_dumpall1_status=$?
 
 	if [ "$newsrc" != "$oldsrc" ]; then
 		# update references to old source tree's regress.so etc
@@ -238,12 +237,12 @@ PGDATA="$BASE_PGDATA"
 
 standard_initdb 'initdb'
 
-pg_upgrade $PG_UPGRADE_OPTS -d "${PGDATA}.old" -D "$PGDATA" -b "$oldbindir" -B "$bindir" -p "$PGPORT" -P "$PGPORT"
+pg_upgrade $PG_UPGRADE_OPTS -d "${PGDATA}.old" -D "$PGDATA" -b "$oldbindir" -p "$PGPORT" -P "$PGPORT"
 
 # make sure all directories and files have group permissions, on Unix hosts
 # Windows hosts don't support Unix-y permissions.
 case $testhost in
-	MINGW*) ;;
+	MINGW*|CYGWIN*) ;;
 	*)	if [ `find "$PGDATA" -type f ! -perm 640 | wc -l` -ne 0 ]; then
 			echo "files in PGDATA with permission != 640";
 			exit 1;
@@ -251,7 +250,7 @@ case $testhost in
 esac
 
 case $testhost in
-	MINGW*) ;;
+	MINGW*|CYGWIN*) ;;
 	*)	if [ `find "$PGDATA" -type d ! -perm 750 | wc -l` -ne 0 ]; then
 			echo "directories in PGDATA with permission != 750";
 			exit 1;
@@ -260,17 +259,10 @@ esac
 
 pg_ctl start -l "$logdir/postmaster2.log" -o "$POSTMASTER_OPTS" -w
 
-case $testhost in
-	MINGW*)	cmd /c analyze_new_cluster.bat ;;
-	*)		sh ./analyze_new_cluster.sh ;;
-esac
-
-pg_dumpall --no-sync -f "$temp_root"/dump2.sql || pg_dumpall2_status=$?
+pg_dumpall $extra_dump_options --no-sync \
+	--restrict-key=test \
+	-f "$temp_root"/dump2.sql || pg_dumpall2_status=$?
 pg_ctl -m fast stop
-
-# no need to echo commands anymore
-set +x
-echo
 
 if [ -n "$pg_dumpall2_status" ]; then
 	echo "pg_dumpall of post-upgrade database cluster failed"
@@ -278,7 +270,7 @@ if [ -n "$pg_dumpall2_status" ]; then
 fi
 
 case $testhost in
-	MINGW*)	cmd /c delete_old_cluster.bat ;;
+	MINGW*)	MSYS2_ARG_CONV_EXCL=/c cmd /c delete_old_cluster.bat ;;
 	*)	    sh ./delete_old_cluster.sh ;;
 esac
 

@@ -7,14 +7,7 @@
 
 exec sql include ../regression;
 
-
-/*
-
-NOTE: This file has a different expect file for regression tests on MinGW32
-
-*/
-
-
+exec sql include ../printf_hack;
 
 
 /*
@@ -115,7 +108,9 @@ main(void)
 			/* this is a libc problem since we only call strtod() */
 			r = dectodbl(dec, &dbl);
 			if (r) check_errno();
-			printf("dec[%d,10]: %g (r: %d)\n", i, r?0.0:dbl, r);
+			printf("dec[%d,10]: ", i);
+			print_double(r ? 0.0 : dbl);
+			printf(" (r: %d)\n", r);
 		}
 
 		PGTYPESdecimal_free(din);
@@ -146,6 +141,16 @@ main(void)
 			int c;
 			c = deccmp(decarr[i], decarr[j]);
 			printf("dec[c,%d,%d]: %d\n", i, j, c);
+
+			/*
+			 * decarr[count-1] is risnull(), which makes these functions
+			 * return 0 without changing the output parameter.  Make that
+			 * clear by initializing each output parameter.
+			 */
+			deccvint(7654321, &a);
+			deccvint(7654321, &s);
+			deccvint(7654321, &m);
+			deccvint(7654321, &d);
 
 			r = decadd(decarr[i], decarr[j], &a);
 			if (r)

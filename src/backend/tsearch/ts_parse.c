@@ -3,7 +3,7 @@
  * ts_parse.c
  *		main parse functions for tsearch
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  *
  *
  * IDENTIFICATION
@@ -204,13 +204,11 @@ LexizeExec(LexizeData *ld, ParsedLex **correspondLexem)
 
 				ld->dictState.isend = ld->dictState.getnext = false;
 				ld->dictState.private_state = NULL;
-				res = (TSLexeme *) DatumGetPointer(FunctionCall4(
-																 &(dict->lexize),
+				res = (TSLexeme *) DatumGetPointer(FunctionCall4(&(dict->lexize),
 																 PointerGetDatum(dict->dictData),
 																 PointerGetDatum(curValLemm),
 																 Int32GetDatum(curValLenLemm),
-																 PointerGetDatum(&ld->dictState)
-																 ));
+																 PointerGetDatum(&ld->dictState)));
 
 				if (ld->dictState.getnext)
 				{
@@ -282,7 +280,7 @@ LexizeExec(LexizeData *ld, ParsedLex **correspondLexem)
 				if (!dictExists)
 				{
 					/*
-					 * Dictionary can't work with current tpe of lexeme,
+					 * Dictionary can't work with current type of lexeme,
 					 * return to basic mode and redo all stored lexemes
 					 */
 					ld->curDictId = InvalidOid;
@@ -293,13 +291,11 @@ LexizeExec(LexizeData *ld, ParsedLex **correspondLexem)
 			ld->dictState.isend = (curVal->type == 0) ? true : false;
 			ld->dictState.getnext = false;
 
-			res = (TSLexeme *) DatumGetPointer(FunctionCall4(
-															 &(dict->lexize),
+			res = (TSLexeme *) DatumGetPointer(FunctionCall4(&(dict->lexize),
 															 PointerGetDatum(dict->dictData),
 															 PointerGetDatum(curVal->lemm),
 															 Int32GetDatum(curVal->lenlemm),
-															 PointerGetDatum(&ld->dictState)
-															 ));
+															 PointerGetDatum(&ld->dictState)));
 
 			if (ld->dictState.getnext)
 			{
@@ -437,6 +433,8 @@ parsetext(Oid cfgId, ParsedText *prs, char *buf, int buflen)
 /*
  * Headline framework
  */
+
+/* Add a word to prs->words[] */
 static void
 hladdword(HeadlineParsedText *prs, char *buf, int buflen, int type)
 {
@@ -453,6 +451,14 @@ hladdword(HeadlineParsedText *prs, char *buf, int buflen, int type)
 	prs->curwords++;
 }
 
+/*
+ * Add pos and matching-query-item data to the just-added word.
+ * Here, buf/buflen represent a processed lexeme, not raw token text.
+ *
+ * If the query contains more than one matching item, we replicate
+ * the last-added word so that each item can be pointed to.  The
+ * duplicate entries are marked with repeated = 1.
+ */
 static void
 hlfinditem(HeadlineParsedText *prs, TSQuery query, int32 pos, char *buf, int buflen)
 {
@@ -594,6 +600,9 @@ hlparsetext(Oid cfgId, HeadlineParsedText *prs, TSQuery query, char *buf, int bu
 	FunctionCall1(&(prsobj->prsend), PointerGetDatum(prsdata));
 }
 
+/*
+ * Generate the headline, as a text object, from HeadlineParsedText.
+ */
 text *
 generateHeadline(HeadlineParsedText *prs)
 {

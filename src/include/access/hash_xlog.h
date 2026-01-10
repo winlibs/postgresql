@@ -4,7 +4,7 @@
  *	  header file for Postgres hash AM implementation
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/hash_xlog.h
@@ -50,19 +50,6 @@
  */
 #define XLH_SPLIT_META_UPDATE_MASKS		(1<<0)
 #define XLH_SPLIT_META_UPDATE_SPLITPOINT		(1<<1)
-
-/*
- * This is what we need to know about a HASH index create.
- *
- * Backup block 0: metapage
- */
-typedef struct xl_hash_createidx
-{
-	double		num_tuples;
-	RegProcedure procid;
-	uint16		ffactor;
-}			xl_hash_createidx;
-#define SizeOfHashCreateIdx (offsetof(xl_hash_createidx, ffactor) + sizeof(uint16))
 
 /*
  * This is what we need to know about simple (without split) insert.
@@ -142,7 +129,7 @@ typedef struct xl_hash_split_complete
  *
  * This data record is used for XLOG_HASH_MOVE_PAGE_CONTENTS
  *
- * Backup Blk 0: bucket page
+ * Backup Blk 0: primary bucket page
  * Backup Blk 1: page containing moved tuples
  * Backup Blk 2: page from which tuples will be removed
  */
@@ -162,12 +149,13 @@ typedef struct xl_hash_move_page_contents
  *
  * This data record is used for XLOG_HASH_SQUEEZE_PAGE
  *
- * Backup Blk 0: page containing tuples moved from freed overflow page
- * Backup Blk 1: freed overflow page
- * Backup Blk 2: page previous to the freed overflow page
- * Backup Blk 3: page next to the freed overflow page
- * Backup Blk 4: bitmap page containing info of freed overflow page
- * Backup Blk 5: meta page
+ * Backup Blk 0: primary bucket page
+ * Backup Blk 1: page containing tuples moved from freed overflow page
+ * Backup Blk 2: freed overflow page
+ * Backup Blk 3: page previous to the freed overflow page
+ * Backup Blk 4: page next to the freed overflow page
+ * Backup Blk 5: bitmap page containing info of freed overflow page
+ * Backup Blk 6: meta page
  */
 typedef struct xl_hash_squeeze_page
 {
@@ -258,12 +246,12 @@ typedef struct xl_hash_init_bitmap_page
  *
  * This data record is used for XLOG_HASH_VACUUM_ONE_PAGE
  *
- * Backup Blk 0: bucket page
+ * Backup Blk 0: primary bucket page
  * Backup Blk 1: meta page
  */
 typedef struct xl_hash_vacuum_one_page
 {
-	RelFileNode hnode;
+	TransactionId latestRemovedXid;
 	int			ntuples;
 
 	/* TARGET OFFSET NUMBERS FOLLOW AT THE END */

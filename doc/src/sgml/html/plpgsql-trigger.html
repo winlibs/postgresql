@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.10. Trigger Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plpgsql-errors-and-messages.html" title="43.9. Errors and Messages" /><link rel="next" href="plpgsql-implementation.html" title="43.11. PL/pgSQL Under the Hood" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.10. Trigger Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-errors-and-messages.html" title="43.9. Errors and Messages">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL - SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> - <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpgsql-implementation.html" title="43.11. PL/pgSQL Under the Hood">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPGSQL-TRIGGER"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.10. Trigger Functions</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-trigger.html#PLPGSQL-DML-TRIGGER">43.10.1. Triggers on Data Changes</a></span></dt><dt><span class="sect2"><a href="plpgsql-trigger.html#PLPGSQL-EVENT-TRIGGER">43.10.2. Triggers on Events</a></span></dt></dl></div><a id="id-1.8.8.12.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.10. Trigger Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="plpgsql-errors-and-messages.html" title="43.9. Errors and Messages" /><link rel="next" href="plpgsql-implementation.html" title="43.11. PL/pgSQL under the Hood" /></head><body id="docContent" class="container-fluid col-10"><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.10. Trigger Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-errors-and-messages.html" title="43.9. Errors and Messages">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL — SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> — <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpgsql-implementation.html" title="43.11. PL/pgSQL under the Hood">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPGSQL-TRIGGER"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.10. Trigger Functions</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-trigger.html#PLPGSQL-DML-TRIGGER">43.10.1. Triggers on Data Changes</a></span></dt><dt><span class="sect2"><a href="plpgsql-trigger.html#PLPGSQL-EVENT-TRIGGER">43.10.2. Triggers on Events</a></span></dt></dl></div><a id="id-1.8.8.12.2" class="indexterm"></a><p>
    <span class="application">PL/pgSQL</span> can be used to define trigger
    functions on data changes or database events.
    A trigger function is created with the <code class="command">CREATE FUNCTION</code>
@@ -162,9 +162,9 @@ CREATE TRIGGER emp_stamp BEFORE INSERT OR UPDATE ON emp
     Another way to log changes to a table involves creating a new table that
     holds a row for each insert, update, or delete that occurs. This approach
     can be thought of as auditing changes to a table.
-    <a class="xref" href="plpgsql-trigger.html#PLPGSQL-TRIGGER-AUDIT-EXAMPLE" title="Example 43.4. A PL/pgSQL Trigger Function For Auditing">Example 43.4</a> shows an example of an
+    <a class="xref" href="plpgsql-trigger.html#PLPGSQL-TRIGGER-AUDIT-EXAMPLE" title="Example 43.4. A PL/pgSQL Trigger Function for Auditing">Example 43.4</a> shows an example of an
     audit trigger function in <span class="application">PL/pgSQL</span>.
-   </p><div class="example" id="PLPGSQL-TRIGGER-AUDIT-EXAMPLE"><p class="title"><strong>Example 43.4. A <span class="application">PL/pgSQL</span> Trigger Function For Auditing</strong></p><div class="example-contents"><p>
+   </p><div class="example" id="PLPGSQL-TRIGGER-AUDIT-EXAMPLE"><p class="title"><strong>Example 43.4. A <span class="application">PL/pgSQL</span> Trigger Function for Auditing</strong></p><div class="example-contents"><p>
      This example trigger ensures that any insert, update or delete of a row
      in the <code class="literal">emp</code> table is recorded (i.e., audited) in the <code class="literal">emp_audit</code> table.
      The current time and user name are stamped into the row, together with
@@ -190,11 +190,11 @@ CREATE OR REPLACE FUNCTION process_emp_audit() RETURNS TRIGGER AS $emp_audit$
         -- making use of the special variable TG_OP to work out the operation.
         --
         IF (TG_OP = 'DELETE') THEN
-            INSERT INTO emp_audit SELECT 'D', now(), user, OLD.*;
+            INSERT INTO emp_audit SELECT 'D', now(), current_user, OLD.*;
         ELSIF (TG_OP = 'UPDATE') THEN
-            INSERT INTO emp_audit SELECT 'U', now(), user, NEW.*;
+            INSERT INTO emp_audit SELECT 'U', now(), current_user, NEW.*;
         ELSIF (TG_OP = 'INSERT') THEN
-            INSERT INTO emp_audit SELECT 'I', now(), user, NEW.*;
+            INSERT INTO emp_audit SELECT 'I', now(), current_user, NEW.*;
         END IF;
         RETURN NULL; -- result is ignored since this is an AFTER trigger
     END;
@@ -209,9 +209,9 @@ AFTER INSERT OR UPDATE OR DELETE ON emp
     approach still records the full audit trail of changes to the table,
     but also presents a simplified view of the audit trail, showing just
     the last modified timestamp derived from the audit trail for each entry.
-    <a class="xref" href="plpgsql-trigger.html#PLPGSQL-VIEW-TRIGGER-AUDIT-EXAMPLE" title="Example 43.5. A PL/pgSQL View Trigger Function For Auditing">Example 43.5</a> shows an example
+    <a class="xref" href="plpgsql-trigger.html#PLPGSQL-VIEW-TRIGGER-AUDIT-EXAMPLE" title="Example 43.5. A PL/pgSQL View Trigger Function for Auditing">Example 43.5</a> shows an example
     of an audit trigger on a view in <span class="application">PL/pgSQL</span>.
-   </p><div class="example" id="PLPGSQL-VIEW-TRIGGER-AUDIT-EXAMPLE"><p class="title"><strong>Example 43.5. A <span class="application">PL/pgSQL</span> View Trigger Function For Auditing</strong></p><div class="example-contents"><p>
+   </p><div class="example" id="PLPGSQL-VIEW-TRIGGER-AUDIT-EXAMPLE"><p class="title"><strong>Example 43.5. A <span class="application">PL/pgSQL</span> View Trigger Function for Auditing</strong></p><div class="example-contents"><p>
      This example uses a trigger on the view to make it updatable, and
      ensure that any insert, update or delete of a row in the view is
      recorded (i.e., audited) in the <code class="literal">emp_audit</code> table. The current time
@@ -250,20 +250,20 @@ CREATE OR REPLACE FUNCTION update_emp_view() RETURNS TRIGGER AS $$
             IF NOT FOUND THEN RETURN NULL; END IF;
 
             OLD.last_updated = now();
-            INSERT INTO emp_audit VALUES('D', user, OLD.*);
+            INSERT INTO emp_audit VALUES('D', current_user, OLD.*);
             RETURN OLD;
         ELSIF (TG_OP = 'UPDATE') THEN
             UPDATE emp SET salary = NEW.salary WHERE empname = OLD.empname;
             IF NOT FOUND THEN RETURN NULL; END IF;
 
             NEW.last_updated = now();
-            INSERT INTO emp_audit VALUES('U', user, NEW.*);
+            INSERT INTO emp_audit VALUES('U', current_user, NEW.*);
             RETURN NEW;
         ELSIF (TG_OP = 'INSERT') THEN
             INSERT INTO emp VALUES(NEW.empname, NEW.salary);
 
             NEW.last_updated = now();
-            INSERT INTO emp_audit VALUES('I', user, NEW.*);
+            INSERT INTO emp_audit VALUES('I', current_user, NEW.*);
             RETURN NEW;
         END IF;
     END;
@@ -279,10 +279,10 @@ INSTEAD OF INSERT OR UPDATE OR DELETE ON emp_view
     times.
     This technique is commonly used in Data Warehousing, where the tables
     of measured or observed data (called fact tables) might be extremely large.
-    <a class="xref" href="plpgsql-trigger.html#PLPGSQL-TRIGGER-SUMMARY-EXAMPLE" title="Example 43.6. A PL/pgSQL Trigger Function For Maintaining A Summary Table">Example 43.6</a> shows an example of a
+    <a class="xref" href="plpgsql-trigger.html#PLPGSQL-TRIGGER-SUMMARY-EXAMPLE" title="Example 43.6. A PL/pgSQL Trigger Function for Maintaining a Summary Table">Example 43.6</a> shows an example of a
     trigger function in <span class="application">PL/pgSQL</span> that maintains
     a summary table for a fact table in a data warehouse.
-   </p><div class="example" id="PLPGSQL-TRIGGER-SUMMARY-EXAMPLE"><p class="title"><strong>Example 43.6. A <span class="application">PL/pgSQL</span> Trigger Function For Maintaining A Summary Table</strong></p><div class="example-contents"><p>
+   </p><div class="example" id="PLPGSQL-TRIGGER-SUMMARY-EXAMPLE"><p class="title"><strong>Example 43.6. A <span class="application">PL/pgSQL</span> Trigger Function for Maintaining a Summary Table</strong></p><div class="example-contents"><p>
      The schema detailed here is partly based on the <span class="emphasis"><em>Grocery Store
      </em></span> example from <span class="emphasis"><em>The Data Warehouse Toolkit</em></span>
      by Ralph Kimball.
@@ -425,7 +425,7 @@ SELECT * FROM sales_summary_bytime;
     <a class="xref" href="plpgsql-trigger.html#PLPGSQL-TRIGGER-AUDIT-TRANSITION-EXAMPLE" title="Example 43.7. Auditing with Transition Tables">Example 43.7</a> shows an example.
    </p><div class="example" id="PLPGSQL-TRIGGER-AUDIT-TRANSITION-EXAMPLE"><p class="title"><strong>Example 43.7. Auditing with Transition Tables</strong></p><div class="example-contents"><p>
      This example produces the same results as
-     <a class="xref" href="plpgsql-trigger.html#PLPGSQL-TRIGGER-AUDIT-EXAMPLE" title="Example 43.4. A PL/pgSQL Trigger Function For Auditing">Example 43.4</a>, but instead of using a
+     <a class="xref" href="plpgsql-trigger.html#PLPGSQL-TRIGGER-AUDIT-EXAMPLE" title="Example 43.4. A PL/pgSQL Trigger Function for Auditing">Example 43.4</a>, but instead of using a
      trigger that fires for every row, it uses a trigger that fires once
      per statement, after collecting the relevant information in a transition
      table.  This can be significantly faster than the row-trigger approach
@@ -457,13 +457,13 @@ CREATE OR REPLACE FUNCTION process_emp_audit() RETURNS TRIGGER AS $emp_audit$
         --
         IF (TG_OP = 'DELETE') THEN
             INSERT INTO emp_audit
-                SELECT 'D', now(), user, o.* FROM old_table o;
+                SELECT 'D', now(), current_user, o.* FROM old_table o;
         ELSIF (TG_OP = 'UPDATE') THEN
             INSERT INTO emp_audit
-                SELECT 'U', now(), user, n.* FROM new_table n;
+                SELECT 'U', now(), current_user, n.* FROM new_table n;
         ELSIF (TG_OP = 'INSERT') THEN
             INSERT INTO emp_audit
-                SELECT 'I', now(), user, n.* FROM new_table n;
+                SELECT 'I', now(), current_user, n.* FROM new_table n;
         END IF;
         RETURN NULL; -- result is ignored since this is an AFTER trigger
     END;
@@ -513,4 +513,4 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE EVENT TRIGGER snitch ON ddl_command_start EXECUTE FUNCTION snitch();
-</pre></div></div><br class="example-break" /></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-errors-and-messages.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpgsql-implementation.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.9. Errors and Messages </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 43.11. <span class="application">PL/pgSQL</span> Under the Hood</td></tr></table></div></body></html>
+</pre></div></div><br class="example-break" /></div></div><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navfooter"><hr></hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-errors-and-messages.html" title="43.9. Errors and Messages">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL — SQL Procedural Language">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpgsql-implementation.html" title="43.11. PL/pgSQL under the Hood">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.9. Errors and Messages </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 43.11. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> under the Hood</td></tr></table></div></body></html>

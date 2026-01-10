@@ -6,7 +6,7 @@
  * Generation is a custom MemoryContext implementation designed for cases of
  * chunks with similar lifespan.
  *
- * Portions Copyright (c) 2017-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2017-2021, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/backend/utils/mmgr/generation.c
@@ -154,8 +154,9 @@ static void GenerationDelete(MemoryContext context);
 static Size GenerationGetChunkSpace(MemoryContext context, void *pointer);
 static bool GenerationIsEmpty(MemoryContext context);
 static void GenerationStats(MemoryContext context,
-				MemoryStatsPrintFunc printfunc, void *passthru,
-				MemoryContextCounters *totals);
+							MemoryStatsPrintFunc printfunc, void *passthru,
+							MemoryContextCounters *totals,
+							bool print_to_stderr);
 
 #ifdef MEMORY_CONTEXT_CHECKING
 static void GenerationCheck(MemoryContext context);
@@ -177,22 +178,6 @@ static const MemoryContextMethods GenerationMethods = {
 	,GenerationCheck
 #endif
 };
-
-/* ----------
- * Debug macros
- * ----------
- */
-#ifdef HAVE_ALLOCINFO
-#define GenerationFreeInfo(_cxt, _chunk) \
-			fprintf(stderr, "GenerationFree: %s: %p, %lu\n", \
-				(_cxt)->name, (_chunk), (_chunk)->size)
-#define GenerationAllocInfo(_cxt, _chunk) \
-			fprintf(stderr, "GenerationAlloc: %s: %p, %lu\n", \
-				(_cxt)->name, (_chunk), (_chunk)->size)
-#else
-#define GenerationFreeInfo(_cxt, _chunk)
-#define GenerationAllocInfo(_cxt, _chunk)
-#endif
 
 
 /*
@@ -297,6 +282,8 @@ GenerationReset(MemoryContext context)
 
 		dlist_delete(miter.cur);
 
+		context->mem_allocated -= block->blksize;
+
 #ifdef CLOBBER_FREED_MEMORY
 		wipe_mem(block, block->blksize);
 #endif
@@ -352,6 +339,8 @@ GenerationAlloc(MemoryContext context, Size size)
 		if (block == NULL)
 			return NULL;
 
+		context->mem_allocated += blksize;
+
 		/* block with a single (used) chunk */
 		block->blksize = blksize;
 		block->nchunks = 1;
@@ -379,8 +368,6 @@ GenerationAlloc(MemoryContext context, Size size)
 		/* add the block to the list of allocated blocks */
 		dlist_push_head(&set->blocks, &block->node);
 
-		GenerationAllocInfo(set, chunk);
-
 		/* Ensure any padding bytes are marked NOACCESS. */
 		VALGRIND_MAKE_MEM_NOACCESS((char *) GenerationChunkGetPointer(chunk) + size,
 								   chunk_size - size);
@@ -406,6 +393,8 @@ GenerationAlloc(MemoryContext context, Size size)
 
 		if (block == NULL)
 			return NULL;
+
+		context->mem_allocated += blksize;
 
 		block->blksize = blksize;
 		block->nchunks = 0;
@@ -453,8 +442,6 @@ GenerationAlloc(MemoryContext context, Size size)
 	/* fill the allocated space with junk */
 	randomize_mem((char *) GenerationChunkGetPointer(chunk), size);
 #endif
-
-	GenerationAllocInfo(set, chunk);
 
 	/* Ensure any padding bytes are marked NOACCESS. */
 	VALGRIND_MAKE_MEM_NOACCESS((char *) GenerationChunkGetPointer(chunk) + size,
@@ -522,6 +509,7 @@ GenerationFree(MemoryContext context, void *pointer)
 	if (set->block == block)
 		set->block = NULL;
 
+	context->mem_allocated -= block->blksize;
 	free(block);
 }
 
@@ -678,6 +666,7 @@ GenerationIsEmpty(MemoryContext context)
  * printfunc: if not NULL, pass a human-readable stats string to this.
  * passthru: pass this pointer through to printfunc.
  * totals: if not NULL, add stats about this context into *totals.
+ * print_to_stderr: print stats to stderr if true, elog otherwise.
  *
  * XXX freespace only accounts for empty space at the end of the block, not
  * space of freed chunks (which is unknown).
@@ -685,7 +674,7 @@ GenerationIsEmpty(MemoryContext context)
 static void
 GenerationStats(MemoryContext context,
 				MemoryStatsPrintFunc printfunc, void *passthru,
-				MemoryContextCounters *totals)
+				MemoryContextCounters *totals, bool print_to_stderr)
 {
 	GenerationContext *set = (GenerationContext *) context;
 	Size		nblocks = 0;
@@ -717,7 +706,7 @@ GenerationStats(MemoryContext context,
 				 "%zu total in %zd blocks (%zd chunks); %zu free (%zd chunks); %zu used",
 				 totalspace, nblocks, nchunks, freespace,
 				 nfreechunks, totalspace - freespace);
-		printfunc(context, passthru, stats_string);
+		printfunc(context, passthru, stats_string, print_to_stderr);
 	}
 
 	if (totals)
@@ -746,6 +735,7 @@ GenerationCheck(MemoryContext context)
 	GenerationContext *gen = (GenerationContext *) context;
 	const char *name = context->name;
 	dlist_iter	iter;
+	Size		total_allocated = 0;
 
 	/* walk all blocks in this context */
 	dlist_foreach(iter, &gen->blocks)
@@ -754,6 +744,8 @@ GenerationCheck(MemoryContext context)
 		int			nfree,
 					nchunks;
 		char	   *ptr;
+
+		total_allocated += block->blksize;
 
 		/*
 		 * nfree > nchunks is surely wrong, and we don't expect to see
@@ -833,6 +825,8 @@ GenerationCheck(MemoryContext context)
 			elog(WARNING, "problem in Generation %s: number of free chunks %d in block %p does not match header %d",
 				 name, nfree, block, block->nfree);
 	}
+
+	Assert(total_allocated == context->mem_allocated);
 }
 
 #endif							/* MEMORY_CONTEXT_CHECKING */

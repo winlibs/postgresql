@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE VIEW
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2025
+.\"    Manual: PostgreSQL 14.20 Documentation
+.\"    Source: PostgreSQL 14.20
 .\"  Language: English
 .\"
-.TH "CREATE VIEW" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE VIEW" "7" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -101,7 +101,7 @@ WITH ( \fIview_option_name\fR [= \fIview_option_value\fR] [, \&.\&.\&. ] )
 .RS 4
 This clause specifies optional parameters for a view; the following parameters are supported:
 .PP
-check_option (string)
+check_option (enum)
 .RS 4
 This parameter may be either
 local
@@ -109,7 +109,7 @@ or
 cascaded, and is equivalent to specifying
 WITH [ CASCADED | LOCAL ] CHECK OPTION
 (see below)\&. This option can be changed on existing views using
-ALTER VIEW (\fBALTER_VIEW\fR(7))\&.
+\fBALTER VIEW\fR\&.
 .RE
 .PP
 security_barrier (boolean)
@@ -118,15 +118,14 @@ This should be used if the view is intended to provide row\-level security\&. Se
 Section\ \&41.5
 for full details\&.
 .RE
-.sp
 .RE
 .PP
 \fIquery\fR
 .RS 4
 A
-\fBSELECT\fR(7)
+\fBSELECT\fR
 or
-\fBVALUES\fR(7)
+\fBVALUES\fR
 command which will provide the columns and rows of the view\&.
 .RE
 .PP
@@ -194,7 +193,7 @@ rule\&.
 .SH "NOTES"
 .PP
 Use the
-DROP VIEW (\fBDROP_VIEW\fR(7))
+\fBDROP VIEW\fR
 statement to drop views\&.
 .PP
 Be careful that the names and types of the view\*(Aqs columns will be assigned the way you want\&. For example:

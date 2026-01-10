@@ -11,7 +11,7 @@ ifeq ($(PORTNAME), win32)
 override python_libspec =
 endif
 
-override CPPFLAGS := -I. -I$(srcdir) $(python_includespec) $(CPPFLAGS)
+override CPPFLAGS := -I. -I$(srcdir) $(CPPFLAGS) $(python_includespec)
 
 rpathdir = $(python_libdir)
 
@@ -20,6 +20,7 @@ PGFILEDESC = "PL/Python - procedural language"
 NAME = plpython$(python_majorversion)
 
 OBJS = \
+	$(WIN32RES) \
 	plpy_cursorobject.o \
 	plpy_elog.o \
 	plpy_exec.o \
@@ -31,17 +32,17 @@ OBJS = \
 	plpy_spi.o \
 	plpy_subxactobject.o \
 	plpy_typeio.o \
-	plpy_util.o \
-	$(WIN32RES)
+	plpy_util.o
 
-DATA = $(NAME)u.control $(NAME)u--1.0.sql $(NAME)u--unpackaged--1.0.sql
+DATA = $(NAME)u.control $(NAME)u--1.0.sql
 ifeq ($(python_majorversion),2)
-DATA += plpythonu.control plpythonu--1.0.sql plpythonu--unpackaged--1.0.sql
+DATA += plpythonu.control plpythonu--1.0.sql
 endif
 
 # header files to install - it's not clear which of these might be needed
 # so install them all.
 INCS = 	plpython.h \
+	plpython_system.h \
 	plpy_cursorobject.h \
 	plpy_elog.h \
 	plpy_exec.h \
@@ -69,7 +70,7 @@ libpython${pytverstr}.a: python${pytverstr}.def
 	dlltool --dllname python${pytverstr}.dll --def python${pytverstr}.def --output-lib libpython${pytverstr}.a
 
 python${pytverstr}.def:
-	pexports $(PYTHONDLL) > $@
+	gendef - $(PYTHONDLL) > $@
 
 endif # win32
 
@@ -131,7 +132,7 @@ install-data: installdirs
 
 uninstall-data:
 	rm -f $(addprefix '$(DESTDIR)$(datadir)/extension'/, $(notdir $(DATA)))
-	rm -f $(addprefix '$(DESTDIR)$(includedir_server)'/, plpython.h plpy_util.h)
+	rm -f $(addprefix '$(DESTDIR)$(includedir_server)'/, $(INCS))
 
 .PHONY: install-data uninstall-data
 

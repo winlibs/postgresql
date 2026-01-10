@@ -44,6 +44,9 @@ WHERE refclassid = 0 OR refobjid = 0 OR
 -- whatever OID the test is complaining about must have been added later
 -- in initdb, where it intentionally isn't pinned.  Legitimate exceptions
 -- to that rule are listed in the comments in setup_depend().
+-- Currently, pg_rewrite is also listed by this check, even though it is
+-- covered by setup_depend().  That happens because there are no rules in
+-- the pinned data, but initdb creates some intentionally-not-pinned views.
 
 do $$
 declare relnm text;
@@ -54,7 +57,10 @@ declare relnm text;
 begin
 for relnm, reloid, shared in
   select relname, oid, relisshared from pg_class
-  where relhasoids and oid < 16384 order by 1
+  where EXISTS(
+      SELECT * FROM pg_attribute
+      WHERE attrelid = pg_class.oid AND attname = 'oid')
+    and relkind = 'r' and oid < 16384 order by 1
 loop
   execute 'select min(oid) from ' || relnm into lowoid;
   continue when lowoid is null or lowoid >= 16384;
@@ -72,3 +78,43 @@ loop
   end if;
 end loop;
 end$$;
+
+-- **************** pg_class ****************
+
+-- Look for system tables with varlena columns but no toast table. All
+-- system tables with toastable columns should have toast tables, with
+-- the following exceptions:
+-- 1. pg_class, pg_attribute, and pg_index, due to fear of recursive
+-- dependencies as toast tables depend on them.
+-- 2. pg_largeobject and pg_largeobject_metadata.  Large object catalogs
+-- and toast tables are mutually exclusive and large object data is handled
+-- as user data by pg_upgrade, which would cause failures.
+
+SELECT relname, attname, atttypid::regtype
+FROM pg_class c JOIN pg_attribute a ON c.oid = attrelid
+WHERE c.oid < 16384 AND
+      reltoastrelid = 0 AND
+      relkind = 'r' AND
+      attstorage != 'p'
+ORDER BY 1, 2;
+
+
+-- system catalogs without primary keys
+--
+-- Current exceptions:
+-- * pg_depend, pg_shdepend don't have a unique key
+SELECT relname
+FROM pg_class
+WHERE relnamespace = 'pg_catalog'::regnamespace AND relkind = 'r'
+      AND pg_class.oid NOT IN (SELECT indrelid FROM pg_index WHERE indisprimary)
+ORDER BY 1;
+
+
+-- system catalog unique indexes not wrapped in a constraint
+-- (There should be none.)
+SELECT relname
+FROM pg_class c JOIN pg_index i ON c.oid = i.indexrelid
+WHERE relnamespace = 'pg_catalog'::regnamespace AND relkind = 'i'
+      AND i.indisunique
+      AND c.oid NOT IN (SELECT conindid FROM pg_constraint)
+ORDER BY 1;

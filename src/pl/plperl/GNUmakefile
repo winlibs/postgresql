@@ -27,8 +27,8 @@ NAME = plperl
 
 OBJS = plperl.o SPI.o Util.o $(WIN32RES)
 
-DATA = plperl.control plperl--1.0.sql plperl--unpackaged--1.0.sql \
-       plperlu.control plperlu--1.0.sql plperlu--unpackaged--1.0.sql
+DATA = plperl.control plperl--1.0.sql \
+       plperlu.control plperlu--1.0.sql
 
 PERLCHUNKS = plc_perlboot.pl plc_trusted.pl
 
@@ -48,15 +48,17 @@ lib$(perlwithver).a: $(perlwithver).def
 	dlltool --dllname $(perlwithver).dll --def $(perlwithver).def --output-lib lib$(perlwithver).a
 
 $(perlwithver).def: $(PERLDLL)
-	pexports $^ > $@
+	gendef - $^ > $@
 
 endif # win32
 
 
 SHLIB_LINK = $(perl_embed_ldflags)
 
-REGRESS_OPTS = --dbname=$(PL_TESTDB) --load-extension=plperl  --load-extension=plperlu
-REGRESS = plperl plperl_lc plperl_trigger plperl_shared plperl_elog plperl_util plperl_init plperlu plperl_array plperl_call plperl_transaction
+REGRESS_OPTS = --dbname=$(PL_TESTDB) --dlpath=$(top_builddir)/src/test/regress
+REGRESS = plperl_setup plperl plperl_lc plperl_trigger plperl_shared \
+	plperl_elog plperl_util plperl_init plperlu plperl_array \
+	plperl_call plperl_transaction plperl_env
 # if Perl can support two interpreters in one backend,
 # test plperl-and-plperlu cases
 ifneq ($(PERL),)
@@ -101,11 +103,11 @@ uninstall: uninstall-lib uninstall-data
 
 install-data: installdirs
 	$(INSTALL_DATA) $(addprefix $(srcdir)/, $(DATA)) '$(DESTDIR)$(datadir)/extension/'
-	$(INSTALL_DATA) $(srcdir)/plperl.h $(srcdir)/ppport.h $(srcdir)/plperl_helpers.h '$(DESTDIR)$(includedir_server)'
+	$(INSTALL_DATA) $(srcdir)/plperl.h $(srcdir)/plperl_system.h $(srcdir)/ppport.h $(srcdir)/plperl_helpers.h '$(DESTDIR)$(includedir_server)'
 
 uninstall-data:
 	rm -f $(addprefix '$(DESTDIR)$(datadir)/extension'/, $(notdir $(DATA)))
-	rm -f $(addprefix '$(DESTDIR)$(includedir_server)'/, plperl.h ppport.h)
+	rm -f $(addprefix '$(DESTDIR)$(includedir_server)'/, plperl.h plperl_system.h ppport.h)
 
 .PHONY: install-data uninstall-data
 
@@ -122,6 +124,7 @@ submake:
 
 clean distclean maintainer-clean: clean-lib
 	rm -f SPI.c Util.c $(OBJS) perlchunks.h plperl_opmask.h
+	rm -f sql/plperl_env.sql expected/plperl_env.out
 	rm -rf $(pg_regress_clean_files)
 ifeq ($(PORTNAME), win32)
 	rm -f $(perlwithver).def

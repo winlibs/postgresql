@@ -311,6 +311,18 @@ begin
   raise notice 'should get here';
 end$$;
 
+-- check exit out of outermost block
+do $$
+<<outerblock>>
+begin
+  <<innerblock>>
+  begin
+    exit outerblock;
+    raise notice 'should not get here';
+  end;
+  raise notice 'should not get here, either';
+end$$;
+
 -- unlabeled exit does match a while loop
 do $$
 begin
@@ -474,3 +486,17 @@ select case_test(1);
 select case_test(2);
 select case_test(12);
 select case_test(13);
+
+-- test line comment between WHEN and THEN
+create or replace function case_comment(int) returns text as $$
+begin
+  case $1
+    when 1 -- comment before THEN
+      then return 'one';
+    else
+      return 'other';
+  end case;
+end;
+$$ language plpgsql immutable;
+
+select case_comment(1);

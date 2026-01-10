@@ -4,7 +4,7 @@
 # -----------------
 #
 # Look for the LLVM installation, check that it's new enough, set the
-# corresponding LLVM_{CFLAGS,CXXFLAGS,BINPATH} and LDFLAGS
+# corresponding LLVM_{CFLAGS,CXXFLAGS,BINPATH,LIBS}
 # variables. Also verify that CLANG is available, to transform C
 # into bitcode.
 #
@@ -28,6 +28,7 @@ AC_DEFUN([PGAC_LLVM_SUPPORT],
   if echo $pgac_llvm_version | $AWK -F '.' '{ if ([$]1 >= 4 || ([$]1 == 3 && [$]2 >= 9)) exit 1; else exit 0;}';then
     AC_MSG_ERROR([$LLVM_CONFIG version is $pgac_llvm_version but at least 3.9 is required])
   fi
+  AC_MSG_NOTICE([using llvm $pgac_llvm_version])
 
   # need clang to create some bitcode files
   AC_ARG_VAR(CLANG, [path to clang compiler to generate bitcode])
@@ -54,7 +55,7 @@ AC_DEFUN([PGAC_LLVM_SUPPORT],
 
   for pgac_option in `$LLVM_CONFIG --ldflags`; do
     case $pgac_option in
-      -L*) LDFLAGS="$LDFLAGS $pgac_option";;
+      -L*) LLVM_LIBS="$LLVM_LIBS $pgac_option";;
     esac
   done
 
@@ -76,6 +77,7 @@ AC_DEFUN([PGAC_LLVM_SUPPORT],
       debuginfodwarf) pgac_components="$pgac_components $pgac_component";;
       orcjit) pgac_components="$pgac_components $pgac_component";;
       passes) pgac_components="$pgac_components $pgac_component";;
+      native) pgac_components="$pgac_components $pgac_component";;
       perfjitevents) pgac_components="$pgac_components $pgac_component";;
     esac
   done;
@@ -91,7 +93,7 @@ AC_DEFUN([PGAC_LLVM_SUPPORT],
 
   LLVM_BINPATH=`$LLVM_CONFIG --bindir`
 
-  # LLVM_CONFIG, CLANG are already output via AC_ARG_VAR
+dnl LLVM_CONFIG, CLANG are already output via AC_ARG_VAR
   AC_SUBST(LLVM_LIBS)
   AC_SUBST(LLVM_CPPFLAGS)
   AC_SUBST(LLVM_CFLAGS)

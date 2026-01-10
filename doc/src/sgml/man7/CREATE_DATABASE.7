@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE DATABASE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2025
+.\"    Manual: PostgreSQL 14.20 Documentation
+.\"    Source: PostgreSQL 14.20
 .\"  Language: English
 .\"
-.TH "CREATE DATABASE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE DATABASE" "7" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,15 +33,16 @@ CREATE_DATABASE \- create a new database
 .sp
 .nf
 CREATE DATABASE \fIname\fR
-    [ [ WITH ] [ OWNER [=] \fIuser_name\fR ]
+    [ WITH ] [ OWNER [=] \fIuser_name\fR ]
            [ TEMPLATE [=] \fItemplate\fR ]
            [ ENCODING [=] \fIencoding\fR ]
+           [ LOCALE [=] \fIlocale\fR ]
            [ LC_COLLATE [=] \fIlc_collate\fR ]
            [ LC_CTYPE [=] \fIlc_ctype\fR ]
            [ TABLESPACE [=] \fItablespace_name\fR ]
            [ ALLOW_CONNECTIONS [=] \fIallowconn\fR ]
            [ CONNECTION LIMIT [=] \fIconnlimit\fR ]
-           [ IS_TEMPLATE [=] \fIistemplate\fR ] ]
+           [ IS_TEMPLATE [=] \fIistemplate\fR ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -58,7 +59,7 @@ CREATE ROLE (\fBCREATE_ROLE\fR(7))\&.
 By default, the new database will be created by cloning the standard system database
 template1\&. A different template can be specified by writing
 TEMPLATE \fIname\fR\&. In particular, by writing
-TEMPLATE template0, you can create a virgin database containing only the standard objects predefined by your version of
+TEMPLATE template0, you can create a pristine database (one where no user\-defined objects exist and where the system objects have not been altered) containing only the standard objects predefined by your version of
 PostgreSQL\&. This is useful if you wish to avoid copying any installation\-local objects that might have been added to
 template1\&.
 .SH "PARAMETERS"
@@ -90,17 +91,47 @@ DEFAULT
 to use the default encoding (namely, the encoding of the template database)\&. The character sets supported by the
 PostgreSQL
 server are described in
-Section\ \&23.3.1\&. See below for additional restrictions\&.
+Section\ \&24.3.1\&. See below for additional restrictions\&.
+.RE
+.PP
+\fIlocale\fR
+.RS 4
+This is a shortcut for setting
+LC_COLLATE
+and
+LC_CTYPE
+at once\&. If you specify this, you cannot specify either of those parameters\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBTip\fR
+.ps -1
+.br
+The other locale settings
+lc_messages,
+lc_monetary,
+lc_numeric, and
+lc_time
+are not fixed per database and are not set by this command\&. If you want to make them the default for a specific database, you can use
+ALTER DATABASE \&.\&.\&. SET\&.
+.sp .5v
+.RE
 .RE
 .PP
 \fIlc_collate\fR
 .RS 4
-Collation order (LC_COLLATE) to use in the new database\&. This affects the sort order applied to strings, e\&.g\&. in queries with ORDER BY, as well as the order used in indexes on text columns\&. The default is to use the collation order of the template database\&. See below for additional restrictions\&.
+Collation order (LC_COLLATE) to use in the new database\&. This affects the sort order applied to strings, e\&.g\&., in queries with ORDER BY, as well as the order used in indexes on text columns\&. The default is to use the collation order of the template database\&. See below for additional restrictions\&.
 .RE
 .PP
 \fIlc_ctype\fR
 .RS 4
-Character classification (LC_CTYPE) to use in the new database\&. This affects the categorization of characters, e\&.g\&. lower, upper and digit\&. The default is to use the character classification of the template database\&. See below for additional restrictions\&.
+Character classification (LC_CTYPE) to use in the new database\&. This affects the categorization of characters, e\&.g\&., lower, upper and digit\&. The default is to use the character classification of the template database\&. See below for additional restrictions\&.
 .RE
 .PP
 \fItablespace_name\fR
@@ -141,7 +172,7 @@ Errors along the line of
 are most likely related to insufficient permissions on the data directory, a full disk, or other file system problems\&.
 .PP
 Use
-DROP DATABASE (\fBDROP_DATABASE\fR(7))
+\fBDROP DATABASE\fR
 to remove a database\&.
 .PP
 The program
@@ -149,7 +180,8 @@ The program
 is a wrapper program around this command, provided for convenience\&.
 .PP
 Database\-level configuration parameters (set via
-ALTER DATABASE (\fBALTER_DATABASE\fR(7))) are not copied from the template database\&.
+\fBALTER DATABASE\fR) and database\-level permissions (set via
+\fBGRANT\fR) are not copied from the template database\&.
 .PP
 Although it is possible to copy a database other than
 template1
@@ -160,7 +192,7 @@ facility\&. The principal limitation is that no other sessions can be connected 
 will fail if any other connection exists when it starts; otherwise, new connections to the template database are locked out until
 \fBCREATE DATABASE\fR
 completes\&. See
-Section\ \&22.3
+Section\ \&23.3
 for more information\&.
 .PP
 The character set encoding specified for the new database must be compatible with the chosen locale settings (LC_COLLATE
@@ -227,7 +259,7 @@ with a different locale:
 .\}
 .nf
 CREATE DATABASE music
-    LC_COLLATE \*(Aqsv_SE\&.utf8\*(Aq LC_CTYPE \*(Aqsv_SE\&.utf8\*(Aq
+    LOCALE \*(Aqsv_SE\&.utf8\*(Aq
     TEMPLATE template0;
 .fi
 .if n \{\
@@ -248,7 +280,7 @@ with a different locale and a different character set encoding:
 .\}
 .nf
 CREATE DATABASE music2
-    LC_COLLATE \*(Aqsv_SE\&.iso885915\*(Aq LC_CTYPE \*(Aqsv_SE\&.iso885915\*(Aq
+    LOCALE \*(Aqsv_SE\&.iso885915\*(Aq
     ENCODING LATIN9
     TEMPLATE template0;
 .fi

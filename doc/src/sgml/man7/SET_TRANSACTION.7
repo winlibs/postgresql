@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SET TRANSACTION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2025
+.\"    Manual: PostgreSQL 14.20 Documentation
+.\"    Source: PostgreSQL 14.20
 .\"  Language: English
 .\"
-.TH "SET TRANSACTION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "SET TRANSACTION" "7" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -123,10 +123,10 @@ snapshot
 as an existing transaction\&. The pre\-existing transaction must have exported its snapshot with the
 pg_export_snapshot
 function (see
-Section\ \&9.26.5)\&. That function returns a snapshot identifier, which must be given to
+Section\ \&9.27.5)\&. That function returns a snapshot identifier, which must be given to
 SET TRANSACTION SNAPSHOT
 to specify which snapshot is to be imported\&. The identifier must be written as a string literal in this command, for example
-\*(Aq000003A1\-1\*(Aq\&.
+\*(Aq00000003\-0000001B\-1\*(Aq\&.
 SET TRANSACTION SNAPSHOT
 can only be executed at the start of a transaction, before the first query or data\-modification statement (\fBSELECT\fR,
 \fBINSERT\fR,
@@ -161,7 +161,7 @@ or
 \fBSTART TRANSACTION\fR\&. But that option is not available for
 \fBSET TRANSACTION SNAPSHOT\fR\&.
 .PP
-The session default transaction modes can also be set by setting the configuration parameters
+The session default transaction modes can also be set or examined via the configuration parameters
 default_transaction_isolation,
 default_transaction_read_only, and
 default_transaction_deferrable\&. (In fact
@@ -169,8 +169,15 @@ default_transaction_deferrable\&. (In fact
 is just a verbose equivalent for setting these variables with
 \fBSET\fR\&.) This means the defaults can be set in the configuration file, via
 \fBALTER DATABASE\fR, etc\&. Consult
-Chapter\ \&19
+Chapter\ \&20
 for more information\&.
+.PP
+The current transaction\*(Aqs modes can similarly be set or examined via the configuration parameters
+transaction_isolation,
+transaction_read_only, and
+transaction_deferrable\&. Setting one of these parameters acts the same as the corresponding
+\fBSET TRANSACTION\fR
+option, with the same restrictions on when it can be done\&. However, these parameters cannot be set in the configuration file, or from any source other than live SQL\&.
 .SH "EXAMPLES"
 .PP
 To begin a new transaction with the same snapshot as an already existing transaction, first export the snapshot from the existing transaction\&. That will return the snapshot identifier, for example:

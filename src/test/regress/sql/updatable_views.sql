@@ -2,6 +2,9 @@
 -- UPDATABLE VIEWS
 --
 
+-- avoid bit-exact output here because operations may not be bit-exact.
+SET extra_float_digits = 0;
+
 -- check that non-updatable views and columns are rejected with useful error
 -- messages
 
@@ -98,6 +101,20 @@ DELETE FROM ro_view18;
 UPDATE ro_view19 SET last_value=1000;
 UPDATE ro_view20 SET b=upper(b);
 
+-- A view with a conditional INSTEAD rule but no unconditional INSTEAD rules
+-- or INSTEAD OF triggers should be non-updatable and generate useful error
+-- messages with appropriate detail
+CREATE RULE rw_view16_ins_rule AS ON INSERT TO rw_view16
+  WHERE NEW.a > 0 DO INSTEAD INSERT INTO base_tbl VALUES (NEW.a, NEW.b);
+CREATE RULE rw_view16_upd_rule AS ON UPDATE TO rw_view16
+  WHERE OLD.a > 0 DO INSTEAD UPDATE base_tbl SET b=NEW.b WHERE a=OLD.a;
+CREATE RULE rw_view16_del_rule AS ON DELETE TO rw_view16
+  WHERE OLD.a > 0 DO INSTEAD DELETE FROM base_tbl WHERE a=OLD.a;
+
+INSERT INTO rw_view16 (a, b) VALUES (3, 'Row 3'); -- should fail
+UPDATE rw_view16 SET b='ROW 2' WHERE a=2; -- should fail
+DELETE FROM rw_view16 WHERE a=2; -- should fail
+
 DROP TABLE base_tbl CASCADE;
 DROP VIEW ro_view10, ro_view12, ro_view18;
 DROP SEQUENCE uv_seq CASCADE;
@@ -131,7 +148,24 @@ SELECT * FROM base_tbl;
 EXPLAIN (costs off) UPDATE rw_view1 SET a=6 WHERE a=5;
 EXPLAIN (costs off) DELETE FROM rw_view1 WHERE a=5;
 
+-- it's still updatable if we add a DO ALSO rule
+
+CREATE TABLE base_tbl_hist(ts timestamptz default now(), a int, b text);
+
+CREATE RULE base_tbl_log AS ON INSERT TO rw_view1 DO ALSO
+  INSERT INTO base_tbl_hist(a,b) VALUES(new.a, new.b);
+
+SELECT table_name, is_updatable, is_insertable_into
+  FROM information_schema.views
+ WHERE table_name = 'rw_view1';
+
+-- Check behavior with DEFAULTs (bug #17633)
+
+INSERT INTO rw_view1 VALUES (9, DEFAULT), (10, DEFAULT);
+SELECT a, b FROM base_tbl_hist;
+
 DROP TABLE base_tbl CASCADE;
+DROP TABLE base_tbl_hist;
 
 -- view on top of view
 
@@ -631,6 +665,7 @@ CREATE VIEW rw_view1 AS
 
 INSERT INTO rw_view1 VALUES (null, null, 1.1, null); -- should fail
 INSERT INTO rw_view1 (s, c, a) VALUES (null, null, 1.1); -- should fail
+INSERT INTO rw_view1 (s, c, a) VALUES (default, default, 1.1); -- should fail
 INSERT INTO rw_view1 (a) VALUES (1.1) RETURNING a, s, c; -- OK
 UPDATE rw_view1 SET s = s WHERE a = 1.1; -- should fail
 UPDATE rw_view1 SET a = 1.05 WHERE a = 1.1 RETURNING s; -- OK
@@ -680,6 +715,27 @@ SELECT events & 4 != 0 AS upd,
 
 DROP TABLE base_tbl CASCADE;
 
+-- view on table with GENERATED columns
+
+CREATE TABLE base_tbl (id int, idplus1 int GENERATED ALWAYS AS (id + 1) STORED);
+CREATE VIEW rw_view1 AS SELECT * FROM base_tbl;
+
+INSERT INTO base_tbl (id) VALUES (1);
+INSERT INTO rw_view1 (id) VALUES (2);
+INSERT INTO base_tbl (id, idplus1) VALUES (3, DEFAULT);
+INSERT INTO rw_view1 (id, idplus1) VALUES (4, DEFAULT);
+INSERT INTO base_tbl (id, idplus1) VALUES (5, 6);  -- error
+INSERT INTO rw_view1 (id, idplus1) VALUES (6, 7);  -- error
+
+SELECT * FROM base_tbl;
+
+UPDATE base_tbl SET id = 2000 WHERE id = 2;
+UPDATE rw_view1 SET id = 3000 WHERE id = 3;
+
+SELECT * FROM base_tbl;
+
+DROP TABLE base_tbl CASCADE;
+
 -- inheritance tests
 
 CREATE TABLE base_tbl_parent (a int);
@@ -710,7 +766,20 @@ DELETE FROM ONLY rw_view2 WHERE a IN (-8, 8); -- Should delete -8 only
 SELECT * FROM ONLY base_tbl_parent ORDER BY a;
 SELECT * FROM base_tbl_child ORDER BY a;
 
+CREATE TABLE other_tbl_parent (id int);
+CREATE TABLE other_tbl_child () INHERITS (other_tbl_parent);
+INSERT INTO other_tbl_parent VALUES (7),(200);
+INSERT INTO other_tbl_child VALUES (8),(100);
+
+EXPLAIN (costs off)
+UPDATE rw_view1 SET a = a + 1000 FROM other_tbl_parent WHERE a = id;
+UPDATE rw_view1 SET a = a + 1000 FROM other_tbl_parent WHERE a = id;
+
+SELECT * FROM ONLY base_tbl_parent ORDER BY a;
+SELECT * FROM base_tbl_child ORDER BY a;
+
 DROP TABLE base_tbl_parent, base_tbl_child CASCADE;
+DROP TABLE other_tbl_parent CASCADE;
 
 -- simple WITH CHECK OPTION
 
@@ -1176,6 +1245,23 @@ DROP TABLE t2;
 DROP TABLE t1;
 
 --
+-- Test sub-select in nested security barrier views, per bug #17972
+--
+CREATE TABLE t1 (a int);
+CREATE VIEW v1 WITH (security_barrier = true) AS
+  SELECT * FROM t1;
+CREATE RULE v1_upd_rule AS ON UPDATE TO v1 DO INSTEAD
+  UPDATE t1 SET a = NEW.a WHERE a = OLD.a;
+CREATE VIEW v2 WITH (security_barrier = true) AS
+  SELECT * FROM v1 WHERE EXISTS (SELECT 1);
+
+EXPLAIN (COSTS OFF) UPDATE v2 SET a = 1;
+
+DROP VIEW v2;
+DROP VIEW v1;
+DROP TABLE t1;
+
+--
 -- Test CREATE OR REPLACE VIEW turning a non-updatable view into an
 -- auto-updatable view and adding check options in a single step
 --
@@ -1468,6 +1554,16 @@ insert into base_tab_def_view values (15, default, default, default, default),
                                      (16, default, default, default, default);
 insert into base_tab_def_view values (17), (default);
 select * from base_tab_def order by a, c NULLS LAST;
+
+-- Test a DO ALSO INSERT ... SELECT rule
+drop rule base_tab_def_view_ins_rule on base_tab_def_view;
+create rule base_tab_def_view_ins_rule as on insert to base_tab_def_view
+  do also insert into base_tab_def (a, b, e) select new.a, new.b, 'xxx';
+truncate base_tab_def;
+insert into base_tab_def_view values (1, default, default, default, default);
+insert into base_tab_def_view values (2, default, default, default, default),
+                                     (3, default, default, default, default);
+select * from base_tab_def order by a, e nulls first;
 
 drop view base_tab_def_view;
 drop table base_tab_def;

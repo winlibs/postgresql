@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.26. pg_freespacemap</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="pgcrypto.html" title="F.25. pgcrypto" /><link rel="next" href="pgprewarm.html" title="F.27. pg_prewarm" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.26. pg_freespacemap</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="pgcrypto.html" title="F.25. pgcrypto">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="pgprewarm.html" title="F.27. pg_prewarm">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PGFREESPACEMAP"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.26. pg_freespacemap</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="pgfreespacemap.html#id-1.11.7.35.5">F.26.1. Functions</a></span></dt><dt><span class="sect2"><a href="pgfreespacemap.html#id-1.11.7.35.6">F.26.2. Sample Output</a></span></dt><dt><span class="sect2"><a href="pgfreespacemap.html#id-1.11.7.35.7">F.26.3. Author</a></span></dt></dl></div><a id="id-1.11.7.35.2" class="indexterm"></a><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.27. pg_freespacemap</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="pgcrypto.html" title="F.26. pgcrypto" /><link rel="next" href="pgprewarm.html" title="F.28. pg_prewarm" /></head><body id="docContent" class="container-fluid col-10"><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.27. pg_freespacemap</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="pgcrypto.html" title="F.26. pgcrypto">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="pgprewarm.html" title="F.28. pg_prewarm">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PGFREESPACEMAP"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.27. pg_freespacemap</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="pgfreespacemap.html#id-1.11.7.36.5">F.27.1. Functions</a></span></dt><dt><span class="sect2"><a href="pgfreespacemap.html#id-1.11.7.36.6">F.27.2. Sample Output</a></span></dt><dt><span class="sect2"><a href="pgfreespacemap.html#id-1.11.7.36.7">F.27.3. Author</a></span></dt></dl></div><a id="id-1.11.7.36.2" class="indexterm"></a><p>
   The <code class="filename">pg_freespacemap</code> module provides a means for examining the
   free space map (FSM). It provides a function called
   <code class="function">pg_freespace</code>, or two overloaded functions, to be
@@ -9,9 +9,9 @@
   By default use is restricted to superusers and members of the
   <code class="literal">pg_stat_scan_tables</code> role. Access may be granted to others
   using <code class="command">GRANT</code>.
- </p><div class="sect2" id="id-1.11.7.35.5"><div class="titlepage"><div><div><h3 class="title">F.26.1. Functions</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ </p><div class="sect2" id="id-1.11.7.36.5"><div class="titlepage"><div><div><h3 class="title">F.27.1. Functions</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
      <code class="function">pg_freespace(rel regclass IN, blkno bigint IN) returns int2</code>
-     <a id="id-1.11.7.35.5.2.1.1.2" class="indexterm"></a>
+     <a id="id-1.11.7.36.5.2.1.1.2" class="indexterm"></a>
     </span></dt><dd><p>
       Returns the amount of free space on the page of the relation, specified
       by <code class="literal">blkno</code>, according to the FSM.
@@ -28,11 +28,8 @@
   </p><p>
    For indexes, what is tracked is entirely-unused pages, rather than free
    space within pages.  Therefore, the values are not meaningful, just
-   whether a page is full or empty.
-  </p><div class="note"><h3 class="title">Note</h3><p>
-    The interface was changed in version 8.4, to reflect the new FSM
-    implementation introduced in the same version.
-   </p></div></div><div class="sect2" id="id-1.11.7.35.6"><div class="titlepage"><div><div><h3 class="title">F.26.2. Sample Output</h3></div></div></div><pre class="screen">
+   whether a page is in-use or empty.
+  </p></div><div class="sect2" id="id-1.11.7.36.6"><div class="titlepage"><div><div><h3 class="title">F.27.2. Sample Output</h3></div></div></div><pre class="screen">
 postgres=# SELECT * FROM pg_freespace('foo');
  blkno | avail 
 -------+-------
@@ -63,8 +60,8 @@ postgres=# SELECT * FROM pg_freespace('foo', 7);
 --------------
          1216
 (1 row)
-</pre></div><div class="sect2" id="id-1.11.7.35.7"><div class="titlepage"><div><div><h3 class="title">F.26.3. Author</h3></div></div></div><p>
+</pre></div><div class="sect2" id="id-1.11.7.36.7"><div class="titlepage"><div><div><h3 class="title">F.27.3. Author</h3></div></div></div><p>
    Original version by Mark Kirkwood <code class="email">&lt;<a class="email" href="mailto:markir@paradise.net.nz">markir@paradise.net.nz</a>&gt;</code>.
    Rewritten in version 8.4 to suit new FSM implementation by Heikki
    Linnakangas <code class="email">&lt;<a class="email" href="mailto:heikki@enterprisedb.com">heikki@enterprisedb.com</a>&gt;</code>
-  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="pgcrypto.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="pgprewarm.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.25. pgcrypto </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> F.27. pg_prewarm</td></tr></table></div></body></html>
+  </p></div></div><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navfooter"><hr></hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="pgcrypto.html" title="F.26. pgcrypto">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="pgprewarm.html" title="F.28. pg_prewarm">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.26. pgcrypto </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="40%" align="right" valign="top"> F.28. pg_prewarm</td></tr></table></div></body></html>

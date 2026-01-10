@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE SEQUENCE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2025
+.\"    Manual: PostgreSQL 14.20 Documentation
+.\"    Source: PostgreSQL 14.20
 .\"  Language: English
 .\"
-.TH "CREATE SEQUENCE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE SEQUENCE" "7" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -52,7 +52,7 @@ After a sequence is created, you use the functions
 \fBcurrval\fR, and
 \fBsetval\fR
 to operate on the sequence\&. These functions are documented in
-Section\ \&9.16\&.
+Section\ \&9.17\&.
 .PP
 Although you cannot update a sequence directly, you can use a query like:
 .sp
@@ -80,7 +80,7 @@ If specified, the sequence object is created only for this session, and is autom
 .PP
 IF NOT EXISTS
 .RS 4
-Do not throw an error if a relation with the same name already exists\&. A notice is issued in this case\&. Note that there is no guarantee that the existing relation is anything like the sequence that would have been created \- it might not even be a sequence\&.
+Do not throw an error if a relation with the same name already exists\&. A notice is issued in this case\&. Note that there is no guarantee that the existing relation is anything like the sequence that would have been created \(em it might not even be a sequence\&.
 .RE
 .PP
 \fIname\fR
@@ -218,7 +218,7 @@ Furthermore, although multiple sessions are guaranteed to allocate distinct sequ
 setting of 10, session A might reserve values 1\&.\&.10 and return
 \fBnextval\fR=1, then session B might reserve values 11\&.\&.20 and return
 \fBnextval\fR=11 before session A has generated
-nextval=2\&. Thus, with a
+\fBnextval\fR=2\&. Thus, with a
 \fIcache\fR
 setting of one it is safe to assume that
 \fBnextval\fR

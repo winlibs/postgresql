@@ -28,10 +28,11 @@
 #include "postgres.h"
 
 #include "access/gin_private.h"
-#include "access/heapam.h"
 #include "access/hash.h"
 #include "access/htup_details.h"
 #include "access/nbtree.h"
+#include "access/relation.h"
+#include "access/table.h"
 #include "catalog/namespace.h"
 #include "catalog/pg_am.h"
 #include "funcapi.h"
@@ -150,7 +151,7 @@ pgstatindex(PG_FUNCTION_ARGS)
 	if (!superuser())
 		ereport(ERROR,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-				 (errmsg("must be superuser to use pgstattuple functions"))));
+				 errmsg("must be superuser to use pgstattuple functions")));
 
 	relrv = makeRangeVarFromNameList(textToQualifiedNameList(relname));
 	rel = relation_openrv(relrv, AccessShareLock);
@@ -192,7 +193,7 @@ pgstatindexbyid(PG_FUNCTION_ARGS)
 	if (!superuser())
 		ereport(ERROR,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-				 (errmsg("must be superuser to use pgstattuple functions"))));
+				 errmsg("must be superuser to use pgstattuple functions")));
 
 	rel = relation_open(relid, AccessShareLock);
 
@@ -235,6 +236,18 @@ pgstatindex_impl(Relation rel, FunctionCallInfo fcinfo)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 				 errmsg("cannot access temporary tables of other sessions")));
+
+	/*
+	 * A !indisready index could lead to ERRCODE_DATA_CORRUPTED later, so exit
+	 * early.  We're capable of assessing an indisready&&!indisvalid index,
+	 * but the results could be confusing.  For example, the index's size
+	 * could be too low for a valid index of the table.
+	 */
+	if (!rel->rd_index->indisvalid)
+		ereport(ERROR,
+				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
+				 errmsg("index \"%s\" is not valid",
+						RelationGetRelationName(rel))));
 
 	/*
 	 * Read metapage
@@ -282,8 +295,12 @@ pgstatindex_impl(Relation rel, FunctionCallInfo fcinfo)
 		page = BufferGetPage(buffer);
 		opaque = (BTPageOpaque) PageGetSpecialPointer(page);
 
-		/* Determine page type, and update totals */
-
+		/*
+		 * Determine page type, and update totals.
+		 *
+		 * Note that we arbitrarily bucket deleted pages together without
+		 * considering if they're leaf pages or internal pages.
+		 */
 		if (P_ISDELETED(opaque))
 			indexStat.deleted_pages++;
 		else if (P_IGNORE(opaque))
@@ -385,7 +402,7 @@ pg_relpages(PG_FUNCTION_ARGS)
 	if (!superuser())
 		ereport(ERROR,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-				 (errmsg("must be superuser to use pgstattuple functions"))));
+				 errmsg("must be superuser to use pgstattuple functions")));
 
 	relrv = makeRangeVarFromNameList(textToQualifiedNameList(relname));
 	rel = relation_openrv(relrv, AccessShareLock);
@@ -437,7 +454,7 @@ pg_relpagesbyid(PG_FUNCTION_ARGS)
 	if (!superuser())
 		ereport(ERROR,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-				 (errmsg("must be superuser to use pgstattuple functions"))));
+				 errmsg("must be superuser to use pgstattuple functions")));
 
 	rel = relation_open(relid, AccessShareLock);
 
@@ -491,7 +508,7 @@ pgstatginindex(PG_FUNCTION_ARGS)
 	if (!superuser())
 		ereport(ERROR,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-				 (errmsg("must be superuser to use pgstattuple functions"))));
+				 errmsg("must be superuser to use pgstattuple functions")));
 
 	PG_RETURN_DATUM(pgstatginindex_internal(relid, fcinfo));
 }
@@ -536,6 +553,13 @@ pgstatginindex_internal(Oid relid, FunctionCallInfo fcinfo)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 				 errmsg("cannot access temporary indexes of other sessions")));
+
+	/* see pgstatindex_impl */
+	if (!rel->rd_index->indisvalid)
+		ereport(ERROR,
+				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
+				 errmsg("index \"%s\" is not valid",
+						RelationGetRelationName(rel))));
 
 	/*
 	 * Read metapage
@@ -595,10 +619,9 @@ pgstathashindex(PG_FUNCTION_ARGS)
 	float8		free_percent;
 	uint64		total_space;
 
-	rel = index_open(relid, AccessShareLock);
+	rel = relation_open(relid, AccessShareLock);
 
-	/* index_open() checks that it's an index */
-	if (!IS_HASH(rel))
+	if (!IS_INDEX(rel) || !IS_HASH(rel))
 		ereport(ERROR,
 				(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 				 errmsg("relation \"%s\" is not a hash index",
@@ -613,6 +636,13 @@ pgstathashindex(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 				 errmsg("cannot access temporary indexes of other sessions")));
+
+	/* see pgstatindex_impl */
+	if (!rel->rd_index->indisvalid)
+		ereport(ERROR,
+				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
+				 errmsg("index \"%s\" is not valid",
+						RelationGetRelationName(rel))));
 
 	/* Get the information we need from the metapage. */
 	memset(&stats, 0, sizeof(stats));
@@ -726,7 +756,7 @@ pgstathashindex(PG_FUNCTION_ARGS)
 }
 
 /* -------------------------------------------------
- * GetHashPageStatis()
+ * GetHashPageStats()
  *
  * Collect statistics of single hash page
  * -------------------------------------------------

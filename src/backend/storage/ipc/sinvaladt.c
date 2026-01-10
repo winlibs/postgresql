@@ -3,7 +3,7 @@
  * sinvaladt.c
  *	  POSTGRES shared cache invalidation data manager.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -17,6 +17,7 @@
 #include <signal.h>
 #include <unistd.h>
 
+#include "access/transam.h"
 #include "miscadmin.h"
 #include "storage/backendid.h"
 #include "storage/ipc.h"
@@ -25,8 +26,6 @@
 #include "storage/shmem.h"
 #include "storage/sinvaladt.h"
 #include "storage/spin.h"
-#include "access/transam.h"
-
 
 /*
  * Conceptually, the shared cache invalidation messages are stored in an
@@ -418,10 +417,8 @@ BackendIdGetTransactionIds(int backendID, TransactionId *xid, TransactionId *xmi
 
 		if (proc != NULL)
 		{
-			PGXACT	   *xact = &ProcGlobal->allPgXact[proc->pgprocno];
-
-			*xid = xact->xid;
-			*xmin = xact->xmin;
+			*xid = proc->xid;
+			*xmin = proc->xmin;
 		}
 	}
 
@@ -749,6 +746,47 @@ SICleanupQueue(bool callerHasWriteLock, int minFree)
 		if (!callerHasWriteLock)
 			LWLockRelease(SInvalWriteLock);
 	}
+}
+
+/*
+ * SIResetAll
+ *		Mark all active backends as "reset"
+ *
+ * Use this when we don't know what needs to be invalidated.  It's a
+ * cluster-wide InvalidateSystemCaches().  This was a back-branch-only remedy
+ * to avoid a WAL format change.
+ *
+ * The implementation is like SICleanupQueue(false, MAXNUMMESSAGES + 1), with
+ * one addition.  SICleanupQueue() assumes minFree << MAXNUMMESSAGES, so it
+ * assumes hasMessages==true for any backend it resets.  We're resetting even
+ * fully-caught-up backends, so we set hasMessages.
+ */
+void
+SIResetAll(void)
+{
+	SISeg	   *segP = shmInvalBuffer;
+	int			i;
+
+	LWLockAcquire(SInvalWriteLock, LW_EXCLUSIVE);
+	LWLockAcquire(SInvalReadLock, LW_EXCLUSIVE);
+
+	for (i = 0; i < segP->lastBackend; i++)
+	{
+		ProcState  *stateP = &segP->procState[i];
+
+		if (stateP->procPid == 0 || stateP->sendOnly)
+			continue;
+
+		/* Consuming the reset will update "nextMsgNum" and "signaled". */
+		stateP->resetState = true;
+		stateP->hasMessages = true;
+	}
+
+	segP->minMsgNum = segP->maxMsgNum;
+	segP->nextThreshold = CLEANUP_MIN;
+
+	LWLockRelease(SInvalReadLock);
+	LWLockRelease(SInvalWriteLock);
 }
 
 

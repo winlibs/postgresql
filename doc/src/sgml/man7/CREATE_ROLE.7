@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE ROLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2025
+.\"    Manual: PostgreSQL 14.20 Documentation
+.\"    Source: PostgreSQL 14.20
 .\"  Language: English
 .\"
-.TH "CREATE ROLE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CREATE ROLE" "7" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -61,9 +61,9 @@ PostgreSQL
 database cluster\&. A role is an entity that can own database objects and have database privileges; a role can be considered a
 \(lquser\(rq, a
 \(lqgroup\(rq, or both depending on how it is used\&. Refer to
-Chapter\ \&21
+Chapter\ \&22
 and
-Chapter\ \&20
+Chapter\ \&21
 for information about managing users and authentication\&. You must have
 CREATEROLE
 privilege or be a database superuser to use this command\&.
@@ -103,10 +103,9 @@ CREATEROLE
 .br
 NOCREATEROLE
 .RS 4
-These clauses determine whether a role will be permitted to create new roles (that is, execute
-\fBCREATE ROLE\fR)\&. A role with
-CREATEROLE
-privilege can also alter and drop other roles\&. If not specified,
+These clauses determine whether a role will be permitted to create, alter, drop, comment on, change the security label for, and grant or revoke membership in other roles\&. See
+role creation
+for more details about what capabilities are conferred by this privilege\&. If not specified,
 NOCREATEROLE
 is the default\&.
 .RE
@@ -138,7 +137,7 @@ NOLOGIN
 is the default, except when
 \fBCREATE ROLE\fR
 is invoked through its alternative spelling
-CREATE USER (\fBCREATE_USER\fR(7))\&.
+\fBCREATE USER\fR\&.
 .RE
 .PP
 REPLICATION
@@ -149,7 +148,9 @@ These clauses determine whether a role is a replication role\&. A role must have
 REPLICATION
 attribute is a very highly privileged role, and should only be used on roles actually used for replication\&. If not specified,
 NOREPLICATION
-is the default\&.
+is the default\&. You must be a superuser to create a new role having the
+REPLICATION
+attribute\&.
 .RE
 .PP
 BYPASSRLS
@@ -158,11 +159,15 @@ NOBYPASSRLS
 .RS 4
 These clauses determine whether a role bypasses every row\-level security (RLS) policy\&.
 NOBYPASSRLS
-is the default\&. Note that pg_dump will set
+is the default\&. You must be a superuser to create a new role having the
+BYPASSRLS
+attribute\&.
+.sp
+Note that pg_dump will set
 row_security
 to
 OFF
-by default, to ensure all contents of a table are dumped out\&. If the user running pg_dump does not have appropriate permissions, an error will be returned\&. The superuser and owner of the table being dumped always bypass RLS\&.
+by default, to ensure all contents of a table are dumped out\&. If the user running pg_dump does not have appropriate permissions, an error will be returned\&. However, superusers and the owner of the table being dumped always bypass RLS\&.
 .RE
 .PP
 CONNECTION LIMIT \fIconnlimit\fR
@@ -261,9 +266,9 @@ clause is ignored, but is accepted for backwards compatibility\&.
 .SH "NOTES"
 .PP
 Use
-ALTER ROLE (\fBALTER_ROLE\fR(7))
+\fBALTER ROLE\fR
 to change the attributes of a role, and
-DROP ROLE (\fBDROP_ROLE\fR(7))
+\fBDROP ROLE\fR
 to remove a role\&. All the attributes specified by
 \fBCREATE ROLE\fR
 can be modified by later
@@ -271,14 +276,13 @@ can be modified by later
 commands\&.
 .PP
 The preferred way to add and remove members of roles that are being used as groups is to use
-\fBGRANT\fR(7)
+\fBGRANT\fR
 and
-\fBREVOKE\fR(7)\&.
+\fBREVOKE\fR\&.
 .PP
 The
 VALID UNTIL
-clause defines an expiration time for a password only, not for the role
-per se\&. In particular, the expiration time is not enforced when logging in using a non\-password\-based authentication method\&.
+clause defines an expiration time for a password only, not for the role per se\&. In particular, the expiration time is not enforced when logging in using a non\-password\-based authentication method\&.
 .PP
 The
 INHERIT
@@ -290,7 +294,7 @@ CREATEDB
 privilege does not immediately grant the ability to create databases, even if
 INHERIT
 is set; it would be necessary to become that role via
-SET ROLE (\fBSET_ROLE\fR(7))
+\fBSET ROLE\fR
 before creating a database\&.
 .PP
 The

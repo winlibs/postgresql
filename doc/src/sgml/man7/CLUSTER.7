@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CLUSTER
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2025
+.\"    Manual: PostgreSQL 14.20 Documentation
+.\"    Source: PostgreSQL 14.20
 .\"  Language: English
 .\"
-.TH "CLUSTER" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "CLUSTER" "7" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,7 +33,12 @@ CLUSTER \- cluster a table according to an index
 .sp
 .nf
 CLUSTER [VERBOSE] \fItable_name\fR [ USING \fIindex_name\fR ]
+CLUSTER ( \fIoption\fR [, \&.\&.\&.] ) \fItable_name\fR [ USING \fIindex_name\fR ]
 CLUSTER [VERBOSE]
+
+where \fIoption\fR can be one of:
+
+    VERBOSE [ \fIboolean\fR ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -59,7 +64,7 @@ CLUSTER
 or
 SET WITHOUT CLUSTER
 forms of
-ALTER TABLE (\fBALTER_TABLE\fR(7))
+\fBALTER TABLE\fR
 to set the index to be used for future cluster operations, or to clear any previous setting\&.
 .PP
 \fBCLUSTER\fR
@@ -88,6 +93,23 @@ VERBOSE
 .RS 4
 Prints a progress report as each table is clustered\&.
 .RE
+.PP
+\fIboolean\fR
+.RS 4
+Specifies whether the selected option should be turned on or off\&. You can write
+TRUE,
+ON, or
+1
+to enable the option, and
+FALSE,
+OFF, or
+0
+to disable it\&. The
+\fIboolean\fR
+value can also be omitted, in which case
+TRUE
+is assumed\&.
+.RE
 .SH "NOTES"
 .PP
 In cases where you are accessing single rows randomly within a table, the actual order of the data in the table is unimportant\&. However, if you tend to access some data more than others, and there is an index that groups them together, you will benefit from using
@@ -112,7 +134,7 @@ to a reasonably large value (but not more than the amount of RAM you can dedicat
 operation) before clustering\&.
 .PP
 Because the planner records statistics about the ordering of tables, it is advisable to run
-\fBANALYZE\fR(7)
+\fBANALYZE\fR
 on the newly clustered table\&. Otherwise, the planner might make poor choices of query plans\&.
 .PP
 Because
@@ -120,6 +142,14 @@ Because
 remembers which indexes are clustered, one can cluster the tables one wants clustered manually the first time, then set up a periodic maintenance script that executes
 \fBCLUSTER\fR
 without any parameters, so that the desired tables are periodically reclustered\&.
+.PP
+Each backend running
+\fBCLUSTER\fR
+will report its progress in the
+pg_stat_progress_cluster
+view\&. See
+Section\ \&28.4.4
+for details\&.
 .SH "EXAMPLES"
 .PP
 Cluster the table
@@ -184,4 +214,4 @@ is also supported for compatibility with pre\-8\&.3
 PostgreSQL
 versions\&.
 .SH "SEE ALSO"
-\fBclusterdb\fR(1)
+\fBclusterdb\fR(1), Section\ \&28.4.4

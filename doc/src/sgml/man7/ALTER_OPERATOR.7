@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER OPERATOR
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2025
+.\"    Manual: PostgreSQL 14.20 Documentation
+.\"    Source: PostgreSQL 14.20
 .\"  Language: English
 .\"
-.TH "ALTER OPERATOR" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER OPERATOR" "7" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,13 +32,13 @@ ALTER_OPERATOR \- change the definition of an operator
 .SH "SYNOPSIS"
 .sp
 .nf
-ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , { \fIright_type\fR | NONE } )
-    OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , \fIright_type\fR )
+    OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 
-ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , { \fIright_type\fR | NONE } )
+ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , \fIright_type\fR )
     SET SCHEMA \fInew_schema\fR
 
-ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , { \fIright_type\fR | NONE } )
+ALTER OPERATOR \fIname\fR ( { \fIleft_type\fR | NONE } , \fIright_type\fR )
     SET ( {  RESTRICT = { \fIres_proc\fR | NONE }
            | JOIN = { \fIjoin_proc\fR | NONE }
          } [, \&.\&.\&. ] )
@@ -68,9 +68,7 @@ if the operator has no left operand\&.
 .PP
 \fIright_type\fR
 .RS 4
-The data type of the operator\*(Aqs right operand; write
-NONE
-if the operator has no right operand\&.
+The data type of the operator\*(Aqs right operand\&.
 .RE
 .PP
 \fInew_owner\fR

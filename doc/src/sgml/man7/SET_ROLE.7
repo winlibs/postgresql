@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SET ROLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2025
+.\"    Manual: PostgreSQL 14.20 Documentation
+.\"    Source: PostgreSQL 14.20
 .\"  Language: English
 .\"
-.TH "SET ROLE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "SET ROLE" "7" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -51,24 +51,29 @@ SESSION
 and
 LOCAL
 modifiers act the same as for the regular
-\fBSET\fR(7)
+\fBSET\fR
 command\&.
 .PP
-The
-NONE
-and
-RESET
-forms reset the current user identifier to be the current session user identifier\&. These forms can be executed by any user\&.
+SET ROLE NONE
+sets the current user identifier to the current session user identifier, as returned by
+\fBsession_user\fR\&.
+RESET ROLE
+sets the current user identifier to the connection\-time setting specified by the
+command\-line options,
+\fBALTER ROLE\fR, or
+\fBALTER DATABASE\fR, if any such settings exist\&. Otherwise,
+RESET ROLE
+sets the current user identifier to the current session user identifier\&. These forms can be executed by any user\&.
 .SH "NOTES"
 .PP
 Using this command, it is possible to either add privileges or restrict one\*(Aqs privileges\&. If the session user role has the
-INHERITS
+INHERIT
 attribute, then it automatically has all the privileges of every role that it could
 \fBSET ROLE\fR
 to; in this case
 \fBSET ROLE\fR
 effectively drops all the privileges assigned directly to the session user and to the other roles it is a member of, leaving only the privileges available to the named role\&. On the other hand, if the session user role has the
-NOINHERITS
+NOINHERIT
 attribute,
 \fBSET ROLE\fR
 drops the privileges assigned directly to the session user and instead acquires the privileges available to the named role\&.
@@ -79,7 +84,7 @@ to a non\-superuser role, they lose their superuser privileges\&.
 .PP
 \fBSET ROLE\fR
 has effects comparable to
-SET SESSION AUTHORIZATION (\fBSET_SESSION_AUTHORIZATION\fR(7)), but the privilege checks involved are quite different\&. Also,
+\fBSET SESSION AUTHORIZATION\fR, but the privilege checks involved are quite different\&. Also,
 \fBSET SESSION AUTHORIZATION\fR
 determines which roles are allowable for later
 \fBSET ROLE\fR
@@ -90,7 +95,7 @@ does not change the set of roles allowed to a later
 .PP
 \fBSET ROLE\fR
 does not process session variables as specified by the role\*(Aqs
-ALTER ROLE (\fBALTER_ROLE\fR(7))
+\fBALTER ROLE\fR
 settings; this only happens during login\&.
 .PP
 \fBSET ROLE\fR

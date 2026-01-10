@@ -28,7 +28,7 @@
   the server, the connection will be rejected (for example, this would occur
   if the client requested protocol version 4.0, which does not exist as of
   this writing).  If the minor version requested by the client is not
-  supported by the server (e.g. the client requests version 3.1, but the
+  supported by the server (e.g., the client requests version 3.1, but the
   server supports only 3.0), the server may either reject the connection or
   may respond with a NegotiateProtocolVersion message containing the highest
   minor protocol version which it supports.  The client may then choose either
@@ -349,7 +349,7 @@
       <term>AuthenticationSSPI</term>
       <listitem>
        <para>
-        The frontend must now initiate a SSPI negotiation. The frontend
+        The frontend must now initiate an SSPI negotiation. The frontend
         will send a GSSResponse with the first part of the SSPI
         data stream in response to this. If further messages are needed,
         the server will respond with AuthenticationGSSContinue.
@@ -422,7 +422,7 @@
         by the client, but does support an earlier version of the protocol;
         this message indicates the highest supported minor version.  This
         message will also be sent if the client requested unsupported protocol
-        options (i.e. beginning with <literal>_pq_.</literal>) in the
+        options (i.e., beginning with <literal>_pq_.</literal>) in the
         startup packet.  This message will be followed by an ErrorResponse or
         a message indicating the success or failure of authentication.
        </para>
@@ -811,12 +811,22 @@ BEGIN;
 INSERT INTO mytable VALUES(1);
 COMMIT;
 INSERT INTO mytable VALUES(2);
-SELCT 1/0;
+SELCT 1/0;<!-- this typo is intentional -->
 </programlisting>
      then none of the statements would get run, resulting in the visible
      difference that the first <command>INSERT</command> is not committed.
      Errors detected at semantic analysis or later, such as a misspelled
      table or column name, do not have this effect.
+    </para>
+
+    <para>
+     Lastly, note that all the statements within the Query message will
+     observe the same value of <function>statement_timestamp()</function>,
+     since that timestamp is updated only upon receipt of the Query
+     message.  This will result in them all observing the same
+     value of <function>transaction_timestamp()</function> as well,
+     except in cases where the query string ends a previously-started
+     transaction and begins a new one.
     </para>
    </sect3>
   </sect2>
@@ -1050,6 +1060,65 @@ SELCT 1/0;
    </note>
   </sect2>
 
+  <sect2 id="protocol-flow-pipelining">
+   <title>Pipelining</title>
+
+   <indexterm zone="protocol-flow-pipelining">
+    <primary>pipelining</primary>
+    <secondary>protocol specification</secondary>
+   </indexterm>
+
+   <para>
+    Use of the extended query protocol
+    allows <firstterm>pipelining</firstterm>, which means sending a series
+    of queries without waiting for earlier ones to complete.  This reduces
+    the number of network round trips needed to complete a given series of
+    operations.  However, the user must carefully consider the required
+    behavior if one of the steps fails, since later queries will already
+    be in flight to the server.
+   </para>
+
+   <para>
+    One way to deal with that is to make the whole query series be a
+    single transaction, that is wrap it in <command>BEGIN</command> ...
+    <command>COMMIT</command>.  However, this does not help if one wishes
+    for some of the commands to commit independently of others.
+   </para>
+
+   <para>
+    The extended query protocol provides another way to manage this
+    concern, which is to omit sending Sync messages between steps that
+    are dependent.  Since, after an error, the backend will skip command
+    messages until it finds Sync, this allows later commands in a pipeline
+    to be skipped automatically when an earlier one fails, without the
+    client having to manage that explicitly with <command>BEGIN</command>
+    and <command>COMMIT</command>.  Independently-committable segments
+    of the pipeline can be separated by Sync messages.
+   </para>
+
+   <para>
+    If the client has not issued an explicit <command>BEGIN</command>,
+    then each Sync ordinarily causes an implicit <command>COMMIT</command>
+    if the preceding step(s) succeeded, or an
+    implicit <command>ROLLBACK</command> if they failed.  However, there
+    are a few DDL commands (such as <command>CREATE DATABASE</command>)
+    that cannot be executed inside a transaction block.  If one of
+    these is executed in a pipeline, it will fail unless it is the first
+    command in the pipeline.  Furthermore, upon success it will force an
+    immediate commit to preserve database consistency.  Thus a Sync
+    immediately following one of these commands has no effect except to
+    respond with ReadyForQuery.
+   </para>
+
+   <para>
+    When using this method, completion of the pipeline must be determined
+    by counting ReadyForQuery messages and waiting for that to reach the
+    number of Syncs sent.  Counting command completion responses is
+    unreliable, since some of the commands may be skipped and thus not
+    produce a completion message.
+   </para>
+  </sect2>
+
   <sect2>
    <title>Function Call</title>
 
@@ -1278,6 +1347,8 @@ SELCT 1/0;
     <varname>server_encoding</varname>,
     <varname>client_encoding</varname>,
     <varname>application_name</varname>,
+    <varname>default_transaction_read_only</varname>,
+    <varname>in_hot_standby</varname>,
     <varname>is_superuser</varname>,
     <varname>session_authorization</varname>,
     <varname>DateStyle</varname>,
@@ -1290,7 +1361,11 @@ SELCT 1/0;
     <varname>standard_conforming_strings</varname> was not reported by releases
     before 8.1;
     <varname>IntervalStyle</varname> was not reported by releases before 8.4;
-    <varname>application_name</varname> was not reported by releases before 9.0.)
+    <varname>application_name</varname> was not reported by releases before
+    9.0;
+    <varname>default_transaction_read_only</varname> and
+    <varname>in_hot_standby</varname> were not reported by releases before
+    14.)
     Note that
     <varname>server_version</varname>,
     <varname>server_encoding</varname> and
@@ -1454,17 +1529,35 @@ SELCT 1/0;
     <acronym>SSL</acronym>-encrypted.  To continue after
     <literal>N</literal>, send the usual StartupMessage and proceed without
     encryption.
+    (Alternatively, it is permissible to issue a GSSENCRequest message
+    after an <literal>N</literal> response to try to
+    use <acronym>GSSAPI</acronym> encryption instead
+    of <acronym>SSL</acronym>.)
    </para>
 
    <para>
     The frontend should also be prepared to handle an ErrorMessage
-    response to SSLRequest from the server.  This would only occur if
-    the server predates the addition of <acronym>SSL</acronym> support
-    to <productname>PostgreSQL</productname>.  (Such servers are now very ancient,
-    and likely do not exist in the wild anymore.)
+    response to SSLRequest from the server. The frontend should not display
+    this error message to the user/application, since the server has not been
+    authenticated
+    (<ulink url="https://www.postgresql.org/support/security/CVE-2024-10977/">CVE-2024-10977</ulink>).
     In this case the connection must
     be closed, but the frontend might choose to open a fresh connection
     and proceed without requesting <acronym>SSL</acronym>.
+   </para>
+
+   <para>
+    When <acronym>SSL</acronym> encryption can be performed, the server
+    is expected to send only the single <literal>S</literal> byte and then
+    wait for the frontend to initiate an <acronym>SSL</acronym> handshake.
+    If additional bytes are available to read at this point, it likely
+    means that a man-in-the-middle is attempting to perform a
+    buffer-stuffing attack
+    (<ulink url="https://www.postgresql.org/support/security/CVE-2021-23222/">CVE-2021-23222</ulink>).
+    Frontends should be coded either to read exactly one byte from the
+    socket before turning the socket over to their SSL library, or to
+    treat it as a protocol violation if they find they have read additional
+    bytes.
    </para>
 
    <para>
@@ -1475,6 +1568,99 @@ SELCT 1/0;
    <para>
     While the protocol itself does not provide a way for the server to
     force <acronym>SSL</acronym> encryption, the administrator can
+    configure the server to reject unencrypted sessions as a byproduct
+    of authentication checking.
+   </para>
+  </sect2>
+
+  <sect2>
+   <title><acronym>GSSAPI</acronym> Session Encryption</title>
+
+   <para>
+    If <productname>PostgreSQL</productname> was built with
+    <acronym>GSSAPI</acronym> support, frontend/backend communications
+    can be encrypted using <acronym>GSSAPI</acronym>.  This provides
+    communication security in environments where attackers might be
+    able to capture the session traffic. For more information on
+    encrypting <productname>PostgreSQL</productname> sessions with
+    <acronym>GSSAPI</acronym>, see <xref linkend="gssapi-enc"/>.
+   </para>
+
+   <para>
+    To initiate a <acronym>GSSAPI</acronym>-encrypted connection, the
+    frontend initially sends a GSSENCRequest message rather than a
+    StartupMessage.  The server then responds with a single byte
+    containing <literal>G</literal> or <literal>N</literal>, indicating that it
+    is willing or unwilling to perform <acronym>GSSAPI</acronym> encryption,
+    respectively.  The frontend might close the connection at this point
+    if it is dissatisfied with the response.  To continue after
+    <literal>G</literal>, using the GSSAPI C bindings as discussed in
+    <ulink url="https://datatracker.ietf.org/doc/html/rfc2744">RFC 2744</ulink>
+    or equivalent, perform a <acronym>GSSAPI</acronym> initialization by
+    calling <function>gss_init_sec_context()</function> in a loop and sending
+    the result to the server, starting with an empty input and then with each
+    result from the server, until it returns no output.  When sending the
+    results of <function>gss_init_sec_context()</function> to the server,
+    prepend the length of the message as a four byte integer in network byte
+    order.
+    To continue after
+    <literal>N</literal>, send the usual StartupMessage and proceed without
+    encryption.
+    (Alternatively, it is permissible to issue an SSLRequest message
+    after an <literal>N</literal> response to try to
+    use <acronym>SSL</acronym> encryption instead
+    of <acronym>GSSAPI</acronym>.)
+   </para>
+
+   <para>
+    The frontend should also be prepared to handle an ErrorMessage
+    response to GSSENCRequest from the server.  The frontend should not display
+    this error message to the user/application, since the server has not been
+    authenticated
+    (<ulink url="https://www.postgresql.org/support/security/CVE-2024-10977/">CVE-2024-10977</ulink>).
+    In this case the connection must be closed, but the frontend might choose
+    to open a fresh connection and proceed without requesting
+    <acronym>GSSAPI</acronym> encryption.
+   </para>
+
+   <para>
+    When <acronym>GSSAPI</acronym> encryption can be performed, the server
+    is expected to send only the single <literal>G</literal> byte and then
+    wait for the frontend to initiate a <acronym>GSSAPI</acronym> handshake.
+    If additional bytes are available to read at this point, it likely
+    means that a man-in-the-middle is attempting to perform a
+    buffer-stuffing attack
+    (<ulink url="https://www.postgresql.org/support/security/CVE-2021-23222/">CVE-2021-23222</ulink>).
+    Frontends should be coded either to read exactly one byte from the
+    socket before turning the socket over to their GSSAPI library, or to
+    treat it as a protocol violation if they find they have read additional
+    bytes.
+   </para>
+
+   <para>
+    An initial GSSENCRequest can also be used in a connection that is being
+    opened to send a CancelRequest message.
+   </para>
+
+   <para>
+    Once <acronym>GSSAPI</acronym> encryption has been successfully
+    established, use <function>gss_wrap()</function> to
+    encrypt the usual StartupMessage and all subsequent data, prepending the
+    length of the result from <function>gss_wrap()</function> as a four byte
+    integer in network byte order to the actual encrypted payload.  Note that
+    the server will only accept encrypted packets from the client which are less
+    than 16kB; <function>gss_wrap_size_limit()</function> should be used by the
+    client to determine the size of the unencrypted message which will fit
+    within this limit and larger messages should be broken up into multiple
+    <function>gss_wrap()</function> calls.  Typical segments are 8kB of
+    unencrypted data, resulting in encrypted packets of slightly larger than 8kB
+    but well within the 16kB maximum.  The server can be expected to not send
+    encrypted packets of larger than 16kB to the client.
+   </para>
+
+   <para>
+    While the protocol itself does not provide a way for the server to
+    force <acronym>GSSAPI</acronym> encryption, the administrator can
     configure the server to reject unencrypted sessions as a byproduct
     of authentication checking.
    </para>
@@ -1517,7 +1703,7 @@ more details on SCRAM-SHA-256 and SCRAM-SHA-256-PLUS.
 <para>
   One or more server-challenge and client-response message will follow. Each
   server-challenge is sent in an AuthenticationSASLContinue message, followed
-  by a response from client in an SASLResponse message. The particulars of
+  by a response from client in a SASLResponse message. The particulars of
   the messages are mechanism specific.
 </para>
 </step>
@@ -1541,13 +1727,14 @@ ErrorMessage.
 </para>
 
  <sect2 id="sasl-scram-sha-256">
-  <title>SCRAM-SHA-256 authentication</title>
+  <title>SCRAM-SHA-256 Authentication</title>
 
   <para>
    The implemented SASL mechanisms at the moment
    are <literal>SCRAM-SHA-256</literal> and its variant with channel
    binding <literal>SCRAM-SHA-256-PLUS</literal>. They are described in
-   detail in RFC 7677 and RFC 5802.
+   detail in <ulink url="https://datatracker.ietf.org/doc/html/rfc7677">RFC 7677</ulink>
+   and <ulink url="https://datatracker.ietf.org/doc/html/rfc5802">RFC 5802</ulink>.
   </para>
 
   <para>
@@ -1586,7 +1773,7 @@ PostgreSQL is <literal>tls-server-end-point</literal>.
    user-supplied password in the transmitted password hash.  While this
    prevents the password hash from being successfully retransmitted in
    a later session, it does not prevent a fake server between the real
-   server and client from passing through the server's random value 
+   server and client from passing through the server's random value
    and successfully authenticating.
   </para>
 
@@ -1673,8 +1860,9 @@ simple query protocol can be used.
 
 <para>
  For the purpose of testing replication commands, you can make a replication
- connection via <application>psql</application> or any other <literal>libpq</literal>-using
- tool with a connection string including the <literal>replication</literal> option,
+ connection via <application>psql</application> or any other
+ <application>libpq</application>-using tool with a connection string including
+ the <literal>replication</literal> option,
  e.g.:
 <programlisting>
 psql "dbname=postgres replication=database" -c "IDENTIFY_SYSTEM;"
@@ -1724,7 +1912,7 @@ The commands accepted in replication mode are:
       <listitem>
       <para>
        Current timeline ID. Also useful to check that the standby is
-       consistent with the master.
+       consistent with the primary.
       </para>
       </listitem>
       </varlistentry>
@@ -1789,7 +1977,9 @@ The commands accepted in replication mode are:
      <para>
       Requests the server to send over the timeline history file for timeline
       <replaceable class="parameter">tli</replaceable>.  Server replies with a
-      result set of a single row, containing two fields:
+      result set of a single row, containing two fields.  While the fields
+      are labeled as <type>text</type>, they effectively return raw bytes,
+      with no encoding conversion:
      </para>
 
      <para>
@@ -1807,7 +1997,7 @@ The commands accepted in replication mode are:
 
       <varlistentry>
       <term>
-       <literal>content</literal> (<type>bytea</type>)
+       <literal>content</literal> (<type>text</type>)
       </term>
       <listitem>
       <para>
@@ -1958,7 +2148,7 @@ The commands accepted in replication mode are:
       streaming starts on timeline <replaceable class="parameter">tli</replaceable>;
       otherwise, the server's current timeline is selected. The server can
       reply with an error, for example if the requested section of WAL has already
-      been recycled. On success, server responds with a CopyBothResponse
+      been recycled. On success, the server responds with a CopyBothResponse
       message, and then starts to stream WAL to the frontend.
      </para>
 
@@ -1975,8 +2165,8 @@ The commands accepted in replication mode are:
       the history of the server, the server will stream all the WAL on that
       timeline starting from the requested start point up to the point where
       the server switched to another timeline. If the client requests
-      streaming at exactly the end of an old timeline, the server responds
-      immediately with CommandComplete without entering COPY mode.
+      streaming at exactly the end of an old timeline, the server skips COPY
+      mode entirely.
      </para>
 
      <para>
@@ -1989,8 +2179,9 @@ The commands accepted in replication mode are:
       the switch position is the end of the WAL that was streamed, but there
       are corner cases where the server can send some WAL from the old
       timeline that it has not itself replayed before promoting. Finally, the
-      server sends CommandComplete message, and is ready to accept a new
-      command.
+      server sends two CommandComplete messages (one that ends the CopyData
+      and the other ends the <literal>START_REPLICATION</literal> itself), and
+      is ready to accept a new command.
      </para>
 
      <para>
@@ -2312,7 +2503,8 @@ The commands accepted in replication mode are:
 
      <para>
       The messages inside the CopyBothResponse messages are of the same format
-      documented for <literal>START_REPLICATION ... PHYSICAL</literal>.
+      documented for <literal>START_REPLICATION ... PHYSICAL</literal>, including
+      two CommandComplete messages.
      </para>
 
      <para>
@@ -2344,7 +2536,10 @@ The commands accepted in replication mode are:
        <term><replaceable class="parameter">option_name</replaceable></term>
        <listitem>
         <para>
-         The name of an option passed to the slot's logical decoding plugin.
+         The name of an option passed to the slot's logical decoding output
+         plugin.  See <xref linkend="protocol-logical-replication"/> for
+         options that are accepted by the standard (<literal>pgoutput</literal>)
+         plugin.
         </para>
        </listitem>
       </varlistentry>
@@ -2369,8 +2564,6 @@ The commands accepted in replication mode are:
     <listitem>
      <para>
       Drops a replication slot, freeing any reserved server-side resources.
-      If the slot is a logical slot that was created in a database other than
-      the database the walsender is connected to, this command fails.
      </para>
      <variablelist>
       <varlistentry>
@@ -2396,8 +2589,8 @@ The commands accepted in replication mode are:
     </listitem>
   </varlistentry>
 
-  <varlistentry>
-    <term><literal>BASE_BACKUP</literal> [ <literal>LABEL</literal> <replaceable>'label'</replaceable> ] [ <literal>PROGRESS</literal> ] [ <literal>FAST</literal> ] [ <literal>WAL</literal> ] [ <literal>NOWAIT</literal> ] [ <literal>MAX_RATE</literal> <replaceable>rate</replaceable> ] [ <literal>TABLESPACE_MAP</literal> ] [ <literal>NOVERIFY_CHECKSUMS</literal> ]
+  <varlistentry id="protocol-replication-base-backup" xreflabel="BASE_BACKUP">
+    <term><literal>BASE_BACKUP</literal> [ <literal>LABEL</literal> <replaceable>'label'</replaceable> ] [ <literal>PROGRESS</literal> ] [ <literal>FAST</literal> ] [ <literal>WAL</literal> ] [ <literal>NOWAIT</literal> ] [ <literal>MAX_RATE</literal> <replaceable>rate</replaceable> ] [ <literal>TABLESPACE_MAP</literal> ] [ <literal>NOVERIFY_CHECKSUMS</literal> ] [ <literal>MANIFEST</literal> <replaceable>manifest_option</replaceable> ] [ <literal>MANIFEST_CHECKSUMS</literal> <replaceable>checksum_algorithm</replaceable> ]
      <indexterm><primary>BASE_BACKUP</primary></indexterm>
     </term>
     <listitem>
@@ -2507,11 +2700,46 @@ The commands accepted in replication mode are:
          </para>
         </listitem>
        </varlistentry>
+
+       <varlistentry>
+        <term><literal>MANIFEST</literal> <replaceable>manifest_option</replaceable></term>
+        <listitem>
+         <para>
+          When this option is specified with a value of <literal>yes</literal>
+          or <literal>force-encode</literal>, a backup manifest is created
+          and sent along with the backup.  The manifest is a list of every
+          file present in the backup with the exception of any WAL files that
+          may be included. It also stores the size, last modification time, and
+          optionally a checksum for each file.
+          A value of <literal>force-encode</literal> forces all filenames
+          to be hex-encoded; otherwise, this type of encoding is performed only
+          for files whose names are non-UTF8 octet sequences.
+          <literal>force-encode</literal> is intended primarily for testing
+          purposes, to be sure that clients which read the backup manifest
+          can handle this case. For compatibility with previous releases,
+          the default is <literal>MANIFEST 'no'</literal>.
+         </para>
+        </listitem>
+       </varlistentry>
+
+       <varlistentry>
+        <term><literal>MANIFEST_CHECKSUMS</literal> <replaceable>checksum_algorithm</replaceable></term>
+        <listitem>
+         <para>
+          Specifies the checksum algorithm that should be applied to each file included
+          in the backup manifest. Currently, the available
+          algorithms are <literal>NONE</literal>, <literal>CRC32C</literal>,
+          <literal>SHA224</literal>, <literal>SHA256</literal>,
+          <literal>SHA384</literal>, and <literal>SHA512</literal>.
+          The default is <literal>CRC32C</literal>.
+         </para>
+        </listitem>
+       </varlistentry>
       </variablelist>
      </para>
      <para>
       When the backup is started, the server will first send two
-      ordinary result sets, followed by one or more CopyResponse
+      ordinary result sets, followed by one or more CopyOutResponse
       results.
      </para>
      <para>
@@ -2546,23 +2774,25 @@ The commands accepted in replication mode are:
         <term><literal>size</literal> (<type>int8</type>)</term>
         <listitem>
          <para>
-          The approximate size of the tablespace, if progress report has
-          been requested; otherwise it's null.
+          The approximate size of the tablespace, in kilobytes (1024 bytes),
+          if progress report has been requested; otherwise it's null.
          </para>
         </listitem>
        </varlistentry>
       </variablelist>
      </para>
      <para>
-      After the second regular result set, one or more CopyResponse results
+      After the second regular result set, one or more CopyOutResponse results
       will be sent, one for the main data directory and one for each additional tablespace other
       than <literal>pg_default</literal> and <literal>pg_global</literal>. The data in
-      the CopyResponse results will be a tar format (following the
+      the CopyOutResponse results will be a tar format (following the
       <quote>ustar interchange format</quote> specified in the POSIX 1003.1-2008
       standard) dump of the tablespace contents, except that the two trailing
       blocks of zeroes specified in the standard are omitted.
-      After the tar data is complete, a final ordinary result set will be sent,
-      containing the WAL end position of the backup, in the same format as
+      After the tar data is complete, and if a backup manifest was requested,
+      another CopyOutResponse result is sent, containing the manifest data for the
+      current base backup. In any case, a final ordinary result set will be
+      sent, containing the WAL end position of the backup, in the same format as
       the start position.
      </para>
 
@@ -2652,12 +2882,18 @@ The commands accepted in replication mode are:
   the physical streaming replication protocol.
  </para>
 
+ <para>
+  <productname>PostgreSQL</productname> logical decoding supports output
+  plugins.  <literal>pgoutput</literal> is the standard one used for
+  the built-in logical replication.
+ </para>
+
  <sect2 id="protocol-logical-replication-params">
   <title>Logical Streaming Replication Parameters</title>
 
   <para>
-   The logical replication <literal>START_REPLICATION</literal> command
-   accepts following parameters:
+   Using the <literal>START_REPLICATION</literal> command,
+   <literal>pgoutput</literal> accepts the following options:
 
    <variablelist>
     <varlistentry>
@@ -2666,9 +2902,12 @@ The commands accepted in replication mode are:
      </term>
      <listitem>
       <para>
-       Protocol version. Currently only version <literal>1</literal> is
-       supported.
-      </para>
+       Protocol version. Currently versions <literal>1</literal> and
+       <literal>2</literal> are supported.  A valid version is required.
+       The version <literal>2</literal>
+       is supported only for server version 14 and above, and it allows
+       streaming of large in-progress transactions.
+     </para>
      </listitem>
     </varlistentry>
 
@@ -2681,6 +2920,43 @@ The commands accepted in replication mode are:
        Comma separated list of publication names for which to subscribe
        (receive changes). The individual publication names are treated
        as standard objects names and can be quoted the same as needed.
+       At least one publication name is required.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term>
+      binary
+     </term>
+     <listitem>
+      <para>
+       Boolean option to use binary transfer mode.  Binary mode is faster
+       than the text mode but slightly less robust.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term>
+      messages
+     </term>
+     <listitem>
+      <para>
+       Boolean option to enable sending the messages that are written
+       by <function>pg_logical_emit_message</function>.
+      </para>
+     </listitem>
+    </varlistentry>
+
+    <varlistentry>
+     <term>
+      streaming
+     </term>
+     <listitem>
+      <para>
+       Boolean option to enable streaming of in-progress transactions.
+       Minimum protocol version 2 is required to turn it on.
       </para>
      </listitem>
     </varlistentry>
@@ -2724,13 +3000,16 @@ The commands accepted in replication mode are:
   <para>
    The logical replication protocol sends individual transactions one by one.
    This means that all messages between a pair of Begin and Commit messages
-   belong to the same transaction.
+   belong to the same transaction. It also sends changes of large in-progress
+   transactions between a pair of Stream Start and Stream Stop messages. The
+   last stream of such a transaction contains Stream Commit or Stream Abort
+   message.
   </para>
 
   <para>
    Every sent transaction contains zero or more DML messages (Insert,
    Update, Delete). In case of a cascaded setup it can also contain Origin
-   messages. The origin message indicated that the transaction originated on
+   messages. The origin message indicates that the transaction originated on
    different replication node. Since a replication node in the scope of logical
    replication protocol can be pretty much anything, the only identifier
    is the origin name. It's downstream's responsibility to handle this as
@@ -2739,13 +3018,25 @@ The commands accepted in replication mode are:
   </para>
 
   <para>
-   Every DML message contains an arbitrary relation ID, which can be mapped to
-   an ID in the Relation messages. The Relation messages describe the schema of the
-   given relation. The Relation message is sent for a given relation either
-   because it is the first time we send a DML message for given relation in the
-   current session or because the relation definition has changed since the
-   last Relation message was sent for it. The protocol assumes that the client
-   is capable of caching the metadata for as many relations as needed.
+   Every DML message contains a relation OID, identifying the publisher's
+   relation that was acted on.  Before the first DML message for a given
+   relation OID, a Relation message will be sent, describing the schema of
+   that relation.  Subsequently, a new Relation message will be sent if
+   the relation's definition has changed since the last Relation message
+   was sent for it.  (The protocol assumes that the client is capable of
+   remembering this metadata for as many relations as needed.)
+  </para>
+
+  <para>
+   Relation messages identify column types by their OIDs.  In the case
+   of a built-in type, it is assumed that the client can look up that
+   type OID locally, so no additional data is needed.  For a non-built-in
+   type OID, a Type message will be sent before the Relation message,
+   to provide the type name associated with that OID.  Thus, a client that
+   needs to specifically identify the types of relation columns should
+   cache the contents of Type messages, and first consult that cache to
+   see if the type OID is defined there.  If not, look up the type OID
+   locally.
   </para>
  </sect2>
 </sect1>
@@ -3129,51 +3420,6 @@ AuthenticationGSS (B)
 
 <varlistentry>
 <term>
-AuthenticationSSPI (B)
-</term>
-<listitem>
-<para>
-
-<variablelist>
-<varlistentry>
-<term>
-        Byte1('R')
-</term>
-<listitem>
-<para>
-                Identifies the message as an authentication request.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term>
-        Int32(8)
-</term>
-<listitem>
-<para>
-                Length of message contents in bytes, including self.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term>
-        Int32(9)
-</term>
-<listitem>
-<para>
-                Specifies that SSPI authentication is required.
-</para>
-</listitem>
-</varlistentry>
-</variablelist>
-
-</para>
-</listitem>
-</varlistentry>
-
-
-<varlistentry>
-<term>
 AuthenticationGSSContinue (B)
 </term>
 <listitem>
@@ -3217,6 +3463,51 @@ AuthenticationGSSContinue (B)
 <listitem>
 <para>
                 GSSAPI or SSPI authentication data.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+</para>
+</listitem>
+</varlistentry>
+
+
+<varlistentry>
+<term>
+AuthenticationSSPI (B)
+</term>
+<listitem>
+<para>
+
+<variablelist>
+<varlistentry>
+<term>
+        Byte1('R')
+</term>
+<listitem>
+<para>
+                Identifies the message as an authentication request.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32(8)
+</term>
+<listitem>
+<para>
+                Length of message contents in bytes, including self.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32(9)
+</term>
+<listitem>
+<para>
+                Specifies that SSPI authentication is required.
 </para>
 </listitem>
 </varlistentry>
@@ -3837,10 +4128,11 @@ CommandComplete (B)
         <literal>INSERT <replaceable>oid</replaceable>
         <replaceable>rows</replaceable></literal>, where
         <replaceable>rows</replaceable> is the number of rows
-        inserted. <replaceable>oid</replaceable> is the object ID
-        of the inserted row if <replaceable>rows</replaceable> is 1
-        and the target table has OIDs;
-        otherwise <replaceable>oid</replaceable> is 0.
+        inserted. <replaceable>oid</replaceable> used to be the object ID
+        of the inserted row if <replaceable>rows</replaceable> was 1
+        and the target table had OIDs, but OIDs system columns are
+        not supported anymore; therefore <replaceable>oid</replaceable>
+        is always 0.
        </para>
 
        <para>
@@ -4738,6 +5030,44 @@ FunctionCallResponse (B)
                 The value of the function result, in the format indicated by
                 the associated format code.
                 <replaceable>n</replaceable> is the above length.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+</para>
+</listitem>
+</varlistentry>
+
+
+<varlistentry>
+<term>
+GSSENCRequest (F)
+</term>
+<listitem>
+<para>
+
+<variablelist>
+<varlistentry>
+<term>
+        Int32(8)
+</term>
+<listitem>
+<para>
+                Length of message contents in bytes, including self.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32(80877104)
+</term>
+<listitem>
+<para>
+                The <acronym>GSSAPI</acronym> Encryption request code.  The value is chosen to contain
+                <literal>1234</literal> in the most significant 16 bits, and <literal>5680</literal> in the
+                least significant 16 bits.  (To avoid confusion, this code
+                must not be the same as any protocol version number.)
 </para>
 </listitem>
 </varlistentry>
@@ -6051,7 +6381,7 @@ message.
 <listitem>
 <para>
         Internal query: the text of a failed internally-generated command.
-        This could be, for example, a SQL query issued by a PL/pgSQL function.
+        This could be, for example, an SQL query issued by a PL/pgSQL function.
 </para>
 </listitem>
 </varlistentry>
@@ -6265,6 +6595,94 @@ Begin
 
 <varlistentry>
 <term>
+Message
+</term>
+<listitem>
+<para>
+
+<variablelist>
+<varlistentry>
+<term>
+        Byte1('M')
+</term>
+<listitem>
+<para>
+                Identifies the message as a logical decoding message.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32
+</term>
+<listitem>
+<para>
+                Xid of the transaction (only present for streamed transactions).
+                This field is available since protocol version 2.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int8
+</term>
+<listitem>
+<para>
+                Flags; Either 0 for no flags or 1 if the logical decoding
+                message is transactional.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int64
+</term>
+<listitem>
+<para>
+                The LSN of the logical decoding message.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        String
+</term>
+<listitem>
+<para>
+                The prefix of the logical decoding message.
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+        Int32
+</term>
+<listitem>
+<para>
+                Length of the content.
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+        Byte<replaceable>n</replaceable>
+</term>
+<listitem>
+<para>
+                The content of the logical decoding message.
+</para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
 Commit
 </term>
 <listitem>
@@ -6401,6 +6819,17 @@ Relation
 </term>
 <listitem>
 <para>
+               Xid of the transaction (only present for streamed transactions).
+               This field is available since protocol version 2.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32
+</term>
+<listitem>
+<para>
                 ID of the relation.
 </para>
 </listitem>
@@ -6449,7 +6878,7 @@ Relation
 </listitem>
 </varlistentry>
 </variablelist>
-        Next, the following message part appears for each column:
+        Next, the following message part appears for each column (except generated columns):
 <variablelist>
 <varlistentry>
 <term>
@@ -6522,6 +6951,17 @@ Type
 </term>
 <listitem>
 <para>
+               Xid of the transaction (only present for streamed transactions).
+               This field is available since protocol version 2.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32
+</term>
+<listitem>
+<para>
                 ID of the data type.
 </para>
 </listitem>
@@ -6567,6 +7007,17 @@ Insert
 <listitem>
 <para>
                 Identifies the message as an insert message.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32
+</term>
+<listitem>
+<para>
+                Xid of the transaction (only present for streamed transactions).
+                This field is available since protocol version 2.
 </para>
 </listitem>
 </varlistentry>
@@ -6623,6 +7074,17 @@ Update
 <listitem>
 <para>
                 Identifies the message as an update message.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32
+</term>
+<listitem>
+<para>
+               Xid of the transaction (only present for streamed transactions).
+               This field is available since protocol version 2.
 </para>
 </listitem>
 </varlistentry>
@@ -6735,6 +7197,17 @@ Delete
 </term>
 <listitem>
 <para>
+               Xid of the transaction (only present for streamed transactions).
+               This field is available since protocol version 2.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32
+</term>
+<listitem>
+<para>
                 ID of the relation corresponding to the ID in the relation
                 message.
 </para>
@@ -6760,8 +7233,8 @@ Delete
 </term>
 <listitem>
 <para>
-                Identifies the following TupleData message as a old tuple.
-                This field is present if the table in which the delete has
+                Identifies the following TupleData message as an old tuple.
+                This field is present if the table in which the delete
                 happened has REPLICA IDENTITY set to FULL.
 </para>
 </listitem>
@@ -6813,6 +7286,17 @@ Truncate
 </term>
 <listitem>
 <para>
+               Xid of the transaction (only present for streamed transactions).
+               This field is available since protocol version 2.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32
+</term>
+<listitem>
+<para>
                 Number of relations
 </para>
 </listitem>
@@ -6836,6 +7320,206 @@ Truncate
 <para>
                 ID of the relation corresponding to the ID in the relation
                 message.  This field is repeated for each relation.
+</para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+</para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+
+<para>
+
+The following messages (Stream Start, Stream Stop, Stream Commit, and
+Stream Abort) are available since protocol version 2.
+
+</para>
+
+<variablelist>
+
+<varlistentry>
+<term>
+Stream Start
+</term>
+<listitem>
+<para>
+
+<variablelist>
+<varlistentry>
+<term>
+        Byte1('S')
+</term>
+<listitem>
+<para>
+                Identifies the message as a stream start message.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32
+</term>
+<listitem>
+<para>
+                Xid of the transaction.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int8
+</term>
+<listitem>
+<para>
+                A value of 1 indicates this is the first stream segment for
+                this XID, 0 for any other stream segment.
+</para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+Stream Stop
+</term>
+<listitem>
+<para>
+
+<variablelist>
+<varlistentry>
+<term>
+        Byte1('E')
+</term>
+<listitem>
+<para>
+                Identifies the message as a stream stop message.
+</para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+Stream Commit
+</term>
+<listitem>
+<para>
+
+<variablelist>
+<varlistentry>
+<term>
+        Byte1('c')
+</term>
+<listitem>
+<para>
+                Identifies the message as a stream commit message.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32
+</term>
+<listitem>
+<para>
+                Xid of the transaction.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int8
+</term>
+<listitem>
+<para>
+                Flags; currently unused (must be 0).
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int64
+</term>
+<listitem>
+<para>
+                The LSN of the commit.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int64
+</term>
+<listitem>
+<para>
+                The end LSN of the transaction.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int64
+</term>
+<listitem>
+<para>
+                Commit timestamp of the transaction. The value is in number
+                of microseconds since PostgreSQL epoch (2000-01-01).
+</para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term>
+Stream Abort
+</term>
+<listitem>
+<para>
+
+<variablelist>
+<varlistentry>
+<term>
+        Byte1('A')
+</term>
+<listitem>
+<para>
+                Identifies the message as a stream abort message.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32
+</term>
+<listitem>
+<para>
+                Xid of the transaction.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>
+        Int32
+</term>
+<listitem>
+<para>
+                Xid of the subtransaction (will be same as xid of the transaction for top-level
+                transactions).
 </para>
 </listitem>
 </varlistentry>
@@ -6874,7 +7558,7 @@ TupleData
 </listitem>
 </varlistentry>
 </variablelist>
-        Next, one of the following submessages appears for each column:
+        Next, one of the following submessages appears for each column (except generated columns):
 <variablelist>
 <varlistentry>
 <term>
@@ -6913,6 +7597,19 @@ TupleData
 </para>
 </listitem>
 </varlistentry>
+</variablelist>
+        Or
+<variablelist>
+<varlistentry>
+<term>
+        Byte1('b')
+</term>
+<listitem>
+<para>
+                Identifies the data as binary formatted value.
+</para>
+</listitem>
+</varlistentry>
 <varlistentry>
 <term>
         Int32
@@ -6929,8 +7626,8 @@ TupleData
 </term>
 <listitem>
 <para>
-                The value of the column, in text format.  (A future release
-                might support additional formats.)
+                The value of the column, either in binary or in text format.
+                (As specified in the preceding format byte).
                 <replaceable>n</replaceable> is the above length.
 
 </para>

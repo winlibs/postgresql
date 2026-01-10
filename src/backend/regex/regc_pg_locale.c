@@ -6,7 +6,7 @@
  *
  * This file is #included by regcomp.c; it's not meant to compile standalone.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -263,6 +263,11 @@ pg_set_regex_collation(Oid collation)
 					 errhint("Use the COLLATE clause to set the collation explicitly.")));
 		}
 
+		if (pg_regex_locale && !pg_regex_locale->deterministic)
+			ereport(ERROR,
+					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+					 errmsg("nondeterministic collations are not supported for regular expressions")));
+
 #ifdef USE_ICU
 		if (pg_regex_locale && pg_regex_locale->provider == COLLPROVIDER_ICU)
 			pg_regex_strategy = PG_REGEX_LOCALE_ICU;
@@ -393,6 +398,15 @@ pg_wc_isalnum(pg_wchar c)
 			break;
 	}
 	return 0;					/* can't get here, but keep compiler quiet */
+}
+
+static int
+pg_wc_isword(pg_wchar c)
+{
+	/* We define word characters as alnum class plus underscore */
+	if (c == CHR('_'))
+		return 1;
+	return pg_wc_isalnum(c);
 }
 
 static int

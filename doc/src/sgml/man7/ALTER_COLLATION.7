@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER COLLATION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2019
-.\"    Manual: PostgreSQL 11.4 Documentation
-.\"    Source: PostgreSQL 11.4
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: 2025
+.\"    Manual: PostgreSQL 14.20 Documentation
+.\"    Source: PostgreSQL 14.20
 .\"  Language: English
 .\"
-.TH "ALTER COLLATION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
+.TH "ALTER COLLATION" "7" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -35,7 +35,7 @@ ALTER_COLLATION \- change the definition of a collation
 ALTER COLLATION \fIname\fR REFRESH VERSION
 
 ALTER COLLATION \fIname\fR RENAME TO \fInew_name\fR
-ALTER COLLATION \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+ALTER COLLATION \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_ROLE | CURRENT_USER | SESSION_USER }
 ALTER COLLATION \fIname\fR SET SCHEMA \fInew_schema\fR
 .fi
 .SH "DESCRIPTION"
@@ -72,7 +72,7 @@ The new schema for the collation\&.
 REFRESH VERSION
 .RS 4
 Update the collation\*(Aqs version\&. See
-NOTES
+Notes
 below\&.
 .RE
 .SH "NOTES"
@@ -97,6 +97,30 @@ to upgrade to server binaries linked with a newer version of ICU\&. When this ha
 \fBREINDEX\fR\&. When that is done, the collation version can be refreshed using the command
 ALTER COLLATION \&.\&.\&. REFRESH VERSION\&. This will update the system catalog to record the current collator version and will make the warning go away\&. Note that this does not actually check whether all affected objects have been rebuilt correctly\&.
 .PP
+When using collations provided by
+libc, version information is recorded on systems using the GNU C library (most Linux systems), FreeBSD and Windows\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+When using the GNU C library for collations, the C library\*(Aqs version is used as a proxy for the collation version\&. Many Linux distributions change collation definitions only when upgrading the C library, but this approach is imperfect as maintainers are free to back\-port newer collation definitions to older C library releases\&.
+.PP
+When using Windows for collations, version information is only available for collations defined with BCP 47 language tags such as
+en\-US\&.
+.sp .5v
+.RE
+.PP
+Currently, there is no version tracking for the database default collation\&.
+.PP
 The following query can be used to identify all collations in the current database that need to be refreshed and the objects that depend on them:
 .sp
 .if n \{\
@@ -113,7 +137,6 @@ SELECT pg_describe_object(refclassid, refobjid, refobjsubid) AS "Collation",
 .if n \{\
 .RE
 .\}
-.sp
 .SH "EXAMPLES"
 .PP
 To rename the collation

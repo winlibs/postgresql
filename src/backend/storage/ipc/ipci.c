@@ -3,7 +3,7 @@
  * ipci.c
  *	  POSTGRES inter-process communication initialization code.
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -20,6 +20,7 @@
 #include "access/multixact.h"
 #include "access/nbtree.h"
 #include "access/subtrans.h"
+#include "access/syncscan.h"
 #include "access/twophase.h"
 #include "commands/async.h"
 #include "miscadmin.h"
@@ -29,10 +30,10 @@
 #include "postmaster/bgwriter.h"
 #include "postmaster/postmaster.h"
 #include "replication/logicallauncher.h"
+#include "replication/origin.h"
 #include "replication/slot.h"
 #include "replication/walreceiver.h"
 #include "replication/walsender.h"
-#include "replication/origin.h"
 #include "storage/bufmgr.h"
 #include "storage/dsm.h"
 #include "storage/ipc.h"
@@ -44,9 +45,10 @@
 #include "storage/procsignal.h"
 #include "storage/sinvaladt.h"
 #include "storage/spin.h"
-#include "utils/backend_random.h"
 #include "utils/snapmgr.h"
 
+/* GUCs */
+int			shared_memory_type = DEFAULT_SHARED_MEMORY_TYPE;
 
 shmem_startup_hook_type shmem_startup_hook = NULL;
 
@@ -90,7 +92,7 @@ RequestAddinShmemSpace(Size size)
  * This is a bit code-wasteful and could be cleaned up.)
  */
 void
-CreateSharedMemoryAndSemaphores(int port)
+CreateSharedMemoryAndSemaphores(void)
 {
 	PGShmemHeader *shim = NULL;
 
@@ -118,6 +120,7 @@ CreateSharedMemoryAndSemaphores(int port)
 		size = add_size(size, SpinlockSemaSize());
 		size = add_size(size, hash_estimate_size(SHMEM_INDEX_SIZE,
 												 sizeof(ShmemIndexEnt)));
+		size = add_size(size, dsm_estimate_size());
 		size = add_size(size, BufferShmemSize());
 		size = add_size(size, LockShmemSize());
 		size = add_size(size, PredicateLockShmemSize());
@@ -141,12 +144,12 @@ CreateSharedMemoryAndSemaphores(int port)
 		size = add_size(size, ReplicationOriginShmemSize());
 		size = add_size(size, WalSndShmemSize());
 		size = add_size(size, WalRcvShmemSize());
+		size = add_size(size, PgArchShmemSize());
 		size = add_size(size, ApplyLauncherShmemSize());
 		size = add_size(size, SnapMgrShmemSize());
 		size = add_size(size, BTreeShmemSize());
 		size = add_size(size, SyncScanShmemSize());
 		size = add_size(size, AsyncShmemSize());
-		size = add_size(size, BackendRandomShmemSize());
 #ifdef EXEC_BACKEND
 		size = add_size(size, ShmemBackendArraySize());
 #endif
@@ -163,14 +166,14 @@ CreateSharedMemoryAndSemaphores(int port)
 		/*
 		 * Create the shmem segment
 		 */
-		seghdr = PGSharedMemoryCreate(size, port, &shim);
+		seghdr = PGSharedMemoryCreate(size, &shim);
 
 		InitShmemAccess(seghdr);
 
 		/*
 		 * Create semaphores
 		 */
-		PGReserveSemaphores(numSemas, port);
+		PGReserveSemaphores(numSemas);
 
 		/*
 		 * If spinlocks are disabled, initialize emulation layer (which
@@ -207,6 +210,8 @@ CreateSharedMemoryAndSemaphores(int port)
 	 * Set up shmem.c index hashtable
 	 */
 	InitShmemIndex();
+
+	dsm_shmem_init();
 
 	/*
 	 * Set up xlog, clog, and buffers
@@ -254,6 +259,7 @@ CreateSharedMemoryAndSemaphores(int port)
 	ReplicationOriginShmemInit();
 	WalSndShmemInit();
 	WalRcvShmemInit();
+	PgArchShmemInit();
 	ApplyLauncherShmemInit();
 
 	/*
@@ -263,7 +269,6 @@ CreateSharedMemoryAndSemaphores(int port)
 	BTreeShmemInit();
 	SyncScanShmemInit();
 	AsyncShmemInit();
-	BackendRandomShmemInit();
 
 #ifdef EXEC_BACKEND
 

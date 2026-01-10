@@ -4,7 +4,7 @@
  *		Routines for handling specialized SET variables.
  *
  *
- * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2021, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -24,14 +24,14 @@
 #include "access/xlog.h"
 #include "catalog/pg_authid.h"
 #include "commands/variable.h"
+#include "mb/pg_wchar.h"
 #include "miscadmin.h"
 #include "utils/acl.h"
 #include "utils/builtins.h"
-#include "utils/syscache.h"
 #include "utils/snapmgr.h"
+#include "utils/syscache.h"
 #include "utils/timestamp.h"
 #include "utils/varlena.h"
-#include "mb/pg_wchar.h"
 
 /*
  * DATESTYLE
@@ -522,32 +522,9 @@ check_transaction_read_only(bool *newval, void **extra, GucSource source)
  * As in check_transaction_read_only, allow it if not inside a transaction.
  */
 bool
-check_XactIsoLevel(char **newval, void **extra, GucSource source)
+check_XactIsoLevel(int *newval, void **extra, GucSource source)
 {
-	int			newXactIsoLevel;
-
-	if (strcmp(*newval, "serializable") == 0)
-	{
-		newXactIsoLevel = XACT_SERIALIZABLE;
-	}
-	else if (strcmp(*newval, "repeatable read") == 0)
-	{
-		newXactIsoLevel = XACT_REPEATABLE_READ;
-	}
-	else if (strcmp(*newval, "read committed") == 0)
-	{
-		newXactIsoLevel = XACT_READ_COMMITTED;
-	}
-	else if (strcmp(*newval, "read uncommitted") == 0)
-	{
-		newXactIsoLevel = XACT_READ_UNCOMMITTED;
-	}
-	else if (strcmp(*newval, "default") == 0)
-	{
-		newXactIsoLevel = DefaultXactIsoLevel;
-	}
-	else
-		return false;
+	int			newXactIsoLevel = *newval;
 
 	if (newXactIsoLevel != XactIsoLevel && IsTransactionState())
 	{
@@ -574,37 +551,7 @@ check_XactIsoLevel(char **newval, void **extra, GucSource source)
 		}
 	}
 
-	*extra = malloc(sizeof(int));
-	if (!*extra)
-		return false;
-	*((int *) *extra) = newXactIsoLevel;
-
 	return true;
-}
-
-void
-assign_XactIsoLevel(const char *newval, void *extra)
-{
-	XactIsoLevel = *((int *) extra);
-}
-
-const char *
-show_XactIsoLevel(void)
-{
-	/* We need this because we don't want to show "default". */
-	switch (XactIsoLevel)
-	{
-		case XACT_READ_UNCOMMITTED:
-			return "read uncommitted";
-		case XACT_READ_COMMITTED:
-			return "read committed";
-		case XACT_REPEATABLE_READ:
-			return "repeatable read";
-		case XACT_SERIALIZABLE:
-			return "serializable";
-		default:
-			return "bogus";
-	}
 }
 
 /*
@@ -797,6 +744,7 @@ bool
 check_session_authorization(char **newval, void **extra, GucSource source)
 {
 	HeapTuple	roleTup;
+	Form_pg_authid roleform;
 	Oid			roleid;
 	bool		is_superuser;
 	role_auth_extra *myextra;
@@ -805,28 +753,78 @@ check_session_authorization(char **newval, void **extra, GucSource source)
 	if (*newval == NULL)
 		return true;
 
-	if (!IsTransactionState())
+	if (InitializingParallelWorker)
 	{
 		/*
-		 * Can't do catalog lookups, so fail.  The result of this is that
-		 * session_authorization cannot be set in postgresql.conf, which seems
-		 * like a good thing anyway, so we don't work hard to avoid it.
+		 * In parallel worker initialization, we want to copy the leader's
+		 * state even if it no longer matches the catalogs. ParallelWorkerMain
+		 * already installed the correct role OID and superuser state.
 		 */
-		return false;
+		roleid = GetSessionUserId();
+		is_superuser = GetSessionUserIsSuperuser();
 	}
-
-	/* Look up the username */
-	roleTup = SearchSysCache1(AUTHNAME, PointerGetDatum(*newval));
-	if (!HeapTupleIsValid(roleTup))
+	else
 	{
-		GUC_check_errmsg("role \"%s\" does not exist", *newval);
-		return false;
+		if (!IsTransactionState())
+		{
+			/*
+			 * Can't do catalog lookups, so fail.  The result of this is that
+			 * session_authorization cannot be set in postgresql.conf, which
+			 * seems like a good thing anyway, so we don't work hard to avoid
+			 * it.
+			 */
+			return false;
+		}
+
+		/*
+		 * When source == PGC_S_TEST, we don't throw a hard error for a
+		 * nonexistent user name or insufficient privileges, only a NOTICE.
+		 * See comments in guc.h.
+		 */
+
+		/* Look up the username */
+		roleTup = SearchSysCache1(AUTHNAME, PointerGetDatum(*newval));
+		if (!HeapTupleIsValid(roleTup))
+		{
+			if (source == PGC_S_TEST)
+			{
+				ereport(NOTICE,
+						(errcode(ERRCODE_UNDEFINED_OBJECT),
+						 errmsg("role \"%s\" does not exist", *newval)));
+				return true;
+			}
+			GUC_check_errmsg("role \"%s\" does not exist", *newval);
+			return false;
+		}
+
+		roleform = (Form_pg_authid) GETSTRUCT(roleTup);
+		roleid = roleform->oid;
+		is_superuser = roleform->rolsuper;
+
+		ReleaseSysCache(roleTup);
+
+		/*
+		 * Only superusers may SET SESSION AUTHORIZATION a role other than
+		 * itself. Note that in case of multiple SETs in a single session, the
+		 * original authenticated user's superuserness is what matters.
+		 */
+		if (roleid != GetAuthenticatedUserId() &&
+			!GetAuthenticatedUserIsSuperuser())
+		{
+			if (source == PGC_S_TEST)
+			{
+				ereport(NOTICE,
+						(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+						 errmsg("permission will be denied to set session authorization \"%s\"",
+								*newval)));
+				return true;
+			}
+			GUC_check_errcode(ERRCODE_INSUFFICIENT_PRIVILEGE);
+			GUC_check_errmsg("permission denied to set session authorization \"%s\"",
+							 *newval);
+			return false;
+		}
 	}
-
-	roleid = HeapTupleGetOid(roleTup);
-	is_superuser = ((Form_pg_authid) GETSTRUCT(roleTup))->rolsuper;
-
-	ReleaseSysCache(roleTup);
 
 	/* Set up "extra" struct for assign_session_authorization to use */
 	myextra = (role_auth_extra *) malloc(sizeof(role_auth_extra));
@@ -868,12 +866,23 @@ check_role(char **newval, void **extra, GucSource source)
 	Oid			roleid;
 	bool		is_superuser;
 	role_auth_extra *myextra;
+	Form_pg_authid roleform;
 
 	if (strcmp(*newval, "none") == 0)
 	{
 		/* hardwired translation */
 		roleid = InvalidOid;
 		is_superuser = false;
+	}
+	else if (InitializingParallelWorker)
+	{
+		/*
+		 * In parallel worker initialization, we want to copy the leader's
+		 * state even if it no longer matches the catalogs. ParallelWorkerMain
+		 * already installed the correct role OID and superuser state.
+		 */
+		roleid = GetCurrentRoleId();
+		is_superuser = session_auth_is_superuser;
 	}
 	else
 	{
@@ -887,27 +896,44 @@ check_role(char **newval, void **extra, GucSource source)
 			return false;
 		}
 
+		/*
+		 * When source == PGC_S_TEST, we don't throw a hard error for a
+		 * nonexistent user name or insufficient privileges, only a NOTICE.
+		 * See comments in guc.h.
+		 */
+
 		/* Look up the username */
 		roleTup = SearchSysCache1(AUTHNAME, PointerGetDatum(*newval));
 		if (!HeapTupleIsValid(roleTup))
 		{
+			if (source == PGC_S_TEST)
+			{
+				ereport(NOTICE,
+						(errcode(ERRCODE_UNDEFINED_OBJECT),
+						 errmsg("role \"%s\" does not exist", *newval)));
+				return true;
+			}
 			GUC_check_errmsg("role \"%s\" does not exist", *newval);
 			return false;
 		}
 
-		roleid = HeapTupleGetOid(roleTup);
-		is_superuser = ((Form_pg_authid) GETSTRUCT(roleTup))->rolsuper;
+		roleform = (Form_pg_authid) GETSTRUCT(roleTup);
+		roleid = roleform->oid;
+		is_superuser = roleform->rolsuper;
 
 		ReleaseSysCache(roleTup);
 
-		/*
-		 * Verify that session user is allowed to become this role, but skip
-		 * this in parallel mode, where we must blindly recreate the parallel
-		 * leader's state.
-		 */
-		if (!InitializingParallelWorker &&
-			!is_member_of_role(GetSessionUserId(), roleid))
+		/* Verify that session user is allowed to become this role */
+		if (!is_member_of_role(GetSessionUserId(), roleid))
 		{
+			if (source == PGC_S_TEST)
+			{
+				ereport(NOTICE,
+						(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+						 errmsg("permission will be denied to set role \"%s\"",
+								*newval)));
+				return true;
+			}
 			GUC_check_errcode(ERRCODE_INSUFFICIENT_PRIVILEGE);
 			GUC_check_errmsg("permission denied to set role \"%s\"",
 							 *newval);

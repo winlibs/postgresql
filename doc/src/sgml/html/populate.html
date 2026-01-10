@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>14.4. Populating a Database</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="explicit-joins.html" title="14.3. Controlling the Planner with Explicit JOIN Clauses" /><link rel="next" href="non-durability.html" title="14.5. Non-Durable Settings" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">14.4. Populating a Database</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="explicit-joins.html" title="14.3. Controlling the Planner with Explicit JOIN Clauses">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="performance-tips.html" title="Chapter 14. Performance Tips">Up</a></td><th width="60%" align="center">Chapter 14. Performance Tips</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="non-durability.html" title="14.5. Non-Durable Settings">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="POPULATE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">14.4. Populating a Database</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="populate.html#DISABLE-AUTOCOMMIT">14.4.1. Disable Autocommit</a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-COPY-FROM">14.4.2. Use <code class="command">COPY</code></a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-RM-INDEXES">14.4.3. Remove Indexes</a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-RM-FKEYS">14.4.4. Remove Foreign Key Constraints</a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-WORK-MEM">14.4.5. Increase <code class="varname">maintenance_work_mem</code></a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-MAX-WAL-SIZE">14.4.6. Increase <code class="varname">max_wal_size</code></a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-PITR">14.4.7. Disable WAL Archival and Streaming Replication</a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-ANALYZE">14.4.8. Run <code class="command">ANALYZE</code> Afterwards</a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-PG-DUMP">14.4.9. Some Notes About <span class="application">pg_dump</span></a></span></dt></dl></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>14.4. Populating a Database</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><link rel="prev" href="explicit-joins.html" title="14.3. Controlling the Planner with Explicit JOIN Clauses" /><link rel="next" href="non-durability.html" title="14.5. Non-Durable Settings" /></head><body id="docContent" class="container-fluid col-10"><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">14.4. Populating a Database</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="explicit-joins.html" title="14.3. Controlling the Planner with Explicit JOIN Clauses">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="performance-tips.html" title="Chapter 14. Performance Tips">Up</a></td><th width="60%" align="center">Chapter 14. Performance Tips</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="non-durability.html" title="14.5. Non-Durable Settings">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="POPULATE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">14.4. Populating a Database</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="populate.html#DISABLE-AUTOCOMMIT">14.4.1. Disable Autocommit</a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-COPY-FROM">14.4.2. Use <code class="command">COPY</code></a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-RM-INDEXES">14.4.3. Remove Indexes</a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-RM-FKEYS">14.4.4. Remove Foreign Key Constraints</a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-WORK-MEM">14.4.5. Increase <code class="varname">maintenance_work_mem</code></a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-MAX-WAL-SIZE">14.4.6. Increase <code class="varname">max_wal_size</code></a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-PITR">14.4.7. Disable WAL Archival and Streaming Replication</a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-ANALYZE">14.4.8. Run <code class="command">ANALYZE</code> Afterwards</a></span></dt><dt><span class="sect2"><a href="populate.html#POPULATE-PG-DUMP">14.4.9. Some Notes about <span class="application">pg_dump</span></a></span></dt></dl></div><p>
    One might need to insert a large amount of data when first populating
    a database. This section contains some suggestions on how to make
    this process as efficient as possible.
@@ -18,7 +18,7 @@
     point would be rolled back, so you won't be stuck with partially
     loaded data.
    </p></div><div class="sect2" id="POPULATE-COPY-FROM"><div class="titlepage"><div><div><h3 class="title">14.4.2. Use <code class="command">COPY</code></h3></div></div></div><p>
-    Use <a class="xref" href="sql-copy.html" title="COPY"><span class="refentrytitle">COPY</span></a> to load
+    Use <a class="link" href="sql-copy.html" title="COPY"><code class="command">COPY</code></a> to load
     all the rows in one command, instead of using a series of
     <code class="command">INSERT</code> commands.  The <code class="command">COPY</code>
     command is optimized for loading large numbers of rows; it is less
@@ -27,7 +27,7 @@
     is a single command, there is no need to disable autocommit if you
     use this method to populate a table.
    </p><p>
-    If you cannot use <code class="command">COPY</code>, it might help to use <a class="xref" href="sql-prepare.html" title="PREPARE"><span class="refentrytitle">PREPARE</span></a> to create a
+    If you cannot use <code class="command">COPY</code>, it might help to use <a class="link" href="sql-prepare.html" title="PREPARE"><code class="command">PREPARE</code></a> to create a
     prepared <code class="command">INSERT</code> statement, and then use
     <code class="command">EXECUTE</code> as many times as required.  This avoids
     some of the overhead of repeatedly parsing and planning
@@ -46,8 +46,8 @@
     needs to be written, because in case of an error, the files
     containing the newly loaded data will be removed anyway.
     However, this consideration only applies when
-    <a class="xref" href="runtime-config-wal.html#GUC-WAL-LEVEL">wal_level</a> is <code class="literal">minimal</code> for
-    non-partitioned tables as all commands must write WAL otherwise.
+    <a class="xref" href="runtime-config-wal.html#GUC-WAL-LEVEL">wal_level</a> is <code class="literal">minimal</code>
+    as all commands must write WAL otherwise.
    </p></div><div class="sect2" id="POPULATE-RM-INDEXES"><div class="titlepage"><div><div><h3 class="title">14.4.3. Remove Indexes</h3></div></div></div><p>
     If you are loading a freshly created table, the fastest method is to
     create the table, bulk load the table's data using
@@ -108,31 +108,20 @@
     <a class="xref" href="runtime-config-wal.html#GUC-WAL-LEVEL">wal_level</a> to <code class="literal">minimal</code>,
     <a class="xref" href="runtime-config-wal.html#GUC-ARCHIVE-MODE">archive_mode</a> to <code class="literal">off</code>, and
     <a class="xref" href="runtime-config-replication.html#GUC-MAX-WAL-SENDERS">max_wal_senders</a> to zero.
-    But note that changing these settings requires a server restart.
+    But note that changing these settings requires a server restart,
+    and makes any base backups taken before unavailable for archive
+    recovery and standby server, which may lead to data loss.
    </p><p>
-    Aside from avoiding the time for the archiver or WAL sender to
-    process the WAL data,
-    doing this will actually make certain commands faster, because they
-    are designed not to write WAL at all if <code class="varname">wal_level</code>
-    is <code class="literal">minimal</code>.  (They can guarantee crash safety more cheaply
-    by doing an <code class="function">fsync</code> at the end than by writing WAL.)
-    This applies to the following commands:
-    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
-       <code class="command">CREATE TABLE AS SELECT</code>
-      </p></li><li class="listitem"><p>
-       <code class="command">CREATE INDEX</code> (and variants such as
-       <code class="command">ALTER TABLE ADD PRIMARY KEY</code>)
-      </p></li><li class="listitem"><p>
-       <code class="command">ALTER TABLE SET TABLESPACE</code>
-      </p></li><li class="listitem"><p>
-       <code class="command">CLUSTER</code>
-      </p></li><li class="listitem"><p>
-       <code class="command">COPY FROM</code>, when the target table has been
-       created or truncated earlier in the same transaction
-      </p></li></ul></div><p>
+    Aside from avoiding the time for the archiver or WAL sender to process the
+    WAL data, doing this will actually make certain commands faster, because
+    they do not to write WAL at all if <code class="varname">wal_level</code>
+    is <code class="literal">minimal</code> and the current subtransaction (or top-level
+    transaction) created or truncated the table or index they change.  (They
+    can guarantee crash safety more cheaply by doing
+    an <code class="function">fsync</code> at the end than by writing WAL.)
    </p></div><div class="sect2" id="POPULATE-ANALYZE"><div class="titlepage"><div><div><h3 class="title">14.4.8. Run <code class="command">ANALYZE</code> Afterwards</h3></div></div></div><p>
     Whenever you have significantly altered the distribution of data
-    within a table, running <a class="xref" href="sql-analyze.html" title="ANALYZE"><span class="refentrytitle">ANALYZE</span></a> is strongly recommended. This
+    within a table, running <a class="link" href="sql-analyze.html" title="ANALYZE"><code class="command">ANALYZE</code></a> is strongly recommended. This
     includes bulk loading large amounts of data into the table.  Running
     <code class="command">ANALYZE</code> (or <code class="command">VACUUM ANALYZE</code>)
     ensures that the planner has up-to-date statistics about the
@@ -141,11 +130,11 @@
     performance on any tables with inaccurate or nonexistent
     statistics.  Note that if the autovacuum daemon is enabled, it might
     run <code class="command">ANALYZE</code> automatically; see
-    <a class="xref" href="routine-vacuuming.html#VACUUM-FOR-STATISTICS" title="24.1.3. Updating Planner Statistics">Section 24.1.3</a>
-    and <a class="xref" href="routine-vacuuming.html#AUTOVACUUM" title="24.1.6. The Autovacuum Daemon">Section 24.1.6</a> for more information.
-   </p></div><div class="sect2" id="POPULATE-PG-DUMP"><div class="titlepage"><div><div><h3 class="title">14.4.9. Some Notes About <span class="application">pg_dump</span></h3></div></div></div><p>
+    <a class="xref" href="routine-vacuuming.html#VACUUM-FOR-STATISTICS" title="25.1.3. Updating Planner Statistics">Section 25.1.3</a>
+    and <a class="xref" href="routine-vacuuming.html#AUTOVACUUM" title="25.1.6. The Autovacuum Daemon">Section 25.1.6</a> for more information.
+   </p></div><div class="sect2" id="POPULATE-PG-DUMP"><div class="titlepage"><div><div><h3 class="title">14.4.9. Some Notes about <span class="application">pg_dump</span></h3></div></div></div><p>
     Dump scripts generated by <span class="application">pg_dump</span> automatically apply
-    several, but not all, of the above guidelines.  To reload a
+    several, but not all, of the above guidelines.  To restore a
     <span class="application">pg_dump</span> dump as quickly as possible, you need to
     do a few extra things manually.  (Note that these points apply while
     <span class="emphasis"><em>restoring</em></span> a dump, not while <span class="emphasis"><em>creating</em></span> it.
@@ -198,7 +187,7 @@
     drop or recreate indexes, and it does not normally touch foreign
     keys.
 
-     <a href="#ftn.id-1.5.13.7.11.4.2" class="footnote"><sup class="footnote" id="id-1.5.13.7.11.4.2">[12]</sup></a>
+     <a href="#ftn.id-1.5.13.7.11.4.2" class="footnote"><sup class="footnote" id="id-1.5.13.7.11.4.2">[14]</sup></a>
 
     So when loading a data-only dump, it is up to you to drop and recreate
     indexes and foreign keys if you wish to use those techniques.
@@ -207,11 +196,11 @@
     <code class="varname">maintenance_work_mem</code>; rather, you'd do that while
     manually recreating indexes and foreign keys afterwards.
     And don't forget to <code class="command">ANALYZE</code> when you're done; see
-    <a class="xref" href="routine-vacuuming.html#VACUUM-FOR-STATISTICS" title="24.1.3. Updating Planner Statistics">Section 24.1.3</a>
-    and <a class="xref" href="routine-vacuuming.html#AUTOVACUUM" title="24.1.6. The Autovacuum Daemon">Section 24.1.6</a> for more information.
-   </p></div><div class="footnotes"><br /><hr style="width:100; text-align:left;margin-left: 0" /><div id="ftn.id-1.5.13.7.11.4.2" class="footnote"><p><a href="#id-1.5.13.7.11.4.2" class="para"><sup class="para">[12] </sup></a>
+    <a class="xref" href="routine-vacuuming.html#VACUUM-FOR-STATISTICS" title="25.1.3. Updating Planner Statistics">Section 25.1.3</a>
+    and <a class="xref" href="routine-vacuuming.html#AUTOVACUUM" title="25.1.6. The Autovacuum Daemon">Section 25.1.6</a> for more information.
+   </p></div><div class="footnotes"><br /><hr style="width:100; text-align:left;margin-left: 0" /><div id="ftn.id-1.5.13.7.11.4.2" class="footnote"><p><a href="#id-1.5.13.7.11.4.2" class="para"><sup class="para">[14] </sup></a>
        You can get the effect of disabling foreign keys by using
        the <code class="option">--disable-triggers</code> option — but realize that
        that eliminates, rather than just postpones, foreign key
        validation, and so it is possible to insert bad data if you use it.
-      </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="explicit-joins.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="performance-tips.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="non-durability.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">14.3. Controlling the Planner with Explicit <code class="literal">JOIN</code> Clauses </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 14.5. Non-Durable Settings</td></tr></table></div></body></html>
+      </p></div></div></div><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navfooter"><hr></hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="explicit-joins.html" title="14.3. Controlling the Planner with Explicit JOIN Clauses">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="performance-tips.html" title="Chapter 14. Performance Tips">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="non-durability.html" title="14.5. Non-Durable Settings">Next</a></td></tr><tr><td width="40%" align="left" valign="top">14.3. Controlling the Planner with Explicit <code xmlns="http://www.w3.org/1999/xhtml" class="literal">JOIN</code> Clauses </td><td width="20%" align="center"><a accesskey="h" href="index.html" title="PostgreSQL 14.20 Documentation">Home</a></td><td width="40%" align="right" valign="top"> 14.5. Non-Durable Settings</td></tr></table></div></body></html>

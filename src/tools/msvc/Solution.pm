@@ -68,7 +68,7 @@ sub DeterminePlatform
 		my $output = `cl /help 2>&1`;
 		$? >> 8 == 0 or die "cl command not found";
 		$self->{platform} =
-		  ($output =~ /^\/favor:<.+AMD64/m) ? 'x64' : 'Win32';
+		  ($ENV{VSCMD_ARG_TGT_ARCH} && $ENV{VSCMD_ARG_TGT_ARCH} eq 'arm64') ? 'ARM64' : ($output =~ /^\/favor:<.+AMD64/m) ? 'x64' : 'Win32';
 	}
 	else
 	{
@@ -449,7 +449,7 @@ sub GenerateFiles
 		HAVE__BUILTIN_TYPES_COMPATIBLE_P         => undef,
 		HAVE__BUILTIN_UNREACHABLE                => undef,
 		HAVE__CONFIGTHREADLOCALE                 => 1,
-		HAVE__CPUID                              => 1,
+		HAVE__CPUID                              => $self->{platform} eq 'ARM64' ? undef : 1,
 		HAVE__GET_CPUID                          => undef,
 		HAVE__STATIC_ASSERT                      => undef,
 		HAVE___STRTOLL                           => undef,
@@ -477,7 +477,7 @@ sub GenerateFiles
 		PG_VERSION          => qq{"$package_version$extraver"},
 		PG_VERSION_NUM      => sprintf("%d%04d", $majorver, $minorver),
 		PG_VERSION_STR =>
-		  qq{"PostgreSQL $package_version$extraver, compiled by Visual C++ build " CppAsString2(_MSC_VER) ", $bits-bit"},
+		  qq{"PostgreSQL $package_version$extraver, compiled by Visual C++, $bits-bit"},
 		PROFILE_PID_DIR         => undef,
 		PTHREAD_CREATE_JOINABLE => undef,
 		RELSEG_SIZE             => (1024 / $self->{options}->{blocksize}) *
@@ -503,9 +503,9 @@ sub GenerateFiles
 		USE_NAMED_POSIX_SEMAPHORES => undef,
 		USE_OPENSSL                => undef,
 		USE_PAM                    => undef,
-		USE_SLICING_BY_8_CRC32C    => undef,
+		USE_SLICING_BY_8_CRC32C    => $self->{platform} eq 'ARM64' ? 1 : undef,
 		USE_SSE42_CRC32C           => undef,
-		USE_SSE42_CRC32C_WITH_RUNTIME_CHECK => 1,
+		USE_SSE42_CRC32C_WITH_RUNTIME_CHECK => $self->{platform} eq 'ARM64' ? undef : 1,
 		USE_SYSTEMD                         => undef,
 		USE_SYSV_SEMAPHORES                 => undef,
 		USE_SYSV_SHARED_MEMORY              => undef,

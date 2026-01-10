@@ -311,7 +311,8 @@ sub WriteItemDefinitionGroup
 	my $libs = $self->GetAdditionalLinkerDependencies($cfgname, ';');
 
 	my $targetmachine =
-	  $self->{platform} eq 'Win32' ? 'MachineX86' : 'MachineX64';
+	  $self->{platform} eq 'ARM64' ? 'MachineARM64' : $self->{platform} eq 'Win32' ? 'MachineX86' : 'MachineX64';
+	my $randomizedbase = $self->{platform} eq 'ARM64' ? 'true' : 'false';
 
 	my $includes = $self->{includes};
 	unless ($includes eq '' or $includes =~ /;$/)
@@ -350,7 +351,7 @@ sub WriteItemDefinitionGroup
       <ProgramDatabaseFile>.\\$cfgname\\$self->{name}\\$self->{name}.pdb</ProgramDatabaseFile>
       <GenerateMapFile>false</GenerateMapFile>
       <MapFileName>.\\$cfgname\\$self->{name}\\$self->{name}.map</MapFileName>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <RandomizedBaseAddress>$randomizedbase</RandomizedBaseAddress>
       <!-- Permit links to MinGW-built, 32-bit DLLs (default before VS2012). -->
       <ImageHasSafeExceptionHandlers/>
       <SubSystem>Console</SubSystem>

@@ -2,12 +2,12 @@
 .\"     Title: createuser
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 2025
-.\"    Manual: PostgreSQL 14.20 Documentation
-.\"    Source: PostgreSQL 14.20
+.\"      Date: 2026
+.\"    Manual: PostgreSQL 14.21 Documentation
+.\"    Source: PostgreSQL 14.21
 .\"  Language: English
 .\"
-.TH "CREATEUSER" "1" "2025" "PostgreSQL 14.20" "PostgreSQL 14.20 Documentation"
+.TH "CREATEUSER" "1" "2026" "PostgreSQL 14.21" "PostgreSQL 14.21 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -377,7 +377,7 @@ as a superuser, and assign a password immediately:
 $ \fBcreateuser \-P \-s \-e joe\fR
 Enter password for new role: \fBxyzzy\fR
 Enter it again: \fBxyzzy\fR
-CREATE ROLE joe PASSWORD \*(Aqmd5b5f5ba1a423792b526f799ae4eb3d59e\*(Aq SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN;
+CREATE ROLE joe PASSWORD \*(AqSCRAM\-SHA\-256$4096:44560wPMLfjqiAzyPDZ/eQ==$4CA054rZlSFEq8Z3FEhToBTa2X6KnWFxFkPwIbKoDe0=:L/nbSZRCjp6RhOhKK56GoR1zibCCSePKshCJ9lnl3yw=\*(Aq SUPERUSER CREATEDB CREATEROLE INHERIT LOGIN;
 .fi
 .if n \{\
 .RE

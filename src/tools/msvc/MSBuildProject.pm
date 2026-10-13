@@ -311,7 +311,7 @@ sub WriteItemDefinitionGroup
 	my $libs = $self->GetAdditionalLinkerDependencies($cfgname, ';');
 
 	my $targetmachine =
-	  $self->{platform} eq 'Win32' ? 'MachineX86' : 'MachineX64';
+	  $self->{platform} eq 'ARM64' ? 'MachineARM64' : $self->{platform} eq 'Win32' ? 'MachineX86' : 'MachineX64';
 
 	my $includes = $self->{includes};
 	unless ($includes eq '' or $includes =~ /;$/)

@@ -311,8 +311,8 @@ sub WriteItemDefinitionGroup
 	my $libs = $self->GetAdditionalLinkerDependencies($cfgname, ';');
 
 	my $targetmachine =
-	  $self->{platform} eq 'Win32' ? 'MachineX86' : 'MachineX64';
-	my $arch = $self->{platform} eq 'Win32' ? 'x86' : 'x86_64';
+	  $self->{platform} eq 'ARM64' ? 'MachineARM64' : $self->{platform} eq 'Win32' ? 'MachineX86' : 'MachineX64';
+	my $arch = $self->{platform} eq 'ARM64' ? 'arm64' : $self->{platform} eq 'Win32' ? 'x86' : 'x86_64';
 
 	my $includes = join ';', @{ $self->{includes} }, "";
 
